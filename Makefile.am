@@ -41,7 +41,8 @@ EXTRA_DIST =	\
 	CWProject.sit \
 	PBProjects.tar.gz \
 	borland.zip \
-	Doxyfile
+	Doxyfile \
+    VisualC
 
 dist-hook:
 	mkdir $(distdir)/docs
