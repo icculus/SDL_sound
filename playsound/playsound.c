@@ -49,7 +49,13 @@ static void output_versions(const char *argv0)
     SDL_VERSION(&sdl_compiled);
     sdl_linked = SDL_Linked_Version();
 
-    printf("%s version %d.%d.%d.\n"
+    printf("%s version %d.%d.%d\n"
+           "Copyright 2001 Ryan C. Gordon\n"
+           "This program is free software, covered by the GNU Lesser General\n"
+           "Public License, and you are welcome to change it and/or\n"
+           "distribute copies of it under certain conditions. There is\n"
+           "absolutely NO WARRANTY for this program.\n"
+           "\n"
            " Compiled against SDL_sound version %d.%d.%d,\n"
            " and linked against %d.%d.%d.\n"
            " Compiled against SDL version %d.%d.%d,\n"
@@ -85,6 +91,52 @@ static void output_decoders(void)
 
     printf("\n");
 } /* output_decoders */
+
+
+static void output_usage(const char *argv0)
+{
+    fprintf(stderr,
+            "USAGE: %s [...options...] [soundFile1] ... [soundFileN]\n"	
+            "\n"
+            "   Options:\n"
+            "     --rate x      Playback at sample rate of x HZ.\n"
+            "     --format fmt  Playback in fmt format (see below).\n"
+            "     --channels n  Playback on n channels (1 or 2).\n"
+            "     --version     Display version information and exit.\n"
+            "     --decoders    List supported sound formats and exit.\n"
+            "     --predecode   Decode entire sample before playback.\n"
+            "     --credits     Shameless promotion.\n"
+            "     --help        Display this information and exit.\n"
+            "\n"
+            "   Valid arguments to the --format option are:\n"
+            "     U8      Unsigned 8-bit.\n"
+            "     S8      Signed 8-bit.\n"
+            "     U16LSB  Unsigned 16-bit (least significant byte first).\n"
+            "     U16MSB  Unsigned 16-bit (most significant byte first).\n"
+            "     S16LSB  Signed 16-bit (least significant byte first).\n"
+            "     S16MSB  Signed 16-bit (most significant byte first).\n"
+            "\n",
+            argv0);
+} /* output_usage */
+
+
+static void output_credits(void)
+{
+    printf("playsound version %d.%d.%d\n"
+           "Copyright 2001 Ryan C. Gordon\n"
+           "playsound is free software, covered by the GNU Lesser General\n"
+           "Public License, and you are welcome to change it and/or\n"
+           "distribute copies of it under certain conditions. There is\n"
+           "absolutely NO WARRANTY for playsound.\n"
+           "\n"
+           "    Written by Ryan C. Gordon, Torbjörn Andersson, Max Horn,\n"
+           "     Tsuyoshi Iguchi, Tyler Montbriand, and a cast of thousands.\n"
+           "\n"
+           "    Website and source code: http://icculus.org/SDL_sound/\n"
+           "\n",
+            PLAYSOUND_VER_MAJOR, PLAYSOUND_VER_MINOR, PLAYSOUND_VER_PATCH);
+} /* output_credits */
+
 
 
 static volatile int done_flag = 0;
@@ -155,32 +207,6 @@ static void audio_callback(void *userdata, Uint8 *stream, int len)
 } /* audio_callback */
 
 
-static void output_usage(const char *argv0)
-{
-    fprintf(stderr,
-            "USAGE: %s [...options...] [soundFile1] ... [soundFileN]\n"	
-            "\n"
-            "   Options:\n"
-            "     --rate x      Playback at sample rate of x HZ.\n"
-            "     --format fmt  Playback in fmt format (see below).\n"
-            "     --channels n  Playback on n channels (1 or 2).\n"
-            "     --version     Display version information and exit.\n"
-            "     --decoders    List supported sound formats and exit.\n"
-            "     --predecode   Decode entire sample before playback.\n"
-            "     --help        Display this information and exit.\n"
-            "\n"
-            "   Valid arguments to the --format option are:\n"
-            "     U8      Unsigned 8-bit.\n"
-            "     S8      Signed 8-bit.\n"
-            "     U16LSB  Unsigned 16-bit (least significant byte first).\n"
-            "     U16MSB  Unsigned 16-bit (most significant byte first).\n"
-            "     S16LSB  Signed 16-bit (least significant byte first).\n"
-            "     S16MSB  Signed 16-bit (most significant byte first).\n"
-            "\n",
-            argv0);
-} /* output_usage */
-
-
 static int str_to_fmt(char *str)
 {
     if (strcmp(str, "U8") == 0)
@@ -229,6 +255,12 @@ int main(int argc, char **argv)
         if (strcmp(argv[i], "--version") == 0)
         {
             output_versions(argv[0]);
+            return(42);
+        } /* if */
+
+        if (strcmp(argv[i], "--credits") == 0)
+        {
+            output_credits();
             return(42);
         } /* if */
 
