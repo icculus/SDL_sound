@@ -2,6 +2,9 @@
  * CHANGELOG.
  */
 
+10102003 - Changed some SDL_Error()s to __Sound_SetError() in new DLS code
+           to fix linking issues.
+10052003 - Fixed memory corruption when freeing DLS instruments (Thanks, Sam!).
 09252003 - Sam Lantinga added support for DLS instruments to the MIDI decoder.
 09132003 - Happy September. Added Speex (.spx) decoder.
 08052003 - Fixed MIDI decoder on bigendian systems.
