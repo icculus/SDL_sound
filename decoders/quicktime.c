@@ -547,7 +547,7 @@ static int QT_open(Sound_Sample *sample, const char *ext)
   instance = QT_open_internal(sample, ext);
   internal->decoder_private = (void*)instance;
 
-  sample->total_time = -1;  /* return -1 for total time of song for now */ 
+  internal->total_time = -1;  /* return -1 for total time of song for now */
 
   return(instance != NULL);
     

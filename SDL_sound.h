@@ -185,7 +185,6 @@ typedef struct
     void *buffer;  /**< Decoded sound data lands in here. */
     Uint32 buffer_size;  /**< Current size of (buffer), in bytes (Uint8). */
     Sound_SampleFlags flags;  /**< Flags relating to this sample. */
-    Sint32 total_time;  /**< Total length of song or track */
 } Sound_Sample;
 
 
@@ -498,6 +497,31 @@ SNDDECLSPEC Sound_Sample * SDLCALL Sound_NewSampleFromFile(const char *fname,
  * \sa Sound_NewSampleFromFile
  */
 SNDDECLSPEC void SDLCALL Sound_FreeSample(Sound_Sample *sample);
+
+
+/**
+ * \fn Sint32 Sound_GetDuration(Sound_Sample *sample)
+ * \brief Retrieve total play time of sample, in milliseconds.
+ *
+ * Report total time length of sample, in milliseconds. This is a fast
+ *  call. Duration is calculated during Sound_NewSample*, so this is just
+ *  an accessor into otherwise opaque data.
+ *
+ * Please note that not all formats can determine a total time, some can't
+ *  be exact without fully decoding the data, and thus will estimate the
+ *  duration. Many decoders will require the ability to seek in the data
+ *  stream to calculate this, so even if we can tell you how long an .ogg
+ *  file will be, the same data set may fail if it's, say, streamed over an
+ *  HTTP connection. Plan accordingly.
+ *
+ * Most people won't need this function to just decode and playback, but it
+ *  can be useful for informational purposes in, say, a music player's UI.
+ *
+ *    \param sample Sound_Sample from which to retrieve duration information.
+ *   \return Sample length in milliseconds, or -1 if duration can't be
+ *           determined for any reason.
+ */
+SNDDECLSPEC Sint32 SDLCALL Sound_GetDuration(Sound_Sample *sample);
 
 
 /**

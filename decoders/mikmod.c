@@ -282,9 +282,9 @@ static int MIKMOD_open(Sound_Sample *sample, const char *ext)
 
     /*
      *   module->sngtime = current song time in 2^-10 seconds
-     *   sample->total_time = (module->sngtime * 1000) / (1<<10)
+     *   internal->total_time = (module->sngtime * 1000) / (1<<10)
      */
-    sample->total_time = (module->sngtime * 1000) / (1<<10);
+    internal->total_time = (module->sngtime * 1000) / (1<<10);
 
     SNDDBG(("MIKMOD: Name: %s\n", module->songname));
     SNDDBG(("MIKMOD: Type: %s\n", module->modtype));
@@ -322,7 +322,7 @@ static int MIKMOD_open(Sound_Sample *sample, const char *ext)
      * For each position (which corresponds to a particular pattern),
      * get the speed values and compute the time length of the segment
      */
-    sample->total_time = 0;
+    internal->total_time = 0;
     for (i = 0; i < module->numpos; i++)
     {
         Player_SetPosition(i);
@@ -378,7 +378,7 @@ static int MIKMOD_open(Sound_Sample *sample, const char *ext)
                           125.0 / module->bpm);
     } /* for */
     /* Now convert to milliseconds and store the value */
-    sample->total_time = (Sint32)(segment_time * 1000); 
+    internal->total_time = (Sint32)(segment_time * 1000);
 
     /* Reset the sample to the beginning */
     Player_SetPosition(0);
@@ -462,7 +462,7 @@ static int MIKMOD_seek(Sound_Sample *sample, Uint32 ms)
         return(1);
     } /* if */
 
-    if (ms >= sample->total_time)
+    if (ms >= internal->total_time)
         Player_SetPosition(module->numpos);
 
     /* Convert time to seconds (double) to make comparisons easier */

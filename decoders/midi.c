@@ -107,13 +107,13 @@ static int MIDI_open(Sound_Sample *sample, const char *ext)
     SNDDBG(("MIDI: Accepting data stream.\n"));
 
     internal->decoder_private = (void *) song;
+    internal->total_time = Timidity_GetSongLength(song);
 
     sample->actual.channels = 2;
     sample->actual.rate = 44100;
     sample->actual.format = AUDIO_S16SYS;
-    
-    sample->total_time = Timidity_GetSongLength(song);
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
+    
     return(1); /* we'll handle this data. */
 } /* MIDI_open */
 
