@@ -2,6 +2,9 @@
  * CHANGELOG.
  */
 
+05222002 - Torbjörn sent in some initial cleanups and fixes for altcvt, and
+           fixed a bug in playsound when not all three of --rate, --channels
+           and --format are specified.
 05202002 - Some .cvsignores from Max and me. Added a seek implementations for
            the SMPEG, ogg, aiff, wav-adpcm, voc, and au decoders. Added a seek
            stub to quicktime.c. playsound now takes milliseconds in the seek
