@@ -38,6 +38,8 @@ typedef struct{
    Uint8 incr[16];
    int denominator;
    int numerator;
+   Uint32 zero;
+   int mask;
 } VarFilter;
 
 typedef struct{
@@ -46,40 +48,30 @@ typedef struct{
    VarFilter *filter;
 } AdapterC;
 
-/*
 typedef struct{
-    VarFilter filter;
-    double mult;           // buffer must be len*buf_mult big
-    int    add;
-    int (*adapter[32]) ( AdapterC Data, int length );
-} SDL_AudioC;
-
-*/
-
-/* the len_* variables and the needed variable are not used internally, 
-they are provided for compatibility */
-
-typedef struct{
-   int needed;
    VarFilter filter;
-   Uint8* buf;
-   int len;                /* Length of original audio buffer  */ 
-   int len_cvt;            /* Length of converted audio buffer */
-   int len_mult;           /* buffer must be len*len_mult big */
-   double len_ratio;       /* Given len, final size is len*len_ratio */
-        
-   double add;
-   double mult;        
    int (*adapter[32]) ( AdapterC Data, int length );
+/* buffer must be len*len_mult(+len_add) big */
+   int len_mult;
+   int len_add;
+   double add;
+
+/* the following elements are provided for compatibility: */
+/* the size of the output is approx  len*len_ratio */
+   double len_ratio;
+   Uint8* buf;             /* input/output buffer */
+   int needed;             /* 0 if nothing to be done, 1 otherwise */
+   int len;                /* Length of the input */
+   int len_cvt;            /* Length of converted audio buffer */
 } Sound_AudioCVT;
 
-#define SDL_AI_Loop 0x01
+#define SDL_SOUND_Loop 0x10
 
 extern DECLSPEC int Sound_ConvertAudio( Sound_AudioCVT *Data );
 
 extern DECLSPEC int Sound_BuildAudioCVT( Sound_AudioCVT *Data,
    Uint16 src_format, Uint8 src_channels, int src_rate,
-   Uint16 dst_format, Uint8 dst_channels, int dst_rate );
+   Uint16 dst_format, Uint8 dst_channels, int dst_rate, Uint32 dst_size );
 
 #endif /* _INCLUDE_AUDIO_CONVERT_H_ */
 
