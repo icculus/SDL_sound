@@ -6,7 +6,11 @@
            the SMPEG, ogg, aiff, wav-adpcm, voc, and au decoders. Added a seek
            stub to quicktime.c. playsound now takes milliseconds in the seek
            lists: --seek "00:00:400" or whatnot. Corrected playsound's usage
-           text. Other au.c cleanups for extra robustness.
+           text. Other au.c cleanups for extra robustness. Added an
+           experimental audio converter that Frank Ranostaj sent to the SDL
+           mailing list about a month ago: enable it with --enable-altcvt at
+           configure time, but be warned that it doesn't work very well right
+           now.
 04292002 - Darrell Walisser updated the Mac Classic and OS X project
            files, fixed some portability issues, and added an
            experimental decoder that uses Apple's QuickTime libraries 
