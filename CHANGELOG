@@ -75,6 +75,9 @@
            Changed playsound to open the audio device to match the properties
            of each sound file, which results in less conversion (and therefore,
            more chance of correct playback).
+10042001 - Changed some #if (defined SOUND_SUPPORTS_*) lines to
+           #ifdef SOUND_SUPPORTS_* in voc.c and shn.c, for consistency with
+           the other decoders.
 
 --ryan. (icculus@clutteredmind.org)
 
