@@ -90,6 +90,7 @@ static volatile int done_flag = 0;
 static void audio_callback(void *userdata, Uint8 *stream, int len)
 {
     static Uint8 overflow[16384]; /* this is a hack. */
+    static Uint8 *overflow_ptr;
     static int overflowBytes = 0;
     Sound_Sample *sample = (Sound_Sample *) userdata;
     int bw = 0; /* bytes written to stream*/
@@ -98,7 +99,8 @@ static void audio_callback(void *userdata, Uint8 *stream, int len)
     if (overflowBytes > 0)
     {
         bw = (overflowBytes < len) ? overflowBytes : len;
-        memcpy(stream, overflow, bw);
+        memcpy(stream, overflow_ptr, bw);
+        overflow_ptr += bw;
         overflowBytes -= bw;
     } /* if */
 
@@ -113,6 +115,7 @@ static void audio_callback(void *userdata, Uint8 *stream, int len)
                 memcpy(overflow,
                        ((Uint8 *) sample->buffer) + (rc - overflowBytes),
                        overflowBytes);
+                overflow_ptr = overflow;
                 rc -= overflowBytes;
             } /* if */
 
