@@ -99,7 +99,9 @@ extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MIDI;
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_FLAC;
 #endif
 
-
+#if (defined SOUND_SUPPORTS_QUICKTIME)
+extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_QuickTime;
+#endif
 
 typedef struct
 {
@@ -159,6 +161,10 @@ static decoder_element decoders[] =
 
 #if (defined SOUND_SUPPORTS_MIDI)
     { 0, &__Sound_DecoderFunctions_MIDI },
+#endif
+
+#if (defined SOUND_SUPPORTS_QUICKTIME)
+    { 0, &__Sound_DecoderFunctions_QuickTime },
 #endif
 
     { 0, NULL }
