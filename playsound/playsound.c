@@ -734,7 +734,6 @@ int main(int argc, char **argv)
 {
     Sound_AudioInfo sound_desired;
     SDL_AudioSpec sdl_desired;
-    SDL_AudioSpec sdl_actual;
     Uint32 audio_buffersize;
     Uint32 decode_buffersize;
     Sound_Sample *sample;
@@ -837,6 +836,7 @@ int main(int argc, char **argv)
                 free((void *) global_state.seek_list);
 
             memset((void *) &global_state, '\0', sizeof (global_state));
+            memset(&sdl_desired, '\0', sizeof (SDL_AudioSpec));
             global_state.volume = 1.0;
             global_state.bytes_before_next_seek = -1;
             audio_buffersize = DEFAULT_AUDIOBUF;
