@@ -79,6 +79,10 @@ extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_RAW;
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_SHN;
 #endif
 
+#if (defined SOUND_SUPPORTS_MIDI)
+extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MIDI;
+#endif
+
 
 
 typedef struct
@@ -119,6 +123,10 @@ static decoder_element decoders[] =
 
 #if (defined SOUND_SUPPORTS_SHN)
     { 0, &__Sound_DecoderFunctions_SHN },
+#endif
+
+#if (defined SOUND_SUPPORTS_MIDI)
+    { 0, &__Sound_DecoderFunctions_MIDI },
 #endif
 };
 

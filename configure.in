@@ -70,6 +70,7 @@ if test x$enable_debug = xyes; then
   else
     CFLAGS="-O0"
   fi
+  CFLAGS="$CFLAGS -Werror"
   AC_DEFINE(DEBUG)
   AC_DEFINE(DEBUG_CHATTER)
 else
@@ -134,6 +135,27 @@ if test x$enable_shn = xyes; then
     AC_DEFINE(SOUND_SUPPORTS_SHN)
 fi
 
+dnl Check for the MIDI pipe decoder...
+AC_ARG_ENABLE(midi,
+[  --enable-midi              enable MIDI music via a pipe [default=no]],
+              , enable_midi=no)
+if test x$enable_midi = xyes; then
+  AC_DEFINE(SOUND_SUPPORTS_MIDI)
+fi
+
+dnl Check for SMPEG
+AC_ARG_ENABLE(smpeg,
+[  --enable-smpeg             enable MP3 music via smpeg [default=yes]],
+              , enable_smpeg=yes)
+if test x$enable_smpeg = xyes; then
+  SMPEG_VERSION=0.4.3
+  AM_PATH_SMPEG($SMPEG_VERSION, , no_smpeg=yes)
+  if test "x$no_smpeg" = "x" ; then
+    CFLAGS="$CFLAGS $SMPEG_CFLAGS"
+    LIBS="$LIBS $SMPEG_LIBS"
+    AC_DEFINE(SOUND_SUPPORTS_MP3)
+  fi
+fi
 
 dnl Check for libmikmod
 AC_ARG_ENABLE(mikmod,
@@ -161,21 +183,6 @@ if test x$enable_vorbis = xyes; then
     AC_DEFINE(SOUND_SUPPORTS_OGG)
   fi
 fi
-
-dnl Check for SMPEG
-AC_ARG_ENABLE(smpeg,
-[  --enable-smpeg             enable MP3 music via smpeg [default=yes]],
-              , enable_smpeg=yes)
-if test x$enable_smpeg = xyes; then
-  SMPEG_VERSION=0.4.3
-  AM_PATH_SMPEG($SMPEG_VERSION, , no_smpeg=yes)
-  if test "x$no_smpeg" = "x" ; then
-    CFLAGS="$CFLAGS $SMPEG_CFLAGS"
-    LIBS="$LIBS $SMPEG_LIBS"
-    AC_DEFINE(SOUND_SUPPORTS_MP3)
-  fi
-fi
-
 
 
 # Checks for header files.

@@ -10,4 +10,5 @@ libdecoders_la_SOURCES =	\
 	raw.c		\
     shn.c		\
 	voc.c		\
+	midi.c		\
 	wav.c
