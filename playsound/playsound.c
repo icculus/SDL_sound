@@ -33,7 +33,7 @@
 
 #define PLAYSOUND_VER_MAJOR  0
 #define PLAYSOUND_VER_MINOR  1
-#define PLAYSOUND_VER_PATCH  1
+#define PLAYSOUND_VER_PATCH  2
 
 
 static void output_versions(const char *argv0)
@@ -91,7 +91,7 @@ static void audio_callback(void *userdata, Uint8 *stream, int len)
 {
     static Uint8 overflow[16384]; /* this is a hack. */
     static int overflowBytes = 0;
-    Sound_Sample *sample = *((Sound_Sample **) userdata);
+    Sound_Sample *sample = (Sound_Sample *) userdata;
     int bw = 0; /* bytes written to stream*/
     Uint32 rc;  /* return code */
 
@@ -150,9 +150,11 @@ int main(int argc, char **argv)
 {
     Sound_AudioInfo sound_desired;
     SDL_AudioSpec sdl_desired;
+    SDL_AudioSpec sdl_actual;
     Sound_Sample *sample;
     int i;
 
+        /* !!! FIXME: Move this to a parse_cmdline() function... */
     if (argc < 2)
     {
         output_usage(argv[0]);
@@ -208,34 +210,12 @@ int main(int argc, char **argv)
         return(42);
     } /* if */
 
-    sound_desired.rate = 44100;
-    sound_desired.channels = 2;
-    sound_desired.format = AUDIO_S16SYS;
-
-	sdl_desired.freq = 44100;
-	sdl_desired.format = AUDIO_S16SYS;
-	sdl_desired.channels = 2;
-	sdl_desired.samples = 4096;
-	sdl_desired.callback = audio_callback;
-	sdl_desired.userdata = &sample;
-
-	if ( SDL_OpenAudio(&sdl_desired, NULL) < 0 )
-    {
-        fprintf(stderr, "Couldn't open audio device!\n"
-                        "  reason: [%s].\n", SDL_GetError());
-        Sound_Quit();
-        SDL_Quit();
-        return(42);
-    } /* if */
-
     for (i = 1; i < argc; i++)
     {
         if (strncmp(argv[i], "--", 2) == 0)
             continue;
 
-        printf("Now playing [%s]...\n", argv[i]);
-
-        sample = Sound_NewSampleFromFile(argv[i], &sound_desired, 4096 * 4);
+        sample = Sound_NewSampleFromFile(argv[i], NULL, 4096 * 4);
         if (!sample)
         {
             fprintf(stderr, "Couldn't load \"%s\"!\n"
@@ -243,11 +223,30 @@ int main(int argc, char **argv)
             continue;
         } /* if */
 
+        sdl_desired.freq = sample->actual.rate;
+        sdl_desired.format = sample->actual.format;
+        sdl_desired.channels = sample->actual.channels;
+        sdl_desired.samples = 4096;
+        sdl_desired.callback = audio_callback;
+        sdl_desired.userdata = sample;
+
+        if (SDL_OpenAudio(&sdl_desired, NULL) < 0)
+        {
+            fprintf(stderr, "Couldn't open audio device!\n"
+                            "  reason: [%s].\n", SDL_GetError());
+            Sound_Quit();
+            SDL_Quit();
+            return(42);
+        } /* if */
+
+        printf("Now playing [%s]...\n", argv[i]);
+
         done_flag = 0;
         SDL_PauseAudio(0);
         while (!done_flag)
             SDL_Delay(10);
         SDL_PauseAudio(1);
+        SDL_CloseAudio();  /* reopen with next sample's format if possible */
 
         Sound_FreeSample(sample);
     } /* for */
