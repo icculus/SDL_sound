@@ -72,6 +72,10 @@ extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_VOC;
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_RAW;
 #endif
 
+#if (defined SOUND_SUPPORTS_SHN)
+extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_SHN;
+#endif
+
 
 
 typedef struct
@@ -108,6 +112,10 @@ static decoder_element decoders[] =
 
 #if (defined SOUND_SUPPORTS_RAW)
     { 0, &__Sound_DecoderFunctions_RAW },
+#endif
+
+#if (defined SOUND_SUPPORTS_SHN)
+    { 0, &__Sound_DecoderFunctions_SHN },
 #endif
 };
 
