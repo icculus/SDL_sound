@@ -2,7 +2,7 @@
  * CHANGELOG.
  */
 
-10092002 - Released version 1.0.0! Woohoo!
+10092002 - Fixed a "make dist" issue and upped version to 1.0.0! Woohoo!
 09302002 - libFLAC broke their API (again!) for version 1.0.4. That was the
            last straw. I ripped the version detection and obsolete FLAC
            support out, so you need libFLAC 1.0.4 for that decoder now (and
