@@ -44,6 +44,7 @@ EXTRA_DIST =	\
 	CHANGELOG \
 	CWProject.sit \
 	PBProjects.tar.gz \
+	borland.zip \
 	Doxyfile \
     docs
 
