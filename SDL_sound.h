@@ -38,13 +38,14 @@
  *   - .WAV  (Microsoft WAVfile RIFF data, internal.)
  *   - .VOC  (Creative Labs' Voice format, internal.)
  *   - .MP3  (MPEG-1 Layer 3 support, via the SMPEG library.)
- *   - .MID  (MIDI music converted to Waveform data, via Timidity.)
- *   - .MOD  (MOD files, via MikMod.)
+ *   - .MID  (MIDI music converted to Waveform data, internal.)
+ *   - .MOD  (MOD files, via MikMod and ModPlug.)
  *   - .OGG  (Ogg files, via Ogg Vorbis libraries.)
+ *   - .SHN  (Shorten files, internal.)
  *   - .RAW  (Raw sound data in any format, internal.)
- *   - .CDA  (CD audio read into a sound buffer, internal.)
- *   - .AU
- *   - .AIFF
+ *   - .AU   (Sun's Audio format, internal.)
+ *   - .AIFF (Audio Interchange format, internal.)
+ *   - .FLAC (Lossless audio compression, via libFLAC.)
  *
  *   (...and more to come...)
  *
@@ -71,7 +72,7 @@ extern "C" {
 
 #define SOUND_VER_MAJOR 0
 #define SOUND_VER_MINOR 1
-#define SOUND_VER_PATCH 4
+#define SOUND_VER_PATCH 5
 
 
 /**
