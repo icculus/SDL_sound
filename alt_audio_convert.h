@@ -35,16 +35,25 @@
 
 
 typedef struct{
-   short c[16][2*_fsize];
+   Sint16 c[16][2*_fsize];
    char incr[16];
    int pos_mod;
 } VarFilter;
 
 typedef struct{
-   short* buffer;
+   Uint8* buffer;
    int mode;
    VarFilter *filter;
 } AdapterC;
+
+/*
+typedef struct{
+    VarFilter filter;
+    double mult;           // buffer must be len*buf_mult big
+    int    add;
+    int (*adapter[32]) ( AdapterC Data, int length );
+} SDL_AudioC;
+*/
 
 typedef struct{
    int needed;
@@ -52,14 +61,16 @@ typedef struct{
    double len_mult;           /* buffer must be len*len_mult big*/
    Uint8* buf;
    int len;
-   int    len_cvt;                 /* Length of converted audio buffer */
-   int    add;
+   int len_cvt;                 /* Length of converted audio buffer */
+   int add;
    int (*adapter[32]) ( AdapterC Data, int length );
 } Sound_AudioCVT;
 
+#define SDL_AI_Loop 0x01
+
 extern DECLSPEC int Sound_ConvertAudio( Sound_AudioCVT *Data );
 
-extern DECLSPEC int Sound_BuildAudioConverter( Sound_AudioCVT *Data,
+extern DECLSPEC int Sound_BuildAudioCVT( Sound_AudioCVT *Data,
    Uint16 src_format, Uint8 src_channels, int src_rate,
    Uint16 dst_format, Uint8 dst_channels, int dst_rate );
 
