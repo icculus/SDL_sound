@@ -527,7 +527,45 @@ static int rewind_sample_fmt_adpcm(Sound_Sample *sample)
 
 static int seek_sample_fmt_adpcm(Sound_Sample *sample, Uint32 ms)
 {
-    return(0); /* !!! FIXME: Can we reasonably implement this? */
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    wav_t *w = (wav_t *) internal->decoder_private;
+    fmt_t *fmt = w->fmt;
+    Uint32 origsampsleft = fmt->fmt.adpcm.samples_left_in_block;
+    int origpos = SDL_RWtell(internal->rw);
+    int offset = __Sound_convertMsToBytePos(&sample->actual, ms);
+    int bpb = (fmt->fmt.adpcm.wSamplesPerBlock * fmt->sample_frame_size);
+    int skipsize = (offset / bpb) * fmt->wBlockAlign;
+    int pos = skipsize + fmt->data_starting_offset;
+    int rc = SDL_RWseek(internal->rw, pos, SEEK_SET);
+    BAIL_IF_MACRO(rc != pos, ERR_IO_ERROR, 0);
+
+    /* The offset we need is in this block, so we need to decode to there. */
+    skipsize += (offset % bpb);
+    rc = (offset % bpb);  /* bytes into this block we need to decode */
+    if (!read_adpcm_block_headers(sample))
+    {
+        SDL_RWseek(internal->rw, origpos, SEEK_SET);  /* try to make sane. */
+        return(0);
+    } /* if */
+
+    /* first sample frame of block is a freebie. :) */
+    fmt->fmt.adpcm.samples_left_in_block--;
+    rc -= fmt->sample_frame_size;
+    while (rc > 0)
+    {
+        if (!decode_adpcm_sample_frame(sample))
+        {
+            SDL_RWseek(internal->rw, origpos, SEEK_SET);
+            fmt->fmt.adpcm.samples_left_in_block = origsampsleft;
+            return(0);
+        } /* if */
+
+        fmt->fmt.adpcm.samples_left_in_block--;
+        rc -= fmt->sample_frame_size;
+    } /* while */
+
+    w->bytesLeft = fmt->total_bytes - skipsize;
+    return(1);  /* success. */
 } /* seek_sample_fmt_adpcm */
 
 
@@ -544,6 +582,7 @@ static int read_fmt_adpcm(SDL_RWops *rw, fmt_t *fmt)
     fmt->free = free_fmt_adpcm;
     fmt->read_sample = read_sample_fmt_adpcm;
     fmt->rewind_sample = rewind_sample_fmt_adpcm;
+    fmt->seek_sample = seek_sample_fmt_adpcm;
 
     BAIL_IF_MACRO(!read_le16(rw, &fmt->fmt.adpcm.cbSize), NULL, 0);
     BAIL_IF_MACRO(!read_le16(rw, &fmt->fmt.adpcm.wSamplesPerBlock), NULL, 0);
@@ -677,15 +716,13 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
     w->fmt = fmt;
     fmt->total_bytes = w->bytesLeft = d.chunkSize;
     fmt->data_starting_offset = SDL_RWtell(rw);
-
-    /* !!! FIXME: Move this to Sound_SampleInfo ? */
     fmt->sample_frame_size = ( ((sample->actual.format & 0xFF) / 8) *
                                sample->actual.channels );
 
     internal->decoder_private = (void *) w;
 
     sample->flags = SOUND_SAMPLEFLAG_NONE;
-    if (fmt->wFormatTag == FMT_NORMAL)
+    if (fmt->seek_sample != NULL)
         sample->flags |= SOUND_SAMPLEFLAG_CANSEEK;
 
     SNDDBG(("WAV: Accepting data stream.\n"));
