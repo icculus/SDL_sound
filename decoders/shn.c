@@ -215,7 +215,7 @@ static const Uint8 ulaw_outward[13][256] = {
 #define SHN_LPCQOFFSET_VER2 (1 << SHN_LPCQUANT)
 
 
-#define MAGIC_NUM 0x676B6A61   /* looks like "ajkg" as chars. */
+#define SHN_MAGIC  0x676B6A61   /* looks like "ajkg" as chars. */
 
 #ifndef M_LN2
 #define M_LN2   0.69314718055994530942
@@ -357,7 +357,7 @@ static inline int extended_shn_magic_search(Sound_Sample *sample)
     {
         BAIL_IF_MACRO(SDL_RWread(rw, &ch, sizeof (ch), 1) != 1, NULL, -1);
         word = ((word << 8) & 0xFFFFFF00) | ch;
-        if (SDL_SwapBE32(word) == MAGIC_NUM)
+        if (SDL_SwapBE32(word) == SHN_MAGIC)
         {
             BAIL_IF_MACRO(SDL_RWread(rw, &ch, sizeof (ch), 1) != 1, NULL, -1);
             return((int) ch);
@@ -387,7 +387,7 @@ static inline int determine_shn_version(Sound_Sample *sample, const char *ext)
         return(extended_shn_magic_search(sample));
 
     BAIL_IF_MACRO(SDL_RWread(rw, &magic, sizeof (magic), 1) != 1, NULL, -1);
-    BAIL_IF_MACRO(SDL_SwapLE32(magic) != MAGIC_NUM, "SHN: Not a SHN file", -1);
+    BAIL_IF_MACRO(SDL_SwapLE32(magic) != SHN_MAGIC, "SHN: Not a SHN file", -1);
     BAIL_IF_MACRO(SDL_RWread(rw, &ch, sizeof (ch), 1) != 1, NULL, -1);
     BAIL_IF_MACRO(ch > 3, "SHN: Unsupported file version", -1);
 
