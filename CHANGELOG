@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+05202002 - Some .cvsignores from Max and me.
 04292002 - Darrell Walisser updated the Mac Classic and OS X project 
            files, fixed some portability issues, and added an
            experimental decoder that uses Apple's QuickTime libraries 
