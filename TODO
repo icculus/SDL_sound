@@ -1,0 +1,29 @@
+
+Stuff TODO:
+- Implement base API.
+- Use autoconf?
+- Verify portability to various Unixes (BSD, etc)
+- Port to Win32.
+- Port to BeOS.
+- Port to MacOS Classic.
+- Port to MacOS X.
+- Port to PowerPC Linux.
+
+Decoders to implement:
+- .WAV
+- .VOC
+- .MP3
+- .MOD
+- .OGG
+- .MID
+- .CDA
+- .RAW
+- .AU
+- .AIFF
+- ...and more...
+
+/* end of TODO ... */
+
+
+
+
