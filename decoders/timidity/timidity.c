@@ -100,10 +100,110 @@ static int read_config_file(char *name)
   {
     line++;
     w[words=0]=strtok(tmp, " \t\240");
-    if (!w[0] || (*w[0]=='#')) continue;
+    if (!w[0]) continue;
+
+        /* Originally the TiMidity++ extensions were prefixed like this */
+    if (strcmp(w[0], "#extension") == 0)
+        words = -1;
+    else if (*w[0] == '#')
+        continue;
+
     while (w[words] && *w[words] != '#' && (words < MAXWORDS))
       w[++words]=strtok(0," \t\240");
-    if (!strcmp(w[0], "dir"))
+
+        /*
+         * TiMidity++ adds a number of extensions to the config file format.
+         * Many of them are completely irrelevant to SDL_sound, but at least
+         * we shouldn't choke on them.
+         *
+         * Unfortunately the documentation for these extensions is often quite
+         * vague, gramatically strange or completely absent.
+         */
+    if (
+           !strcmp(w[0], "comm")      /* "comm" program second        */
+        || !strcmp(w[0], "HTTPproxy") /* "HTTPproxy" hostname:port    */
+        || !strcmp(w[0], "FTPproxy")  /* "FTPproxy" hostname:port     */
+        || !strcmp(w[0], "mailaddr")  /* "mailaddr" your-mail-address */
+        || !strcmp(w[0], "opt")       /* "opt" timidity-options       */
+       )
+    {
+            /*
+             * + "comm" sets some kind of comment -- the documentation is too
+             *   vague for me to understand at this time.
+             * + "HTTPproxy", "FTPproxy" and "mailaddr" are for reading data
+             *   over a network, rather than from the file system.
+             * + "opt" specifies default options for TiMidity++.
+             *
+             * These are all quite useless for our version of TiMidity, so
+             * they can safely remain no-ops.
+             */
+    } else if (!strcmp(w[0], "timeout")) /* "timeout" program second */
+    {
+            /*
+             * Specifies a timeout value of the program. A number of seconds
+             * before TiMidity kills the note. This may be useful to implement
+             * later, but I don't see any urgent need for it.
+             */
+        SNDDBG(("FIXME: Implement \"timeout\" in TiMidity config.\n"));
+    } else if (!strcmp(w[0], "copydrumset")  /* "copydrumset" drumset */
+               || !strcmp(w[0], "copybank")) /* "copybank" bank       */
+    {
+            /*
+             * Copies all the settings of the specified drumset or bank to
+             * the current drumset or bank. May be useful later, but not a
+             * high priority.
+             */
+        SNDDBG(("FIXME: Implement \"%s\" in TiMidity config.\n", w[0]));
+    } else if (!strcmp(w[0], "undef")) /* "undef" progno */
+    {
+            /*
+             * Undefines the tone "progno" of the current tone bank (or
+             * drum set?). Not a high priority.
+             */
+        SNDDBG(("FIXME: Implement \"undef\" in TiMidity config.\n"));
+    } else if (!strcmp(w[0], "altassign")) /* "altassign" prog1 prog2 ... */
+    {
+            /*
+             * Sets the alternate assign for drum set. Whatever that's
+             * supposed to mean.
+             */
+        SNDDBG(("FIXME: Implement \"altassign\" in TiMidity config.\n"));
+    } else if (!strcmp(w[0], "soundfont")
+               || !strcmp(w[0], "font"))
+    {
+            /*
+             * I can't find any documentation for these, but I guess they're
+             * an alternative way of loading/unloading instruments.
+             * 
+             * "soundfont" sf_file "remove"
+             * "soundfont" sf_file ["order=" order] ["cutoff=" cutoff]
+             *                     ["reso=" reso] ["amp=" amp]
+             * "font" "exclude" bank preset keynote
+             * "font" "order" order bank preset keynote
+             */
+        SNDDBG(("FIXME: Implmement \"%s\" in TiMidity config.\n", w[0]));
+    } else if (!strcmp(w[0], "progbase"))
+    {
+            /*
+             * The documentation for this makes absolutely no sense to me, but
+             * apparently it sets some sort of base offset for tone numbers.
+             * Why anyone would want to do this is beyond me.
+             */
+        SNDDBG(("FIXME: Implement \"progbase\" in TiMidity config.\n"));
+    } else if (!strcmp(w[0], "map")) /* "map" name set1 elem1 set2 elem2 */
+    {
+            /*
+             * This extension is the one we will need to implement, as it is
+             * used by the "eawpats". Unfortunately I cannot find any
+             * documentation whatsoever for it, but it looks like it's used
+             * for remapping one instrument to another somehow.
+             */
+        SNDDBG(("FIXME: Implement \"map\" in TiMidity config.\n"));
+    }
+
+        /* Standard TiMidity config */
+    
+    else if (!strcmp(w[0], "dir"))
     {
       if (words < 2)
       {
