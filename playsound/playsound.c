@@ -37,7 +37,7 @@
 
 #define PLAYSOUND_VER_MAJOR  0
 #define PLAYSOUND_VER_MINOR  1
-#define PLAYSOUND_VER_PATCH  3
+#define PLAYSOUND_VER_PATCH  4
 
 static void output_versions(const char *argv0)
 {
