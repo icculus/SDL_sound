@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 set -e
 echo "Initial preparation...this can take awhile, so sit tight..."
