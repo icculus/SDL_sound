@@ -2,6 +2,8 @@
  * CHANGELOG.
  */
 
+09252003 - Sam Lantinga added support for DLS instruments to the Midid 
+           decoder.
 09132003 - Happy September. Added Speex (.spx) decoder.
 08052003 - Fixed MIDI decoder on bigendian systems.
 03102003 - Never actually created samplelist_mutex (Thanks, Glenn Maynard!).
