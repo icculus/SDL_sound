@@ -51,8 +51,12 @@
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MP3;
 #endif
 
-#if (defined SOUND_SUPPORTS_MOD)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MOD;
+#if (defined SOUND_SUPPORTS_MIKMOD)
+extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MIKMOD;
+#endif
+
+#if (defined SOUND_SUPPORTS_MODPLUG)
+extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MODPLUG;
 #endif
 
 #if (defined SOUND_SUPPORTS_WAV)
@@ -101,8 +105,12 @@ static decoder_element decoders[] =
     { 0, &__Sound_DecoderFunctions_MP3 },
 #endif
 
-#if (defined SOUND_SUPPORTS_MOD)
-    { 0, &__Sound_DecoderFunctions_MOD },
+#if (defined SOUND_SUPPORTS_MIKMOD)
+    { 0, &__Sound_DecoderFunctions_MIKMOD },
+#endif
+
+#if (defined SOUND_SUPPORTS_MODPLUG)
+    { 0, &__Sound_DecoderFunctions_MODPLUG },
 #endif
 
 #if (defined SOUND_SUPPORTS_WAV)
