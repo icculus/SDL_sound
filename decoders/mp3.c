@@ -24,7 +24,7 @@
  *  Napster.  :)  It depends on the SMPEG library for decoding, which can
  *  be grabbed from: http://www.lokigames.com/development/smpeg.php3
  *
- * Please see the file LICENSE in the source's root directory.
+ * Please see the file COPYING in the source's root directory.
  *
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */

@@ -24,7 +24,7 @@
  *  have done a search and replace on "fmt" and "FMT" and changed this
  *  comment. This is the default comment in the skeleton decoder file...
  *
- * Please see the file LICENSE in the source's root directory.
+ * Please see the file COPYING in the source's root directory.
  *
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
