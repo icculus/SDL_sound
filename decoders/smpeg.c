@@ -214,7 +214,7 @@ static int _SMPEG_open(Sound_Sample *sample, const char *ext)
     sample->actual.format = spec.format;
     sample->actual.rate = spec.freq;
     sample->actual.channels = spec.channels;
-    sample->flags = SOUND_SAMPLEFLAG_NONE;
+    sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
     internal->decoder_private = smpeg;
 
     SMPEG_play(smpeg);
@@ -277,7 +277,20 @@ static int _SMPEG_rewind(Sound_Sample *sample)
 
 static int _SMPEG_seek(Sound_Sample *sample, Uint32 ms)
 {
-    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    SMPEG *smpeg = (SMPEG *) internal->decoder_private;
+    SMPEGstatus status;
+
+        /*
+         * SMPEG_rewind() really means "stop and rewind", so we may have to
+         * restart it afterwards.
+         */
+    status = SMPEG_status(smpeg);
+    SMPEG_rewind(smpeg);
+    SMPEG_skip(smpeg, ((float) ms) / 1000.0);
+    if (status == SMPEG_PLAYING)
+        SMPEG_play(smpeg);
+    return(1);
 } /* _SMPEG_seek */
 
 #endif /* SOUND_SUPPORTS_SMPEG */
