@@ -2,6 +2,8 @@
  * CHANGELOG.
  */
 
+04082002 - Cleaned up the archive support in playsound a little bit, and 
+           fixed a PhysicsFS bug in the process.
 03252002 - Win32 patches and fixes from Tyler Montbriand: handled "inline"
            keyword, fixed SNDDBG macros in mpglib, and renamed a conflicting
            file (decoders/mpglib/common.c to decoders/mpglib/mpglib_common.c).
