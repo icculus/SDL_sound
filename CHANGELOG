@@ -2,6 +2,9 @@
  * CHANGELOG.
  */
 
+03152002 - Added PhysicsFS support to playsound, so you can play sound files
+           that are in ZIP files without unzipping them. Needs to be merged
+           into build system (I was just testing my PhysFS->RWops glue code).
 03142002 - Changed configure script's --enable-vorbis to --enable-ogg. Removed
            global state variable from mpglib, so it should be reentrant now
            (patches sent to mpglib's actual maintainer). playsound can now
