@@ -108,6 +108,7 @@ static void output_usage(const char *argv0)
         "     --decodebuf n  Buffer n decoded bytes at a time (default %d).\n"
         "     --audiobuf n   Buffer n samples to audio device (default %d).\n"
         "     --volume n     Playback volume multiplier (default 1.0).\n"
+        "     --stdin [ext]  Read from stdin (treat data as format [ext])\n"
         "     --version      Display version information and exit.\n"
         "     --decoders     List supported data formats and exit.\n"
         "     --predecode    Decode entire sample before playback.\n"
@@ -476,6 +477,11 @@ int main(int argc, char **argv)
             looping = 1;
         } /* else if */
 
+        else if (strcmp(argv[i], "--stdin") == 0)
+        {
+            /* deal with it at Sound_Sample creation time... */
+        } /* else if */
+
         else
         {
             fprintf(stderr, "unknown option: \"%s\"\n", argv[i]);
@@ -513,6 +519,8 @@ int main(int argc, char **argv)
 
     for (i = 1; i < argc; i++)
     {
+        char *filename = NULL;
+
             /* !!! FIXME: This is ugly! */
         if ( (strcmp(argv[i], "--rate") == 0) ||
              (strcmp(argv[i], "--format") == 0) ||
@@ -525,17 +533,37 @@ int main(int argc, char **argv)
             continue;
         } /* if */
 
-        if (strncmp(argv[i], "--", 2) == 0)
-            continue;
+        if (strcmp(argv[i], "--stdin") == 0)
+        {
+            SDL_RWops *rw = SDL_RWFromFP(stdin, 1);
+            filename = "...from stdin...";
 
-        sample = Sound_NewSampleFromFile(argv[i],
-                     use_specific_audiofmt ? &sound_desired : NULL,
-                     decode_buffersize);
+            /*
+             * The second argument will be NULL if --stdin is the last
+             *  thing on the command line. This is correct behaviour.
+             */
+            sample = Sound_NewSample(rw, argv[++i],
+                        use_specific_audiofmt ? &sound_desired : NULL,
+                        decode_buffersize);
+        }
+
+        else if (strncmp(argv[i], "--", 2) == 0)
+        {
+            continue;
+        }
+
+        else
+        {
+            filename = argv[i];
+            sample = Sound_NewSampleFromFile(argv[i],
+                        use_specific_audiofmt ? &sound_desired : NULL,
+                        decode_buffersize);
+        }
 
         if (!sample)
         {
             fprintf(stderr, "Couldn't load \"%s\"!\n"
-                            "  reason: [%s].\n", argv[i], Sound_GetError());
+                            "  reason: [%s].\n", filename, Sound_GetError());
             continue;
         } /* if */
 
@@ -569,11 +597,11 @@ int main(int argc, char **argv)
             return(42);
         } /* if */
 
-        printf("Now playing [%s]...\n", argv[i]);
+        printf("Now playing [%s]...\n", filename);
 
         if (predecode)
         {
-            printf("  predecoding...", argv[i]);
+            printf("  predecoding...");
             decoded_bytes = Sound_DecodeAll(sample);
             decoded_ptr = sample->buffer;
             if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
@@ -582,7 +610,7 @@ int main(int argc, char **argv)
                         "Couldn't fully decode \"%s\"!\n"
                         "  reason: [%s].\n"
                         "  (playing first %lu bytes of decoded data...)\n",
-                        argv[i], Sound_GetError(), decoded_bytes);
+                        filename, Sound_GetError(), decoded_bytes);
             } /* if */
             else
             {
