@@ -9,7 +9,8 @@ of the source tree. If you can't abide by it, delete this source tree now.
 
 The best documentation for the SDL_sound API is SDL_sound.h. It is VERY
 heavily commented, and makes an excellent, in-depth reference to all the
-functions.
+functions. The official API reference is generated from this file with
+a program called "Doxygen" (http://www.doxygen.org/)
 
 
 Unix:
@@ -68,6 +69,15 @@ Win32 Cygwin:
 If building is successful, there will be a shared library and a binary
  called "playsound".
 
+
+Windows CE (Microsoft PocketPC):
+ You'll need Microsoft's PocketPC development environment, and this zipfile:
+   http://icculus.org/SDL_sound/downloads/SDL_soundCE.zip
+
+ Unzip that into the root of this source tree. The new "wce" directory has
+  project files, and the source to some of the external decoders is included.
+  Note that not all of the decoders are supported on PocketPC (but please, do
+  send us patches if you get them working!)
 
 
 OTHER PLATFORMS:
