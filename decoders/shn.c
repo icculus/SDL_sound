@@ -43,14 +43,15 @@
 
 #if (defined SOUND_SUPPORTS_SHN)
 
+#define __SDL_SOUND_INTERNAL__
+#include "SDL_sound_internal.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include "SDL_sound.h"
 
-#define __SDL_SOUND_INTERNAL__
-#include "SDL_sound_internal.h"
 
 static int SHN_init(void);
 static void SHN_quit(void);
