@@ -21,7 +21,6 @@ More immediate:
 
 Decoders to implement:
 - .CDA (Does this need specific decoding? Or is a RWops needed?)
-- .AU
 - An mpglib MP3 decoder? (or backend mpglib into SMPEG?)
 - ...and more...
 

@@ -2,6 +2,10 @@
  * CHANGELOG.
  */
 
+01113002 - Mattias Engdegård sent in an .AU decoder. Nice! He also tweaked
+           playsound to try and wait until SDL has completed playing a given
+           sound before closing the audio device. Changed a macro in
+           decoders/shn.c to be more uniform with the other decoders.
 01112002 - Committed the rest of Torbjörn's MOD patches, to clean up file
            extension handling.
 01092002 - Torbjörn comes through with a ModPlug-based decoder, which should
