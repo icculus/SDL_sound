@@ -346,9 +346,12 @@ static int convertStereoToMonoU8Bit( AdapterC Data, int length )
 static int convertMonoToStereo16Bit( AdapterC Data, int length )
 {
     int i;
+    Uint16* buffer;
+    Uint16* dst;
+
     length >>=1;
-    Uint16* buffer = (Uint16*)Data.buffer - 1;
-    Uint16* dst = (Uint16*)Data.buffer + 2*length - 2;
+    buffer = (Uint16*)Data.buffer - 1;
+    dst = (Uint16*)Data.buffer + 2*length - 2;
     for( i = length + 1; --i; dst-=2 )
          dst[0] = dst[1] = buffer[i];
     return 4*length;
@@ -502,8 +505,8 @@ static int doubleRateMono( AdapterC Data, int length )
 static int doubleRateStereo( AdapterC Data, int length )
 {
     Sint16* r;
-    fprintf( stderr, "\n Buffer: %8x length: %8x\n", Data.buffer, length );
     RateConverterBuffer rcb;
+    fprintf( stderr, "\n Buffer: %8x length: %8x\n", Data.buffer, length );
     initRateConverterBuffer( &rcb, &Data, length, Half );
     doRateConversion( &rcb, doubleRate2 );
     nextRateConverterBuffer( &rcb );
@@ -547,8 +550,8 @@ static int increaseRateMono( AdapterC Data, int length )
 static int increaseRateStereo( AdapterC Data, int length )
 {
     Sint16* r;
-    fprintf( stderr, "\n Buffer: %8x length: %8x\n", Data.buffer, length );
     RateConverterBuffer rcb;
+    fprintf( stderr, "\n Buffer: %8x length: %8x\n", Data.buffer, length );
     initRateConverterBuffer( &rcb, &Data, length, Data.filter->ratio );
     doRateConversion( &rcb, increaseRate2 );
     nextRateConverterBuffer( &rcb );
@@ -1009,7 +1012,7 @@ static void show_AudioCVT( Sound_AudioCVT *Data )
 
 int Sound_BuildAudioCVT(Sound_AudioCVT *Data,
     Uint16 src_format, Uint8 src_channels, int src_rate,
-    Uint16 dst_format, Uint8 dst_channels, int dst_rate )
+    Uint16 dst_format, Uint8 dst_channels, int dst_rate, Uint32 bufsize)
 {
     SDL_AudioSpec src, dst;
     int ret;

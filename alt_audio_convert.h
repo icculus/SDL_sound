@@ -83,7 +83,7 @@ extern SNDDECLSPEC int Sound_AltConvertAudio( Sound_AudioCVT *Data,
 
 extern SNDDECLSPEC int Sound_BuildAudioCVT( Sound_AudioCVT *Data,
    Uint16 src_format, Uint8 src_channels, int src_rate,
-   Uint16 dst_format, Uint8 dst_channels, int dst_rate );
+   Uint16 dst_format, Uint8 dst_channels, int dst_rate, Uint32 bufsize );
 
 extern SNDDECLSPEC int Sound_AltBuildAudioCVT( Sound_AudioCVT *Data,
    SDL_AudioSpec src, SDL_AudioSpec dst );
