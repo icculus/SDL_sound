@@ -72,7 +72,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV =
 
 
 /* Better than SDL_ReadLE16, since you can detect i/o errors... */
-static inline int read_le16(SDL_RWops *rw, Uint16 *ui16)
+static __inline__ int read_le16(SDL_RWops *rw, Uint16 *ui16)
 {
     int rc = SDL_RWread(rw, ui16, sizeof (Uint16), 1);
     BAIL_IF_MACRO(rc != 1, ERR_IO_ERROR, 0);
@@ -82,7 +82,7 @@ static inline int read_le16(SDL_RWops *rw, Uint16 *ui16)
 
 
 /* Better than SDL_ReadLE32, since you can detect i/o errors... */
-static inline int read_le32(SDL_RWops *rw, Uint32 *ui32)
+static __inline__ int read_le32(SDL_RWops *rw, Uint32 *ui32)
 {
     int rc = SDL_RWread(rw, ui32, sizeof (Uint32), 1);
     BAIL_IF_MACRO(rc != 1, ERR_IO_ERROR, 0);
@@ -92,7 +92,7 @@ static inline int read_le32(SDL_RWops *rw, Uint32 *ui32)
 
 
 /* This is just cleaner on the caller's end... */
-static inline int read_uint8(SDL_RWops *rw, Uint8 *ui8)
+static __inline__ int read_uint8(SDL_RWops *rw, Uint8 *ui8)
 {
     int rc = SDL_RWread(rw, ui8, sizeof (Uint8), 1);
     BAIL_IF_MACRO(rc != 1, ERR_IO_ERROR, 0);
@@ -322,7 +322,7 @@ static int read_fmt_normal(SDL_RWops *rw, fmt_t *fmt)
 #define SMALLEST_ADPCM_DELTA       16
 
 
-static inline int read_adpcm_block_headers(Sound_Sample *sample)
+static __inline__ int read_adpcm_block_headers(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SDL_RWops *rw = internal->rw;
@@ -358,9 +358,9 @@ static inline int read_adpcm_block_headers(Sound_Sample *sample)
 } /* read_adpcm_block_headers */
 
 
-static inline void do_adpcm_nibble(Uint8 nib,
-                                   ADPCMBLOCKHEADER *header,
-                                   Sint32 lPredSamp)
+static __inline__ void do_adpcm_nibble(Uint8 nib,
+                                       ADPCMBLOCKHEADER *header,
+                                       Sint32 lPredSamp)
 {
 	static const Sint32 max_audioval = ((1<<(16-1))-1);
 	static const Sint32 min_audioval = -(1<<(16-1));
@@ -396,7 +396,7 @@ static inline void do_adpcm_nibble(Uint8 nib,
 } /* do_adpcm_nibble */
 
 
-static inline int decode_adpcm_sample_frame(Sound_Sample *sample)
+static __inline__ int decode_adpcm_sample_frame(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     wav_t *w = (wav_t *) internal->decoder_private;
@@ -435,7 +435,7 @@ static inline int decode_adpcm_sample_frame(Sound_Sample *sample)
 } /* decode_adpcm_sample_frame */
 
 
-static inline void put_adpcm_sample_frame1(void *_buf, fmt_t *fmt)
+static __inline__ void put_adpcm_sample_frame1(void *_buf, fmt_t *fmt)
 {
     Uint16 *buf = (Uint16 *) _buf;
     ADPCMBLOCKHEADER *headers = fmt->fmt.adpcm.blockheaders;
@@ -445,7 +445,7 @@ static inline void put_adpcm_sample_frame1(void *_buf, fmt_t *fmt)
 } /* put_adpcm_sample_frame1 */
 
 
-static inline void put_adpcm_sample_frame2(void *_buf, fmt_t *fmt)
+static __inline__ void put_adpcm_sample_frame2(void *_buf, fmt_t *fmt)
 {
     Uint16 *buf = (Uint16 *) _buf;
     ADPCMBLOCKHEADER *headers = fmt->fmt.adpcm.blockheaders;

@@ -142,7 +142,7 @@ static void VOC_quit(void)
 } /* VOC_quit */
 
 
-static inline int voc_readbytes(SDL_RWops *src, vs_t *v, void *p, int size)
+static __inline__ int voc_readbytes(SDL_RWops *src, vs_t *v, void *p, int size)
 {
     if (SDL_RWread(src, p, size, 1) != 1)
     {
@@ -154,7 +154,7 @@ static inline int voc_readbytes(SDL_RWops *src, vs_t *v, void *p, int size)
 } /* voc_readbytes */
 
 
-static inline int voc_check_header(SDL_RWops *src)
+static __inline__ int voc_check_header(SDL_RWops *src)
 {
     /* VOC magic header */
     Uint8  signature[20];  /* "Creative Voice File\032" */
