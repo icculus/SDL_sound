@@ -268,10 +268,11 @@ static Uint32 OGG_read(Sound_Sample *sample)
 
 static int OGG_rewind(Sound_Sample *sample)
 {
-    /* !!! FIXME. */
-    SNDDBG(("OGG_rewind(): Write me!\n"));
-    assert(0);
-    return(0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    OggVorbis_File *vf = (OggVorbis_File *) internal->decoder_private;
+
+    BAIL_IF_MACRO(ov_raw_seek(vf, 0) < 0, ERR_IO_ERROR, 0);
+    return(1);
 } /* OGG_rewind */
 
 #endif /* SOUND_SUPPORTS_OGG */

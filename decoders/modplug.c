@@ -237,10 +237,11 @@ static Uint32 MODPLUG_read(Sound_Sample *sample)
 
 static int MODPLUG_rewind(Sound_Sample *sample)
 {
-    /* !!! FIXME. */
-    SNDDBG(("MODPLUG_rewind(): Write me!\n"));
-    assert(0);
-    return(0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    ModPlugFile *module = (ModPlugFile *) internal->decoder_private;
+
+    ModPlug_Seek(module, 0);
+    return(1);
 } /* MODPLUG_rewind */
 
 #endif /* SOUND_SUPPORTS_MODPLUG */

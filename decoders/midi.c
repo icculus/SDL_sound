@@ -150,12 +150,12 @@ static Uint32 MIDI_read(Sound_Sample *sample)
 
 static int MIDI_rewind(Sound_Sample *sample)
 {
-    /* !!! FIXME. */
-    SNDDBG(("MIDI_rewind(): Write me!\n"));
-    assert(0);
-    return(0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    MidiSong *song = (MidiSong *) internal->decoder_private;
+    
+    Timidity_Start(song);
+    return(1);
 } /* MIDI_rewind */
-
 
 #endif /* SOUND_SUPPORTS_MIDI */
 

@@ -287,10 +287,12 @@ static Uint32 MIKMOD_read(Sound_Sample *sample)
 
 static int MIKMOD_rewind(Sound_Sample *sample)
 {
-    /* !!! FIXME. */
-    SNDDBG(("MIKMOD_rewind(): Write me!\n"));
-    assert(0);
-    return(0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    MODULE *module = (MODULE *) internal->decoder_private;
+
+    Player_Start(module);
+    Player_SetPosition(0);
+    return(1);
 } /* MIKMOD_rewind */
 
 
