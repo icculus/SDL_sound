@@ -780,7 +780,7 @@ Uint32 Sound_Decode(Sound_Sample *sample)
     assert(internal->buffer_size > 0);
 
         /* reset EAGAIN. Decoder can flip it back on if it needs to. */
-    sample->flags &= !SOUND_SAMPLEFLAG_EAGAIN;
+    sample->flags &= ~SOUND_SAMPLEFLAG_EAGAIN;
     retval = internal->funcs->read(sample);
 
     if (retval > 0 && internal->sdlcvt.needed)
@@ -853,9 +853,9 @@ int Sound_Rewind(Sound_Sample *sample)
         return(0);
     } /* if */
 
-    sample->flags &= !SOUND_SAMPLEFLAG_EAGAIN;
-    sample->flags &= !SOUND_SAMPLEFLAG_ERROR;
-    sample->flags &= !SOUND_SAMPLEFLAG_EOF;
+    sample->flags &= ~SOUND_SAMPLEFLAG_EAGAIN;
+    sample->flags &= ~SOUND_SAMPLEFLAG_ERROR;
+    sample->flags &= ~SOUND_SAMPLEFLAG_EOF;
 
     return(1);
 } /* Sound_Rewind */
@@ -872,9 +872,9 @@ int Sound_Seek(Sound_Sample *sample, Uint32 ms)
     internal = (Sound_SampleInternal *) sample->opaque;
     BAIL_IF_MACRO(!internal->funcs->seek(sample, ms), NULL, 0);
 
-    sample->flags &= !SOUND_SAMPLEFLAG_EAGAIN;
-    sample->flags &= !SOUND_SAMPLEFLAG_ERROR;
-    sample->flags &= !SOUND_SAMPLEFLAG_EOF;
+    sample->flags &= ~SOUND_SAMPLEFLAG_EAGAIN;
+    sample->flags &= ~SOUND_SAMPLEFLAG_ERROR;
+    sample->flags &= ~SOUND_SAMPLEFLAG_EOF;
 
     return(1);
 } /* Sound_Rewind */
