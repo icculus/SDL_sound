@@ -11,13 +11,7 @@ Decoders still needing seek() method:
   (If decoder can't seek, clean up the stub and report an error.)
 - mikmod.c
 - shn.c
-- wav.c (adpcm compression; uncompressed is implemented.)
-- voc.c
 - mpglib.c
-- smpeg.c
-- aiff.c
-- au.c
-- ogg.c
 - quicktime.c
 
 
