@@ -35,7 +35,7 @@
 
 typedef struct{
    Sint16 c[16][4*_fsize];
-   char incr[16];
+   Uint8 incr[16];
    int denominator;
    int numerator;
 } VarFilter;
@@ -53,16 +53,23 @@ typedef struct{
     int    add;
     int (*adapter[32]) ( AdapterC Data, int length );
 } SDL_AudioC;
-*/
+
+*/
+
+/* the len_* variables and the needed variable are not used internally, 
+they are provided for compatibility */
 
 typedef struct{
    int needed;
    VarFilter filter;
-   double len_mult;           /* buffer must be len*len_mult big*/
    Uint8* buf;
-   int len;
-   int len_cvt;                 /* Length of converted audio buffer */
-   int add;
+   int len;                /* Length of original audio buffer  */ 
+   int len_cvt;            /* Length of converted audio buffer */
+   int len_mult;           /* buffer must be len*len_mult big */
+   double len_ratio;       /* Given len, final size is len*len_ratio */
+        
+   double add;
+   double mult;        
    int (*adapter[32]) ( AdapterC Data, int length );
 } Sound_AudioCVT;
 

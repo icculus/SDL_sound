@@ -98,6 +98,7 @@ static Sint16* Suffix(halfRate)( Sint16 *outp, Sint16 *inp, int length,
         out+=  1800 * sum_h( inp,  9);
         out-=  2560 * sum_h( inp,  7);
         out+=  3863 * sum_h( inp,  5);
+        out-=  6764 * sum_h( inp,  3);
         out+= 20798 * sum_h( inp,  1);
         out+= 32770 * (int)inp[0];
 
@@ -111,59 +112,75 @@ static Sint16* Suffix(halfRate)( Sint16 *outp, Sint16 *inp, int length,
 
 /*-------------------------------------------------------------------------*/
 static Sint16* Suffix(increaseRate)( Sint16 *outp, Sint16 *inp, int length,
-                                     VarFilter* filt, int* cpos )
+                                     VarFilter* filter, int* cpos )
 {
     const static int fsize = CH(2*_fsize);
-    Sint16 *filter;
+    Sint16 *f;
     int out;
     int i, pos;
     Sint16* to;
 
     inp -= fsize;
     to = inp - length;
+    pos = *cpos;
 
     while( inp > to )
     {
-        pos = *cpos;
         out = 0;
-        filter = filt->c[pos];
-        for( i = 0; i < 4*_fsize; i++ )
-    	    out+= filter[i] * (int)inp[CH(i)];
+        f = filter->c[pos];
+        for( i = _fsize + 1; --i; inp+=CH(4), f+=4 )
+        {
+    	    out+= f[0] * (int)inp[CH(0)];
+    	    out+= f[1] * (int)inp[CH(1)];
+    	    out+= f[2] * (int)inp[CH(2)];
+    	    out+= f[3] * (int)inp[CH(3)];
+        }
         outp[0] = out >> 16;
 
-        inp -= CH(filt->incr[pos]);
+        pos = ( pos + filter->denominator - 1 ) % filter->denominator;
+        inp -= CH( 4 * _fsize );
+        inp -= CH( filter->incr[pos] );
         outp -= CH(1);
-        *cpos = ( pos + 1 ) % filt->denominator;
     }
+
+    *cpos = pos;
     return outp;
 }
 
 /*-------------------------------------------------------------------------*/
 static Sint16* Suffix(decreaseRate)( Sint16 *outp, Sint16 *inp, int length,
-                                     VarFilter* filt, int* cpos )
+                                     VarFilter* filter, int* cpos )
 {
     const static int fsize = CH(2*_fsize);
-    Sint16 *filter;
+    Sint16 *f;
     int out;
     int i, pos;
     Sint16 *to;
 
     inp -= fsize;
     to = inp + length;
+    pos = *cpos;
 
     while( inp < to )
     {
-        pos = *cpos;
         out = 0;
-        filter = filt->c[pos];
-        for( i = 0; i < 4*_fsize; i++ )
-    	    out+= filter[i] * inp[CH(i)];
+        f = filter->c[pos];
+        for( i = _fsize + 1; --i; inp+=CH(4), f+=4 )
+        {
+    	    out+= f[0] * (int)inp[CH(0)];
+    	    out+= f[1] * (int)inp[CH(1)];
+    	    out+= f[2] * (int)inp[CH(2)];
+    	    out+= f[3] * (int)inp[CH(3)];
+        }
         outp[0] = out >> 16;
 
-        inp += CH(filt->incr[pos]);
+        inp -= CH( 4 * _fsize );
+        inp += CH( filter->incr[pos] );
         outp += CH(1);
-        *cpos = ( pos + 1 ) % filt->denominator;
+        pos = ( pos + 1 ) % filter->denominator;
     }
+
+    *cpos = pos;
     return outp;
 }
 
