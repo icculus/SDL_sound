@@ -57,10 +57,6 @@
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
 
-#ifdef _MSC_VER
-#	define inline __inline
-#endif
-
 static int SHN_init(void);
 static void SHN_quit(void);
 static int SHN_open(Sound_Sample *sample, const char *ext);

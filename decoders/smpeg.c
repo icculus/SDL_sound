@@ -93,7 +93,7 @@ static void _SMPEG_quit(void)
 } /* _SMPEG_quit */
 
 
-static __inline__ void output_version(void)
+static inline void output_version(void)
 {
     static int first_time = 1;
 
