@@ -10,13 +10,12 @@ General stuff TODO:
 
 More immediate:
 - Handle compression and other chunks in WAV files.
+- Fix the MP3 decoder; it's badly broken.
 - Cleanup up VOC decoder (seems messy to me).
 
 Decoders to implement:
-- .WAV
-- .MP3
+- .MP3 (implemented, but buggy)
 - .MOD
-- .OGG
 - .MID
 - .CDA
 - .AU

@@ -1,7 +1,19 @@
+ ----------------------
+ | SDL_sound credits. |
+ ----------------------
+
 Initial API interface and implementation,
 RAW driver,
+VOC driver,
+MP3 driver (bugs and all),
+WAV driver,
+OGG driver,
 Unix support:
     Ryan C. Gordon
+
+Bug fixes,
+FreeBSD testing:
+    Tsuyoshi Iguchi
 
 Other stuff:
     Your name here! Patches go to icculus@clutteredmind.org ...

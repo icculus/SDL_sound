@@ -19,7 +19,14 @@
            .WAV support. Fixed Makefile so that -I. is always first;
            otherwise, a previously installed header might get used for the
            compiles, which is not good. SDL_sound.h now includes SDL_endian.h,
-           since SDL.h doesn't, for some reason.
+           since SDL.h doesn't, for some reason. Moved version defines in
+           SDL_sound.h to top of file so I can find them.  :)
+           Changed version to 0.1.1. Committed patch from Tsuyoshi Iguchi to
+           fix a segfault (I forgot to put a NULL terminator at the end of
+           the available_decoders array), fixing the only bug preventing the
+           test program from running on FreeBSD 4.3. Sweet. Added Ogg Vorbis
+           decoder. Rewrote the test program's SDL audio callback to be more
+           robust (Ogg exposed a nasty bug in it).
 
 --ryan. (icculus@clutteredmind.org)
 
