@@ -125,26 +125,34 @@ typedef struct
 
 
 /*-------------------------------------------------------------------------*/
-static int ConvertAudio( Sound_AudioCVT *Data,
-                         Uint8* buffer, int length, int mode )
+int Sound_estimateBufferSize( Sound_AudioCVT *Data, int size )
+{
+    size *= Data->len_mult;
+    size += Data->len_add;
+    return ( size + 3 ) & -4; /* force Size in multipels of 4 Byte */
+}
+
+/*-------------------------------------------------------------------------*/
+int Sound_AltConvertAudio( Sound_AudioCVT *Data,
+    Uint8* buffer, int length, int mode )
 {
     AdapterC Temp;
     int i;
 
     /* Make sure there's a converter */
     if( Data == NULL ) {
-        SDL_SetError("altcvt: No converter given");
+        SDL_SetError("No converter given");
         return(-1);
     }
 
     /* Make sure there's data to convert */
     if( buffer == NULL ) {
-        SDL_SetError("altcvt: No buffer allocated for conversion");
+        SDL_SetError("No buffer allocated for conversion");
         return(-1);
     }
 
     if( length < 0 ) {
-        SDL_SetError("altcvt: Length < 0");
+        SDL_SetError("Lenght < 0");
         return(-1);
     }
 
@@ -163,7 +171,7 @@ int Sound_ConvertAudio( Sound_AudioCVT *Data )
 {
     int length;
     /* !!! FIXME: Try the looping stuff under certain circumstances? --ryan. */
-    length = ConvertAudio( Data, Data->buf, Data->len, 0 );
+    length = Sound_AltConvertAudio( Data, Data->buf, Data->len, 0 );
     Data->len_cvt = length;
     return length;
 }
@@ -338,18 +346,19 @@ static int convertStereoToMonoU8Bit( AdapterC Data, int length )
 static int convertMonoToStereo16Bit( AdapterC Data, int length )
 {
     int i;
+    length >>=1;
     Uint16* buffer = (Uint16*)Data.buffer - 1;
-    Uint16* dst = (Uint16*)Data.buffer + length - 2;
-    for( i = length>>1 + 1; --i; dst-=2 )
+    Uint16* dst = (Uint16*)Data.buffer + 2*length - 2;
+    for( i = length + 1; --i; dst-=2 )
          dst[0] = dst[1] = buffer[i];
-    return 2*length;
+    return 4*length;
 }
 
 static int convertMonoToStereo8Bit( AdapterC Data, int length )
 {
     int i;
     Uint8* buffer = Data.buffer - 1;
-    Uint8* dst = Data.buffer + length - 2;
+    Uint8* dst = Data.buffer + 2*length - 2;
     for( i = length + 1; --i; dst-=2 )
          dst[0] = dst[1] = buffer[i];
     return 2*length;
@@ -368,9 +377,11 @@ static int minus5dB( AdapterC Data, int length )
 /*-------------------------------------------------------------------------*/
 const Fraction Half = {1, 2};
 const Fraction Double = {2, 1};
+const Fraction One = {1, 1};
+
 
 static void initStraigthBuffer( RateConverterBuffer *rcb,
-                                int length, Fraction r, int dir )
+                                int length, Fraction r )
 {
     int i, size, minsize;
     size = 8 * _fsize;
@@ -393,13 +404,13 @@ static void initStraigthBuffer( RateConverterBuffer *rcb,
     rcb->flength = rcb->llength = size;
     rcb->clength = length - size;
 
-    if( dir )
+    if( r.numerator < r.denominator )
     {
-        rcb->finp = rcb->inbuffer + 5 * size/2;
+        rcb->finp = rcb->inbuffer + 5*size/2;
         rcb->cinp = rcb->buffer + length - size/2;
         rcb->linp = rcb->inbuffer + 3*size/2;
-        rcb->buffer += r.denominator * ( length + size )
-                       / r.numerator;
+        rcb->buffer += ( 1 + r.denominator * ( length + size )
+                       / r.numerator ) & -2;
     }
     else
     {
@@ -410,7 +421,7 @@ static void initStraigthBuffer( RateConverterBuffer *rcb,
 }
 
 static void initLoopBuffer( RateConverterBuffer *rcb,
-                            int length, Fraction r, int dir )
+                            int length, Fraction r )
 {
     /* !!!FIXME: modulo length, take scale into account,
                  check against the Straight part -frank */
@@ -430,16 +441,18 @@ static void initLoopBuffer( RateConverterBuffer *rcb,
 static void initRateConverterBuffer( RateConverterBuffer *rcb,
     AdapterC* Data, int length, Fraction ratio )
 {
-    int dir;
-    dir = ratio.numerator < ratio.denominator ? 1 : 0;
     length >>= 1;
     rcb->buffer = (Sint16*)( Data->buffer );
     rcb->filter = Data->filter;
 
     if( Data->mode & SDL_SOUND_Loop )
-        initLoopBuffer( rcb, length, ratio, dir );
+        initLoopBuffer( rcb, length, ratio );
     else
-        initStraigthBuffer( rcb, length, ratio, dir );
+        initStraigthBuffer( rcb, length, ratio );
+
+    fprintf( stderr, " finp: %8x length: %8x\n", rcb->finp, rcb->flength );
+    fprintf( stderr, " cinp: %8x length: %8x\n", rcb->cinp, rcb->clength );
+    fprintf( stderr, " linp: %8x length: %8x\n", rcb->linp, rcb->llength );
 }
 
 static void nextRateConverterBuffer( RateConverterBuffer *rcb )
@@ -453,104 +466,116 @@ static void nextRateConverterBuffer( RateConverterBuffer *rcb )
 typedef Sint16* (*RateConverter)( Sint16*, Sint16*, int,
                                   VarFilter*, RateAux* );
 
-static int doRateConversion( RateConverterBuffer* rcb, RateConverter ffp )
+static Sint16* doRateConversion( RateConverterBuffer* rcb, RateConverter rc )
 {
     RateAux aux = {0,0};
     Sint16 *outp = rcb->buffer;
     VarFilter* filter = rcb->filter;
 
-    outp = (*ffp)( outp, rcb->finp, rcb->flength, filter, &aux );
-    outp = (*ffp)( outp, rcb->cinp, rcb->clength, filter, &aux );
-    outp = (*ffp)( outp, rcb->linp, rcb->llength, filter, &aux );
-    return 2 * abs( rcb->buffer - outp );
+    outp = (*rc)( outp, rcb->finp, rcb->flength, filter, &aux );
+    fprintf( stderr, " outp: %8x aux.carry: %8x\n", outp, aux.carry );
+    outp = (*rc)( outp, rcb->cinp, rcb->clength, filter, &aux );
+    fprintf( stderr, " outp: %8x aux.carry: %8x\n", outp, aux.carry );
+    outp = (*rc)( outp, rcb->linp, rcb->llength, filter, &aux );
+    fprintf( stderr, " outp: %8x aux.carry: %8x\n", outp, aux.carry );
+    return outp;
 }
 
 
 /*-------------------------------------------------------------------------*/
+static void clearSint16Buffer( Sint8* buffer, Sint16*r )
+{
+    while( r >= (Sint16*)buffer ) *r-- = 0;
+}
+
+/*-------------------------------------------------------------------------*/
 static int doubleRateMono( AdapterC Data, int length )
 {
+    Sint16* r;
     RateConverterBuffer rcb;
-    initRateConverterBuffer( &rcb, &Data, length, Double );
-    return doRateConversion( &rcb, doubleRate1 );
+    initRateConverterBuffer( &rcb, &Data, length, Half );
+    r = 1 + doRateConversion( &rcb, doubleRate1 );
+    clearSint16Buffer( Data.buffer, r );
+    return 2 * ( rcb.buffer - (Sint16*)Data.buffer + 2 );
 }
 
 static int doubleRateStereo( AdapterC Data, int length )
 {
+    Sint16* r;
+    fprintf( stderr, "\n Buffer: %8x length: %8x\n", Data.buffer, length );
     RateConverterBuffer rcb;
-    initRateConverterBuffer( &rcb, &Data, length, Double );
+    initRateConverterBuffer( &rcb, &Data, length, Half );
     doRateConversion( &rcb, doubleRate2 );
     nextRateConverterBuffer( &rcb );
-    return 2 + doRateConversion( &rcb, doubleRate2 );
+    r = 2 + doRateConversion( &rcb, doubleRate2 );
+    clearSint16Buffer( Data.buffer, r );
+    return 2 * ( rcb.buffer - (Sint16*)Data.buffer + 3 );
 }
 
 /*-------------------------------------------------------------------------*/
 static int halfRateMono( AdapterC Data, int length )
 {
+    Sint16* r;
     RateConverterBuffer rcb;
-    initRateConverterBuffer( &rcb, &Data, length, Half );
-    return doRateConversion( &rcb, halfRate1 );
+    initRateConverterBuffer( &rcb, &Data, length, Double );
+    r = doRateConversion( &rcb, halfRate1 );
+    return 2 * ( r - (Sint16*)Data.buffer );
 }
 
 static int halfRateStereo( AdapterC Data, int length )
 {
+    Sint16* r;
     RateConverterBuffer rcb;
-    initRateConverterBuffer( &rcb, &Data, length, Half );
+    initRateConverterBuffer( &rcb, &Data, length, Double );
     doRateConversion( &rcb, halfRate2 );
     nextRateConverterBuffer( &rcb );
-    return 2 + doRateConversion( &rcb, halfRate2 );
+    r = doRateConversion( &rcb, halfRate2 );
+    return 2 * ( r - (Sint16*)Data.buffer );
 }
 
 /*-------------------------------------------------------------------------*/
 static int increaseRateMono( AdapterC Data, int length )
 {
+    Sint16* r;
     RateConverterBuffer rcb;
     initRateConverterBuffer( &rcb, &Data, length, Data.filter->ratio );
-    return doRateConversion( &rcb, increaseRate1 );
+    r = doRateConversion( &rcb, increaseRate1 );
+    clearSint16Buffer( Data.buffer, r );
+    return 2 * ( rcb.buffer - (Sint16*)Data.buffer + 1 );
 }
 
 static int increaseRateStereo( AdapterC Data, int length )
 {
+    Sint16* r;
+    fprintf( stderr, "\n Buffer: %8x length: %8x\n", Data.buffer, length );
     RateConverterBuffer rcb;
     initRateConverterBuffer( &rcb, &Data, length, Data.filter->ratio );
     doRateConversion( &rcb, increaseRate2 );
     nextRateConverterBuffer( &rcb );
-    return 2 + doRateConversion( &rcb, increaseRate2 );
+    r = doRateConversion( &rcb, increaseRate2 );
+    clearSint16Buffer( Data.buffer, r );
+    return 2 * ( rcb.buffer - (Sint16*)Data.buffer + 1 );
 }
 
 /*-------------------------------------------------------------------------*/
 static int decreaseRateMono( AdapterC Data, int length )
 {
+    Sint16* r;
     RateConverterBuffer rcb;
     initRateConverterBuffer( &rcb, &Data, length, Data.filter->ratio );
-    return doRateConversion( &rcb, decreaseRate1 );
+    r = doRateConversion( &rcb, decreaseRate1 );
+    return 2 * ( r - (Sint16*)Data.buffer );
 }
 
 static int decreaseRateStereo( AdapterC Data, int length )
 {
+    Sint16* r;
     RateConverterBuffer rcb;
     initRateConverterBuffer( &rcb, &Data, length, Data.filter->ratio );
     doRateConversion( &rcb, decreaseRate2 );
     nextRateConverterBuffer( &rcb );
-    return 2 + doRateConversion( &rcb, decreaseRate2 );
-}
-
-/*-------------------------------------------------------------------------*/
-static int padSilence( AdapterC Data, int length )
-{
-    Uint32 zero, *buffer;
-    int i, mask = 0;
-
-    buffer = (Uint32*) ( Data.buffer + length );
-    if( Data.mode != SDL_SOUND_Loop )
-        mask = Data.filter->mask;
-    length = mask - ( ( length - 1 ) & mask );
-
-    for( i = 0; i < length>>2; i++ )
-         buffer[i] = zero;
-    for( ; i < length; i++ )
-        ((Uint8*)buffer)[i] = ((Uint8*)&zero)[i&3];
-
-    return length + ((Uint8*)buffer - Data.buffer);
+    r = doRateConversion( &rcb, decreaseRate2 );
+    return 2 * ( r - (Sint16*)Data.buffer );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -633,11 +658,12 @@ static float calculateVarFilter( Sint16* dst,
     return fg;
 }
 
-static Fraction setupVarFilter( VarFilter* filter, float Ratio )
+static Fraction setupVarFilter( Sound_AudioCVT *Data, float Ratio )
 {
     int pos,n,d, incr, phase = 0;
     float Scale, rd, fg;
     Fraction IRatio;
+    VarFilter* filter = &Data->filter;
 
     IRatio = findFraction( Ratio );
 //    Scale = Ratio < 1. ? 0.0364733 : 0.0211952;
@@ -665,9 +691,17 @@ static Fraction setupVarFilter( VarFilter* filter, float Ratio )
     return IRatio;
 }
 /*-------------------------------------------------------------------------*/
+static void initAudioCVT( Sound_AudioCVT *Data )
+{
+    Data->len_ratio = 1.;
+    Data->len_mult = 1;
+    Data->add = 0;
+    Data->len_add = 0;
+    Data->filter_index = 0;
+}
+
 static void adjustSize( Sound_AudioCVT *Data, int add, Fraction f )
 {
-
     double ratio = f.numerator / (double) f.denominator;
     Data->len_ratio *= ratio;
     Data->len_mult = max( Data->len_mult, ceil(Data->len_ratio) );
@@ -675,13 +709,24 @@ static void adjustSize( Sound_AudioCVT *Data, int add, Fraction f )
     Data->len_add = max( Data->len_add, ceil(Data->add) );
 }
 
-static void initSize( Sound_AudioCVT *Data )
+static Adapter* addAdapter( Sound_AudioCVT *Data, Adapter a )
 {
-    Data->len_ratio = 1.;
-    Data->len_mult = 1;
-    Data->add = 0;
-    Data->len_add = 0;
+    Data->adapter[Data->filter_index] = a;
+    return &Data->adapter[Data->filter_index++];
 }
+
+static void addHAdapter( Sound_AudioCVT *Data, Adapter a )
+{
+    adjustSize( Data, 0, Half );
+    addAdapter( Data, a );
+}
+
+static void addDAdapter( Sound_AudioCVT *Data, Adapter a )
+{
+    adjustSize( Data, 0, Double );
+    addAdapter( Data, a );
+}
+
 
 /*-------------------------------------------------------------------------*/
 const Adapter doubleRate[2] = { doubleRateMono, doubleRateStereo };
@@ -689,229 +734,169 @@ const Adapter halfRate[2] = { halfRateMono, halfRateStereo };
 const Adapter increaseRate[2] = { increaseRateMono, increaseRateStereo };
 const Adapter decreaseRate[2] = { decreaseRateMono, decreaseRateStereo };
 
-static void createRateConverter( Sound_AudioCVT *Data, int* fip,
-                                 int SrcRate, int DestRate, int channel )
+static int createRateConverter( Sound_AudioCVT *Data,
+                                int SrcRate, int DestRate, int channel )
 {
     const int c = channel - 1;
     const int size = 16 * channel * _fsize;
-    int filter_index = *fip;
-    int VarPos = 0;
+    Adapter* AdapterPos;
     float Ratio = DestRate;
     Fraction f;
-    *fip = -1;
-
 
     if( SrcRate < 1 || SrcRate > 1<<18 ||
-        DestRate < 1 || DestRate > 1<<18 ) return;
+        DestRate < 1 || DestRate > 1<<18 ) return -1;
     Ratio /= SrcRate;
 
-    if( Ratio > 1.)
-        VarPos = filter_index++;
-    else
-        Data->adapter[filter_index++] = minus5dB;
+    AdapterPos = addAdapter( Data, minus5dB );
 
     while( Ratio > 64./31.)
     {
         Ratio /= 2.;
-        Data->adapter[filter_index++] = doubleRate[c];
+        addAdapter( Data, doubleRate[c] );
         adjustSize( Data, size, Double );
     }
 
     while( Ratio < 31./64. )
     {
         Ratio *= 2;
-        Data->adapter[filter_index++] = halfRate[c];
+        addAdapter( Data, halfRate[c] );
         adjustSize( Data, size, Half );
     }
 
     if( Ratio > 1. )
     {
-        Data->adapter[VarPos] = increaseRate[c];
-        f = setupVarFilter( &Data->filter, Ratio );
+        *AdapterPos = increaseRate[c];
+        f = setupVarFilter( Data, Ratio );
         adjustSize( Data, size, f );
     }
     else
     {
-        Data->adapter[filter_index++] = decreaseRate[c];
-        f = setupVarFilter( &Data->filter, Ratio );
+        f = setupVarFilter( Data, Ratio );
+        addAdapter( Data, decreaseRate[c]);
         adjustSize( Data, size, f );
     }
-    *fip = filter_index;
-}
 
-/*-------------------------------------------------------------------------*/
-static void createFormatConverter16Bit(Sound_AudioCVT *Data, int* fip,
-    SDL_AudioSpec src, SDL_AudioSpec dst )
-{
-    int filter_index = *fip;
-
-    if( src.channels == 2 && dst.channels == 1 )
-    {
-        adjustSize( Data, 0, Half );
-
-        if( !IS_SYSENDIAN(src) )
-            Data->adapter[filter_index++] = swapBytes;
-
-        if( IS_SIGNED(src) )
-            Data->adapter[filter_index++] = convertStereoToMonoS16Bit;
-        else
-            Data->adapter[filter_index++] = convertStereoToMonoU16Bit;
-
-        if( !IS_SYSENDIAN(dst) )
-            Data->adapter[filter_index++] = swapBytes;
-    }
-    else if( IS_SYSENDIAN(src) != IS_SYSENDIAN(dst) )
-        Data->adapter[filter_index++] = swapBytes;
-
-    if( IS_SIGNED(src) != IS_SIGNED(dst) )
-    {
-        if( IS_SYSENDIAN(dst) )
-            Data->adapter[filter_index++] = changeSigned16BitSys;
-        else
-            Data->adapter[filter_index++] = changeSigned16BitWrong;
-    }
-
-    if( src.channels == 1 && dst.channels == 2 )
-    {
-        adjustSize( Data, 0, Double );
-        Data->adapter[filter_index++] = convertMonoToStereo16Bit;
-    }
-
-    *fip = filter_index;
-}
-
-/*-------------------------------------------------------------------------*/
-static void createFormatConverter8Bit(Sound_AudioCVT *Data, int *fip,
-    SDL_AudioSpec src, SDL_AudioSpec dst )
-{
-    int filter_index = *fip;
-    if( IS_16BIT(src) )
-    {
-        adjustSize( Data, 0, Half );
-
-        if( IS_SYSENDIAN(src) )
-            Data->adapter[filter_index++] = cut16BitSysTo8Bit;
-        else
-            Data->adapter[filter_index++] = cut16BitWrongTo8Bit;
-    }
-
-    if( src.channels == 2 && dst.channels == 1 )
-    {
-        adjustSize( Data, 0, Half );
-
-        if( IS_SIGNED(src) )
-            Data->adapter[filter_index++] = convertStereoToMonoS8Bit;
-        else
-            Data->adapter[filter_index++] = convertStereoToMonoU8Bit;
-    }
-
-    if( IS_SIGNED(src) != IS_SIGNED(dst) )
-        Data->adapter[filter_index++] = changeSigned8Bit;
-
-    if( src.channels == 1 && dst.channels == 2  )
-    {
-        adjustSize( Data, 0, Double );
-        Data->adapter[filter_index++] = convertMonoToStereo8Bit;
-    }
-
-    if( !IS_8BIT(dst) )
-    {
-        adjustSize( Data, 0, Double );
-        if( IS_SYSENDIAN(dst) )
-            Data->adapter[filter_index++] = expand8BitTo16BitSys;
-        else
-            Data->adapter[filter_index++] = expand8BitTo16BitWrong;
-    }
-
-    *fip = filter_index;
-}
-
-/*-------------------------------------------------------------------------*/
-static void createFormatConverter(Sound_AudioCVT *Data, int *fip,
-    SDL_AudioSpec src, SDL_AudioSpec dst )
-{
-    int filter_index = *fip;
-
-    if( IS_FLOAT(src) )
-    {
-        Data->adapter[filter_index++] = cutFloatTo16Bit;
-        adjustSize( Data, 0, Half );
-    }
-
-    if( IS_8BIT(src) || IS_8BIT(dst) )
-         createFormatConverter8Bit( Data, &filter_index, src, dst);
-    else
-         createFormatConverter16Bit( Data, &filter_index, src, dst);
-
-    if( IS_FLOAT(dst) )
-    {
-        Data->adapter[filter_index++] = expand16BitToFloat;
-        adjustSize( Data, 0, Double );
-    }
-
-    *fip = filter_index;
-}
-
-/*-------------------------------------------------------------------------*/
-Uint32 getSilenceValue( Uint16 format )
-{
-    const static float fzero[] = {0.0000001};
-    switch( format )
-    {
-    case 0x0020: return *(Uint32*) fzero;
-    default: ;
-    }
     return 0;
 }
 
 /*-------------------------------------------------------------------------*/
-int BuildAudioCVT( Sound_AudioCVT *Data,
+static void createFormatConverter16Bit(Sound_AudioCVT *Data,
+    SDL_AudioSpec src, SDL_AudioSpec dst )
+{
+    if( src.channels == 2 && dst.channels == 1 )
+    {
+        if( !IS_SYSENDIAN(src) )
+            addAdapter( Data, swapBytes );
+
+        if( IS_SIGNED(src) )
+            addHAdapter( Data, convertStereoToMonoS16Bit );
+        else
+            addHAdapter( Data, convertStereoToMonoU16Bit );
+
+        if( !IS_SYSENDIAN(dst) )
+            addAdapter( Data, swapBytes );
+    }
+    else if( IS_SYSENDIAN(src) != IS_SYSENDIAN(dst) )
+        addAdapter( Data, swapBytes );
+
+    if( IS_SIGNED(src) != IS_SIGNED(dst) )
+    {
+        if( IS_SYSENDIAN(dst) )
+            addAdapter( Data, changeSigned16BitSys );
+        else
+            addAdapter( Data, changeSigned16BitWrong );
+    }
+
+    if( src.channels == 1 && dst.channels == 2 )
+        addDAdapter( Data, convertMonoToStereo16Bit );
+}
+
+/*-------------------------------------------------------------------------*/
+static void createFormatConverter8Bit(Sound_AudioCVT *Data,
+    SDL_AudioSpec src, SDL_AudioSpec dst )
+{
+    if( IS_16BIT(src) )
+    {
+        if( IS_SYSENDIAN(src) )
+            addHAdapter( Data, cut16BitSysTo8Bit );
+        else
+            addHAdapter( Data, cut16BitWrongTo8Bit );
+    }
+
+    if( src.channels == 2 && dst.channels == 1 )
+    {
+        if( IS_SIGNED(src) )
+            addHAdapter( Data, convertStereoToMonoS8Bit );
+        else
+            addHAdapter( Data, convertStereoToMonoU8Bit );
+    }
+
+    if( IS_SIGNED(src) != IS_SIGNED(dst) )
+        addDAdapter( Data, changeSigned8Bit );
+
+    if( src.channels == 1 && dst.channels == 2  )
+        addDAdapter( Data, convertMonoToStereo8Bit );
+
+    if( !IS_8BIT(dst) )
+    {
+        if( IS_SYSENDIAN(dst) )
+            addDAdapter( Data, expand8BitTo16BitSys );
+        else
+            addDAdapter( Data, expand8BitTo16BitWrong );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+static void createFormatConverter(Sound_AudioCVT *Data,
+    SDL_AudioSpec src, SDL_AudioSpec dst )
+{
+    if( IS_FLOAT(src) )
+        addHAdapter( Data, cutFloatTo16Bit );
+
+    if( IS_8BIT(src) || IS_8BIT(dst) )
+         createFormatConverter8Bit( Data, src, dst);
+    else
+         createFormatConverter16Bit( Data, src, dst);
+
+    if( IS_FLOAT(dst) )
+        addDAdapter( Data, expand16BitToFloat );
+}
+
+/*-------------------------------------------------------------------------*/
+int Sound_AltBuildAudioCVT( Sound_AudioCVT *Data,
                    SDL_AudioSpec src, SDL_AudioSpec dst )
 {
-    SDL_AudioSpec intrm;
-    int filter_index = 0;
+    SDL_AudioSpec im;
 
     if( Data == NULL ) return -1;
-    if( dst.size < 8 ) return -1;
 
-    initSize( Data );
+    initAudioCVT( Data );
     Data->filter.ratio.denominator = 0;
-    Data->filter.zero = getSilenceValue( dst.format );
     Data->filter.mask = dst.size - 1;
-
-
 
     /* Check channels */
     if( src.channels < 1 || src.channels > 2 ||
         dst.channels < 1 || dst.channels > 2 ) goto error_exit;
 
-    /* If no frequency conversion is needed, go straight to dst format */
-    if( src.freq == dst.freq )
+    if( src.freq != dst.freq )
     {
-        createFormatConverter( Data, &filter_index, src, dst );
-        goto sucess_exit;
-    }
-
-    /* Convert to signed 16Bit System-Endian */
-    intrm.format = AUDIO_S16SYS;
-    intrm.channels = min( src.channels, dst.channels );
-    createFormatConverter( Data, &filter_index, src, intrm );
+    /* Convert to intermidiate format: signed 16Bit System-Endian */
+        im.format = AUDIO_S16SYS;
+        im.channels = min( src.channels, dst.channels );
+        createFormatConverter( Data, src, im );
 
     /* Do rate conversion */
-    if( src.channels == 2 && dst.channels == 2 )
-        createRateConverter( Data, &filter_index, src.freq, dst.freq, 2 );
-    else
-        createRateConverter( Data, &filter_index, src.freq, dst.freq, 1 );
-    /* propagate error */
-    if( filter_index < 0 ) goto error_exit;
+        if( createRateConverter( Data, src.freq, dst.freq, im.channels ) )
+            goto error_exit;
+
+       src = im;
+    }
 
     /* Convert to final format */
-    createFormatConverter( Data, &filter_index, intrm, dst );
+    createFormatConverter( Data, src, dst );
 
-    /* Set up the filter information */
-sucess_exit:
-    Data->adapter[filter_index++] = padSilence;
-    Data->adapter[filter_index] = NULL;
+    /* Finalize adapter list */
+    addAdapter( Data, NULL );
 /* !!! FIXME: Is it okay to assign NULL to a function pointer?
               Borland says no. -frank */
     return 0;
@@ -970,7 +955,6 @@ static void show_AudioCVT( Sound_AudioCVT *Data )
         AdapterDesc(increaseRateStereo),
         AdapterDesc(decreaseRateMono),
         AdapterDesc(decreaseRateStereo),
-        AdapterDesc(padSilence),
         { NULL,    "----------NULL-----------\n" }
     };
 
@@ -1025,7 +1009,7 @@ static void show_AudioCVT( Sound_AudioCVT *Data )
 
 int Sound_BuildAudioCVT(Sound_AudioCVT *Data,
     Uint16 src_format, Uint8 src_channels, int src_rate,
-    Uint16 dst_format, Uint8 dst_channels, int dst_rate, Uint32 dst_size )
+    Uint16 dst_format, Uint8 dst_channels, int dst_rate )
 {
     SDL_AudioSpec src, dst;
     int ret;
@@ -1039,8 +1023,7 @@ int Sound_BuildAudioCVT(Sound_AudioCVT *Data,
              "size:  don't care -> %#7x\n\n",
              fmt_to_str (src_format), fmt_to_str (dst_format),
              src_channels,            dst_channels,
-             src_rate,                dst_rate,
-                                      dst_size );
+             src_rate,                dst_rate );
 
     src.format = src_format;
     src.channels = src_channels;
@@ -1049,9 +1032,8 @@ int Sound_BuildAudioCVT(Sound_AudioCVT *Data,
     dst.format = dst_format;
     dst.channels = dst_channels;
     dst.freq = dst_rate;
-    dst.size = dst_size;
 
-    ret = BuildAudioCVT( Data, src, dst );
+    ret = Sound_AltBuildAudioCVT( Data, src, dst );
     Data->needed = 1;
 
     show_AudioCVT( Data );
