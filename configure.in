@@ -245,8 +245,18 @@ if test x$enable_physfs = xyes; then
   AC_CHECK_HEADER(physfs.h, have_physfs_hdr=yes)
   AC_CHECK_LIB(physfs, PHYSFS_init, have_physfs_lib=yes)
   if test x$have_physfs_hdr = xyes -a x$have_physfs_lib = xyes; then
-    use_physicsfs="yes"
+    enable_physfs="yes"
+  else
+    enable_physfs="no"
   fi
+fi
+
+dnl Check for PhysicsFS http://icculus.org/physfs/
+AC_ARG_ENABLE(altcvt,
+[  --enable-altcvt            enable EXPERIMENTAL audio converter [default=no]],
+              , enable_altcvt=no)
+if test x$enable_altcvt = xyes; then
+  AC_DEFINE(SOUND_USE_ALTCVT)
 fi
 
 
@@ -277,7 +287,8 @@ AC_CHECK_FUNCS([memset strrchr])
 dnl Add Makefile conditionals
 AM_CONDITIONAL(USE_TIMIDITY, test x$enable_midi = xyes)
 AM_CONDITIONAL(USE_MPGLIB, test x$enable_mpglib = xyes)
-AM_CONDITIONAL(USE_PHYSICSFS, test x$use_physicsfs = xyes)
+AM_CONDITIONAL(USE_PHYSICSFS, test x$enable_physfs = xyes)
+AM_CONDITIONAL(USE_ALTCVT, test x$enable_altcvt = xyes)
 
 AC_OUTPUT([
 Makefile

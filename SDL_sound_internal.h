@@ -197,7 +197,9 @@ typedef struct __SOUND_DECODERFUNCTIONS__
 
 
 /* A structure to hold a set of audio conversion filters and buffers */
-
+#if (defined SOUND_USE_ALTCVT)
+#include "alt_audio_convert.h"
+#else
 typedef struct Sound_AudioCVT
 {
     int    needed;                  /* Set to 1 if conversion possible */
@@ -212,7 +214,7 @@ typedef struct Sound_AudioCVT
     void   (*filters[20])(struct Sound_AudioCVT *cvt, Uint16 *format);
     int    filter_index;            /* Current audio conversion function */
 } Sound_AudioCVT;
-
+#endif
 
 typedef struct __SOUND_SAMPLEINTERNAL__
 {
