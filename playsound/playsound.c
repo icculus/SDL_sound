@@ -33,6 +33,13 @@
 #include "SDL.h"
 #include "SDL_sound.h"
 
+#define SUPPORT_PHYSFS 1
+#if SUPPORT_PHYSFS
+#include <alloca.h>
+#include "physfs.h"
+#include "physfsrwops.h"
+#endif
+
 #define DEFAULT_DECODEBUF 16384
 #define DEFAULT_AUDIOBUF  4096
 
@@ -352,6 +359,67 @@ static int str_to_fmt(char *str)
 } /* str_to_fmt */
 
 
+#if SUPPORT_PHYSFS
+static SDL_RWops *rwops_from_physfs(const char *argv0, const char *filename)
+{
+    SDL_RWops *retval = NULL;
+
+    char *path = (char *) alloca(strlen(filename) + 1);
+    char *archive;
+
+    strcpy(path, filename);
+    archive = strchr(path, '@');
+    if (archive != NULL)
+    {
+        *(archive++) = '\0';  /* blank '@', point to archive name. */
+
+        if (!PHYSFS_init(argv0))
+        {
+            fprintf(stderr, "Couldn't init PhysicsFS: %s\n",
+                    PHYSFS_getLastError());
+            return(NULL);
+        } /* if */
+
+        if (!PHYSFS_addToSearchPath(archive, 0))
+        {
+            fprintf(stderr, "Couldn't open archive: %s\n",
+                    PHYSFS_getLastError());
+            return(NULL);
+        } /* if */
+
+        retval = PHYSFSRWOPS_openRead(path);
+    } /* if */
+
+    return(retval);
+} /* rwops_from_physfs */
+#endif
+
+
+static Sound_Sample *sample_from_archive(const char *argv0, const char *fname,
+                                         Sound_AudioInfo *desired,
+                                         Uint32 decode_buffersize)
+{
+#if SUPPORT_PHYSFS
+    SDL_RWops *rw = rwops_from_physfs(argv0, fname);
+    if (rw != NULL)
+    {
+        char *path = (char *) alloca(strlen(fname) + 1);
+        char *ptr;
+        strcpy(path, fname);
+        ptr = strchr(path, '@');
+        *ptr = '\0';
+        ptr = strrchr(path, '.');
+        if (ptr != NULL)
+            ptr++;
+
+        return(Sound_NewSample(rw, ptr, desired, decode_buffersize));
+    } /* if */
+#endif
+
+    return(NULL);
+} /* sample_from_archive */
+
+
 int main(int argc, char **argv)
 {
     Sound_AudioInfo sound_desired;
@@ -545,20 +613,27 @@ int main(int argc, char **argv)
             sample = Sound_NewSample(rw, argv[++i],
                         use_specific_audiofmt ? &sound_desired : NULL,
                         decode_buffersize);
-        }
+        } /* if */
 
         else if (strncmp(argv[i], "--", 2) == 0)
         {
             continue;
-        }
+        } /* else if */
 
         else
         {
             filename = argv[i];
-            sample = Sound_NewSampleFromFile(argv[i],
-                        use_specific_audiofmt ? &sound_desired : NULL,
-                        decode_buffersize);
-        }
+            sample = sample_from_archive(argv[0], filename,
+                            use_specific_audiofmt ? &sound_desired : NULL,
+                            decode_buffersize);
+
+            if (sample == NULL)
+            {
+                sample = Sound_NewSampleFromFile(argv[i],
+                            use_specific_audiofmt ? &sound_desired : NULL,
+                            decode_buffersize);
+            } /* if */
+        } /* else */
 
         if (!sample)
         {
@@ -636,6 +711,10 @@ int main(int argc, char **argv)
 
         SDL_CloseAudio();  /* reopen with next sample's format if possible */
         Sound_FreeSample(sample);
+
+        #if SUPPORT_PHYSFS
+            PHYSFS_deinit(); /* !!! FIXME: move this somewhere? */
+        #endif
     } /* for */
 
     Sound_Quit();
