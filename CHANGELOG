@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+07092002 - Fixed typo in documentation (SDL_sound.h).
 07052002 - Cleaned up some stuff in playsound.c, removing some FIXMEs.
            Commandline validation is improved, too. FIXME removal in 
            voc.c; should report i/o errors correctly now. Changed DECLSPEC
