@@ -57,8 +57,6 @@
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
 
-#include "SDL_endian.h"
-
 static int AIFF_init(void);
 static void AIFF_quit(void);
 static int AIFF_open(Sound_Sample *sample, const char *ext);
