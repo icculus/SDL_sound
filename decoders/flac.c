@@ -370,7 +370,7 @@ static d_tell_status_t tell_callback(
     void *client_data)
 {
     flac_t *f = (flac_t *) client_data;
-    int pos; /* !!! FIXME: int? Really? */
+    int pos;
 
     pos = SDL_RWtell(f->rw);
 
@@ -406,7 +406,7 @@ static FLAC__bool eof_callback(
     void *client_data)
 {
     flac_t *f = (flac_t *) client_data;
-    int pos; /* !!! FIXME: int? Really? */
+    int pos;
 
         /* Maybe we could check for SOUND_SAMPLEFLAG_EOF here instead? */
     pos = SDL_RWtell(f->rw);
@@ -513,30 +513,33 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     internal->decoder_private = f;
     d_init(decoder);
 
-#if !SOUND_SUPPORTS_SEEKABLE_FLAC
+    sample->flags = SOUND_SAMPLEFLAG_NONE;
+
+#if SOUND_SUPPORTS_SEEKABLE_FLAC
+
+    pos = SDL_RWtell(f->rw);
+    if (SDL_RWseek(f->rw, 0, SEEK_END) > 0)
+    {
+        f->stream_length = SDL_RWtell(f->rw);
+        if (SDL_RWseek(f->rw, pos, SEEK_SET) == -1)
+        {
+            free_flac(f);
+            BAIL_MACRO(ERR_IO_ERROR, 0);
+        } /* if */
+        sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
+    } /* if */
+
+#else
+
         /*
          * Annoyingly, the rewind method will put the FLAC decoder in a state
          * where it expects to read metadata, so we have to set this marker
          * before the metadata block.
          */
     f->data_offset = SDL_RWtell(f->rw);
+
 #endif
     
-    sample->flags = SOUND_SAMPLEFLAG_NONE;
-
-#if SOUND_SUPPORTS_SEEKABLE_FLAC
-        /*
-         * FIXME?: For the seekable stream decoder to work, we need to know
-         * the length of the stream. This is so ugly...
-         */
-    pos = SDL_RWtell(f->rw);
-    if (SDL_RWseek(f->rw, 0, SEEK_END))
-    {
-        f->stream_length = SDL_RWtell(f->rw);
-        SDL_RWseek(f->rw, pos, SEEK_SET);
-        sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
-    } /* if */
-#endif
 
         /*
          * If we are not sure this is a FLAC stream, check for the STREAMINFO

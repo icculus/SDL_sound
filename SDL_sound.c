@@ -506,8 +506,6 @@ static __inline__ const char *fmt_to_str(Uint16 fmt)
  *  Ask the specified decoder to handle the data in (rw), and if
  *  so, construct the Sound_Sample. Otherwise, try to wind (rw)'s stream
  *  back to where it was, and return false.
- *
- *  !!! FIXME: This is big, ugly, nasty, and smelly.
  */
 static int init_sample(const Sound_DecoderFunctions *funcs,
                         Sound_Sample *sample, const char *ext,
@@ -515,7 +513,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     Sound_AudioInfo desired;
-    int pos = SDL_RWtell(internal->rw);  /* !!! FIXME: Int? Really? */
+    int pos = SDL_RWtell(internal->rw);
 
         /* fill in the funcs for this decoder... */
     sample->decoder = &funcs->info;
