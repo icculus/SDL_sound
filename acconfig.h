@@ -1,5 +1,6 @@
 
 #undef DEBUG
+#undef DEBUG_CHATTER
 #undef NDEBUG
 #undef SOUND_SUPPORTS_AIFF
 #undef SOUND_SUPPORTS_MOD
