@@ -109,6 +109,7 @@ static void output_usage(const char *argv0)
         "     --version      Display version information and exit.\n"
         "     --decoders     List supported data formats and exit.\n"
         "     --predecode    Decode entire sample before playback.\n"
+        "     --loop         Loop playback until SIGINT.\n"
         "     --credits      Shameless promotion.\n"
         "     --help         Display this information and exit.\n"
         "\n"
@@ -172,6 +173,51 @@ void sigint_catcher(int signum)
 
 static Uint8 *decoded_ptr = NULL;
 static Uint32 decoded_bytes = 0;
+static int predecode = 0;
+static int looping = 0;
+
+/*
+ * This updates (decoded_bytes) and (decoder_ptr) with more audio data,
+ *  taking into account looping and/or predecoding.
+ */
+static int read_more_data(Sound_Sample *sample)
+{
+    if (done_flag)              /* probably a sigint; stop trying to read. */
+        decoded_bytes = 0;
+
+    if (decoded_bytes > 0)      /* don't need more data; just return. */
+        return(decoded_bytes);
+
+        /* need more. See if there's more to be read... */
+    if (!(sample->flags & (SOUND_SAMPLEFLAG_ERROR | SOUND_SAMPLEFLAG_EOF)))
+    {
+        decoded_bytes = Sound_Decode(sample);
+        decoded_ptr = sample->buffer;
+        return(read_more_data(sample));  /* handle loops conditions. */
+    } /* if */
+
+    /* No more to be read from stream, but we may want to loop the sample. */
+
+    if (!looping)
+        return(0);
+
+    /* we just need to point predecoded samples to the start of the buffer. */
+    if (predecode)
+    {
+        decoded_bytes = sample->buffer_size;
+        decoded_ptr = sample->buffer;
+        return(decoded_bytes);
+    } /* if */
+    else
+    {
+        Sound_Rewind(sample);  /* error is checked in recursion. */
+        return(read_more_data(sample));
+    } /* else */
+
+    assert(0);  /* shouldn't ever hit this point. */
+    return(0);
+} /* read_more_data */
+
 
 static void audio_callback(void *userdata, Uint8 *stream, int len)
 {
@@ -182,19 +228,15 @@ static void audio_callback(void *userdata, Uint8 *stream, int len)
     {
         int cpysize;  /* bytes to copy on this iteration of the loop. */
 
-        if (!decoded_bytes)  /* need more data decoded from sample? */
+        if (!read_more_data(sample)) /* read more data, if needed. */
         {
-            if (sample->flags & (SOUND_SAMPLEFLAG_ERROR|SOUND_SAMPLEFLAG_EOF))
-            {
-                /* ...but there isn't any more data to decode! */
-                memset(stream + bw, '\0', len - bw);
-                done_flag = 1;
-                return;
-            } /* if */
-
-            decoded_bytes = Sound_Decode(sample);
-            decoded_ptr = sample->buffer;
+            /* ...there isn't any more data to read! */
+            memset(stream + bw, '\0', len - bw);
+            done_flag = 1;
+            return;
         } /* if */
+
+        /* decoded_bytes and decoder_ptr are updated as necessary... */
 
         cpysize = len - bw;
         if (cpysize > decoded_bytes)
@@ -237,7 +279,6 @@ int main(int argc, char **argv)
     SDL_AudioSpec sdl_desired;
     SDL_AudioSpec sdl_actual;
     Sound_Sample *sample;
-    int predecode = 0;
     int use_specific_audiofmt = 0;
     int i;
     int delay;
@@ -341,6 +382,11 @@ int main(int argc, char **argv)
         else if (strcmp(argv[i], "--predecode") == 0)
         {
             predecode = 1;
+        } /* else if */
+
+        else if (strcmp(argv[i], "--loop") == 0)
+        {
+            looping = 1;
         } /* else if */
 
         else
