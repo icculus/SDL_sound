@@ -1,6 +1,6 @@
 lib_LTLIBRARIES = libSDL_sound.la
 
-SUBDIRS = decoders test
+SUBDIRS = decoders . playsound
 
 libSDL_soundincludedir = $(includedir)/SDL
 libSDL_soundinclude_HEADERS =	\
