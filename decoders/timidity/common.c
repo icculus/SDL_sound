@@ -133,4 +133,5 @@ void free_pathlist(void)
 	free(plp);
 	plp = next;
     }
+    pathlist = NULL;
 }
