@@ -82,9 +82,9 @@ extern "C" {
 #  define SNDDECLSPEC
 #endif
 
-#define SOUND_VER_MAJOR 0
-#define SOUND_VER_MINOR 1
-#define SOUND_VER_PATCH 5
+#define SOUND_VER_MAJOR 1
+#define SOUND_VER_MINOR 0
+#define SOUND_VER_PATCH 0
 #endif
 
 
