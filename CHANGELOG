@@ -64,7 +64,8 @@
 10012001 - Fixed a memory leak that Torbjörn found in the MOD decoder.
 10022001 - Changed a comment in mod.c to not refer to "the mikmod 
            directory" anymore. Committed Torbjörn's patch for MP3 detection.
-	   (better late than never).
+	   (better late than never). __Sound_strcasecmp() now handles NULL 
+           strings gracefully, fixing the crash with "playsound bootstrap".
 
 --ryan. (icculus@clutteredmind.org)
 
