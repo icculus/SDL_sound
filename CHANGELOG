@@ -26,7 +26,8 @@
            the available_decoders array), fixing the only bug preventing the
            test program from running on FreeBSD 4.3. Sweet. Added Ogg Vorbis
            decoder. Rewrote the test program's SDL audio callback to be more
-           robust (Ogg exposed a nasty bug in it).
+           robust (Ogg exposed a nasty bug in it). Fixed a byte-ordering issue
+	   in the VOC decoder.
 
 --ryan. (icculus@clutteredmind.org)
 
