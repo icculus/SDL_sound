@@ -93,7 +93,9 @@
            playsound, and I cleaned up the --help output.
 10152001 - Torbjörn sends in a default sample format for the MIDI decoder, 
            and the starts of the audio conversion funcitonality (ripped 
-           from SDL). Officially released 0.1.3.
+           from SDL). Officially released 0.1.3. Added LICENSE and 
+           CHANGELOG to the distribution. (Again, from Torbjörn) added in 
+           the start of a tweaked audio converter.
 
 --ryan. (icculus@clutteredmind.org)
 
