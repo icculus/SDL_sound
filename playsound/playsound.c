@@ -34,7 +34,6 @@
 #include "SDL_sound.h"
 
 #if SUPPORT_PHYSFS
-#include <alloca.h>
 #include "physfs.h"
 #include "physfsrwops.h"
 #endif
@@ -188,8 +187,14 @@ static SDL_RWops *rwops_from_physfs(const char *filename)
 {
     SDL_RWops *retval = NULL;
 
-    char *path = (char *) alloca(strlen(filename) + 1);
+    char *path = (char *) malloc(strlen(filename) + 1);
     char *archive;
+
+    if (path == NULL)
+    {
+        fprintf(stderr, "Out of memory!\n");
+        return(NULL);
+    } /* if */
 
     strcpy(path, filename);
     archive = strchr(path, '@');
@@ -200,12 +205,14 @@ static SDL_RWops *rwops_from_physfs(const char *filename)
         {
             fprintf(stderr, "Couldn't open archive: %s\n",
                     PHYSFS_getLastError());
+            free(path);
             return(NULL);
         } /* if */
 
         retval = PHYSFSRWOPS_openRead(path);
     } /* if */
 
+    free(path);
     return(retval);
 } /* rwops_from_physfs */
 #endif
@@ -215,11 +222,13 @@ static Sound_Sample *sample_from_archive(const char *fname,
                                          Sound_AudioInfo *desired,
                                          Uint32 decode_buffersize)
 {
+    Sound_Sample *retval = NULL;
+
 #if SUPPORT_PHYSFS
     SDL_RWops *rw = rwops_from_physfs(fname);
     if (rw != NULL)
     {
-        char *path = (char *) alloca(strlen(fname) + 1);
+        char *path = (char *) malloc(strlen(fname) + 1);
         char *ptr;
         strcpy(path, fname);
         ptr = strchr(path, '@');
@@ -228,11 +237,12 @@ static Sound_Sample *sample_from_archive(const char *fname,
         if (ptr != NULL)
             ptr++;
 
-        return(Sound_NewSample(rw, ptr, desired, decode_buffersize));
+        retval = Sound_NewSample(rw, ptr, desired, decode_buffersize);
+        free(path);
     } /* if */
 #endif
 
-    return(NULL);
+    return(retval);
 } /* sample_from_archive */
 
 
@@ -560,10 +570,12 @@ static Uint32 parse_time_str(char *str)
 static void parse_seek_list(const char *_list)
 {
     Uint32 i;
-    char *list = alloca(strlen(_list) + 1);
+
+    char *list = (char*) malloc(strlen(_list) + 1);
+    char *save_list = list;
     if (list == NULL)
     {
-        fprintf(stderr, "alloca() failed. Skipping seek list.\n");
+        fprintf(stderr, "malloc() failed. Skipping seek list.\n");
         return;
     } /* if */
 
@@ -589,6 +601,8 @@ static void parse_seek_list(const char *_list)
         seek_list[i] = parse_time_str(list);
         list = ptr + 1;
     } /* for */
+
+    free(save_list);
 } /* parse_seek_list */
 
 
@@ -920,6 +934,27 @@ int main(int argc, char **argv)
         } /* if */
 
         SDL_PauseAudio(0);
+#if ENABLE_EVENTS
+        {
+        	SDL_Surface *screen;
+        	SDL_Event event;
+        	
+        	screen = SDL_SetVideoMode (320, 240, 8, 0);
+        	
+        	while (!done_flag) {
+
+                    SDL_Delay(1);
+        		SDL_PollEvent (&event);
+        		
+        		if (event.type == SDL_KEYDOWN) {
+        		
+        			done_flag = 1;
+        			break;
+        		}
+        		
+        	}
+        }
+#endif /* ENABLE_EVENTS */
         while (!done_flag)
         {
             SDL_Delay(10);
