@@ -1,25 +1,12 @@
-Left todo for 0.1.5:
-- Update the Visual C project files.
-
 General stuff TODO:
-- Verify portability to various Unixes (BSD, etc)
 - Man pages for the API.
 
 More immediate:
-- Write a decent README.
 - Handle compression and other chunks in WAV files.
 - Handle compression and other chunks in AIFF-C files.
 - Cleanup up VOC decoder (seems messy to me).
-- Make some of the SNDDBG() strings more uniform.
-- Run through ElectricFence, dmalloc, etc...
 - Fix the crappy rewind implementation in shn.c's SHN_rewind().
 - Add a sdlsound-config script.
-
-Decoders to implement:
-- .CDA (Does this need specific decoding? Or is a RWops needed?)
-- An mpglib MP3 decoder? (or backend mpglib into SMPEG?)
-- A c64 SID player?
-- ...and more...
 
 Ongoing:
 - look for "FIXME"s in the code.
