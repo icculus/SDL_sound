@@ -89,6 +89,8 @@
 10092001 - Patches to shn.c for Visual C compatibility. Visual C project files
            available from the website. Changed Corona688 to Tyler Montbriand
            in CREDITS. Upped version to 0.1.3.
+10122001 - Torbjörn Andersson submitted command line enhancements to 
+           playsound, and I cleaned up the --help output.
 
 --ryan. (icculus@clutteredmind.org)
 
