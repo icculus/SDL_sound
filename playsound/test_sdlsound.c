@@ -168,7 +168,7 @@ int main(int argc, char **argv)
 
     sound_desired.rate = 44100;
     sound_desired.channels = 2;
-    sound_desired.format = AUDIO_S16;
+    sound_desired.format = AUDIO_S16SYS;
 
     sample = Sound_NewSampleFromFile(argv[1], &sound_desired, 4096 * 4);
     if (!sample)
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
     } /* if */
 
 	sdl_desired.freq = 44100;
-	sdl_desired.format = AUDIO_S16;
+	sdl_desired.format = AUDIO_S16SYS;
 	sdl_desired.channels = 2;
 	sdl_desired.samples = 4096;
 	sdl_desired.callback = test_callback;
