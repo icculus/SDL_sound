@@ -1867,7 +1867,8 @@ static void III_hybrid(real fsIn[SBLIMIT][SSLIMIT],real tsOut[SSLIMIT][SBLIMIT],
 /*
  * main layer3 handler
  */
-int do_layer3(struct frame *fr,unsigned char *pcm_sample,int *pcm_point,struct mpstr *mp)
+int do_layer3(struct frame *fr,unsigned char *pcm_sample,
+              int *pcm_point,struct mpstr *mp)
 {
   int gr, ch, ss,clip=0;
   int scalefacs[2][39]; /* max 39 for short[13][3] mode, mixed: 38, long: 22 */
