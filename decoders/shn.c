@@ -323,11 +323,11 @@ static int ulong_get(shn_t *shn, SDL_RWops *rw, Sint32 *word)
 } /* ulong_get */
 
 
-static inline int uint_get(int nbit, shn_t *shn, SDL_RWops *rw, Sint32 *word)
+static __inline__ int uint_get(int nbit, shn_t *shn, SDL_RWops *rw, Sint32 *w)
 {
     return((shn->version == 0) ?
-                uvar_get(nbit, shn, rw, word) :
-                ulong_get(shn, rw, word));
+                uvar_get(nbit, shn, rw, w) :
+                ulong_get(shn, rw, w));
 } /* uint_get */
 
 
@@ -347,7 +347,7 @@ static void SHN_quit(void)
  * Look through the whole file for a SHN magic number. This is costly, so
  *  it should only be done if the user SWEARS they have a Shorten stream...
  */
-static inline int extended_shn_magic_search(Sound_Sample *sample)
+static __inline__ int extended_shn_magic_search(Sound_Sample *sample)
 {
     SDL_RWops *rw = ((Sound_SampleInternal *) sample->opaque)->rw;
     Uint32 word = 0;
@@ -369,7 +369,8 @@ static inline int extended_shn_magic_search(Sound_Sample *sample)
 
 
 /* look for the magic number in the RWops and see what kind of file this is. */
-static inline int determine_shn_version(Sound_Sample *sample, const char *ext)
+static __inline__ int determine_shn_version(Sound_Sample *sample,
+                                            const char *ext)
 {
     SDL_RWops *rw = ((Sound_SampleInternal *) sample->opaque)->rw;
     Uint32 magic;
@@ -433,7 +434,7 @@ static void init_shn_offset(Sint32 **offset, int nchan, int nblock, int ftype)
 } /* init_shn_offset */
 
 
-static inline Uint16 cvt_shnftype_to_sdlfmt(Sint16 shntype)
+static __inline__ Uint16 cvt_shnftype_to_sdlfmt(Sint16 shntype)
 {
     switch (shntype)
     {
@@ -465,7 +466,7 @@ static inline Uint16 cvt_shnftype_to_sdlfmt(Sint16 shntype)
 } /* cvt_shnftype_to_sdlfmt */
 
 
-static inline int skip_bits(shn_t *shn, SDL_RWops *rw)
+static __inline__ int skip_bits(shn_t *shn, SDL_RWops *rw)
 {
     int i;
     Sint32 skip;
@@ -543,7 +544,7 @@ static int verb_ReadLE16(shn_t *shn, SDL_RWops *rw, Uint16 *word)
 } /* verb_ReadLE16 */
 
 
-static inline int parse_riff_header(shn_t *shn, Sound_Sample *sample)
+static __inline__ int parse_riff_header(shn_t *shn, Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SDL_RWops *rw = internal->rw;

@@ -34,7 +34,7 @@
 
 #ifdef __GNUC__
 #define INLINE inline
-#elif (defined _MSC_VER)
+#elif ((defined _MSC_VER) || (defined __inline__))
 #define INLINE __inline__
 #else
 #define INLINE
