@@ -1,5 +1,4 @@
 More immediate (needed for 1.0 release):
-- Man pages. Doxygen would be cool.
 - Fix the crappy rewind implementation in shn.c's SHN_rewind().
 - Finish implementing seek() method in decoders, see below.
 - Add a sdlsound-config script?
@@ -13,7 +12,6 @@ Decoders still needing seek() method:
 - quicktime.c
 
 General stuff TODO:
-- Man pages for the API.
 - Hack on the experimental audio conversion routines.
 - Handle compression and other chunks in WAV files.
 - Handle compression and other chunks in AIFF-C files.
