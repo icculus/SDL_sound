@@ -1,11 +1,4 @@
 Left todo for 0.1.5:
-- SMPEG only works after calling SDL_OpenAudio(), but I don't think this
-  is a universal truth (i.e. - OpenAL uses it without outputting through
-  SDL...) Figure out if this can be fixed.
-- in Sound_NewSample*, if a decoder is selected by file extension and
-  fails, it should not be tried again when going through the rest of the
-  decoders. Or should we just opt to give up if the specified decoder
-  fails?
 - Update the Visual C project files.
 
 General stuff TODO:
@@ -18,13 +11,8 @@ More immediate:
 - Handle compression and other chunks in WAV files.
 - Handle compression and other chunks in AIFF-C files.
 - Cleanup up VOC decoder (seems messy to me).
-- Rename "test" directory to "playsound".
-- Have default make build playsound, and make install install it.
 - Make some of the SNDDBG() strings more uniform.
 - Run through ElectricFence, dmalloc, etc...
-- Verify thread safety. SDL_sound should be fully reentrant right now, with
-  the exception of Sound_NewSample*()...starting two sounds at once can cause
-  the internal linked list of currently-decoding samples to scramble.
 - Fix the crappy rewind implementation in shn.c's SHN_rewind().
 
 Decoders to implement:
