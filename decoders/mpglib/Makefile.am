@@ -1,7 +1,7 @@
 noinst_LTLIBRARIES = libmpglib.la
 
 INCLUDES = -I$(top_srcdir)
-CFLAGS = -DLAYER1 -DLAYER2 -DLAYER3
+libmpglib_la_CFLAGS = -DLAYER1 -DLAYER2 -DLAYER3
 
 if USE_MPGLIB
 libmpglib_la_SOURCES =	\
