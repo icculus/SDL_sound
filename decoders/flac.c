@@ -54,6 +54,8 @@
 
 #if SOUND_SUPPORTS_SEEKABLE_FLAC
 
+#define FLAC_IS_SEEKABLE 1
+
 #include "FLAC/seekable_stream_decoder.h"
 
 #define D_END_OF_STREAM               FLAC__SEEKABLE_STREAM_DECODER_END_OF_STREAM
@@ -97,6 +99,8 @@ typedef FLAC__SeekableStreamDecoderLengthStatus d_length_status_t;
 
 #include "FLAC/stream_decoder.h"
 
+#define FLAC_IS_SEEKABLE 0
+
 #define D_END_OF_STREAM               FLAC__STREAM_DECODER_END_OF_STREAM
 
 #define d_new()                       FLAC__stream_decoder_new()
@@ -121,18 +125,42 @@ typedef FLAC__StreamDecoderReadStatus d_read_status_t;
 
 #endif
 
+/*
+ * FLAC 1.0.3 changed some symbol names, so we need to change what we
+ *  reference depending on what version of their headers we compile against.
+ *  We check for a #define that was included in FLAC 1.0.3 but doesn't exist
+ *  in 1.0.2 and earlier. Fun.  --ryan.
+ */
+#if (defined FLAC__STREAM_SYNC_LENGTH)
+  #define FLAC_VERSION_102_OR_LESS 0
+#else
+  #define FLAC_VERSION_102_OR_LESS 1
+#endif
+
+
 /* These are the same for both decoders, so they're just cosmetics. */
 
+#if FLAC_VERSION_102_OR_LESS
 #define D_WRITE_CONTINUE     FLAC__STREAM_DECODER_WRITE_CONTINUE
 #define D_READ_END_OF_STREAM FLAC__STREAM_DECODER_READ_END_OF_STREAM
 #define D_READ_ABORT         FLAC__STREAM_DECODER_READ_ABORT
 #define D_READ_CONTINUE      FLAC__STREAM_DECODER_READ_CONTINUE
+#else
+#define D_WRITE_CONTINUE     FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE
+#define D_READ_END_OF_STREAM FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM
+#define D_READ_ABORT         FLAC__STREAM_DECODER_READ_STATUS_ABORT
+#define D_READ_CONTINUE      FLAC__STREAM_DECODER_READ_STATUS_CONTINUE
+#endif
 
 #define d_error_status_string FLAC__StreamDecoderErrorStatusString
 
-typedef FLAC__StreamDecoderWriteStatus d_write_status_t;
 typedef FLAC__StreamDecoderErrorStatus d_error_status_t;
+#if FLAC_VERSION_102_OR_LESS
 typedef FLAC__StreamMetaData           d_metadata_t;
+#else
+typedef FLAC__StreamMetadata           d_metadata_t;
+#endif
+typedef FLAC__StreamDecoderWriteStatus d_write_status_t;
 
 
 static int FLAC_init(void);
@@ -223,7 +251,12 @@ static d_read_status_t read_callback(
 
 static d_write_status_t write_callback(
     const decoder_t *decoder, const FLAC__Frame *frame,
-    const FLAC__int32 *buffer[], void *client_data)
+#if FLAC_VERSION_102_OR_LESS
+    const FLAC__int32 * buffer[],
+#else
+    const FLAC__int32 * const buffer[],
+#endif
+    void *client_data)
 {
     flac_t *f = (flac_t *) client_data;
     Uint32 i, j;
@@ -390,6 +423,11 @@ static FLAC__bool eof_callback(
 
 static int FLAC_init(void)
 {
+    SNDDBG(("FLAC: we are using libFLAC version %s 1.0.2.\n",
+              FLAC_VERSION_102_OR_LESS ? "<=" : ">"));
+    SNDDBG(("FLAC: We %shave seeking support.\n",
+              FLAC_IS_SEEKABLE ? "" : "do NOT "));
+
     return(1);  /* always succeeds. */
 } /* FLAC_init */
 
