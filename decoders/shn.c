@@ -111,6 +111,7 @@ typedef struct
     Uint8 *backBuffer;
     Uint32 backBufferSize;
     Uint32 backBufLeft;
+    Uint32 start_pos;
 } shn_t;
 
 
@@ -663,6 +664,8 @@ static int SHN_open(Sound_Sample *sample, const char *ext)
         return(0);
     } /* if */
 
+    shn->start_pos = SDL_RWtell(rw);
+
     shn = (shn_t *) malloc(sizeof (shn_t));
     if (shn == NULL)
     {
@@ -691,7 +694,7 @@ shn_open_puke:
 } /* SHN_open */
 
 
-void fix_bitshift(Sint32 *buffer, int nitem, int bitshift, int ftype)
+static void fix_bitshift(Sint32 *buffer, int nitem, int bitshift, int ftype)
 {
     int i;
 
@@ -1301,10 +1304,25 @@ static Uint32 SHN_read(Sound_Sample *sample)
 
 static int SHN_rewind(Sound_Sample *sample)
 {
-    /* !!! FIXME. */
-    SNDDBG(("SHN_rewind(): Write me!\n"));
-    assert(0);
-    return(0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    shn_t *shn = (shn_t *) internal->decoder_private;
+
+#if 0
+    int rc = SDL_RWseek(internal->rw, shn->start_pos, SEEK_SET);
+    BAIL_IF_MACRO(rc != shn->start_pos, ERR_IO_ERROR, 0);
+    /* !!! FIXME: set state. */
+    return(1);
+#else
+    /*
+     * !!! FIXME: This is really unacceptable; state should be reset and
+     * !!! FIXME:  the RWops should be pointed to the start of the data
+     * !!! FIXME:  to decode. The below kludge adds unneeded overhead and
+     * !!! FIXME:  risk of failure.
+     */
+    BAIL_IF_MACRO(SDL_RWseek(internal->rw, 0, SEEK_SET) != 0, ERR_IO_ERROR, 0);
+    SHN_close(sample);
+    return(SHN_open(sample, "SHN"));
+#endif
 } /* SHN_rewind */
 
 #endif  /* defined SOUND_SUPPORTS_SHN */
