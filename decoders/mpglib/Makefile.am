@@ -5,7 +5,7 @@ libmpglib_la_CFLAGS = -DLAYER1 -DLAYER2 -DLAYER3
 
 if USE_MPGLIB
 libmpglib_la_SOURCES =	\
-	common.c            \
+	mpglib_common.c     \
 	huffman.h           \
 	layer1.c            \
 	tabinit.c           \

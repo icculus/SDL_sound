@@ -323,7 +323,7 @@ static int III_get_side_info_1(struct III_sideinfo *si,int stereo,
        gr_info->part2_3_length = getbits(12);
        gr_info->big_values = getbits_fast(9);
        if(gr_info->big_values > 288) {
-          SNDDBG("MPGLIB: big_values too large!\n");
+          SNDDBG(("MPGLIB: big_values too large!\n"));
           gr_info->big_values = 288;
        }
        gr_info->pow2gain = gainpow2+256 - getbits_fast(8) + powdiff;
@@ -397,7 +397,7 @@ static int III_get_side_info_2(struct III_sideinfo *si,int stereo,
        gr_info->part2_3_length = getbits(12);
        gr_info->big_values = getbits_fast(9);
        if(gr_info->big_values > 288) {
-         SNDDBG("MPGLIB: big_values too large!\n");
+         SNDDBG(("MPGLIB: big_values too large!\n"));
          gr_info->big_values = 288;
        }
        gr_info->pow2gain = gainpow2+256 - getbits_fast(8) + powdiff;
