@@ -24,7 +24,7 @@ If configuration succeeded, run "make".
 
 Run "make install" as root to install the library for use on your system.
 
-This should work for most Unix-style systems, including Linux, *BSD, and 
+This should work for most Unix-style systems, including Linux, *BSD, BeOS, and
 MacOS X. Reports of success and failure are welcome.
 
 

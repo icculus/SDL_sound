@@ -3,7 +3,6 @@ Left todo for 0.1.5:
 
 General stuff TODO:
 - Verify portability to various Unixes (BSD, etc)
-- Port to MacOS Classic.
 - Man pages for the API.
 
 More immediate:
@@ -14,6 +13,7 @@ More immediate:
 - Make some of the SNDDBG() strings more uniform.
 - Run through ElectricFence, dmalloc, etc...
 - Fix the crappy rewind implementation in shn.c's SHN_rewind().
+- Add a sdlsound-config script.
 
 Decoders to implement:
 - .CDA (Does this need specific decoding? Or is a RWops needed?)
