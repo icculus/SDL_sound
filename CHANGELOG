@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+07292002 - Valgrind cleanups; memory leak patches, etc.
 07212002 - done_flag was not being reset between files in playsound, so the
            first file would playback, and then any following tracks in a given
            run would "finish" immediately. Fixed.
