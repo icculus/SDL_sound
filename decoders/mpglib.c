@@ -139,10 +139,10 @@ static int MPGLIB_open(Sound_Sample *sample, const char *ext)
         Uint8 mp3_magic[2];
 
         if (SDL_RWread(internal->rw, mp3_magic, sizeof (mp3_magic), 1) != 1)
-            BAIL_MACRO("MP3: Could not read MP3 magic.", 0);
+            BAIL_MACRO("MPGLIB: Could not read MP3 magic.", 0);
 
         if (mp3_magic[0] != 0xFF || (mp3_magic[1] & 0xF0) != 0xF0)
-            BAIL_MACRO("MP3: Not an MP3 stream.", 0);
+            BAIL_MACRO("MPGLIB: Not an MP3 stream.", 0);
 
             /* If the seek fails, we'll probably miss a frame, but oh well. */
         SDL_RWseek(internal->rw, -sizeof (mp3_magic), SEEK_CUR);
