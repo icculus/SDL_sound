@@ -37,6 +37,7 @@ These external libraries are OPTIONAL. SDL_sound will build and function
  - Audio Interchange format (AIFF) files
  - Sun Audio (.AU) files
  - MIDI files
+ - MP3 files (internal decoder, different than the one SMPEG uses)
  - Raw waveform data
 
 Building/Installing:

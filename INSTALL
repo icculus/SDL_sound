@@ -12,7 +12,7 @@ heavily commented, and makes an excellent, in-depth reference to all the
 functions.
 
 
-UNIX:
+Unix:
  (If you pulled the source from CVS), run ./bootstrap
 
  run ./configure --help, and see if there's any options you need. Rerun
@@ -37,14 +37,18 @@ MacOS X command line tools:
  You can use the "UNIX" instructions above if you like the command line tools.
 
 
-MacOS X PowerBuilder:
- If you prefer to use PowerBuilder, download this file:
-    http://icculus.org/SDL_sound/downloads/PBProjects.tar.gz
- ...and unpack it in the root of the SDL_sound folder. This archive contains
- several external libraries you would have to download/install manually if you
- used the command line tools (these libraries are for extra decoders, and are
- NOT required for SDL_sound to function...however, without them, the number of
- sound formats you can decode is reduced.)
+MacOS X Project Builder:
+If you prefer to use Project Builder, download this file:
+  http://icculus.org/SDL_sound/downloads/PBProjects.tar.gz
+...and unpack it in the root of the SDL_sound folder. This archive contains
+several external libraries you would have to download/install manually if you
+used the command line tools (these libraries are for extra decoders, and are
+NOT required for SDL_sound to function...however, without them, the number of
+sound formats you can decode is reduced.)
+
+
+BeOS:
+ You can use the "UNIX" instructions above, too.
 
 
 Win32 Visual C:
@@ -59,7 +63,6 @@ Win32 Visual C:
 Win32 Cygwin:
  Cygwin users can try their luck with the Unix build instructions in this
  tarball instead.
-
 
 
 If building is successful, there will be a shared library and a binary
