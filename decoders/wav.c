@@ -67,18 +67,6 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV =
     WAV_read        /*  read() method */
 };
 
-static int WAV_init(void)
-{
-    return(1);  /* always succeeds. */
-} /* WAV_init */
-
-
-static void WAV_quit(void)
-{
-    /* it's a no-op. */
-} /* WAV_quit */
-
-
 
     /* Chunk management code... */
 
@@ -100,7 +88,7 @@ typedef struct {
     Uint16 iCoef2;
 } ADPCMCOEFSET;
 
-typedef struct S_FMT_T
+typedef struct S_WAV_FMT_T
 {
     Uint32 chunkID;
     Sint32 chunkSize;
@@ -110,8 +98,8 @@ typedef struct S_FMT_T
     Uint32 dwAvgBytesPerSec;
     Uint16 wBlockAlign;
     Uint16 wBitsPerSample;
-    
-    void (*free)(struct S_FMT_T *fmt);
+
+    void (*free)(struct S_WAV_FMT_T *fmt);
     Uint32(*read_sample)(Sound_Sample *sample);
 
     union
@@ -123,6 +111,8 @@ typedef struct S_FMT_T
             Uint16 wNumCoef;
             ADPCMCOEFSET *aCoeff;
         } adpcm;
+
+        /* put other format-specific data here... */
     } fmt;
 } fmt_t;
 
@@ -265,6 +255,7 @@ static void free_fmt_normal(fmt_t *fmt)
 
 static int read_fmt_normal(SDL_RWops *rw, fmt_t *fmt)
 {
+    /* (don't need to read more from the RWops...) */
     fmt->free = free_fmt_normal;
     fmt->read_sample = read_sample_fmt_normal;
     return(1);
@@ -348,9 +339,21 @@ static int read_fmt_adpcm(SDL_RWops *rw, fmt_t *fmt)
 } /* read_fmt_adpcm */
 
 
+
 /*****************************************************************************
  * Everything else...                                                        *
  *****************************************************************************/
+
+static int WAV_init(void)
+{
+    return(1);  /* always succeeds. */
+} /* WAV_init */
+
+
+static void WAV_quit(void)
+{
+    /* it's a no-op. */
+} /* WAV_quit */
 
 
 static int read_fmt(SDL_RWops *rw, fmt_t *fmt)
@@ -359,15 +362,24 @@ static int read_fmt(SDL_RWops *rw, fmt_t *fmt)
     switch (fmt->wFormatTag)
     {
         case FMT_NORMAL:
+            SNDDBG(("WAV: Appears to be uncompressed audio.\n"));
             return(read_fmt_normal(rw, fmt));
 
         case FMT_ADPCM:
+            SNDDBG(("WAV: Appears to be ADPCM compressed audio.\n"));
             return(read_fmt_adpcm(rw, fmt));
+
+        /* add other types here. */
+
+        default:
+            SNDDBG(("WAV: Format %lu is unknown.\n",
+                    (unsigned int) fmt->wFormatTag));
+            Sound_SetError("WAV: Unsupported format");
+            return(0);  /* not supported whatsoever. */
     } /* switch */
 
-    SNDDBG(("WAV: Format %d is unknown.\n", (int) fmt->wFormatTag));
-    Sound_SetError("WAV: Unsupported format");
-    return(0);  /* not supported whatsoever. */
+    assert(0);  /* shouldn't hit this point. */
+    return(0);
 } /* read_fmt */
 
 
