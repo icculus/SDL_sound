@@ -364,42 +364,17 @@ static int AU_seek(Sound_Sample *sample, Uint32 ms)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     struct audec *dec = (struct audec *) internal->decoder_private;
-    int offset = dec->start_offset;
-    int frames = (int) (((float) sample->actual.rate / 1000.0) * ((float) ms));
-    int points = (int) (frames * sample->actual.channels);
+    int offset = __Sound_convertMsToBytePos(&sample->actual, ms);
     int rc;
+    int pos;
 
-SNDDBG(("WARNING: AU_seek() may be buggy.\n")); /* !!! FIXME : remove this. */
+    if (dec->encoding == AU_ENC_ULAW_8)
+        offset >>= 1;  /* halve the byte offset for compression. */
 
-    switch (dec->encoding)
-    {
-        case AU_ENC_ULAW_8:  /* halve the byte offset for compression. */
-SNDDBG(("uLaw8 encoding\n")); /* !!! FIXME : remove this. */
-            offset += ((sizeof (Uint8) * points) >> 1);
-            break;
-
-        case AU_ENC_LINEAR_8:
-SNDDBG(("linear8 encoding\n")); /* !!! FIXME : remove this. */
-            offset += (sizeof (Uint8) * points);
-            break;
-
-        case AU_ENC_LINEAR_16:
-SNDDBG(("linear16 encoding\n")); /* !!! FIXME : remove this. */
-            offset += (sizeof (Uint16) * points);
-            break;
-
-        default:
-            BAIL_MACRO("Unexpected format. Something is very wrong.", 0);
-            break;
-    } /* switch */
-
-SNDDBG(("Seek to %d (edge is %d).\n", (int) offset, (int) dec->total));
-
-    BAIL_IF_MACRO(offset >= dec->total, ERR_IO_ERROR, 0); /* seek past end? */
-
-    rc = SDL_RWseek(internal->rw, offset, SEEK_SET);
-    BAIL_IF_MACRO(rc != offset, ERR_IO_ERROR, 0);
-    dec->remaining = dec->total - (offset - 2);
+    pos = (int) (dec->start_offset + offset);
+    rc = SDL_RWseek(internal->rw, pos, SEEK_SET);
+    BAIL_IF_MACRO(rc != pos, ERR_IO_ERROR, 0);
+    dec->remaining = dec->total - offset;
     return(1);
 } /* AU_seek */
 
