@@ -534,8 +534,6 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
     memcpy(&desired, (_desired != NULL) ? _desired : &sample->actual,
             sizeof (Sound_AudioInfo));
 
-        /* !!! FIXME: Was there a good reason this wasn't here before?     */
-        /* !!! FIXME:  (Maybe we just assumed that it was all or nothing?) */
     if (desired.format == 0)
         desired.format = sample->actual.format;
     if (desired.channels == 0)
