@@ -185,6 +185,7 @@ typedef struct
     void *buffer;  /**< Decoded sound data lands in here. */
     Uint32 buffer_size;  /**< Current size of (buffer), in bytes (Uint8). */
     Sound_SampleFlags flags;  /**< Flags relating to this sample. */
+    Sint32 total_time;  /**< Total length of song or track */
 } Sound_Sample;
 
 

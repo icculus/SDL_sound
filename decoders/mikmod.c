@@ -202,7 +202,7 @@ static MREADER *_mm_new_rwops_reader(Sound_Sample *sample)
 
 static void _mm_delete_rwops_reader(MREADER *reader)
 {
-        /* SDL_sound will delete the RWops and sample at a higher level... */
+    /* SDL_sound will delete the RWops and sample at a higher level... */
     if (reader != NULL)
         free(reader);
 } /* _mm_delete_rwops_reader */
@@ -213,16 +213,18 @@ static int MIKMOD_init(void)
 {
     MikMod_RegisterDriver(&drv_nos);
     
-    /* Quick and dirty hack to prevent an infinite loop problem
-     * found when using SDL_mixer and SDL_sound together and 
-     * both have MikMod compiled in. So, check to see if
-     * MikMod has already been registered first before calling
-     * RegisterAllLoaders()
-     */
-    if(MikMod_InfoLoader() == NULL)
+        /*
+         * Quick and dirty hack to prevent an infinite loop problem
+         *  found when using SDL_mixer and SDL_sound together and
+         *  both have MikMod compiled in. So, check to see if
+         *  MikMod has already been registered first before calling
+         *  RegisterAllLoaders()
+         */
+    if (MikMod_InfoLoader() == NULL)
     {
         MikMod_RegisterAllLoaders();
-    }  
+    } /* if */
+
         /*
          * Both DMODE_SOFT_MUSIC and DMODE_16BITS should be set by default,
          * so this is just for clarity. I haven't experimented with any of
@@ -251,7 +253,9 @@ static int MIKMOD_open(Sound_Sample *sample, const char *ext)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     MREADER *reader;
     MODULE *module;
-
+    Uint32 i; /* temp counter for time computation */
+    double segment_time = 0.0; /* temp holder for time */
+    
     reader = _mm_new_rwops_reader(sample);
     BAIL_IF_MACRO(reader == NULL, ERR_OUT_OF_MEMORY, 0);
     module = Player_LoadGeneric(reader, 64, 0);
@@ -276,9 +280,109 @@ static int MIKMOD_open(Sound_Sample *sample, const char *ext)
 
     sample->flags = SOUND_SAMPLEFLAG_NONE;
 
+    /*
+     *   module->sngtime = current song time in 2^-10 seconds
+     *   sample->total_time = (module->sngtime * 1000) / (1<<10)
+     */
+    sample->total_time = (module->sngtime * 1000) / (1<<10);
+
     SNDDBG(("MIKMOD: Name: %s\n", module->songname));
     SNDDBG(("MIKMOD: Type: %s\n", module->modtype));
     SNDDBG(("MIKMOD: Accepting data stream\n"));
+
+
+    /* 
+     * This is a quick and dirty way for getting the play time
+     * of a file. This will often be wrong because the tracker format
+     * allows for so much. If you want a better one, use ModPlug,
+     * demand that the Mikmod people write better functionality,
+     * or write a more complicated version of the code below.
+     *
+     * There are two dumb ways to compute the length. The really
+     * dumb way is to look at the header and take the initial
+     * speed/tempo  values. However, speed values can change throughout
+     * the file. The slightly smarter way is to iterate through
+     * all the positions and add up each segment's time based
+     * on the idea that each segment will give us its own
+     * speed value. The hope is that this is more accurate.
+     * However, this demands that the file be seekable
+     * and that we can change the position of the sample.
+     * Depending on the assumptions of SDL_sound, this block
+     * of code should be enabled or disabled. If disabled,
+     * you still can make the computations doing the first method.
+     * For now, we will assume it's acceptable to seek a Mod file
+     * since this is essentially how Modplug also does it.
+     *
+     * Keep in mind that this will be incorrect for loops, jumps, short
+     * patterns and other features.
+     */
+    sample->flags |= SOUND_SAMPLEFLAG_CANSEEK;
+
+    /* 
+     * For each position (which corresponds to a particular pattern),
+     * get the speed values and compute the time length of the segment
+     */
+    sample->total_time = 0;
+    for (i = 0; i < module->numpos; i++)
+    {
+        Player_SetPosition(i);
+        /* Must call update, or the speed values won't get reset */
+        MikMod_Update();
+        /* Now the magic formula:
+         * Multiply the number of positions by the
+         * Number of rows (usually 64 but can be different) by the
+         * time it takes to read one row (1/50)
+         * by the speed by the 
+         * magic reference beats per minute / the beats per minute
+         * 
+         * We're using positions instead of patterns because in our
+         * test cases, this seems to be the correct value for the 
+         * number of sections you hear during normal playback.
+         * They typically map to a fewer number of patterns
+         * where some patterns get replayed multiple times
+         * in a song (think chorus). Since we're in a for-loop,
+         * the multiplication is implicit while we're adding
+         * all the segments.
+         * 
+         * From a tracker format spec, it seems that 64 rows
+         * is the normal (00-3F), but I've seen songs that 
+         * either have less or are jumping positions in the
+         * middle of a pattern. It looks like Mikmod might
+         * reveal this number for us.
+         *
+         * According to the spec, it seems that a speed of 1
+         * corresponds to reading 1 row in 50 ticks. However,
+         * I'm not sure if ticks are real seconds or this
+         * notion of second units: 
+         * Assuming that it's just normal seconds, we get 1/50 = 0.02.
+         *
+         * The current speed and current tempo (beats per minute) 
+         * we can just grab. However, we need a magic number 
+         * to figure out what the tempo is based on. Our primitive
+         * stopwatch results and intuition seem to imply 120-130bpm 
+         * is the magic number. Looking at the majority of tracker
+         * files I have, 125 seems to be the common value. Furthermore
+         * most (if not all) of my Future Crew .S3M (Scream Tracker 3)
+         * files also use 125. Since they invented that format, 
+         * I'll also assume that's the base number.
+         */
+        if(module->bpm == 0)
+        {
+            /* 
+             * Should never get here, but I don't want any
+             * divide by zero errors
+             */
+            continue;
+        } /* if */
+        segment_time += (module->numrow * .02 * module->sngspd *
+                          125.0 / module->bpm);
+    } /* for */
+    /* Now convert to milliseconds and store the value */
+    sample->total_time = (Sint32)(segment_time * 1000); 
+
+    /* Reset the sample to the beginning */
+    Player_SetPosition(0);
+    MikMod_Update();
 
     return(1); /* we'll handle this data. */
 } /* MIKMOD_open */
@@ -322,20 +426,76 @@ static int MIKMOD_rewind(Sound_Sample *sample)
 
 static int MIKMOD_seek(Sound_Sample *sample, Uint32 ms)
 {
-#if 0
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     MODULE *module = (MODULE *) internal->decoder_private;
+    double last_time = 0.0;
+    double current_time = 0.0;
+    double target_time;
+    Uint32 i; 
 
         /*
          * Heaven may know what the argument to Player_SetPosition() is.
          * I, however, haven't the faintest idea.
          */
     Player_Start(module);
-    Player_SetPosition(ms);
+
+        /*
+         * Mikmod only lets you seek to the beginning of a pattern.
+         * This means we'll get very coarse grain seeks. The 
+         * value we pass to SetPosition is a value between 0 
+         * and the number of positions in the file. The
+         * dumb approach would be to take our total_time that
+         * we've already calculated and divide it up by the 
+         * number of positions and seek to the position that results.
+         * However, because songs can alter their speed/tempo during
+         * playback, different patterns in the song can take 
+         * up different amounts of time. So the slightly
+         * smarter approach is to repeat what was done in the
+         * total_time computation and traverse through the file
+         * until we find the closest position.
+         * The follwing is basically cut and paste from the 
+         * open function.
+         */
+    if (ms == 0)  /* Check end conditions to simplify things */
+    {
+        Player_SetPosition(0);
+        return(1);
+    } /* if */
+
+    if (ms >= sample->total_time)
+        Player_SetPosition(module->numpos);
+
+    /* Convert time to seconds (double) to make comparisons easier */
+    target_time = ms / 1000.0;
+    
+    for (i = 0; i < module->numpos; i++)
+    {
+        Player_SetPosition(i);
+        /* Must call update, or the speed values won't get reset */
+        MikMod_Update();
+        /* Divide by zero check */
+        if(module->bpm == 0)
+            continue;
+        last_time = current_time;
+        /* See the notes in the open function about the formula */
+        current_time += (module->numrow * .02 
+            * module->sngspd * 125.0 / module->bpm);
+        if(target_time <= current_time)
+            break; /* We now have our interval, so break out */
+    } /* for */
+    
+    if( (target_time-last_time) > (current_time-target_time) )
+    {
+        /* The target time is closer to the higher position, so go there */
+        Player_SetPosition(i+1);
+    } /* if */
+    else
+    {
+        /* The target time is closer to the lower position, so go there */
+        Player_SetPosition(i);
+    } /* else */
+
     return(1);
-#else
-    BAIL_MACRO("MIKMOD: Seeking not implemented", 0);
-#endif
 } /* MIKMOD_seek */
 
 #endif /* SOUND_SUPPORTS_MIKMOD */

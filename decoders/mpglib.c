@@ -175,6 +175,33 @@ static int MPGLIB_open(Sound_Sample *sample, const char *ext)
     sample->actual.format = AUDIO_S16SYS;
     sample->flags = SOUND_SAMPLEFLAG_NONE;
 
+    {
+      /* Finds approximate length of the song. */
+        Uint32 pos, total_byte_size;
+        char tag_buffer[4];
+        memset(tag_buffer, '\0', sizeof(tag_buffer));
+
+        /* Get size of file first */
+        pos = SDL_RWtell(internal->rw);
+        total_byte_size = SDL_RWseek(internal->rw, -128, SEEK_END);
+        if( total_byte_size <= 0 ) {
+            BAIL_MACRO("MPGLIB: Not an MP3 stream.", 0);
+        }
+        if ( SDL_RWread(internal->rw, tag_buffer, 1, 3) != 3) {
+            BAIL_MACRO("MPGLIB: Cannot identify  TAG section.", 0);
+	}
+        if ( strncmp(tag_buffer, "TAG", 3) != 0 ) {
+            /* ENDING TAG NOT FOUND */
+            total_byte_size = SDL_RWseek(internal->rw,0, SEEK_END);
+        }
+        if (SDL_RWseek(internal->rw, pos, SEEK_SET) != pos) {
+            BAIL_MACRO("MPGLIB: Cannot go back to save spot in file.", 0);
+	}
+        sample->total_time = total_byte_size / mpg->mp.fr.bitrate * 8.0;
+        sample->total_time += (total_byte_size % mpg->mp.fr.bitrate) * 8.0
+            / mpg->mp.fr.bitrate;
+    }
+
     return(1); /* we'll handle this data. */
 } /* MPGLIB_open */
 

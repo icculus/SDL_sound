@@ -212,6 +212,7 @@ static int _SMPEG_open(Sound_Sample *sample, const char *ext)
     sample->actual.rate = spec.freq;
     sample->actual.channels = spec.channels;
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
+    sample->total_time = smpeg_info.total_time * 1000;
     internal->decoder_private = smpeg;
 
     SMPEG_play(smpeg);

@@ -476,6 +476,11 @@ static int AIFF_open(Sound_Sample *sample, const char *ext)
     sample->actual.channels = (Uint8) c.numChannels;
     sample->actual.rate = c.sampleRate;
 
+    /* Really, sample->total_time = (c.numSampleFrames*1000) c.sampleRate */
+    sample->total_time = (c.numSampleFrames / c.sampleRate) * 1000;
+    sample->total_time += (c.numSampleFrames % c.sampleRate) 
+                       *  1000 / c.sampleRate;
+
     if (c.sampleSize <= 8)
     {
         sample->actual.format = AUDIO_S8;

@@ -196,6 +196,7 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
     Uint32 new_rate_long;
     Uint8 trash[6];
     Uint16 period;
+    Uint32 bytes_per_second;
     int i;
 
     v->silent = 0;
@@ -241,6 +242,12 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
                 v->extended = 0;
                 v->rest = sblen - 2;
                 v->size = ST_SIZE_BYTE;
+
+                bytes_per_second = sample->actual.rate
+                    * sample->actual.channels;
+                sample->total_time += ( v->rest ) / bytes_per_second * 1000;
+		sample->total_time += (v->rest % bytes_per_second) * 1000
+		    / bytes_per_second;
                 return 1;
 
             case VOC_DATA_16:
@@ -272,8 +279,13 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
 
                 if (!voc_readbytes(src, v, trash, sizeof (Uint8) * 6))
                     return 0;
-
                 v->rest = sblen - 12;
+
+		bytes_per_second = ((v->size == ST_SIZE_WORD) ? (2) : (1)) *
+		    sample->actual.rate * v->channels;
+                sample->total_time += v->rest / bytes_per_second * 1000;
+                sample->total_time += ( v->rest % bytes_per_second ) * 1000
+		    / bytes_per_second;
                 return 1;
 
             case VOC_CONT:
@@ -302,6 +314,9 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
                     v->rate = uc;
                 v->rest = period;
                 v->silent = 1;
+
+		sample->total_time += (period) / (v->rate) * 1000;
+		sample->total_time += (period % v->rate) * 1000 / v->rate; 
                 return 1;
 
             case VOC_LOOP:

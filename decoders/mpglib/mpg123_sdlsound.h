@@ -90,6 +90,8 @@ struct frame {
     /* layer2 stuff */
     int II_sblimit;
     void *alloc;
+
+    int bitrate;
 };
 
 struct parameter {

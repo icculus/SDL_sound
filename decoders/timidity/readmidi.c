@@ -488,7 +488,7 @@ static MidiEvent *groom_list(MidiSong *song, Sint32 divisions,Sint32 *eventsp,
   lp->type=ME_EOT;
   our_event_count++;
   free_midi_list(song);
-  
+
   *eventsp=our_event_count;
   *samplesp=st;
   return groomed_list;

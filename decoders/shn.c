@@ -551,6 +551,7 @@ static __inline__ int parse_riff_header(shn_t *shn, Sound_Sample *sample)
     Uint16 u16;
     Uint32 u32;
     Sint32 cklen;
+    Uint32 bytes_per_second;
 
     BAIL_IF_MACRO(!uvar_get(SHN_VERBATIM_CKSIZE_SIZE, shn, rw, &cklen), NULL, 0);
 
@@ -572,13 +573,15 @@ static __inline__ int parse_riff_header(shn_t *shn, Sound_Sample *sample)
     sample->actual.rate = u32;
 
     BAIL_IF_MACRO(!verb_ReadLE32(shn, rw, &u32), NULL, 0); /* bytespersec */
+    bytes_per_second = u32;
     BAIL_IF_MACRO(!verb_ReadLE16(shn, rw, &u16), NULL, 0); /* blockalign */
     BAIL_IF_MACRO(!verb_ReadLE16(shn, rw, &u16), NULL, 0); /* bitspersample */
 
     BAIL_IF_MACRO(!verb_ReadLE32(shn, rw, &u32), NULL, 0); /* 'data' header */
     BAIL_IF_MACRO(u32 != dataID,  "SHN: No 'data' header.", 0);
     BAIL_IF_MACRO(!verb_ReadLE32(shn, rw, &u32), NULL, 0); /* chunksize */
-
+    sample->total_time = u32 / bytes_per_second * 1000;
+    sample->total_time += (u32 % bytes_per_second) * 1000 / bytes_per_second;
     return(1);
 } /* parse_riff_header */
 
