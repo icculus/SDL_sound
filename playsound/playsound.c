@@ -78,7 +78,7 @@ static void output_decoders(void)
         {
             printf(" * %s\n", (*i)->description);
             for (ext = (*i)->extensions; *ext != NULL; ext++)
-                printf("   Extension \"%s\"\n", *ext);
+                printf("   File extension \"%s\"\n", *ext);
             printf("   Written by %s.\n   %s\n\n", (*i)->author, (*i)->url);
         } /* for */
     } /* else */
@@ -120,15 +120,17 @@ static Uint32 decoded_bytes = 0;
 static void audio_callback(void *userdata, Uint8 *stream, int len)
 {
     Sound_Sample *sample = (Sound_Sample *) userdata;
-    int bw = 0; /* bytes written to stream*/
-    int cpysize;
+    int bw = 0; /* bytes written to stream this time through the callback */
 
     while (bw < len)
     {
-        if (!decoded_bytes)
+        int cpysize;  /* bytes to copy on this iteration of the loop. */
+
+        if (!decoded_bytes)  /* need more data decoded from sample? */
         {
             if (sample->flags & (SOUND_SAMPLEFLAG_ERROR|SOUND_SAMPLEFLAG_EOF))
             {
+                /* ...but there isn't any more data to decode! */
                 memset(stream + bw, '\0', len - bw);
                 done_flag = 1;
                 return;
@@ -146,8 +148,8 @@ static void audio_callback(void *userdata, Uint8 *stream, int len)
         {
             memcpy(stream + bw, decoded_ptr, cpysize);
             bw += cpysize;
-            decoded_ptr += bw;
-            decoded_bytes -= bw;
+            decoded_ptr += cpysize;
+            decoded_bytes -= cpysize;
         } /* if */
     } /* while */
 } /* audio_callback */
