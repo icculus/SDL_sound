@@ -19,6 +19,8 @@
  *  This file was written by Ryan C. Gordon. (icculus@clutteredmind.org).
  */
 
+#if SUPPORT_PHYSFS
+
 #include <stdio.h>  /* used for SEEK_SET, SEEK_CUR, SEEK_END ... */
 #include "physfsrwops.h"
 
@@ -187,6 +189,7 @@ SDL_RWops *PHYSFSRWOPS_openAppend(const char *fname)
     return(create_rwops(PHYSFS_openAppend(fname)));
 } /* PHYSFSRWOPS_openAppend */
 
+#endif
 
 /* end of physfsrwops.c ... */
 

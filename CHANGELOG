@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+11122004 - Fixed automake nonsense.
 05112004 - Added Sound_GetDuration() and moved total_time out of Sound_Sample
            struct and into it's opaque data...this fixes binary compatibility
            with apps written for SDL_sound 1.0.
