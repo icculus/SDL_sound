@@ -101,6 +101,7 @@ static inline int read_uint8(SDL_RWops *rw, Uint8 *ui8)
 
 #define riffID 0x46464952  /* "RIFF", in ascii. */
 #define waveID 0x45564157  /* "WAVE", in ascii. */
+#define factID 0x74636166  /* "fact", in ascii. */
 
 
 /*****************************************************************************
@@ -114,8 +115,8 @@ static inline int read_uint8(SDL_RWops *rw, Uint8 *ui8)
 
 typedef struct
 {
-    Uint16 iCoef1;
-    Uint16 iCoef2;
+    Sint16 iCoef1;
+    Sint16 iCoef2;
 } ADPCMCOEFSET;
 
 typedef struct
@@ -137,6 +138,8 @@ typedef struct S_WAV_FMT_T
     Uint16 wBlockAlign;
     Uint16 wBitsPerSample;
 
+    Uint32 sample_frame_size;
+
     void (*free)(struct S_WAV_FMT_T *fmt);
     Uint32 (*read_sample)(Sound_Sample *sample);
 
@@ -149,6 +152,9 @@ typedef struct S_WAV_FMT_T
             Uint16 wNumCoef;
             ADPCMCOEFSET *aCoef;
             ADPCMBLOCKHEADER *blockheaders;
+            Uint32 samples_left_in_block;
+            int nibble_state;
+            Sint8 nibble;
         } adpcm;
 
         /* put other format-specific data here... */
@@ -226,6 +232,9 @@ typedef struct
  * Normal, uncompressed waveform handler...                                  *
  *****************************************************************************/
 
+/*
+ * Sound_Decode() lands here for uncompressed WAVs...
+ */
 static Uint32 read_sample_fmt_normal(Sound_Sample *sample)
 {
     Uint32 retval;
@@ -274,11 +283,28 @@ static int read_fmt_normal(SDL_RWops *rw, fmt_t *fmt)
  * ADPCM compression handler...                                              *
  *****************************************************************************/
 
-static int read_adpcm_block_headers(SDL_RWops *rw, fmt_t *fmt)
+#define FIXED_POINT_COEF_BASE      256
+#define FIXED_POINT_ADAPTION_BASE  256
+#define SMALLEST_ADPCM_DELTA       16
+
+
+static inline int read_adpcm_block_headers(Sound_Sample *sample)
 {
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    SDL_RWops *rw = internal->rw;
+    wav_t *w = (wav_t *) internal->decoder_private;
+    fmt_t *fmt = w->fmt;
     ADPCMBLOCKHEADER *headers = fmt->fmt.adpcm.blockheaders;
     int i;
     int max = fmt->wChannels;
+
+    if (w->bytesLeft < fmt->wBlockAlign)
+    {
+        sample->flags |= SOUND_SAMPLEFLAG_EOF;
+        return(0);
+    } /* if */
+
+    w->bytesLeft -= fmt->wBlockAlign;
 
     for (i = 0; i < max; i++)
         BAIL_IF_MACRO(!read_uint8(rw, &headers[i].bPredictor), NULL, 0);
@@ -292,48 +318,164 @@ static int read_adpcm_block_headers(SDL_RWops *rw, fmt_t *fmt)
     for (i = 0; i < max; i++)
         BAIL_IF_MACRO(!read_le16(rw, &headers[i].iSamp2), NULL, 0);
 
+    fmt->fmt.adpcm.samples_left_in_block = fmt->fmt.adpcm.wSamplesPerBlock;
+    fmt->fmt.adpcm.nibble_state = 0;
     return(1);
 } /* read_adpcm_block_headers */
 
 
-static int decode_adpcm_block(Sound_Sample *sample)
+static inline void do_adpcm_nibble(Uint8 nib,
+                                   ADPCMBLOCKHEADER *header,
+                                   Sint32 lPredSamp)
+{
+	static const Sint32 max_audioval = ((1<<(16-1))-1);
+	static const Sint32 min_audioval = -(1<<(16-1));
+	static const Sint32 AdaptionTable[] =
+    {
+		230, 230, 230, 230, 307, 409, 512, 614,
+		768, 614, 512, 409, 307, 230, 230, 230
+	};
+
+    Sint32 lNewSamp;
+    Sint32 delta;
+
+    if (nib & 0x08)
+        lNewSamp = lPredSamp + (header->iDelta * (nib - 0x10));
+	else
+        lNewSamp = lPredSamp + (header->iDelta * nib);
+
+        /* clamp value... */
+    if (lNewSamp < min_audioval)
+        lNewSamp = min_audioval;
+    else if (lNewSamp > max_audioval)
+        lNewSamp = max_audioval;
+
+    delta = ((Sint32) header->iDelta * AdaptionTable[nib]) /
+              FIXED_POINT_ADAPTION_BASE;
+
+	if (delta < SMALLEST_ADPCM_DELTA)
+	    delta = SMALLEST_ADPCM_DELTA;
+
+    header->iDelta = delta;
+	header->iSamp2 = header->iSamp1;
+	header->iSamp1 = lNewSamp;
+} /* do_adpcm_nibble */
+
+
+static inline int decode_adpcm_sample_frame(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    SDL_RWops *rw = internal->rw;
     wav_t *w = (wav_t *) internal->decoder_private;
     fmt_t *fmt = w->fmt;
     ADPCMBLOCKHEADER *headers = fmt->fmt.adpcm.blockheaders;
+    SDL_RWops *rw = internal->rw;
     int i;
     int max = fmt->wChannels;
-
-    if (!read_adpcm_block_headers(rw, fmt))
-    {
-        sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-        return(0);
-    } /* if */
+    Sint32 delta;
+    Uint8 nib = fmt->fmt.adpcm.nibble;
 
     for (i = 0; i < max; i++)
     {
-        Uint16 iCoef1 = fmt->fmt.adpcm.aCoef[headers[i].bPredictor].iCoef1;
-        Uint16 iCoef2 = fmt->fmt.adpcm.aCoef[headers[i].bPredictor].iCoef2;
-/*
+        Uint8 byte;
+        Sint16 iCoef1 = fmt->fmt.adpcm.aCoef[headers[i].bPredictor].iCoef1;
+        Sint16 iCoef2 = fmt->fmt.adpcm.aCoef[headers[i].bPredictor].iCoef2;
         Sint32 lPredSamp = ((headers[i].iSamp1 * iCoef1) +
                             (headers[i].iSamp2 * iCoef2)) / 
-                           FIXED_POINT_COEF_BASE;
-*/
+                             FIXED_POINT_COEF_BASE;
+
+        if (fmt->fmt.adpcm.nibble_state == 0)
+        {
+            BAIL_IF_MACRO(!read_uint8(rw, &nib), NULL, 0);
+            fmt->fmt.adpcm.nibble_state = 1;
+            do_adpcm_nibble(nib >> 4, &headers[i], lPredSamp);
+        } /* if */
+        else
+        {
+            fmt->fmt.adpcm.nibble_state = 0;
+            do_adpcm_nibble(nib & 0x0F, &headers[i], lPredSamp);
+        } /* else */
     } /* for */
-} /* decode_adpcm_block */
+
+    fmt->fmt.adpcm.nibble = nib;
+    return(1);
+} /* decode_adpcm_sample_frame */
 
 
+static inline void put_adpcm_sample_frame1(Uint8 *_buf, fmt_t *fmt)
+{
+    Uint16 *buf = (Uint16 *) _buf;
+    ADPCMBLOCKHEADER *headers = fmt->fmt.adpcm.blockheaders;
+    int i;
+    for (i = 0; i < fmt->wChannels; i++)
+        *(buf++) = headers[i].iSamp1;
+} /* put_adpcm_sample_frame1 */
+
+
+static inline void put_adpcm_sample_frame2(Uint8 *_buf, fmt_t *fmt)
+{
+    Uint16 *buf = (Uint16 *) _buf;
+    ADPCMBLOCKHEADER *headers = fmt->fmt.adpcm.blockheaders;
+    int i;
+    for (i = 0; i < fmt->wChannels; i++)
+        *(buf++) = headers[i].iSamp2;
+} /* put_adpcm_sample_frame2 */
+
+
+/*
+ * Sound_Decode() lands here for ADPCM-encoded WAVs...
+ */
 static Uint32 read_sample_fmt_adpcm(Sound_Sample *sample)
 {
-    /* !!! FIXME: Write this. */
-    Sound_SetError("WAV: Not implemented. Soon.");
-    sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-    return(0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    wav_t *w = (wav_t *) internal->decoder_private;
+    fmt_t *fmt = w->fmt;
+    Uint32 bw = 0;
+
+    while (bw < internal->buffer_size)
+    {
+        /* write ongoing sample frame before reading more data... */
+        switch (fmt->fmt.adpcm.samples_left_in_block)
+        {
+            case 0:  /* need to read a new block... */
+                if (!read_adpcm_block_headers(sample))
+                {
+                    if ((sample->flags & SOUND_SAMPLEFLAG_EOF) == 0)
+                        sample->flags |= SOUND_SAMPLEFLAG_ERROR;
+                    return(bw);
+                } /* if */
+
+                /* only write first sample frame for now. */
+                put_adpcm_sample_frame2(internal->buffer + bw, fmt);
+                fmt->fmt.adpcm.samples_left_in_block--;
+                bw += fmt->sample_frame_size;
+                break;
+
+            case 1:  /* output last sample frame of block... */
+                put_adpcm_sample_frame1(internal->buffer + bw, fmt);
+                fmt->fmt.adpcm.samples_left_in_block--;
+                bw += fmt->sample_frame_size;
+                break;
+
+            default: /* output latest sample frame and read a new one... */
+                put_adpcm_sample_frame1(internal->buffer + bw, fmt);
+                fmt->fmt.adpcm.samples_left_in_block--;
+                bw += fmt->sample_frame_size;
+
+                if (!decode_adpcm_sample_frame(sample))
+                {
+                    sample->flags |= SOUND_SAMPLEFLAG_ERROR;
+                    return(bw);
+                } /* if */
+        } /* switch */
+    } /* while */
+
+    return(bw);
 } /* read_sample_fmt_adpcm */
 
 
+/*
+ * Sound_FreeSample() lands here for ADPCM-encoded WAVs...
+ */
 static void free_fmt_adpcm(fmt_t *fmt)
 {
     if (fmt->fmt.adpcm.aCoef != NULL)
@@ -361,36 +503,21 @@ static int read_fmt_adpcm(SDL_RWops *rw, fmt_t *fmt)
     BAIL_IF_MACRO(!read_le16(rw, &fmt->fmt.adpcm.wSamplesPerBlock), NULL, 0);
     BAIL_IF_MACRO(!read_le16(rw, &fmt->fmt.adpcm.wNumCoef), NULL, 0);
 
-        /*
-         * !!! FIXME: SDL seems nervous about this, so I'll make a debug
-         * !!! FIXME:  note for the time being...
-         */
-	if (fmt->fmt.adpcm.wNumCoef != 7)
-    {
-        SNDDBG(("WAV: adpcm's wNumCoef is NOT seven (it's %d)!\n",
-                 fmt->fmt.adpcm.wNumCoef));
-    } /* if */
-
     /* fmt->free() is always called, so these malloc()s will be cleaned up. */
+
     i = sizeof (ADPCMCOEFSET) * fmt->fmt.adpcm.wNumCoef;
     fmt->fmt.adpcm.aCoef = (ADPCMCOEFSET *) malloc(i);
     BAIL_IF_MACRO(fmt->fmt.adpcm.aCoef == NULL, ERR_OUT_OF_MEMORY, 0);
 
+    for (i = 0; i < fmt->fmt.adpcm.wNumCoef; i++)
+    {
+        BAIL_IF_MACRO(!read_le16(rw, &fmt->fmt.adpcm.aCoef[i].iCoef1), NULL, 0);
+        BAIL_IF_MACRO(!read_le16(rw, &fmt->fmt.adpcm.aCoef[i].iCoef2), NULL, 0);
+    } /* for */
+
     i = sizeof (ADPCMBLOCKHEADER) * fmt->wChannels;
     fmt->fmt.adpcm.blockheaders = (ADPCMBLOCKHEADER *) malloc(i);
     BAIL_IF_MACRO(fmt->fmt.adpcm.blockheaders == NULL, ERR_OUT_OF_MEMORY, 0);
-
-    for (i = 0; i < fmt->fmt.adpcm.wNumCoef; i++)
-    {
-        int rc;
-        rc = SDL_RWread(rw, &fmt->fmt.adpcm.aCoef[i].iCoef1,
-                        sizeof (fmt->fmt.adpcm.aCoef[i].iCoef1), 1);
-        BAIL_IF_MACRO(rc != 1, ERR_IO_ERROR, 0);
-
-        rc = SDL_RWread(rw, &fmt->fmt.adpcm.aCoef[i].iCoef2,
-                        sizeof (fmt->fmt.adpcm.aCoef[i].iCoef2), 1);
-        BAIL_IF_MACRO(rc != 1, ERR_IO_ERROR, 0);
-    } /* for */
 
     return(1);
 } /* read_fmt_adpcm */
@@ -447,6 +574,7 @@ static int find_chunk(SDL_RWops *rw, Uint32 id)
 {
     Sint32 siz = 0;
     Uint32 _id = 0;
+    Uint32 pos = SDL_RWtell(rw);
 
     while (1)
     {
@@ -456,8 +584,10 @@ static int find_chunk(SDL_RWops *rw, Uint32 id)
 
             /* skip ahead and see what next chunk is... */
         BAIL_IF_MACRO(!read_le32(rw, &siz), NULL, 0);
-        assert(siz > 0);
-        BAIL_IF_MACRO(SDL_RWseek(rw, siz, SEEK_SET) != siz, NULL, 0);
+        assert(siz >= 0);
+        pos += (sizeof (Uint32) * 2) + siz;
+        if (siz > 0)
+            BAIL_IF_MACRO(SDL_RWseek(rw, pos, SEEK_SET) != pos, NULL, 0);
     } /* while */
 
     return(0);  /* shouldn't hit this, but just in case... */
@@ -470,6 +600,7 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
     SDL_RWops *rw = internal->rw;
     data_t d;
     wav_t *w;
+    Uint32 pos;
 
     BAIL_IF_MACRO(SDL_ReadLE32(rw) != riffID, "WAV: Not a RIFF file.", 0);
     SDL_ReadLE32(rw);  /* throw the length away; we get this info later. */
@@ -479,9 +610,11 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
 
     sample->actual.channels = (Uint8) fmt->wChannels;
     sample->actual.rate = fmt->dwSamplesPerSec;
-    if (fmt->wBitsPerSample <= 8)
+    if (fmt->wBitsPerSample == 4)
+        sample->actual.format = AUDIO_S16SYS;  /* !!! FIXME ? */
+    else if (fmt->wBitsPerSample == 8)
         sample->actual.format = AUDIO_U8;
-    else if (fmt->wBitsPerSample <= 16)
+    else if (fmt->wBitsPerSample == 16)
         sample->actual.format = AUDIO_S16LSB;
     else
         BAIL_MACRO("WAV: Unsupported sample size.", 0);
@@ -494,6 +627,11 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
     BAIL_IF_MACRO(w == NULL, ERR_OUT_OF_MEMORY, 0);
     w->fmt = fmt;
     w->bytesLeft = d.chunkSize;
+
+    /* !!! FIXME: Move this to Sound_SampleInfo ? */
+    fmt->sample_frame_size = ( ((sample->actual.format & 0xFF) / 8) *
+                               sample->actual.channels );
+
     internal->decoder_private = (void *) w;
 
     sample->flags = SOUND_SAMPLEFLAG_NONE;
