@@ -9,7 +9,8 @@ MP3 driver,
 WAV driver,
 OGG driver,
 SHN driver,
-Unix support:
+Unix support,
+BeOS support:
     Ryan C. Gordon
 
 Bug fixes,
@@ -20,6 +21,8 @@ Code cleanups,
 MP3 fixes,
 AIFF driver,
 MikMod driver,
+MIDI driver,
+ModPlug driver,
 FLAC driver:
     Torbjörn Andersson
 
@@ -30,6 +33,9 @@ MacOS X support:
 win32 support,
 other fixes:
     Tyler Montbriand
+
+AU driver,
+    Mattias Engdegård
 
 Other stuff:
     Your name here! Patches go to icculus@clutteredmind.org ...
