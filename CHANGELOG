@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+10142003 - Build system fix: acinclude.m4 had some word wrapping badness.
 10122003 - Fixed "make dist" behaviour to not packaged generated docs, and
            made sure other files are always packaged, regardless of config.
            Upped version to 1.0.1.
