@@ -2,7 +2,13 @@
  * CHANGELOG.
  */
 
-01113002 - Mattias Engdegård sent in an .AU decoder. Nice! He also tweaked
+01172002 - Implemented Sound_Rewind(), and added a --loop command line to
+           playsound for testing. Rewrote the audio callback to handle looping
+           with both predecoded and streamed samples. Most of the decoders
+           just have an assert(0) in their internal rewinding method at this
+           point. I implemented the WAV, AU, AIFF, and RAW ones, for now.
+           (...and skeleton.c, for what that's worth.)
+01112002 - Mattias Engdegård sent in an .AU decoder. Nice! He also tweaked
            playsound to try and wait until SDL has completed playing a given
            sound before closing the audio device. Changed a macro in
            decoders/shn.c to be more uniform with the other decoders.
