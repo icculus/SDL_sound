@@ -113,7 +113,7 @@ static int MIDI_open(Sound_Sample *sample, const char *ext)
     sample->actual.rate = 44100;
     sample->actual.format = AUDIO_S16SYS;
     
-    sample->flags = SOUND_SAMPLEFLAG_NONE;
+    sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
     return(1); /* we'll handle this data. */
 } /* MIDI_open */
 
@@ -162,7 +162,11 @@ static int MIDI_rewind(Sound_Sample *sample)
 
 static int MIDI_seek(Sound_Sample *sample, Uint32 ms)
 {
-    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    MidiSong *song = (MidiSong *) internal->decoder_private;
+
+    Timidity_Seek(song, ms);
+    return(1);
 } /* MIDI_seek */
 
 #endif /* SOUND_SUPPORTS_MIDI */

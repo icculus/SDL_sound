@@ -656,6 +656,11 @@ void Timidity_Start(MidiSong *song)
   skip_to(song, 0);
 }
 
+void Timidity_Seek(MidiSong *song, Uint32 ms)
+{
+    skip_to(song, (ms * song->rate) / 1000);
+}
+
 int Timidity_PlaySome(MidiSong *song, void *stream, Sint32 len)
 {
   Sint32 start_sample, end_sample, samples;

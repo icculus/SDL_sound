@@ -251,7 +251,7 @@ static int MIKMOD_open(Sound_Sample *sample, const char *ext)
     Player_Start(module);
     Player_SetPosition(0);
 
-    sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
+    sample->flags = SOUND_SAMPLEFLAG_NONE;
 
     SNDDBG(("MIKMOD: Name: %s\n", module->songname));
     SNDDBG(("MIKMOD: Type: %s\n", module->modtype));
@@ -299,7 +299,20 @@ static int MIKMOD_rewind(Sound_Sample *sample)
 
 static int MIKMOD_seek(Sound_Sample *sample, Uint32 ms)
 {
+#if 0
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    MODULE *module = (MODULE *) internal->decoder_private;
+
+        /*
+         * Heaven may know what the argument to Player_SetPosition() is.
+         * I, however, haven't the faintest idea.
+         */
+    Player_Start(module);
+    Player_SetPosition(ms);
+    return(1);
+#else
     BAIL_MACRO("!!! FIXME: Not implemented", 0);
+#endif
 } /* MIKMOD_seek */
 
 #endif /* SOUND_SUPPORTS_MIKMOD */
