@@ -121,6 +121,7 @@ static const ov_callbacks RWops_ogg_callbacks =
 
 
     /* Return a human readable version of an VorbisFile error code... */
+#if (defined DEBUG_CHATTER)
 static const char *ogg_error(int errnum)
 {
     switch(errnum)
@@ -139,7 +140,7 @@ static const char *ogg_error(int errnum)
 
     return("unknown error");
 } /* ogg_error */
-
+#endif
 
 static __inline__ void output_ogg_comments(OggVorbis_File *vf)
 {
@@ -150,10 +151,10 @@ static __inline__ void output_ogg_comments(OggVorbis_File *vf)
     if (vc == NULL)
         return;
 
-    _D(("OGG: vendor == [%s].\n", vc->vendor));
+    SNDDBG(("OGG: vendor == [%s].\n", vc->vendor));
     for (i = 0; i < vc->comments; i++)
     {
-        _D(("OGG: user comment [%s].\n", vc->user_comments[i]));
+        SNDDBG(("OGG: user comment [%s].\n", vc->user_comments[i]));
     } /* for */
 #endif
 } /* output_ogg_comments */
@@ -172,7 +173,7 @@ static int OGG_open(Sound_Sample *sample, const char *ext)
     rc = ov_open_callbacks(internal->rw, vf, NULL, 0, RWops_ogg_callbacks);
     if (rc != 0)
     {
-        _D(("OGG: can't grok data. reason: [%s].\n", ogg_error(rc)));
+        SNDDBG(("OGG: can't grok data. reason: [%s].\n", ogg_error(rc)));
         free(vf);
         BAIL_MACRO("OGG: Not valid Ogg Vorbis data.", 0);
     } /* if */
@@ -185,16 +186,16 @@ static int OGG_open(Sound_Sample *sample, const char *ext)
         BAIL_MACRO("OGG: failed to retrieve bitstream info", 0);
     } /* if */
 
-    _D(("OGG: Accepting data stream.\n"));
+    SNDDBG(("OGG: Accepting data stream.\n"));
 
     output_ogg_comments(vf);
-    _D(("OGG: bitstream version == (%d).\n", info->version));
-    _D(("OGG: bitstream channels == (%d).\n", info->channels));
-    _D(("OGG: bitstream sampling rate == (%ld).\n", info->rate));
-    _D(("OGG: seekable == {%s}.\n", ov_seekable(vf) ? "TRUE" : "FALSE"));
-    _D(("OGG: number of logical bitstreams == (%ld).\n", ov_streams(vf)));
-    _D(("OGG: serial number == (%ld).\n", ov_serialnumber(vf, -1)));
-    _D(("OGG: total seconds of sample == (%f).\n", ov_time_total(vf, -1)));
+    SNDDBG(("OGG: bitstream version == (%d).\n", info->version));
+    SNDDBG(("OGG: bitstream channels == (%d).\n", info->channels));
+    SNDDBG(("OGG: bitstream sampling rate == (%ld).\n", info->rate));
+    SNDDBG(("OGG: seekable == {%s}.\n", ov_seekable(vf) ? "TRUE" : "FALSE"));
+    SNDDBG(("OGG: number of logical bitstreams == (%ld).\n", ov_streams(vf)));
+    SNDDBG(("OGG: serial number == (%ld).\n", ov_serialnumber(vf, -1)));
+    SNDDBG(("OGG: total seconds of sample == (%f).\n", ov_time_total(vf, -1)));
 
     internal->decoder_private = vf;
     sample->flags = SOUND_SAMPLEFLAG_NONE;
