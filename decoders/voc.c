@@ -41,9 +41,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
-#include "SDL.h"
-#include "SDL_endian.h"
 #include "SDL_sound.h"
 
 #define __SDL_SOUND_INTERNAL__
@@ -362,7 +359,7 @@ static int voc_get_block(Sound_Sample *sample)
 }
 
 
-static int voc_read(Sound_Sample *sample)
+static int voc_read_waveform(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SDL_RWops *src = internal->rw;
@@ -398,20 +395,10 @@ static int voc_read(Sound_Sample *sample)
         done = SDL_RWread(src, buf + v->bufpos, 1, max);
         v->rest -= done;
         v->bufpos += done;
-        if (v->size == ST_SIZE_WORD)
-        {
-            #if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
-                for (; v->rest > 0; v->rest -= 2)
-                {
-                    *((Uint16 *) buf) = SDL_SwapLE16(*((Uint16 *) buf));
-                    ((Uint16 *) buf)++;
-                }
-            #endif
-        }
     }
 
     return done;
-} /* voc_read */
+} /* voc_read_waveform */
 
 
 static int VOC_open(Sound_Sample *sample, const char *ext)
@@ -464,7 +451,7 @@ static Uint32 VOC_read(Sound_Sample *sample)
     v->bufpos = 0;
     while (v->bufpos < internal->buffer_size)
     {
-        Uint32 rc = voc_read(sample);
+        Uint32 rc = voc_read_waveform(sample);
         if (rc == 0)  /* !!! FIXME: Could be an error... */
         {
             sample->flags |= SOUND_SAMPLEFLAG_EOF;
