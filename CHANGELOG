@@ -2,6 +2,12 @@
  * CHANGELOG.
  */
 
+04232002 - Cleaned up the playsound command line handling. Most command line
+           options (--rate, --format, --predecode, etc) are specified per-file
+           and reset to their defaults after each sample is played back.
+           --loop now takes a numeric argument: --loop 2 will playback the
+           sample three times (one playback and two loops). Added Darrell
+           to the playsound credits.
 04212002 - Initial work to add a Sound_Seek() API. Removed the NEEDSEEK
            sample flag (replaced it with CANSEEK). Hack to change the internal
            Sound_SetError() function to __Sound_SetError(). Added internal
