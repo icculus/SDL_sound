@@ -1,6 +1,10 @@
+
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <ctype.h>
 #include <stdlib.h>
-#include <signal.h>
 
 #include "SDL_sound.h"
 

@@ -46,7 +46,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include "mpglib/mpg123_sdlsound.h"
 #include "mpglib/mpglib_sdlsound.h"
 

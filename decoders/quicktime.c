@@ -60,7 +60,6 @@ typedef long int32_t;
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
 
 #include "SDL_sound.h"
 
