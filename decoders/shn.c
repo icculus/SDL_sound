@@ -423,7 +423,8 @@ static void init_shn_offset(Sint32 **offset, int nchan, int nblock, int ftype)
             mean = 0x8000;
             break;
         default:
-            BAIL_MACRO("SHN: unknown file type", 0);
+            Sound_SetError("SHN: unknown file type");
+            return;
     } /* switch */
 
     for(chan = 0; chan < nchan; chan++)
