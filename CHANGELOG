@@ -2,7 +2,9 @@
  * CHANGELOG.
  */
 
-10122003 - Upped version to 1.0.1.
+10122003 - Fixed "make dist" behaviour to not packaged generated docs, and
+           made sure other files are always packaged, regardless of config.
+           Upped version to 1.0.1.
 10102003 - Changed some SDL_Error()s to __Sound_SetError() in new DLS code
            to fix linking issues.
 10052003 - Fixed memory corruption when freeing DLS instruments,
