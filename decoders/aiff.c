@@ -63,10 +63,11 @@ static int AIFF_open(Sound_Sample *sample, const char *ext);
 static void AIFF_close(Sound_Sample *sample);
 static Uint32 AIFF_read(Sound_Sample *sample);
 
+static const char *extensions_aiff[] = { "AIFF", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_AIFF =
 {
     {
-        "AIFF",
+        extensions_aiff,
         "Audio Interchange File Format",
         "Torbjörn Andersson <d91tan@Update.UU.SE>",
         "http://www.icculus.org/SDL_sound/"

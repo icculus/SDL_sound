@@ -59,10 +59,11 @@ static int VOC_open(Sound_Sample *sample, const char *ext);
 static void VOC_close(Sound_Sample *sample);
 static Uint32 VOC_read(Sound_Sample *sample);
 
+static const char *extensions_voc[] = { "VOC", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_VOC =
 {
     {
-        "VOC",
+        extensions_voc,
         "Creative Labs Voice format",
         "Ryan C. Gordon <icculus@clutteredmind.org>",
         "http://www.icculus.org/SDL_sound/"

@@ -59,10 +59,11 @@ static int OGG_open(Sound_Sample *sample, const char *ext);
 static void OGG_close(Sound_Sample *sample);
 static Uint32 OGG_read(Sound_Sample *sample);
 
+static const char *extensions_ogg[] = { "OGG", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_OGG =
 {
     {
-        "OGG",
+        extensions_ogg,
         "Ogg Vorbis audio through VorbisFile",
         "Ryan C. Gordon <icculus@clutteredmind.org>",
         "http://www.icculus.org/SDL_sound/"

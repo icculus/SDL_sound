@@ -69,10 +69,11 @@ static int MIDI_open(Sound_Sample *sample, const char *ext);
 static void MIDI_close(Sound_Sample *sample);
 static Uint32 MIDI_read(Sound_Sample *sample);
 
+static const char *extensions_midi[] = { "MIDI", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_MIDI =
 {
     {
-        "MIDI",
+        extensions_midi,
         "MIDI music through the TiMidity MIDI to WAVE converter",
         "Torbjörn Andersson <d91tan@Update.UU.SE>",
         "http://www.goice.co.jp/member/mo/timidity/"

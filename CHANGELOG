@@ -101,6 +101,10 @@
 10232001 - Rewrote playsound.c's audio_callback() to no longer need the
            overflow buffer hack, which streamlines it a little and trims the
            memory requirements for playsound by about 16 kilobytes.
+11012001 - API COMPATIBILITY BREAKAGE: Decoders can now list multiple file
+           extensions each. Playsound has been updated to handle this.
+           Playsound now registers a SIGINT handler, so you can skip tracks
+           and/or abort the way that mpg123 does.
 
 --ryan. (icculus@clutteredmind.org)
 

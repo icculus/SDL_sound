@@ -55,10 +55,11 @@ static int MP3_open(Sound_Sample *sample, const char *ext);
 static void MP3_close(Sound_Sample *sample);
 static Uint32 MP3_read(Sound_Sample *sample);
 
+static const char *extensions_smpeg[] = { "MP3", "MPEG", "MPG", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_MP3 =
 {
     {
-        "MP3",
+        extensions_smpeg,
         "MPEG-1 Layer 3 audio through SMPEG",
         "Ryan C. Gordon <icculus@clutteredmind.org>",
         "http://www.icculus.org/SDL_sound/"
