@@ -50,6 +50,7 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext);
 static void MODPLUG_close(Sound_Sample *sample);
 static Uint32 MODPLUG_read(Sound_Sample *sample);
 static int MODPLUG_rewind(Sound_Sample *sample);
+static int MODPLUG_seek(Sound_Sample *sample, Uint32 ms);
 
 static const char *extensions_modplug[] =
 {
@@ -97,7 +98,8 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MODPLUG =
     MODPLUG_open,       /*   open() method */
     MODPLUG_close,      /*  close() method */
     MODPLUG_read,       /*   read() method */
-    MODPLUG_rewind      /* rewind() method */
+    MODPLUG_rewind,     /* rewind() method */
+    MODPLUG_seek        /*   seek() method */
 };
 
 
@@ -243,6 +245,12 @@ static int MODPLUG_rewind(Sound_Sample *sample)
     ModPlug_Seek(module, 0);
     return(1);
 } /* MODPLUG_rewind */
+
+
+static int MODPLUG_seek(Sound_Sample *sample, Uint32 ms)
+{
+    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+} /* MODPLUG_seek */
 
 #endif /* SOUND_SUPPORTS_MODPLUG */
 

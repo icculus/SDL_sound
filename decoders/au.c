@@ -49,6 +49,7 @@ static int AU_open(Sound_Sample *sample, const char *ext);
 static void AU_close(Sound_Sample *sample);
 static Uint32 AU_read(Sound_Sample *sample);
 static int AU_rewind(Sound_Sample *sample);
+static int AU_seek(Sound_Sample *sample, Uint32 ms);
 
 /*
  * Sometimes the extension ".snd" is used for these files (mostly on the NeXT),
@@ -70,7 +71,8 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_AU =
     AU_open,        /*   open() method */
     AU_close,       /*  close() method */
     AU_read,        /*   read() method */
-    AU_rewind       /* rewind() method */
+    AU_rewind,      /* rewind() method */
+    AU_seek         /*   seek() method */
 };
 
 /* no init/deinit needed */
@@ -315,6 +317,12 @@ static int AU_rewind(Sound_Sample *sample)
     dec->remaining = dec->total;
     return(1);
 } /* AU_rewind */
+
+
+static int AU_seek(Sound_Sample *sample, Uint32 ms)
+{
+    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+} /* AU_seek */
 
 #endif /* SOUND_SUPPORTS_AU */
 

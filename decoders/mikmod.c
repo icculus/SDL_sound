@@ -51,6 +51,7 @@ static int MIKMOD_open(Sound_Sample *sample, const char *ext);
 static void MIKMOD_close(Sound_Sample *sample);
 static Uint32 MIKMOD_read(Sound_Sample *sample);
 static int MIKMOD_rewind(Sound_Sample *sample);
+static int MIKMOD_seek(Sound_Sample *sample, Uint32 ms);
 
 static const char *extensions_mikmod[] =
 {
@@ -89,7 +90,8 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MIKMOD =
     MIKMOD_open,       /*   open() method */
     MIKMOD_close,      /*  close() method */
     MIKMOD_read,       /*   read() method */
-    MIKMOD_rewind      /* rewind() method */
+    MIKMOD_rewind,     /* rewind() method */
+    MIKMOD_seek        /*   seek() method */
 };
 
 
@@ -295,6 +297,10 @@ static int MIKMOD_rewind(Sound_Sample *sample)
 } /* MIKMOD_rewind */
 
 
+static int MIKMOD_seek(Sound_Sample *sample, Uint32 ms)
+{
+    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+} /* MIKMOD_seek */
 
 #endif /* SOUND_SUPPORTS_MIKMOD */
 

@@ -63,6 +63,7 @@ static int SHN_open(Sound_Sample *sample, const char *ext);
 static void SHN_close(Sound_Sample *sample);
 static Uint32 SHN_read(Sound_Sample *sample);
 static int SHN_rewind(Sound_Sample *sample);
+static int SHN_seek(Sound_Sample *sample, Uint32 ms);
 
 static const char *extensions_shn[] = { "SHN", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_SHN =
@@ -79,7 +80,8 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_SHN =
     SHN_open,       /*   open() method */
     SHN_close,      /*  close() method */
     SHN_read,       /*   read() method */
-    SHN_rewind      /* rewind() method */
+    SHN_rewind,     /* rewind() method */
+    SHN_seek        /*   seek() method */
 };
 
 
@@ -1321,6 +1323,13 @@ static int SHN_rewind(Sound_Sample *sample)
     return(SHN_open(sample, "SHN"));
 #endif
 } /* SHN_rewind */
+
+
+static int SHN_seek(Sound_Sample *sample, Uint32 ms)
+{
+    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+} /* SHN_seek */
+
 
 #endif  /* defined SOUND_SUPPORTS_SHN */
 

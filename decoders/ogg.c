@@ -59,6 +59,7 @@ static int OGG_open(Sound_Sample *sample, const char *ext);
 static void OGG_close(Sound_Sample *sample);
 static Uint32 OGG_read(Sound_Sample *sample);
 static int OGG_rewind(Sound_Sample *sample);
+static int OGG_seek(Sound_Sample *sample, Uint32 ms);
 
 static const char *extensions_ogg[] = { "OGG", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_OGG =
@@ -75,7 +76,8 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_OGG =
     OGG_open,       /*   open() method */
     OGG_close,      /*  close() method */
     OGG_read,       /*   read() method */
-    OGG_rewind      /* rewind() method */
+    OGG_rewind,     /* rewind() method */
+    OGG_seek        /*   seek() method */
 };
 
 
@@ -274,6 +276,12 @@ static int OGG_rewind(Sound_Sample *sample)
     BAIL_IF_MACRO(ov_raw_seek(vf, 0) < 0, ERR_IO_ERROR, 0);
     return(1);
 } /* OGG_rewind */
+
+
+static int OGG_seek(Sound_Sample *sample, Uint32 ms)
+{
+    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+} /* OGG_seek */
 
 #endif /* SOUND_SUPPORTS_OGG */
 

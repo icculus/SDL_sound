@@ -177,6 +177,22 @@ typedef struct __SOUND_DECODERFUNCTIONS__
          *  this method should ever fail!
          */
     int (*rewind)(Sound_Sample *sample);
+
+        /*
+         * Reposition the decoding to an arbitrary point. Nonzero on
+         *  success, zero on failure.
+         *  
+         * The purpose of this method is to allow for higher efficiency than
+         *  an application could get by just rewinding the sample and 
+         *  decoding to a given point.
+         *
+         * The decoder is responsible for calling seek() on the associated
+         *  SDL_RWops.
+         *
+         * If there is an error, try to recover so that the next read will
+         *  continue as if nothing happened.
+         */
+    int (*seek)(Sound_Sample *sample, Uint32 ms);
 } Sound_DecoderFunctions;
 
 
@@ -225,6 +241,7 @@ typedef struct __SOUND_SAMPLEINTERNAL__
 #define ERR_COMPRESSION          "(De)compression error"
 #define ERR_PREV_ERROR           "Previous decoding already caused an error"
 #define ERR_PREV_EOF             "Previous decoding already triggered EOF"
+#define ERR_CANNOT_SEEK          "Sample is not seekable"
 
 /*
  * Call this to set the message returned by Sound_GetError().
@@ -233,8 +250,16 @@ typedef struct __SOUND_SAMPLEINTERNAL__
  *
  * Calling this with a NULL argument is a safe no-op.
  */
-void Sound_SetError(const char *err);
+void __Sound_SetError(const char *err);
 
+/* !!! FIXME: Clean up elsewhere and get rid of this. */
+#define Sound_SetError __Sound_SetError
+
+/*
+ * Call this to convert milliseconds to an actual byte position, based on
+ *  audio data characteristics.
+ */
+Uint32 __Sound_convertMsToBytePos(Sound_AudioInfo *info, Uint32 ms);
 
 /*
  * Use this if you need a cross-platform stricmp().
@@ -243,8 +268,8 @@ int __Sound_strcasecmp(const char *x, const char *y);
 
 
 /* These get used all over for lessening code clutter. */
-#define BAIL_MACRO(e, r) { Sound_SetError(e); return r; }
-#define BAIL_IF_MACRO(c, e, r) if (c) { Sound_SetError(e); return r; }
+#define BAIL_MACRO(e, r) { __Sound_SetError(e); return r; }
+#define BAIL_IF_MACRO(c, e, r) if (c) { __Sound_SetError(e); return r; }
 
 
 

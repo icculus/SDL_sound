@@ -53,6 +53,7 @@ static int MIDI_open(Sound_Sample *sample, const char *ext);
 static void MIDI_close(Sound_Sample *sample);
 static Uint32 MIDI_read(Sound_Sample *sample);
 static int MIDI_rewind(Sound_Sample *sample);
+static int MIDI_seek(Sound_Sample *sample, Uint32 ms);
 
 static const char *extensions_midi[] = { "MIDI", "MID", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_MIDI =
@@ -69,7 +70,8 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MIDI =
     MIDI_open,       /*   open() method */
     MIDI_close,      /*  close() method */
     MIDI_read,       /*   read() method */
-    MIDI_rewind      /* rewind() method */
+    MIDI_rewind,     /* rewind() method */
+    MIDI_seek        /*   seek() method */
 };
 
 
@@ -156,6 +158,12 @@ static int MIDI_rewind(Sound_Sample *sample)
     Timidity_Start(song);
     return(1);
 } /* MIDI_rewind */
+
+
+static int MIDI_seek(Sound_Sample *sample, Uint32 ms)
+{
+    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+} /* MIDI_seek */
 
 #endif /* SOUND_SUPPORTS_MIDI */
 

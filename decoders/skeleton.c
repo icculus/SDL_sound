@@ -59,6 +59,7 @@ static int FMT_open(Sound_Sample *sample, const char *ext);
 static void FMT_close(Sound_Sample *sample);
 static Uint32 FMT_read(Sound_Sample *sample);
 static int FMT_rewind(Sound_Sample *sample);
+static int FMT_seek(Sound_Sample *sample, Uint32 ms);
 
 static const char *extensions_fmt[] = { "FMT", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_FMT =
@@ -75,7 +76,8 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_FMT =
     FMT_open,       /*   open() method */
     FMT_close,      /*  close() method */
     FMT_read,       /*   read() method */
-    FMT_rewind      /* rewind() method */
+    FMT_rewind,     /* rewind() method */
+    FMT_seek        /*   seek() method */
 };
 
 
@@ -160,6 +162,20 @@ static int FMT_rewind(Sound_Sample *sample)
 
     return(1);  /* success. */
 } /* FMT_rewind */
+
+
+static int FMT_seek(Sound_Sample *sample, Uint32 ms)
+{
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+
+        /* seek to the appropriate place... */
+    BAIL_IF_MACRO(SDL_RWseek(internal->rw, 0, SEEK_SET) != 0, ERR_IO_ERROR, 0);
+
+    (set state as necessary.)
+
+    return(1);  /* success. */
+} /* FMT_seek */
+
 
 #endif /* SOUND_SUPPORTS_FMT */
 

@@ -50,6 +50,7 @@ static int WAV_open(Sound_Sample *sample, const char *ext);
 static void WAV_close(Sound_Sample *sample);
 static Uint32 WAV_read(Sound_Sample *sample);
 static int WAV_rewind(Sound_Sample *sample);
+static int WAV_seek(Sound_Sample *sample, Uint32 ms);
 
 static const char *extensions_wav[] = { "WAV", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV =
@@ -66,7 +67,8 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV =
     WAV_open,       /*   open() method */
     WAV_close,      /*  close() method */
     WAV_read,       /*   read() method */
-    WAV_rewind      /* rewind() method */
+    WAV_rewind,     /* rewind() method */
+    WAV_seek        /*   seek() method */
 };
 
 
@@ -718,6 +720,12 @@ static int WAV_rewind(Sound_Sample *sample)
     w->bytesLeft = fmt->total_bytes;
     return(fmt->rewind_sample(sample));
 } /* WAV_rewind */
+
+
+static int WAV_seek(Sound_Sample *sample, Uint32 ms)
+{
+    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+} /* WAV_seek */
 
 #endif /* SOUND_SUPPORTS_WAV */
 

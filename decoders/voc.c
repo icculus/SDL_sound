@@ -59,6 +59,7 @@ static int VOC_open(Sound_Sample *sample, const char *ext);
 static void VOC_close(Sound_Sample *sample);
 static Uint32 VOC_read(Sound_Sample *sample);
 static int VOC_rewind(Sound_Sample *sample);
+static int VOC_seek(Sound_Sample *sample, Uint32 ms);
 
 static const char *extensions_voc[] = { "VOC", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_VOC =
@@ -75,7 +76,8 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_VOC =
     VOC_open,       /*   open() method */
     VOC_close,      /*  close() method */
     VOC_read,       /*   read() method */
-    VOC_rewind      /* rewind() method */
+    VOC_rewind,     /* rewind() method */
+    VOC_seek        /*   seek() method */
 };
 
 
@@ -501,6 +503,13 @@ static int VOC_rewind(Sound_Sample *sample)
     v->rest = 0;
     return(1);
 } /* VOC_rewind */
+
+
+static int VOC_seek(Sound_Sample *sample, Uint32 ms)
+{
+    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+} /* VOC_seek */
+
 
 #endif /* SOUND_SUPPORTS_VOC */
 
