@@ -246,6 +246,7 @@ static void MOD_close(Sound_Sample *sample)
     mod_t *m = (mod_t *) internal->decoder_private;
 
     Player_Free(m->module);
+    free(m);
 } /* MOD_close */
 
 
