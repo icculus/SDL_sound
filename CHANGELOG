@@ -2,6 +2,8 @@
  * CHANGELOG.
  */
 
+05222002 - Torbjörn sent in some more fixes for altcvt: stereo to mono
+           conversion works, now.
 05222002 - Torbjörn sent in some initial cleanups and fixes for altcvt, and
            fixed a bug in playsound when not all three of --rate, --channels
            and --format are specified.
