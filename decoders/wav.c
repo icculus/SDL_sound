@@ -647,8 +647,7 @@ static int read_fmt(SDL_RWops *rw, fmt_t *fmt)
         default:
             SNDDBG(("WAV: Format 0x%X is unknown.\n",
                     (unsigned int) fmt->wFormatTag));
-            Sound_SetError("WAV: Unsupported format");
-            return(0);  /* not supported whatsoever. */
+            BAIL_MACRO("WAV: Unsupported format", 0);
     } /* switch */
 
     assert(0);  /* shouldn't hit this point. */

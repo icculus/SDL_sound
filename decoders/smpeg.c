@@ -173,16 +173,14 @@ static int _SMPEG_open(Sound_Sample *sample, const char *ext)
 
     if (SMPEG_error(smpeg))
     {
-        Sound_SetError(SMPEG_error(smpeg));
         SMPEG_delete(smpeg);
-        return(0);
+        BAIL_MACRO(SMPEG_error(smpeg), 0);
     } /* if */
 
     if (!smpeg_info.has_audio)
     {
-        Sound_SetError("SMPEG: No audio stream found in data.");
         SMPEG_delete(smpeg);
-        return(0);
+        BAIL_MACRO("SMPEG: No audio stream found in data.", 0);
     } /* if */
 
     SNDDBG(("SMPEG: Accepting data stream.\n"));
@@ -247,7 +245,7 @@ static Uint32 _SMPEG_read(Sound_Sample *sample)
             sample->flags |= SOUND_SAMPLEFLAG_EOF;
         else
         {
-            Sound_SetError(errMsg);
+            __Sound_SetError(errMsg);
             sample->flags |= SOUND_SAMPLEFLAG_ERROR;
         } /* else */
     } /* if */

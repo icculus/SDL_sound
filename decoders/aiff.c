@@ -441,8 +441,7 @@ static int read_fmt(SDL_RWops *rw, comm_t *c, fmt_t *fmt)
         default:
             SNDDBG(("AIFF: Format %lu is unknown.\n",
                     (unsigned int) fmt->type));
-            Sound_SetError("AIFF: Unsupported format");
-            return(0);  /* not supported whatsoever. */
+            BAIL_MACRO("AIFF: Unsupported format", 0);
     } /* switch */
 
     assert(0);  /* shouldn't hit this point. */
@@ -508,16 +507,14 @@ static int AIFF_open(Sound_Sample *sample, const char *ext)
 
     if (!find_chunk(rw, ssndID))
     {
-        Sound_SetError("AIFF: No sound data chunk.");
         free(a);
-        return(0);
+        BAIL_MACRO("AIFF: No sound data chunk.", 0);
     } /* if */
 
     if (!read_ssnd_chunk(rw, &s))
     {
-        Sound_SetError("AIFF: Can't read sound data chunk.");
         free(a);
-        return(0);
+        BAIL_MACRO("AIFF: Can't read sound data chunk.", 0);
     } /* if */
 
     a->fmt.total_bytes = a->bytesLeft = bytes_per_sample * c.numSampleFrames;

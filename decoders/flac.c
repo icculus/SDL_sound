@@ -308,8 +308,7 @@ static void error_callback(
 {
     flac_t *f = (flac_t *) client_data;
 
-        /* !!! FIXME: Is every error really fatal? I don't know... */
-    Sound_SetError(d_error_status_string[status]);
+    __Sound_SetError(d_error_status_string[status]);
     f->sample->flags |= SOUND_SAMPLEFLAG_ERROR;
 } /* error_callback */
 
@@ -449,9 +448,8 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     decoder = d_new();
     if (decoder == NULL)
     {
-        Sound_SetError(ERR_OUT_OF_MEMORY);
         free(f);
-        return(0);
+        BAIL_MACRO(ERR_OUT_OF_MEMORY, 0);
     } /* if */       
 
     d_set_read_callback(decoder, read_callback);
@@ -515,9 +513,8 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
         /* Still not FLAC? Give up. */
         if (!f->is_flac)
         {
-            Sound_SetError("FLAC: No metadata found. Not a FLAC stream?");
             free_flac(f);
-            return(0);
+            BAIL_MACRO("FLAC: No metadata found. Not a FLAC stream?", 0);
         } /* if */
     } /* if */
 
@@ -543,9 +540,8 @@ static Uint32 FLAC_read(Sound_Sample *sample)
 
     if (!d_process_one_frame(f->decoder))
     {
-        Sound_SetError("FLAC: Couldn't decode frame.");
         sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-        return(0);
+        BAIL_MACRO("FLAC: Couldn't decode frame.", 0);
     } /* if */
 
     if (d_get_state(f->decoder) == D_END_OF_STREAM)

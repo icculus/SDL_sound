@@ -53,14 +53,12 @@ static struct buf *addbuf(struct mpstr *mp,char *buf,int size)
 	struct buf *nbuf;
 
 	nbuf = malloc( sizeof(struct buf) );
-	if(!nbuf) {
-		Sound_SetError("MPGLIB: Out of memory!");
-		return NULL;
-	}
+	BAIL_IF_MACRO(!nbuf, ERR_OUT_OF_MEMORY, NULL);
+
 	nbuf->pnt = malloc(size);
 	if(!nbuf->pnt) {
 		free(nbuf);
-		return NULL;
+		BAIL_MACRO(ERR_OUT_OF_MEMORY, NULL);
 	}
 	nbuf->size = size;
 	memcpy(nbuf->pnt,buf,size);
@@ -106,8 +104,7 @@ static int read_buf_byte(struct mpstr *mp, unsigned long *retval)
 		remove_buf(mp);
 		pos = mp->tail->pos;
 		if(!mp->tail) {
-			Sound_SetError("MPGLIB: Fatal error! Short read in read_buf_byte()!");
-			return 0;
+			BAIL_MACRO("MPGLIB: Short read in read_buf_byte()!", 0);
 		}
 	}
 
@@ -155,10 +152,7 @@ int decodeMP3(struct mpstr *mp,char *in,int isize,char *out,
 {
 	int len;
 
-	if(osize < 4608) {
-		Sound_SetError("MPGLIB: Not enough output space for decoding!");
-		return MP3_ERR;
-	}
+	BAIL_IF_MACRO(osize < 4608, "MPGLIB: Output buffer too small", MP3_ERR);
 
 	if(in) {
 		if(addbuf(mp,in,isize) == NULL) {
@@ -232,8 +226,8 @@ int set_pointer(long backstep, struct mpstr *mp)
 {
   unsigned char *bsbufold;
   if(mp->fsizeold < 0 && backstep > 0) {
-    Sound_SetError("MPGLIB: Can't step back!"); /* FIXME: need formatting: %ld!\n",backstep); */
-    return MP3_ERR;
+    /* FIXME: need formatting: %ld!\n",backstep); */
+    BAIL_MACRO("MPGLIB: Can't step back!", MP3_ERR);
   }
   bsbufold = mp->bsspace[mp->bsnum] + 512;
   wordpointer -= backstep;

@@ -163,13 +163,13 @@ typedef struct __SOUND_DECODERFUNCTIONS__
          *      sample->flags |= SOUND_SAMPLEFLAG_EOF;
          *
          *   If there's an unrecoverable error, then do:
-         *      Sound_SetError(ERR_EXPLAIN_WHAT_WENT_WRONG);
+         *      __Sound_SetError(ERR_EXPLAIN_WHAT_WENT_WRONG);
          *      sample->flags |= SOUND_SAMPLEFLAG_ERROR;
          *
          *   If there's more data, but you'd have to block for considerable
          *    amounts of time to get at it, or there's a recoverable error,
          *    then do:
-         *      Sound_SetError(ERR_EXPLAIN_WHAT_WENT_WRONG);
+         *      __Sound_SetError(ERR_EXPLAIN_WHAT_WENT_WRONG);
          *      sample->flags |= SOUND_SAMPLEFLAG_EAGAIN;
          *
          * SDL_sound will not call your read() method for any samples with
@@ -272,9 +272,6 @@ typedef struct __SOUND_SAMPLEINTERNAL__
  * Calling this with a NULL argument is a safe no-op.
  */
 void __Sound_SetError(const char *err);
-
-/* !!! FIXME: Clean up elsewhere and get rid of this. */
-#define Sound_SetError __Sound_SetError
 
 /*
  * Call this to convert milliseconds to an actual byte position, based on

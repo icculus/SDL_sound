@@ -32,6 +32,8 @@
 #define Sound_AI_Loop 0x2
 #define _fsize 32
 
+#include "SDL_sound.h"
+
 typedef struct{
     Sint16 numerator;
     Sint16 denominator;
@@ -72,9 +74,9 @@ typedef struct{
 
 #define SDL_SOUND_Loop 0x10
 
-extern DECLSPEC int Sound_ConvertAudio( Sound_AudioCVT *Data );
+extern SNDDECLSPEC int Sound_ConvertAudio( Sound_AudioCVT *Data );
 
-extern DECLSPEC int Sound_BuildAudioCVT( Sound_AudioCVT *Data,
+extern SNDDECLSPEC int Sound_BuildAudioCVT( Sound_AudioCVT *Data,
    Uint16 src_format, Uint8 src_channels, int src_rate,
    Uint16 dst_format, Uint8 dst_channels, int dst_rate, Uint32 dst_size );
 

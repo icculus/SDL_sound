@@ -358,7 +358,7 @@ void __Sound_SetError(const char *str)
     if (str == NULL)
         return;
 
-    SNDDBG(("Sound_SetError(\"%s\");%s\n", str,
+    SNDDBG(("__Sound_SetError(\"%s\");%s\n", str,
               (initialized) ? "" : " [NOT INITIALIZED!]"));
 
     if (!initialized)
@@ -444,7 +444,7 @@ static Sound_Sample *alloc_sample(SDL_RWops *rw, Sound_AudioInfo *desired,
     Sound_SampleInternal *internal = malloc(sizeof (Sound_SampleInternal));
     if ((retval == NULL) || (internal == NULL))
     {
-        Sound_SetError(ERR_OUT_OF_MEMORY);
+        __Sound_SetError(ERR_OUT_OF_MEMORY);
         if (retval)
             free(retval);
         if (internal)
@@ -460,7 +460,7 @@ static Sound_Sample *alloc_sample(SDL_RWops *rw, Sound_AudioInfo *desired,
     retval->buffer = malloc(bufferSize);  /* pure ugly. */
     if (!retval->buffer)
     {
-        Sound_SetError(ERR_OUT_OF_MEMORY);
+        __Sound_SetError(ERR_OUT_OF_MEMORY);
         free(internal);
         free(retval);
         return(NULL);
@@ -549,7 +549,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
                             desired.rate,
                             sample->buffer_size) == -1)
     {
-        Sound_SetError(SDL_GetError());
+        __Sound_SetError(SDL_GetError());
         funcs->close(sample);
         SDL_RWseek(internal->rw, pos, SEEK_SET);  /* set for next try... */
         return(0);
@@ -668,7 +668,7 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
         free(retval->buffer);
     free(retval);
     SDL_RWclose(rw);
-    Sound_SetError(ERR_UNSUPPORTED_FORMAT);
+    __Sound_SetError(ERR_UNSUPPORTED_FORMAT);
     return(NULL);
 } /* Sound_NewSample */
 
@@ -700,13 +700,13 @@ void Sound_FreeSample(Sound_Sample *sample)
 
     if (!initialized)
     {
-        Sound_SetError(ERR_NOT_INITIALIZED);
+        __Sound_SetError(ERR_NOT_INITIALIZED);
         return;
     } /* if */
 
     if (sample == NULL)
     {
-        Sound_SetError(ERR_INVALID_ARGUMENT);
+        __Sound_SetError(ERR_INVALID_ARGUMENT);
         return;
     } /* if */
 
@@ -827,7 +827,7 @@ Uint32 Sound_DecodeAll(Sound_Sample *sample)
         if (ptr == NULL)
         {
             sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-            Sound_SetError(ERR_OUT_OF_MEMORY);
+            __Sound_SetError(ERR_OUT_OF_MEMORY);
         } /* if */
         else
         {

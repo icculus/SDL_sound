@@ -100,10 +100,7 @@ static int FMT_open(Sound_Sample *sample, const char *ext)
     SDL_RWops *rw = internal->rw;
 
     if (can NOT accept the data)
-    {
-        Sound_SetError("FMT: expected X, got Y.");
-        return(0);
-    } /* if */
+        BAIL_MACRO("FMT: expected X, got Y.", 0);
 
     SNDDBG(("FMT: Accepting data stream.\n"));
     set up sample->actual;

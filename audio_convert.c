@@ -551,7 +551,7 @@ int Sound_ConvertAudio(Sound_AudioCVT *cvt)
         /* Make sure there's data to convert */
     if (cvt->buf == NULL)
     {
-        Sound_SetError("No buffer allocated for conversion");
+        __Sound_SetError("No buffer allocated for conversion");
         return(-1);
     } /* if */
 
