@@ -5,6 +5,7 @@
  * All rights reserved. See also 'README'
  */ 
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "SDL_sound.h"

@@ -38,6 +38,7 @@
 #include <ctype.h>
 
 #include "SDL.h"
+#include "SDL_thread.h"
 #include "SDL_sound.h"
 
 #define __SDL_SOUND_INTERNAL__
@@ -389,7 +390,7 @@ void __Sound_SetError(const char *str)
 Uint32 __Sound_convertMsToBytePos(Sound_AudioInfo *info, Uint32 ms)
 {
     /* "frames" == "sample frames" */
-    float frames_per_ms = ((float) info->rate) / 1000.0;
+    float frames_per_ms = ((float) info->rate) / 1000.0f;
     Uint32 frame_offset = (Uint32) (frames_per_ms * ((float) ms));
     Uint32 frame_size = (Uint32) ((info->format & 0xFF) / 8) * info->channels;
     return(frame_offset * frame_size);

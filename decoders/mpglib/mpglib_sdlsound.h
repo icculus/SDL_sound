@@ -1,4 +1,11 @@
 
+#ifndef _INCLUDE_MPGLIB_SDLSOUND_H_
+#define _INCLUDE_MPGLIB_SDLSOUND_H_
+
+#ifdef _MSC_VER
+    #define snprintf _snprintf
+#endif
+
 struct buf {
 	unsigned char *pnt;
 	long size;
@@ -49,6 +56,8 @@ void ExitMP3(struct mpstr *mp);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
 
 
