@@ -235,6 +235,8 @@ static void FLAC_quit(void)
 } /* FLAC_quit */
 
 
+#define FLAC_MAGIC 0x43614C66  /* "fLaC" in ASCII. */
+
 static int FLAC_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
@@ -242,6 +244,34 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     FLAC__StreamDecoder *decoder;
     flac_t *f;
     int i;
+    int has_extension = 0;
+
+    /*
+     * If the extension is "flac", we'll believe that this is really meant
+     *  to be a FLAC stream, and will try to grok it from existing metadata.
+     *  metadata searching can be a very expensive operation, however, so
+     *  unless the user swears that it is a FLAC stream through the extension,
+     *  we decide what to do based on the existance of a 32-bit magic number.
+     */
+    for (i = 0; extensions_flac[i] != NULL; i++)
+    {
+        if (__Sound_strcasecmp(ext, extensions_flac[i]) == 0)
+        {
+            has_extension = 1;
+            break;
+        } /* if */
+    } /* for */
+
+    if (!has_extension)
+    {
+        int rc;
+        Uint32 flac_magic = SDL_ReadLE32(rw);
+        BAIL_IF_MACRO(flac_magic != FLAC_MAGIC, "FLAC: Not a FLAC stream.", 0);
+
+        /* move back over magic number for metadata scan... */
+        rc = SDL_RWseek(internal->rw, -sizeof (flac_magic), SEEK_CUR);
+        BAIL_IF_MACRO(rc < 0, ERR_IO_ERROR, 0);
+    } /* if */
 
     f = (flac_t *) malloc(sizeof (flac_t));
     BAIL_IF_MACRO(f == NULL, ERR_OUT_OF_MEMORY, 0);
@@ -264,34 +294,16 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     f->sample = sample;
     f->decoder = decoder;
     f->sample->actual.format = 0;
-    f->is_flac = 0;
-
-#if 0
-        /* !!! FIXME:
-         *
-         * It should be possible to play a FLAC stream starting at any frame,
-         * but we can only do that if we know for sure that it is a FLAC
-         * stream. Otherwise we have to check for metadata, and then we need
-         * the entire stream, from the beginning.
-         *
-         * But getting this to work right seems to be an enormous pain in the
-         * butt for what is, at the moment, a very small gain. Maybe later.
-         */
-    for (i = 0; extensions_flac[i] != NULL; i++)
-        if (__Sound_strcasecmp(ext, extensions_flac[i]) == 0)
-        {
-            f->is_flac = 1;
-            break;
-        } /* if */
-#endif
+    f->is_flac = 0 /* !!! FIXME: should be "has_extension", not "0". */;
 
     internal->decoder_private = f;
     FLAC__stream_decoder_init(decoder);
 
-        /* If we are not sure this is a FLAC stream, check for the STREAMINFO
+        /*
+         * If we are not sure this is a FLAC stream, check for the STREAMINFO
          * metadata block. If not, we'd have to peek at the first audio frame
-         * and get the sound format from there but, as stated above, that is
-         * not yet implemented.
+         * and get the sound format from there, but that is not yet
+         * implemented.
          */
     if (!f->is_flac)
     {
