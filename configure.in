@@ -303,7 +303,6 @@ dnl Add Makefile conditionals
 AM_CONDITIONAL(USE_TIMIDITY, test x$enable_midi = xyes)
 AM_CONDITIONAL(USE_MPGLIB, test x$enable_mpglib = xyes)
 AM_CONDITIONAL(USE_PHYSICSFS, test x$enable_physfs = xyes)
-AM_CONDITIONAL(USE_ALTCVT, test x$enable_altcvt = xyes)
 
 AC_OUTPUT([
 Makefile

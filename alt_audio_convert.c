@@ -25,6 +25,12 @@
  * (This code blatantly abducted for SDL_sound. Thanks, Frank! --ryan.)
  */
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
+#if SOUND_USE_ALTCVT
+
 #include "alt_audio_convert.h"
 #include <math.h>
 
@@ -1044,3 +1050,8 @@ int Sound_BuildAudioCVT(Sound_AudioCVT *Data,
                      "return value: %d \n\n\n", ret );
     return ret;
 }
+
+#endif  /* SOUND_USE_ALTCVT */
+
+/* end of alt_audio_convert.c ... */
+

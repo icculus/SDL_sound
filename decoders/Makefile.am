@@ -18,4 +18,5 @@ libdecoders_la_SOURCES =	\
 	midi.c		\
 	flac.c		\
 	speex.c		\
+	quicktime.c \
 	wav.c

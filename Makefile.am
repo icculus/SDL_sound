@@ -6,16 +6,12 @@ libSDL_soundincludedir = $(includedir)/SDL
 libSDL_soundinclude_HEADERS =	\
 	SDL_sound.h
 
-if USE_ALTCVT
-CVT_SOURCE = alt_audio_convert.c
-else
-CVT_SOURCE = audio_convert.c
-endif
-
 libSDL_sound_la_SOURCES =	\
 	SDL_sound.c	\
 	SDL_sound_internal.h	\
-    $(CVT_SOURCE)   \
+    alt_audio_convert.c   \
+    alt_audio_convert.h  \
+    audio_convert.c   \
 	extra_rwops.c	\
 	extra_rwops.h
 
@@ -45,8 +41,12 @@ EXTRA_DIST =	\
 	CWProject.sit \
 	PBProjects.tar.gz \
 	borland.zip \
-	Doxyfile \
-    docs
+	Doxyfile
 
 dist-hook:
-	rm -rf `find $(distdir)/docs -name CVS`
+	mkdir $(distdir)/docs
+	echo "Docs are generated with the program "Doxygen" (http://www.doxygen.org/)," >> $(distdir)/docs/README
+	echo " or can be read online at http://icculus.org/SDL_sound/docs/" >> $(distdir)/docs/README
+	echo >> $(distdir)/docs/README
+	rm -rf `find $(distdir) -name "CVS" -type d`
+
