@@ -6,7 +6,8 @@ INCLUDES = -I$(top_srcdir) -Itimidity
 
 libdecoders_la_SOURCES =	\
 	aiff.c		\
-	mod.c		\
+	mikmod.c	\
+	modplug.c	\
 	mp3.c		\
 	ogg.c		\
 	raw.c		\
