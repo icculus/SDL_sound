@@ -18,25 +18,10 @@
  */
 
 /*
- * MIDI decoder for SDL_sound, using TiMidity.
+ * MIDI decoder for SDL_sound.
  *
- * This is a rough, proof-of-concept implementation. A number of things need
- *  to be fixed or at the very least looked at:
- *
- * - I have only tested this with TiMidity++. Does TiMidity use the same
- *   command-line options?
- * - No attempt is made to ensure that the input really is MIDI. Eek. Does
- *   anyone here know how to recognize MIDI?
- * - Error handling is a joke.
- * - Did I make any stupid errors in the process communication?
- * - TiMidity++ spews a number of messages (to stderr?) which should be
- *   silenced eventually.
- * - This has to be the least portable decoder that has ever been written.
- * - Etc.
- *
- * Oh, and the whole thing should be rewritten as a generic "send data to
- *  external decoder" thing so this version should either be scrapped or
- *  cannibalized for ideas. :-)
+ * This driver handles MIDI data through a stripped-down version of TiMidity.
+ *  See the documentation in the timidity subdirectory.
  *
  * Please see the file COPYING in the source's root directory.
  *
@@ -53,14 +38,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+
 #include "SDL_sound.h"
 
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
+
+#include "timidity.h"
 
 
 static int MIDI_init(void);
@@ -69,14 +53,14 @@ static int MIDI_open(Sound_Sample *sample, const char *ext);
 static void MIDI_close(Sound_Sample *sample);
 static Uint32 MIDI_read(Sound_Sample *sample);
 
-static const char *extensions_midi[] = { "MIDI", NULL };
+static const char *extensions_midi[] = { "MIDI", "MID", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_MIDI =
 {
     {
         extensions_midi,
-        "MIDI music through the TiMidity MIDI to WAVE converter",
+        "MIDI decoder, using a subset of TiMidity",
         "Torbjörn Andersson <d91tan@Update.UU.SE>",
-        "http://www.goice.co.jp/member/mo/timidity/"
+        "http://www.icculus.org/SDL_sound/"
     },
 
     MIDI_init,       /* init() method       */
@@ -86,33 +70,17 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MIDI =
     MIDI_read        /* read() method       */
 };
 
-    /* this is what we store in our internal->decoder_private field... */
-typedef struct
-{
-    int fd_audio;
-} midi_t;
-
-
-static void sig_pipe(int signo)
-{
-    signal(signo, sig_pipe);
-} /* sig_pipe */
-
 
 static int MIDI_init(void)
 {
-    if (signal(SIGPIPE, sig_pipe) == SIG_ERR)
-    {
-        Sound_SetError("MIDI: Could not set up SIGPIPE signal handler.");
-        return(0);
-    } /* if */
+    BAIL_IF_MACRO(Timidity_Init() < 0, "MIDI: Could not initialise", 0);
     return(1);
 } /* MIDI_init */
 
 
 static void MIDI_quit(void)
 {
-    /* it's a no-op. */
+    Timidity_Exit();
 } /* MIDI_quit */
 
 
@@ -120,117 +88,28 @@ static int MIDI_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SDL_RWops *rw = internal->rw;
-    midi_t *m;
-    Uint8 buf[BUFSIZ];
-    ssize_t retval;
-    int fd1[2];
-    int fd2[2];
-    pid_t pid;
+    SDL_AudioSpec spec;
+    MidiSong *song;
 
-        /*
-         * Use the desired format if available, or pick sensible defaults.
-         * TiMidity does all the conversions we need.
-         */
-    if (sample->desired.rate == 0)
-    {
-        sample->actual.channels = 2;
-        sample->actual.rate = 44100;
-        sample->actual.format = AUDIO_S16SYS;
-    } /* if */
-    else
-        memcpy(&sample->actual, &sample->desired, sizeof (Sound_AudioInfo));
-    sample->flags = SOUND_SAMPLEFLAG_NONE;
-
-    if (pipe(fd1) < 0 || pipe(fd2) < 0)
-    {
-        Sound_SetError("MIDI: Pipe error.");
-        return(0);
-    } /* if */
-
-    pid = fork();
-    if (pid < 0)
-    {
-        Sound_SetError("MIDI: Fork error.");
-        return(0);
-    } /* if */
-
-    if (pid == 0)
-    {
-        /* child */
-        char arg_freq[10];   /* !!! FIXME: Large enough? */
-        char arg_format[10];
-        char *arg_list[] =
-            { "timidity", "-s", NULL, NULL, "-o", "-", "-", NULL };
-
-        arg_list[2] = arg_freq;
-        arg_list[3] = arg_format;
-
-        close(fd1[1]);
-        close(fd2[0]);
-
-            /* !!! FIXME: Errors should be propagated back to the parent */
-
-        if (fd1[0] != STDIN_FILENO)
-        {
-            if (dup2(fd1[0], STDIN_FILENO) != STDIN_FILENO)
-                return(0);
-            close(fd1[0]);
-        } /* if */
-
-        if (fd2[1] != STDOUT_FILENO)
-        {
-            if (dup2(fd2[1], STDOUT_FILENO) != STDOUT_FILENO)
-                return(0);
-            close(fd2[1]);
-        } /* if */
-
-            /* Construct command-line arguments matching the audio format */
-        sprintf(arg_freq, "%d", sample->actual.rate);
-        sprintf(arg_format, "-Or%c%c%cl",
-                (sample->actual.format & 0x0008) ? '8' : '1',
-                (sample->actual.format & 0x8000) ? 's' : 'u',
-                (sample->actual.channels == 1) ? 'M' : 'S');
-        if ((sample->actual.format & 0x0010) &&
-            (sample->actual.format & 0x7fff) != (AUDIO_S16SYS & 0x7fff))
-            strcat(arg_format, "x");
-
-        if (execvp("timidity", arg_list) < 0)
-            return(0);
-
-        SNDDBG(("MIDI: Is this line ever reached?"));
-        return(1);
-    } /* if */
-
-    /* parent */
-    close(fd1[0]);
-    close(fd2[1]);
-
-        /* Copy the entire file to the child process */
-    for (;;)
-    {
-        retval = SDL_RWread(internal->rw, buf, 1, BUFSIZ);
-        if (retval == 0)
-            break;
-
-        if (write(fd1[1], buf, retval) != retval)
-        {
-            Sound_SetError("MIDI: Could not send data to child process.");
-            return(0);
-        }
-    } /* for */
-
-    close(fd1[1]);
-
-    /* !!! FIXME: We still need some way of recognizing valid MIDI data */
-
-    m = (midi_t *) malloc(sizeof(midi_t));
-    BAIL_IF_MACRO(m == NULL, ERR_OUT_OF_MEMORY, 0);
-    internal->decoder_private = (void *) m;
-
-        /* This is where we'll read the converted audio data. */
-    m->fd_audio = fd2[0];
+    spec.channels = 2;
+    spec.format = AUDIO_S16SYS;
+    spec.freq = 44100;
+    spec.samples = 4096;
+    
+    song = Timidity_LoadSong(rw, &spec);
+    BAIL_IF_MACRO(song == NULL, "MIDI: Not a MIDI file.", 0);
+    Timidity_SetVolume(song, 100);
+    Timidity_Start(song);
 
     SNDDBG(("MIDI: Accepting data stream.\n"));
+
+    internal->decoder_private = (void *) song;
+
+    sample->actual.channels = 2;
+    sample->actual.rate = 44100;
+    sample->actual.format = AUDIO_S16SYS;
+    
+    sample->flags = SOUND_SAMPLEFLAG_NONE;
     return(1); /* we'll handle this data. */
 } /* MIDI_open */
 
@@ -238,23 +117,19 @@ static int MIDI_open(Sound_Sample *sample, const char *ext)
 static void MIDI_close(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    MidiSong *song = (MidiSong *) internal->decoder_private;
 
-    close(((midi_t *) internal->decoder_private)->fd_audio);
-    free(internal->decoder_private);
+    Timidity_FreeSong(song);
 } /* MIDI_close */
 
 
 static Uint32 MIDI_read(Sound_Sample *sample)
 {
-    ssize_t retval;
+    Uint32 retval;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    midi_t *m = (midi_t *) internal->decoder_private;
+    MidiSong *song = (MidiSong *) internal->decoder_private;
 
-        /*
-         * We don't actually do any decoding, so we read the converted data
-         *  directly into the internal buffer.
-         */
-    retval = read(m->fd_audio, internal->buffer, internal->buffer_size);
+    retval = Timidity_PlaySome(song, internal->buffer, internal->buffer_size);
 
         /* Make sure the read went smoothly... */
     if (retval == 0)
@@ -271,6 +146,7 @@ static Uint32 MIDI_read(Sound_Sample *sample)
 } /* MIDI_read */
 
 #endif /* SOUND_SUPPORTS_MIDI */
+
 
 /* end of midi.c ... */
 
