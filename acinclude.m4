@@ -580,23 +580,18 @@ int main (int argc, char *argv[])
 
    if (($smpeg_major_version > major) ||
       (($smpeg_major_version == major) && ($smpeg_minor_version > minor)) ||
-      (($smpeg_major_version == major) && ($smpeg_minor_version == minor) 
-&& ($smpeg_micro_version >= micro)))
+      (($smpeg_major_version == major) && ($smpeg_minor_version == minor) &&
+      ($smpeg_micro_version >= micro)))
     {
       return 0;
     }
   else
     {
-      printf("\n*** 'smpeg-config --version' returned %d.%d.%d, but the 
-minimum version\n", $smpeg_major_version, $smpeg_minor_version, 
-$smpeg_micro_version);
-      printf("*** of SMPEG required is %d.%d.%d. If smpeg-config is 
-correct, then it is\n", major, minor, micro);
+      printf("\n*** 'smpeg-config --version' returned %d.%d.%d, but the minimum version\n", $smpeg_major_version, $smpeg_minor_version, $smpeg_micro_version);
+      printf("*** of SMPEG required is %d.%d.%d. If smpeg-config is correct, then it is\n", major, minor, micro);
       printf("*** best to upgrade to the required version.\n");
-      printf("*** If smpeg-config was wrong, set the environment variable 
-SMPEG_CONFIG\n");
-      printf("*** to point to the correct copy of smpeg-config, and remove 
-the file\n");
+      printf("*** If smpeg-config was wrong, set the environment variable SMPEG_CONFIG\n");
+      printf("*** to point to the correct copy of smpeg-config, and remove the file\n");
       printf("*** config.cache before re-running configure\n");
       return 1;
     }
@@ -613,12 +608,9 @@ the file\n");
   else
      AC_MSG_RESULT(no)
      if test "$SMPEG_CONFIG" = "no" ; then
-       echo "*** The smpeg-config script installed by SMPEG could not be 
-found"
-       echo "*** If SMPEG was installed in PREFIX, make sure PREFIX/bin is 
-in"
-       echo "*** your path, or set the SMPEG_CONFIG environment variable to 
-the"
+       echo "*** The smpeg-config script installed by SMPEG could not be found"
+       echo "*** If SMPEG was installed in PREFIX, make sure PREFIX/bin is in"
+       echo "*** your path, or set the SMPEG_CONFIG environment variable to the"
        echo "*** full path to smpeg-config."
      else
        if test -f conf.smpegtest ; then
@@ -631,30 +623,19 @@ the"
 #include <stdio.h>
 #include "smpeg.h"
 ],      [ return 0; ],
-        [ echo "*** The test program compiled, but did not run. This 
-usually means"
-          echo "*** that the run-time linker is not finding SMPEG or 
-finding the wrong"
-          echo "*** version of SMPEG. If it is not finding SMPEG, you'll 
-need to set your"
-          echo "*** LD_LIBRARY_PATH environment variable, or edit 
-/etc/ld.so.conf to point"
-          echo "*** to the installed location  Also, make sure you have run 
-ldconfig if that"
+        [ echo "*** The test program compiled, but did not run. This usually means"
+          echo "*** that the run-time linker is not finding SMPEG or finding the wrong"
+          echo "*** version of SMPEG. If it is not finding SMPEG, you'll need to set your"
+          echo "*** LD_LIBRARY_PATH environment variable, or edit /etc/ld.so.conf to point"
+          echo "*** to the installed location  Also, make sure you have run ldconfig if that"
           echo "*** is required on your system"
           echo "***"
-          echo "*** If you have an old version installed, it is best to 
-remove it, although"
-          echo "*** you may also be able to get things to work by modifying 
-LD_LIBRARY_PATH"],
-        [ echo "*** The test program failed to compile or link. See the 
-file config.log for the"
-          echo "*** exact error that occured. This usually means SMPEG was 
-incorrectly installed"
-          echo "*** or that you have moved SMPEG since it was installed. In 
-the latter case, you"
-          echo "*** may want to edit the smpeg-config script: 
-$SMPEG_CONFIG" ])
+          echo "*** If you have an old version installed, it is best to remove it, although"
+          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"],
+        [ echo "*** The test program failed to compile or link. See the file config.log for the"
+          echo "*** exact error that occured. This usually means SMPEG was incorrectly installed"
+          echo "*** or that you have moved SMPEG since it was installed. In the latter case, you"
+          echo "*** may want to edit the smpeg-config script: $SMPEG_CONFIG" ])
           CFLAGS="$ac_save_CFLAGS"
           LIBS="$ac_save_LIBS"
        fi
