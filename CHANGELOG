@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+10092002 - Released version 1.0.0! Woohoo!
 09302002 - libFLAC broke their API (again!) for version 1.0.4. That was the
            last straw. I ripped the version detection and obsolete FLAC
            support out, so you need libFLAC 1.0.4 for that decoder now (and
@@ -25,7 +26,7 @@
            FIXME cleanups here and there.
 07092002 - Fixed typo in documentation (SDL_sound.h).
 07052002 - Cleaned up some stuff in playsound.c, removing some FIXMEs.
-           Commandline validation is improved, too. FIXME removal in 
+           Commandline validation is improved, too. FIXME removal in
            voc.c; should report i/o errors correctly now. Changed DECLSPEC
            to SNDDECLSPEC to prevent SDL conflict, and added SDLCALL support.
            Removed all instances of Sound_SetError()...now they are either
@@ -69,8 +70,8 @@
            now.
 04292002 - Darrell Walisser updated the Mac Classic and OS X project
            files, fixed some portability issues, and added an
-           experimental decoder that uses Apple's QuickTime libraries 
-           (see decoders/quicktime.c). I've included the Mac project files 
+           experimental decoder that uses Apple's QuickTime libraries
+           (see decoders/quicktime.c). I've included the Mac project files
            in CVS, now. Removed all use of alloca() from playsound.
 04242002 - Added --seek option and bugfixes to playsound.c. Torbjörn comes
            through with seek support for the FLAC, MIDI, and ModPlug
@@ -87,7 +88,7 @@
            sample flag (replaced it with CANSEEK). Hack to change the internal
            Sound_SetError() function to __Sound_SetError(). Added internal
            function __Sound_convertMsToBytePos().
-04082002 - Cleaned up the archive support in playsound a little bit, and 
+04082002 - Cleaned up the archive support in playsound a little bit, and
            fixed a PhysicsFS bug in the process.
 03252002 - Win32 patches and fixes from Tyler Montbriand: handled "inline"
            keyword, fixed SNDDBG macros in mpglib, and renamed a conflicting
@@ -226,17 +227,17 @@
            memory requirements for playsound by about 16 kilobytes.
 10172001 - Torbjörn catches a problem with the overflow buffer in playsound's
            audio callback.
-10152001 - Torbjörn sends in a default sample format for the MIDI decoder, 
-           and the starts of the audio conversion funcitonality (ripped 
-           from SDL). Officially released 0.1.3. Added LICENSE and 
-           CHANGELOG to the distribution. (Again, from Torbjörn) added in 
+10152001 - Torbjörn sends in a default sample format for the MIDI decoder,
+           and the starts of the audio conversion funcitonality (ripped
+           from SDL). Officially released 0.1.3. Added LICENSE and
+           CHANGELOG to the distribution. (Again, from Torbjörn) added in
            the start of a tweaked audio converter.
-10122001 - Torbjörn Andersson submitted command line enhancements to 
+10122001 - Torbjörn Andersson submitted command line enhancements to
            playsound, and I cleaned up the --help output.
 10092001 - Patches to shn.c for Visual C compatibility. Visual C project files
            available from the website. Changed Corona688 to Tyler Montbriand
            in CREDITS. Upped version to 0.1.3.
-10082001 - Restructured decoders/wav.c to allow for multiple formats, and 
+10082001 - Restructured decoders/wav.c to allow for multiple formats, and
            put the start of a handler for the ADPCM format in place.
 10072001 - Changed the way decoders/mod.c handles samplerate so that it should
            work universally. This isn't an ideal solution, but it's probably
@@ -255,7 +256,7 @@
            Changed playsound to open the audio device to match the properties
            of each sound file, which results in less conversion (and therefore,
            more chance of correct playback).
-10022001 - Changed a comment in mod.c to not refer to "the mikmod 
+10022001 - Changed a comment in mod.c to not refer to "the mikmod
            directory" anymore. Committed Torbjörn's patch for MP3 detection.
            (better late than never). __Sound_strcasecmp() now handles NULL
            strings gracefully, fixing the crash with "playsound bootstrap".
