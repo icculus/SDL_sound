@@ -398,6 +398,22 @@ static int read_config_file(char *name)
   return 0;
 }
 
+int Timidity_Init_NoConfig()
+{
+  /* Allocate memory for the standard tonebank and drumset */
+  master_tonebank[0] = safe_malloc(sizeof(ToneBank));
+  memset(master_tonebank[0], 0, sizeof(ToneBank));
+  master_tonebank[0]->tone = safe_malloc(128 * sizeof(ToneBankElement));
+  memset(master_tonebank[0]->tone, 0, 128 * sizeof(ToneBankElement));
+
+  master_drumset[0] = safe_malloc(sizeof(ToneBank));
+  memset(master_drumset[0], 0, sizeof(ToneBank));
+  master_drumset[0]->tone = safe_malloc(128 * sizeof(ToneBankElement));
+  memset(master_drumset[0]->tone, 0, 128 * sizeof(ToneBankElement));
+
+  return 0;
+}
+
 int Timidity_Init()
 {
   /* !!! FIXME: This may be ugly, but slightly less so than requiring the
@@ -414,21 +430,12 @@ int Timidity_Init()
   add_to_pathlist("/etc");
 #endif
 
-  /* Allocate memory for the standard tonebank and drumset */
-  master_tonebank[0] = safe_malloc(sizeof(ToneBank));
-  memset(master_tonebank[0], 0, sizeof(ToneBank));
-  master_tonebank[0]->tone = safe_malloc(128 * sizeof(ToneBankElement));
-  memset(master_tonebank[0]->tone, 0, 128 * sizeof(ToneBankElement));
-
-  master_drumset[0] = safe_malloc(sizeof(ToneBank));
-  memset(master_drumset[0], 0, sizeof(ToneBank));
-  master_drumset[0]->tone = safe_malloc(128 * sizeof(ToneBankElement));
-  memset(master_drumset[0]->tone, 0, 128 * sizeof(ToneBankElement));
+  Timidity_Init_NoConfig();
 
   return read_config_file(CONFIG_FILE);
 }
 
-MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio)
+MidiSong *Timidity_LoadDLSSong(SDL_RWops *rw, DLS_Patches *patches, SDL_AudioSpec *audio)
 {
   MidiSong *song;
   Sint32 events;
@@ -440,6 +447,7 @@ MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio)
   /* Allocate memory for the song */
   song = (MidiSong *)safe_malloc(sizeof(*song));
   memset(song, 0, sizeof(*song));
+  song->patches = patches;
 
   for (i = 0; i < 128; i++)
   {
@@ -527,6 +535,11 @@ MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio)
   load_missing_instruments(song);
 
   return(song);
+}
+
+MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio)
+{
+  return Timidity_LoadDLSSong(rw, NULL, audio);
 }
 
 void Timidity_FreeSong(MidiSong *song)
