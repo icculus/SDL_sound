@@ -61,6 +61,7 @@ static int _SMPEG_open(Sound_Sample *sample, const char *ext);
 static void _SMPEG_close(Sound_Sample *sample);
 static Uint32 _SMPEG_read(Sound_Sample *sample);
 static int _SMPEG_rewind(Sound_Sample *sample);
+static int _SMPEG_seek(Sound_Sample *sample, Uint32 ms);
 
 static const char *extensions_smpeg[] = { "MP3", "MPEG", "MPG", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_SMPEG =
@@ -77,7 +78,8 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_SMPEG =
     _SMPEG_open,       /*   open() method */
     _SMPEG_close,      /*  close() method */
     _SMPEG_read,       /*   read() method */
-    _SMPEG_rewind      /* rewind() method */
+    _SMPEG_rewind,     /* rewind() method */
+    _SMPEG_seek        /*   seek() method */
 };
 
 
@@ -271,6 +273,12 @@ static int _SMPEG_rewind(Sound_Sample *sample)
         SMPEG_play(smpeg);
     return(1);
 } /* _SMPEG_rewind */
+
+
+static int _SMPEG_seek(Sound_Sample *sample, Uint32 ms)
+{
+    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+} /* _SMPEG_seek */
 
 #endif /* SOUND_SUPPORTS_SMPEG */
 

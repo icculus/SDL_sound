@@ -27,8 +27,8 @@
  *  SMPEG, and, again, doesn't need an external library. You should test both
  *  decoders and use what you find works best for you.
  *
- * mpglib is part of mpg123, which can be found in its original form at:
- *   http://www.mpg123.de/
+ * mpglib is an LGPL'd portion of mpg123, which can be found in its original
+ *  form at: http://www.mpg123.de/
  *
  * Please see the file COPYING in the source's root directory. The included
  *  source code for mpglib falls under the LGPL, which is the same license as
@@ -61,6 +61,7 @@ static int MPGLIB_open(Sound_Sample *sample, const char *ext);
 static void MPGLIB_close(Sound_Sample *sample);
 static Uint32 MPGLIB_read(Sound_Sample *sample);
 static int MPGLIB_rewind(Sound_Sample *sample);
+static int MPGLIB_seek(Sound_Sample *sample, Uint32 ms);
 
 static const char *extensions_mpglib[] = { "MP3", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_MPGLIB =
@@ -77,7 +78,8 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MPGLIB =
     MPGLIB_open,       /*   open() method */
     MPGLIB_close,      /*  close() method */
     MPGLIB_read,       /*   read() method */
-    MPGLIB_rewind      /* rewind() method */
+    MPGLIB_rewind,     /* rewind() method */
+    MPGLIB_seek        /*   seek() method */
 };
 
 
@@ -285,6 +287,11 @@ static int MPGLIB_rewind(Sound_Sample *sample)
     return(1);
 } /* MPGLIB_rewind */
 
+
+static int MPGLIB_seek(Sound_Sample *sample, Uint32 ms)
+{
+    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+} /* MPGLIB_seek */
 
 #endif /* SOUND_SUPPORTS_MPGLIB */
 

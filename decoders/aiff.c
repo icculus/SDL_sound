@@ -66,6 +66,7 @@ static int AIFF_open(Sound_Sample *sample, const char *ext);
 static void AIFF_close(Sound_Sample *sample);
 static Uint32 AIFF_read(Sound_Sample *sample);
 static int AIFF_rewind(Sound_Sample *sample);
+static int AIFF_seek(Sound_Sample *sample, Uint32 ms);
 
 static const char *extensions_aiff[] = { "AIFF", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_AIFF =
@@ -82,7 +83,8 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_AIFF =
     AIFF_open,      /*   open() method */
     AIFF_close,     /*  close() method */
     AIFF_read,      /*   read() method */
-    AIFF_rewind     /* rewind() method */
+    AIFF_rewind,    /* rewind() method */
+    AIFF_seek       /*   seek() method */
 };
 
 
@@ -520,7 +522,7 @@ static void AIFF_close(Sound_Sample *sample)
     aiff_t *a = (aiff_t *) internal->decoder_private;
     a->fmt.free(&(a->fmt));
     free(a);
-} /* WAV_close */
+} /* AIFF_close */
 
 
 static Uint32 AIFF_read(Sound_Sample *sample)
@@ -541,6 +543,12 @@ static int AIFF_rewind(Sound_Sample *sample)
     a->bytesLeft = fmt->total_bytes;
     return(fmt->rewind_sample(sample));
 } /* AIFF_rewind */
+
+
+static int AIFF_seek(Sound_Sample *sample, Uint32 ms)
+{
+    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+} /* AIFF_seek */
 
 #endif /* SOUND_SUPPORTS_AIFF */
 

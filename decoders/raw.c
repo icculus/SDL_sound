@@ -60,6 +60,7 @@ static int RAW_open(Sound_Sample *sample, const char *ext);
 static void RAW_close(Sound_Sample *sample);
 static Uint32 RAW_read(Sound_Sample *sample);
 static int RAW_rewind(Sound_Sample *sample);
+static int RAW_seek(Sound_Sample *sample, Uint32 ms);
 
 static const char *extensions_raw[] = { "RAW", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW =
@@ -76,7 +77,8 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW =
     RAW_open,       /*   open() method */
     RAW_close,      /*  close() method */
     RAW_read,       /*   read() method */
-    RAW_rewind      /* rewind() method */
+    RAW_rewind,     /* rewind() method */
+    RAW_seek        /*   seek() method */
 };
 
 
@@ -123,7 +125,7 @@ static int RAW_open(Sound_Sample *sample, const char *ext)
          * We never convert raw samples; what you ask for is what you get.
          */
     memcpy(&sample->actual, &sample->desired, sizeof (Sound_AudioInfo));
-    sample->flags = SOUND_SAMPLEFLAG_NONE;
+    sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
 
     return(1); /* we'll handle this data. */
 } /* RAW_open */
@@ -168,6 +170,16 @@ static int RAW_rewind(Sound_Sample *sample)
     BAIL_IF_MACRO(SDL_RWseek(internal->rw, 0, SEEK_SET) != 0, ERR_IO_ERROR, 0);
     return(1);
 } /* RAW_rewind */
+
+
+static int RAW_seek(Sound_Sample *sample, Uint32 ms)
+{
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    int pos = (int) __Sound_convertMsToBytePos(&sample->actual, ms);
+    int err = (SDL_RWseek(internal->rw, pos, SEEK_SET) != pos);
+    BAIL_IF_MACRO(err, ERR_IO_ERROR, 0);
+    return(1);
+} /* RAW_seek */
 
 
 #endif /* SOUND_SUPPORTS_RAW */

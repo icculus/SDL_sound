@@ -346,7 +346,7 @@ void Sound_ClearError(void)
 /*
  * This is declared in the internal header.
  */
-void Sound_SetError(const char *str)
+void __Sound_SetError(const char *str)
 {
     ErrMsg *err;
 
@@ -378,7 +378,17 @@ void Sound_SetError(const char *str)
     err->error_available = 1;
     strncpy(err->error_string, str, sizeof (err->error_string));
     err->error_string[sizeof (err->error_string) - 1] = '\0';
-} /* Sound_SetError */
+} /* __Sound_SetError */
+
+
+Uint32 __Sound_convertMsToBytePos(Sound_AudioInfo *info, Uint32 ms)
+{
+    /* "frames" == "sample frames" */
+    float frames_per_ms = ((float) info->rate) / 1000.0;
+    Uint32 frame_offset = (Uint32) (frames_per_ms * ((float) ms));
+    Uint32 frame_size = (Uint32) ((info->format & 0xFF) / 8) * info->channels;
+    return(frame_offset * frame_size);
+} /* __Sound_convertMsToBytePos */
 
 
 /*
@@ -846,6 +856,26 @@ int Sound_Rewind(Sound_Sample *sample)
     sample->flags &= !SOUND_SAMPLEFLAG_EAGAIN;
     sample->flags &= !SOUND_SAMPLEFLAG_ERROR;
     sample->flags &= !SOUND_SAMPLEFLAG_EOF;
+
+    return(1);
+} /* Sound_Rewind */
+
+
+int Sound_Seek(Sound_Sample *sample, Uint32 ms)
+{
+    Sound_SampleInternal *internal;
+
+    BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, 0);
+    if (!(sample->flags & SOUND_SAMPLEFLAG_CANSEEK))
+        BAIL_MACRO(ERR_CANNOT_SEEK, 0);
+
+    internal = (Sound_SampleInternal *) sample->opaque;
+    BAIL_IF_MACRO(!internal->funcs->seek(sample, ms), NULL, 0);
+
+    sample->flags &= !SOUND_SAMPLEFLAG_EAGAIN;
+    sample->flags &= !SOUND_SAMPLEFLAG_ERROR;
+    sample->flags &= !SOUND_SAMPLEFLAG_EOF;
+
     return(1);
 } /* Sound_Rewind */
 
