@@ -29,4 +29,5 @@ libSDL_sound_la_LIBADD =	\
 EXTRA_DIST =	\
 	CREDITS \
 	COPYING \
-	CHANGELOG
+	CHANGELOG \
+	CWProject.sit
