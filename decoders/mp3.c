@@ -173,6 +173,11 @@ static int MP3_open(Sound_Sample *sample, const char *ext)
     SMPEG_loop(smpeg, 0);
 
     SMPEG_wantedSpec(smpeg, &spec);
+        /*
+         * One of the MP3:s I tried wouldn't work unless I added this line
+         * to tell SMPEG that yes, it may have the spec it wants.
+         */
+    SMPEG_actualSpec(smpeg, &spec);
     sample->actual.format = spec.format;
     sample->actual.rate = spec.freq;
     sample->actual.channels = spec.channels;
@@ -197,6 +202,11 @@ static Uint32 MP3_read(Sound_Sample *sample)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SMPEG *smpeg = (SMPEG *) internal->decoder_private;
 
+        /*
+         * We have to clear the buffer because apparently SMPEG_playAudio()
+         * will mix the decoded audio with whatever's already in it. Nasty.
+         */
+    memset(internal->buffer, 0, internal->buffer_size);
     retval = SMPEG_playAudio(smpeg, internal->buffer, internal->buffer_size);
     if (retval < internal->buffer_size)
     {
