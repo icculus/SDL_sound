@@ -55,6 +55,10 @@
            robust in general: fixed potential overflow in audio_callback,
            made it chatter less, made it take multiple files and some other
            command lines. Initial autoconf support, thanks to Max Horn.
+09252001 - More autoconf work. Gave Max Horn write access to the CVS
+           repository, so I don't drive him nuts tweaking this thing.  :)
+           Fixed a const complaint and some other stuff needed for compilation
+           under Visual C++ 6.0 (no, it isn't ported yet).
 
 --ryan. (icculus@clutteredmind.org)
 
