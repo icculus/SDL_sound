@@ -96,6 +96,8 @@
            from SDL). Officially released 0.1.3. Added LICENSE and 
            CHANGELOG to the distribution. (Again, from Torbjörn) added in 
            the start of a tweaked audio converter.
+10172001 - Torbjörn catches a problem with the overflow buffer in playsound's
+           audio callback.
 
 --ryan. (icculus@clutteredmind.org)
 
