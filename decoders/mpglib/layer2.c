@@ -247,7 +247,7 @@ static void II_select_table(struct frame *fr)
   fr->II_sblimit = sblim;
 }
 
-int do_layer2(struct frame *fr,unsigned char *pcm_sample,int *pcm_point)
+int do_layer2(struct frame *fr,unsigned char *pcm_sample,int *pcm_point,struct mpstr *mp)
 {
   int clip=0;
   int i,j;
@@ -271,12 +271,12 @@ int do_layer2(struct frame *fr,unsigned char *pcm_sample,int *pcm_point)
     II_step_two(bit_alloc,fraction,scale,fr,i>>2);
     for (j=0;j<3;j++) {
       if(single >= 0) {
-        clip += synth_1to1_mono(fraction[0][j],pcm_sample,pcm_point);
+        clip += synth_1to1_mono(fraction[0][j],pcm_sample,pcm_point,mp);
       }
       else {
         int p1 = *pcm_point;
-        clip += synth_1to1(fraction[0][j],0,pcm_sample,&p1);
-        clip += synth_1to1(fraction[1][j],1,pcm_sample,pcm_point);
+        clip += synth_1to1(fraction[0][j],0,pcm_sample,&p1,mp);
+        clip += synth_1to1(fraction[1][j],1,pcm_sample,pcm_point,mp);
       }
 
     }
