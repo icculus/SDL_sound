@@ -32,8 +32,6 @@
 #define Sound_AI_Loop 0x2
 #define _fsize 32
 
-#include "SDL_sound.h"
-
 typedef struct{
     Sint16 numerator;
     Sint16 denominator;
@@ -43,7 +41,6 @@ typedef struct{
    Sint16 c[16][4*_fsize];
    Uint8 incr[16];
    Fraction ratio;
-   Uint32 zero;
    int mask;
 } VarFilter;
 
@@ -57,6 +54,7 @@ typedef int (*Adapter) ( AdapterC Data, int length );
 
 typedef struct{
    VarFilter filter;
+   int filter_index;
    Adapter adapter[32];
 /* buffer must be len*len_mult(+len_add) big */
    int len_mult;
@@ -74,11 +72,24 @@ typedef struct{
 
 #define SDL_SOUND_Loop 0x10
 
+#ifndef SNDDECLSPEC
+#define SNDDECLSPEC DECLSPEC
+#endif
+
 extern SNDDECLSPEC int Sound_ConvertAudio( Sound_AudioCVT *Data );
+
+extern SNDDECLSPEC int Sound_AltConvertAudio( Sound_AudioCVT *Data,
+    Uint8* buffer, int length, int mode );
 
 extern SNDDECLSPEC int Sound_BuildAudioCVT( Sound_AudioCVT *Data,
    Uint16 src_format, Uint8 src_channels, int src_rate,
-   Uint16 dst_format, Uint8 dst_channels, int dst_rate, Uint32 dst_size );
+   Uint16 dst_format, Uint8 dst_channels, int dst_rate );
+
+extern SNDDECLSPEC int Sound_AltBuildAudioCVT( Sound_AudioCVT *Data,
+   SDL_AudioSpec src, SDL_AudioSpec dst );
+
+extern SNDDECLSPEC int Sound_estimateBufferSize( Sound_AudioCVT *Data,
+   int length );
 
 #endif /* _INCLUDE_AUDIO_CONVERT_H_ */
 
