@@ -129,12 +129,12 @@ static decoder_element decoders[] =
     { 0, &__Sound_DecoderFunctions_SHN },
 #endif
 
-#if (defined SOUND_SUPPORTS_MIDI)
-    { 0, &__Sound_DecoderFunctions_MIDI },
-#endif
-
 #if (defined SOUND_SUPPORTS_FLAC)
     { 0, &__Sound_DecoderFunctions_FLAC },
+#endif
+
+#if (defined SOUND_SUPPORTS_MIDI)
+    { 0, &__Sound_DecoderFunctions_MIDI },
 #endif
 
     { 0, NULL }
@@ -244,11 +244,8 @@ void Sound_ClearError(void)
  */
 void Sound_SetError(const char *err)
 {
-    if (err != NULL)
-    {
-        SNDDBG(("Sound_SetError(\"%s\");\n", err));
-        SDL_SetError(err);
-    } /* if */
+    SNDDBG(("Sound_SetError(\"%s\");\n", err));
+    SDL_SetError(err);
 } /* Sound_SetError */
 
 
@@ -620,7 +617,7 @@ Uint32 Sound_Decode(Sound_Sample *sample)
     sample->flags &= !SOUND_SAMPLEFLAG_EAGAIN;
     retval = internal->funcs->read(sample);
 
-    if (internal->sdlcvt.needed)
+    if (retval > 0 && internal->sdlcvt.needed)
     {
         internal->sdlcvt.len = retval;
         Sound_ConvertAudio(&internal->sdlcvt);
