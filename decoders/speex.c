@@ -320,14 +320,13 @@ static Uint32 copy_from_decoded(speex_t *speex,
 
     for (max = dst + maxoutput; dst < max; dst++, src++)
     {
+        /* !!! FIXME: This screams for vectorization. */
         register float f = *src;
         if (f > 32000.0f)  /* eh, speexdec.c clamps like this, too. */
             f = 32000.0f;
         else if (f < -32000.0f)
             f = -32000.0f;
-        *dst = //(Sint16) round(f);
-               // (Sint16) floor(.5f+f);
-               (Sint16) 0.5f+f;
+        *dst = (Sint16) (0.5f + f);
     } /* for */
     
     return(cpypos << 1);
