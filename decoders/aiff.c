@@ -101,6 +101,7 @@ typedef struct S_AIFF_FMT_T
     void (*free)(struct S_AIFF_FMT_T *fmt);
     Uint32 (*read_sample)(Sound_Sample *sample);
     int (*rewind_sample)(Sound_Sample *sample);
+    int (*seek_sample)(Sound_Sample *sample, Uint32 ms);
 
 
 #if 0
@@ -332,6 +333,20 @@ static int rewind_sample_fmt_normal(Sound_Sample *sample)
 } /* rewind_sample_fmt_normal */
 
 
+static int seek_sample_fmt_normal(Sound_Sample *sample, Uint32 ms)
+{
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    aiff_t *a = (aiff_t *) internal->decoder_private;
+    fmt_t *fmt = &a->fmt;
+    int offset = __Sound_convertMsToBytePos(&sample->actual, ms);
+    int pos = (int) (fmt->data_starting_offset + offset);
+    int rc = SDL_RWseek(internal->rw, pos, SEEK_SET);
+    BAIL_IF_MACRO(rc != pos, ERR_IO_ERROR, 0);
+    a->bytesLeft = fmt->total_bytes - offset;
+    return(1);  /* success. */
+} /* seek_sample_fmt_normal */
+
+
 static void free_fmt_normal(fmt_t *fmt)
 {
     /* it's a no-op. */
@@ -344,6 +359,7 @@ static int read_fmt_normal(SDL_RWops *rw, fmt_t *fmt)
     fmt->free = free_fmt_normal;
     fmt->read_sample = read_sample_fmt_normal;
     fmt->rewind_sample = rewind_sample_fmt_normal;
+    fmt->seek_sample = seek_sample_fmt_normal;
     return(1);
 } /* read_fmt_normal */
 
@@ -509,7 +525,7 @@ static int AIFF_open(Sound_Sample *sample, const char *ext)
     a->fmt.data_starting_offset = SDL_RWtell(rw);
     internal->decoder_private = (void *) a;
 
-    sample->flags = SOUND_SAMPLEFLAG_NONE;
+    sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
 
     SNDDBG(("AIFF: Accepting data stream.\n"));
     return(1); /* we'll handle this data. */
@@ -547,7 +563,9 @@ static int AIFF_rewind(Sound_Sample *sample)
 
 static int AIFF_seek(Sound_Sample *sample, Uint32 ms)
 {
-    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    aiff_t *a = (aiff_t *) internal->decoder_private;
+    return(a->fmt.seek_sample(sample, ms));
 } /* AIFF_seek */
 
 #endif /* SOUND_SUPPORTS_AIFF */
