@@ -41,10 +41,12 @@
  *  This file was written by Torbjörn Andersson. (d91tan@Update.UU.SE)
  */
 
-#ifdef SOUND_SUPPORTS_AIFF
+#include "SDL_sound.h"
 
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
+
+#ifdef SOUND_SUPPORTS_AIFF
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,7 +55,6 @@
 
 #include "SDL.h"
 #include "SDL_endian.h"
-#include "SDL_sound.h"
 
 static int AIFF_init(void);
 static void AIFF_quit(void);

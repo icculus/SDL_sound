@@ -28,16 +28,17 @@
  *  This file written by Torbjörn Andersson (d91tan@Update.UU.SE)
  */
 
-#ifdef SOUND_SUPPORTS_MOD
+#include "SDL_sound.h"
 
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
+
+#ifdef SOUND_SUPPORTS_MOD
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "SDL_sound.h"
 #include "mikmod.h"
 
 

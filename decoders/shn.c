@@ -41,16 +41,17 @@
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 
-#if (defined SOUND_SUPPORTS_SHN)
+#include "SDL_sound.h"
 
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
+
+#if (defined SOUND_SUPPORTS_SHN)
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "SDL_sound.h"
 
 
 static int SHN_init(void);

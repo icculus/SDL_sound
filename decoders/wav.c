@@ -28,16 +28,17 @@
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 
-#ifdef SOUND_SUPPORTS_WAV
+#include "SDL_sound.h"
 
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
+
+#ifdef SOUND_SUPPORTS_WAV
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "SDL_sound.h"
 
 static int WAV_init(void);
 static void WAV_quit(void);
