@@ -13,6 +13,12 @@ functions. The official API reference is generated from this file with
 a program called "Doxygen" (http://www.doxygen.org/)
 
 
+Borland C++ Builder for Linux (Kylix 3):
+ Unzip the "borland.zip" file in the root of the source tree and use the
+ project files in the newly-created Borland/k3 directory. Makefiles for the
+ command line compiler are in Borland/freebcc ...
+
+
 Unix:
  (If you pulled the source from CVS), run ./bootstrap
 
@@ -64,6 +70,14 @@ Win32 Visual C:
 Win32 Cygwin:
  Cygwin users can try their luck with the Unix build instructions in this
  tarball instead.
+
+
+Win32 Borland C++ Builder 6:
+ Unzip the "borland.zip" file in the root of the source tree and use the
+ project files in the newly-created Borland/bcb6 directory. Makefiles for the
+ command line compiler are in Borland/freebcc ... these are unmaintained, and
+ you will need to go find the external libraries you want to use (those that
+ wish to maintain these project files should contact me).
 
 
 If building is successful, there will be a shared library and a binary
