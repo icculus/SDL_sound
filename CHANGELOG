@@ -2,6 +2,8 @@
  * CHANGELOG.
  */
 
+03032002 - Fixed mpglib's build configuration to include general build flags
+           so that things like --enable-debug work as expected.
 02212002 - Changed SMPEG's URL to point to the icculus.org site. Added an
            mpglib decoder (internal to SDL_sound; relies on no external libs)
            and changes mp3.c to smpeg.c (and other associated things).
