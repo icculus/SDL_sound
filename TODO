@@ -1,12 +1,10 @@
 
 General stuff TODO:
 - Verify portability to various Unixes (BSD, etc)
-- Port to Win32.
 - Port to BeOS.
 - Port to MacOS Classic.
-- Port to MacOS X.
-- Allow a decoder to register multiple file extensions.
 - Man pages for the API.
+- Add Sound_Rewind().
 
 More immediate:
 - Write a decent README.
