@@ -546,7 +546,8 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
                             sample->actual.rate,
                             desired.format,
                             desired.channels,
-                            desired.rate) == -1)
+                            desired.rate,
+                            sample->buffer_size) == -1)
     {
         Sound_SetError(SDL_GetError());
         funcs->close(sample);
