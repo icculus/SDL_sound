@@ -32,10 +32,12 @@
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 
-#ifdef SOUND_SUPPORTS_OGG
+#include "SDL_sound.h"
 
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
+
+#ifdef SOUND_SUPPORTS_OGG
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,7 +46,6 @@
 #include <assert.h>
 #include "vorbis/codec.h"
 #include "vorbis/vorbisfile.h"
-#include "SDL_sound.h"
 
 
 static int OGG_init(void);

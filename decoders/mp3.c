@@ -29,10 +29,12 @@
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 
-#ifdef SOUND_SUPPORTS_MP3
+#include "SDL_sound.h"
 
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
+
+#ifdef SOUND_SUPPORTS_MP3
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,7 +42,6 @@
 #include <assert.h>
 
 #include "smpeg.h"
-#include "SDL_sound.h"
 #include "extra_rwops.h"
 
 
