@@ -15,6 +15,10 @@ Bug fixes,
 FreeBSD testing:
     Tsuyoshi Iguchi
 
+Code cleanups,
+AIFF driver:
+Torbjörn Andersson
+
 Other stuff:
     Your name here! Patches go to icculus@clutteredmind.org ...
 
