@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "SDL_sound.h"
+
+#define __SDL_SOUND_INTERNAL__
+#include "SDL_sound_internal.h"
+
 #include "mpg123_sdlsound.h"
 #include "mpglib_sdlsound.h"
 
@@ -95,10 +100,8 @@ static void remove_buf(struct mpstr *mp)
 
 }
 
-static int read_buf_byte(struct mpstr *mp)
+static int read_buf_byte(struct mpstr *mp, unsigned long *retval)
 {
-	unsigned int b;
-
 	int pos;
 
 	pos = mp->tail->pos;
@@ -106,32 +109,48 @@ static int read_buf_byte(struct mpstr *mp)
 		remove_buf(mp);
 		pos = mp->tail->pos;
 		if(!mp->tail) {
-			fprintf(stderr,"Fatal error!\n");
-			exit(1);
+			Sound_SetError("MPGLIB: Fatal error! Short read in read_buf_byte()!");
+			return 0;
 		}
 	}
 
-	b = mp->tail->pnt[pos];
+	if (retval != NULL)
+		*retval = mp->tail->pnt[pos];
+
 	mp->bsize--;
 	mp->tail->pos++;
-	
 
-	return b;
+	return 1;
 }
 
-static void read_head(struct mpstr *mp)
+static int read_head(struct mpstr *mp)
 {
+	unsigned long val;
 	unsigned long head;
 
-	head = read_buf_byte(mp);
-	head <<= 8;
-	head |= read_buf_byte(mp);
-	head <<= 8;
-	head |= read_buf_byte(mp);
-	head <<= 8;
-	head |= read_buf_byte(mp);
+	if (!read_buf_byte(mp, &val))
+		return 0;
 
+	head = val << 8;
+
+	if (!read_buf_byte(mp, &val))
+		return 0;
+
+	head |= val;
+	head <<= 8;
+
+	if (!read_buf_byte(mp, &val))
+		return 0;
+
+	head |= val;
+	head <<= 8;
+
+	if (!read_buf_byte(mp, &val))
+		return 0;
+
+	head |= val;
 	mp->header = head;
+	return 1;
 }
 
 int decodeMP3(struct mpstr *mp,char *in,int isize,char *out,
@@ -157,8 +176,13 @@ int decodeMP3(struct mpstr *mp,char *in,int isize,char *out,
 		if(mp->bsize < 4) {
 			return MP3_NEED_MORE;
 		}
-		read_head(mp);
-		decode_header(&mp->fr,mp->header);
+
+		if (!read_head(mp))
+			return MP3_ERR;
+
+		if (!decode_header(&mp->fr,mp->header))
+			return MP3_ERR;
+
 		mp->framesize = mp->fr.framesize;
 	}
 

@@ -6,6 +6,11 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include "SDL_sound.h"
+
+#define __SDL_SOUND_INTERNAL__
+#include "SDL_sound_internal.h"
+
 #include "mpg123_sdlsound.h"
 
 struct parameter param = { 1 , 1 , 0 , 0 };
@@ -65,8 +70,8 @@ int decode_header(struct frame *fr,unsigned long newhead)
     
     fr->lay = 4-((newhead>>17)&3);
     if( ((newhead>>10)&0x3) == 0x3) {
-      fprintf(stderr,"Stream error\n");
-      exit(1);
+      Sound_SetError("MPGLIB: Corrupted header");
+      return 0;
     }
     if(fr->mpeg25) {
       fr->sampling_frequency = 6 + ((newhead>>10)&0x3);
