@@ -10,7 +10,8 @@ libSDL_sound_la_SOURCES =	\
 	SDL_sound.c	\
 	SDL_sound_internal.h	\
 	extra_rwops.c	\
-	extra_rwops.h
+	extra_rwops.h	\
+	audio_convert.c
 
 libSDL_sound_la_LDFLAGS = 		\
 	-release $(LT_RELEASE)	\
@@ -19,4 +20,7 @@ libSDL_sound_la_LIBADD = decoders/libdecoders.la
 
 
 EXTRA_DIST =	\
-	CREDITS
+	CREDITS \
+	LICENSE \
+	CHANGELOG
+        
