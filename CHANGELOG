@@ -2,6 +2,9 @@
  * CHANGELOG.
  */
 
+03252002 - Win32 patches and fixes from Tyler Montbriand: handled "inline"
+           keyword, fixed SNDDBG macros in mpglib, and renamed a conflicting
+           file (decoders/mpglib/common.c to decoders/mpglib/mpglib_common.c).
 03172002 - Removed an unneeded #include in mpglib that broke build on BeOS.
            mpglib seems to work find on BeOS. Reworked some of mpglib.c so we
            can determine the audio format when accepting the data stream. Some
