@@ -79,8 +79,16 @@ typedef struct
     SDL_RWops *rw;
     Sound_Sample *sample;
     Uint32 frame_size;
-    Uint8 metadata_found;
+    Uint8 is_flac;
 } flac_t;
+
+
+static void free_flac(flac_t *f)
+{
+    FLAC__stream_decoder_finish(f->decoder);
+    FLAC__stream_decoder_delete(f->decoder);
+    free(f);
+} /* free_flac */
 
 
 static FLAC__StreamDecoderReadStatus FLAC_read_callback(
@@ -126,6 +134,7 @@ static FLAC__StreamDecoderWriteStatus FLAC_write_callback(
 {
     flac_t *f = (flac_t *) client_data;
     Uint32 i, j;
+    Uint32 sample;
     Uint8 *dst;
 
 #if 0
@@ -140,19 +149,34 @@ static FLAC__StreamDecoderWriteStatus FLAC_write_callback(
 
     dst = f->sample->buffer;
 
-    if (frame->header.bits_per_sample == 8)
+        /* If the sample is neither exactly 8-bit nor 16-bit, it will have to
+         * be converted. Unfortunately the buffer is read-only, so we either
+         * have to check for each sample, or make a copy of the buffer. I'm
+         * not sure which way is best, so I've arbitrarily picked the former.
+         */
+    if (f->sample->actual.format == AUDIO_S8)
     {
         for (i = 0; i < frame->header.blocksize; i++)
             for (j = 0; j < frame->header.channels; j++)
-                *dst++ = buffer[j][i] & 0x000000ff;
+            {
+                sample = buffer[j][i];
+                if (frame->header.bits_per_sample < 8)
+                    sample <<= (8 - frame->header.bits_per_sample);
+                *dst++ = sample & 0x00ff;
+            } /* for */
     } /* if */
     else
     {
         for (i = 0; i < frame->header.blocksize; i++)
             for (j = 0; j < frame->header.channels; j++)
             {
-                *dst++ = (buffer[j][i] & 0x0000ff00) >> 8;
-                *dst++ = buffer[j][i] & 0x000000ff;
+                sample = buffer[j][i];
+                if (frame->header.bits_per_sample < 16)
+                    sample <<= (16 - frame->header.bits_per_sample);
+                else if (frame->header.bits_per_sample > 16)
+                    sample >>= (frame->header.bits_per_sample - 16);
+                *dst++ = (sample & 0xff00) >> 8;
+                *dst++ = sample & 0x00ff;
             } /* for */
     } /* else */
 
@@ -168,29 +192,21 @@ void FLAC_metadata_callback(
     
     SNDDBG(("FLAC: Metadata callback.\n"));
 
+        /* There are several kinds of metadata, but STREAMINFO is the only
+         * one that always has to be there.
+         */
     if (metadata->type == FLAC__METADATA_TYPE_STREAMINFO)
     {
         SNDDBG(("FLAC: Metadata is streaminfo.\n"));
-        f->metadata_found = 1;
+
+        f->is_flac = 1;
         f->sample->actual.channels = metadata->data.stream_info.channels;
         f->sample->actual.rate = metadata->data.stream_info.sample_rate;
 
-            /* !!! FIXME: I believe bits_per_sample may be anywhere between
-             * 4 and 24. We can only handle 8 and 16 at present.
-             */
-        switch (metadata->data.stream_info.bits_per_sample)
-        {
-            case 8:
-                f->sample->actual.format = AUDIO_S8;
-                break;
-            case 16:
-                f->sample->actual.format = AUDIO_S16MSB;
-                break;
-            default:
-                Sound_SetError("FLAC: Unsupported sample width.");
-                f->sample->actual.format = 0;
-                break;
-        } /* switch */
+        if (metadata->data.stream_info.bits_per_sample > 8)
+            f->sample->actual.format = AUDIO_S16MSB;
+        else
+            f->sample->actual.format = AUDIO_S8;
     } /* if */
 } /* FLAC_metadata_callback */
 
@@ -201,6 +217,7 @@ void FLAC_error_callback(
 {
     flac_t *f = (flac_t *) client_data;
 
+        /* !!! FIXME: Is every error really fatal? I don't know... */
     Sound_SetError(FLAC__StreamDecoderErrorStatusString[status]);
     f->sample->flags |= SOUND_SAMPLEFLAG_ERROR;
 } /* FLAC_error_callback */
@@ -224,6 +241,7 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     SDL_RWops *rw = internal->rw;
     FLAC__StreamDecoder *decoder;
     flac_t *f;
+    int i;
 
     f = (flac_t *) malloc(sizeof (flac_t));
     BAIL_IF_MACRO(f == NULL, ERR_OUT_OF_MEMORY, 0);
@@ -245,22 +263,47 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     f->rw = internal->rw;
     f->sample = sample;
     f->decoder = decoder;
-    
-    FLAC__stream_decoder_init(decoder);
-    internal->decoder_private = f;
-
-    f->metadata_found = 0;
     f->sample->actual.format = 0;
-    FLAC__stream_decoder_process_metadata(decoder);
+    f->is_flac = 0;
 
-    if (f->sample->actual.format == 0)
+#if 0
+        /* !!! FIXME:
+         *
+         * It should be possible to play a FLAC stream starting at any frame,
+         * but we can only do that if we know for sure that it is a FLAC
+         * stream. Otherwise we have to check for metadata, and then we need
+         * the entire stream, from the beginning.
+         *
+         * But getting this to work right seems to be an enormous pain in the
+         * butt for what is, at the moment, a very small gain. Maybe later.
+         */
+    for (i = 0; extensions_flac[i] != NULL; i++)
+        if (__Sound_strcasecmp(ext, extensions_flac[i]) == 0)
+        {
+            f->is_flac = 1;
+            break;
+        } /* if */
+#endif
+
+    internal->decoder_private = f;
+    FLAC__stream_decoder_init(decoder);
+
+        /* If we are not sure this is a FLAC stream, check for the STREAMINFO
+         * metadata block. If not, we'd have to peek at the first audio frame
+         * and get the sound format from there but, as stated above, that is
+         * not yet implemented.
+         */
+    if (!f->is_flac)
     {
-        if (f->metadata_found == 0)
-            Sound_SetError("FLAC: No metadata found.");
-        FLAC__stream_decoder_finish(decoder);
-        FLAC__stream_decoder_delete(decoder);
-        free(f);
-        return(0);
+        FLAC__stream_decoder_process_metadata(decoder);
+
+        /* Still not FLAC? Give up. */
+        if (!f->is_flac)
+        {
+            Sound_SetError("FLAC: No metadata found. Not a FLAC stream?");
+            free_flac(f);
+            return(0);
+        } /* if */
     } /* if */
 
     SNDDBG(("FLAC: Accepting data stream.\n"));
@@ -275,9 +318,7 @@ static void FLAC_close(Sound_Sample *sample)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     flac_t *f = (flac_t *) internal->decoder_private;
 
-    FLAC__stream_decoder_finish(f->decoder);
-    FLAC__stream_decoder_delete(f->decoder);
-    free(f);
+    free_flac(f);
 } /* FLAC_close */
 
 
