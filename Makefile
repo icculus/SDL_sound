@@ -84,6 +84,7 @@ use_decoder_raw := true
 use_decoder_mp3 := false
 use_decoder_voc := true
 use_decoder_wav := true
+use_decoder_ogg := true
 
 #-----------------------------------------------------------------------------#
 # Set to "true" if you'd like to build a DLL. Set to "false" otherwise.
@@ -255,6 +256,12 @@ endif
 ifeq ($(strip $(use_decoder_wav)),true)
   MAINSRCS += decoders/wav.c
   CFLAGS += -DSOUND_SUPPORTS_WAV
+endif
+
+ifeq ($(strip $(use_decoder_ogg)),true)
+  MAINSRCS += decoders/ogg.c
+  CFLAGS += -DSOUND_SUPPORTS_OGG
+  LDFLAGS += -lvorbisfile -lvorbis
 endif
 
 ifeq ($(strip $(need_extra_rwops)),true)
