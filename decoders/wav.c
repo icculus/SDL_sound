@@ -413,7 +413,7 @@ static inline int decode_adpcm_sample_frame(Sound_Sample *sample)
 } /* decode_adpcm_sample_frame */
 
 
-static inline void put_adpcm_sample_frame1(Uint8 *_buf, fmt_t *fmt)
+static inline void put_adpcm_sample_frame1(void *_buf, fmt_t *fmt)
 {
     Uint16 *buf = (Uint16 *) _buf;
     ADPCMBLOCKHEADER *headers = fmt->fmt.adpcm.blockheaders;
@@ -423,7 +423,7 @@ static inline void put_adpcm_sample_frame1(Uint8 *_buf, fmt_t *fmt)
 } /* put_adpcm_sample_frame1 */
 
 
-static inline void put_adpcm_sample_frame2(Uint8 *_buf, fmt_t *fmt)
+static inline void put_adpcm_sample_frame2(void *_buf, fmt_t *fmt)
 {
     Uint16 *buf = (Uint16 *) _buf;
     ADPCMBLOCKHEADER *headers = fmt->fmt.adpcm.blockheaders;
