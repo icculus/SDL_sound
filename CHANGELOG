@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+06292002 - More altcvt fixes from Frank Ranostaj...mostly working now.
 06252002 - More altcvt fixes from Frank Ranostaj.
 06132002 - Patch from Torbjörn to fix stereo AIFF files.
 06212002 - More altcvt fixes from Frank Ranostaj.
