@@ -2,6 +2,9 @@
  * CHANGELOG.
  */
 
+12212002 - Fixed ogg.c to decode a full buffer at a time instead of one ogg
+           packet per call, and mikmod has a check during initialization to
+           prevent a clash with SDL_mixer (Thanks, Eric).
 12092002 - Changed Sound_Init()'s call to SDL_Init() to SDL_InitSubSystem(),
            to prevent unwanted use of the SDL parachute (thanks, Glenn).
 10092002 - Fixed a "make dist" issue and upped version to 1.0.0! Woohoo!
