@@ -48,6 +48,10 @@
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MP3;
 #endif
 
+#if (defined SOUND_SUPPORTS_WAV)
+extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_WAV;
+#endif
+
 #if (defined SOUND_SUPPORTS_VOC)
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_VOC;
 #endif
@@ -60,6 +64,10 @@ static const Sound_DecoderFunctions *decoderFuncs[] =
 {
 #if (defined SOUND_SUPPORTS_MP3)
     &__Sound_DecoderFunctions_MP3,
+#endif
+
+#if (defined SOUND_SUPPORTS_WAV)
+    &__Sound_DecoderFunctions_WAV,
 #endif
 
 #if (defined SOUND_SUPPORTS_VOC)
