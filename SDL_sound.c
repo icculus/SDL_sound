@@ -52,6 +52,10 @@ extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MP3;
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_WAV;
 #endif
 
+#if (defined SOUND_SUPPORTS_AIFF)
+extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_AIFF;
+#endif
+
 #if (defined SOUND_SUPPORTS_OGG)
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_OGG;
 #endif
@@ -72,6 +76,10 @@ static const Sound_DecoderFunctions *decoderFuncs[] =
 
 #if (defined SOUND_SUPPORTS_WAV)
     &__Sound_DecoderFunctions_WAV,
+#endif
+
+#if (defined SOUND_SUPPORTS_AIFF)
+    &__Sound_DecoderFunctions_AIFF,
 #endif
 
 #if (defined SOUND_SUPPORTS_OGG)
@@ -293,8 +301,8 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
                         Sound_AudioInfo *_desired)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    int pos = SDL_RWtell(internal->rw);  /* !!! FIXME: Int? Really? */
     Sound_AudioInfo desired;
+    int pos = SDL_RWtell(internal->rw);  /* !!! FIXME: Int? Really? */
 
         /* fill in the funcs for this decoder... */
     sample->decoder = &funcs->info;
@@ -354,6 +362,10 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
             internal->prev = sample;
     } /* if */
     samplesList = sample;
+
+#if (defined MULTIPLE_STREAMS_PER_RWOPS)
+    internal->pos = SDL_RWtell(internal->rw);
+#endif
 
     _D(("New sample DESIRED format: %s format, %d rate, %d channels.\n",
         fmt_to_str(sample->desired.format),
@@ -532,7 +544,20 @@ Uint32 Sound_Decode(Sound_Sample *sample)
         /* reset EAGAIN. Decoder can flip it back on if it needs to. */
     sample->flags &= !SOUND_SAMPLEFLAG_EAGAIN;
 
+#if (defined MULTIPLE_STREAMS_PER_RWOPS)
+    if (SDL_RWseek(internal->rw, internal->pos, SEEK_SET) == -1)
+    {
+        sample->flags |= SOUND_SAMPLEFLAG_ERROR;
+        return(0);
+    } /* if */
+#endif
+
     retval = internal->funcs->read(sample);
+
+#if (defined MULTIPLE_STREAMS_PER_RWOPS)
+    internal->pos = SDL_RWtell(internal->rw);
+#endif
+
     if (internal->sdlcvt.needed)
     {
         internal->sdlcvt.len = retval;
