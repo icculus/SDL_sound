@@ -420,7 +420,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
 	  Sint16 *tmp=(Sint16 *)sp->data,s;
 	  while (i--)
 	    { 
-	      s=SDL_SwapLE32(*tmp);
+	      s=SDL_SwapLE16(*tmp);
 	      *tmp++=s;
 	    }
 	}
