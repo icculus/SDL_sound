@@ -2,6 +2,8 @@
  * CHANGELOG.
  */
 
+03072002 - decoders/mpglib.c now disregards ID3 tags instead of passing them
+           on as valid MP3 data to mpglib.
 03032002 - Fixed mpglib's build configuration to include general build flags
            so that things like --enable-debug work as expected.
 02212002 - Changed SMPEG's URL to point to the icculus.org site. Added an
