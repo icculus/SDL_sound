@@ -118,7 +118,10 @@ static void output_usage(const char *argv0)
         "     --version      Display version information and exit.\n"
         "     --decoders     List supported data formats and exit.\n"
         "     --predecode    Decode entire sample before playback.\n"
-        "     --loop         Loop playback until SIGINT.\n"
+        "     --loop n       Loop playback n times. 0=forever.\n"
+
+        /*"     --seek list    List of seek points and playback durations.\n"*/
+
         "     --credits      Shameless promotion.\n"
         "     --help         Display this information and exit.\n"
         "\n"
@@ -129,6 +132,19 @@ static void output_usage(const char *argv0)
         "     U16MSB  Unsigned 16-bit (most significant byte first).\n"
         "     S16LSB  Signed 16-bit (least significant byte first).\n"
         "     S16MSB  Signed 16-bit (most significant byte first).\n"
+
+/*
+        "\n"
+        "   Valid arguments to the --seek options look like:\n"
+        "     --seek=\"mm:ss;mm:ss;mm:ss\"\n"
+        "     Where the first \"mm:ss\" is the position, in minutes and\n"
+        "     seconds to seek to at start of playback. The second mm:ss\n"
+        "     is how long to play audio from that point. The third mm:ss\n"
+        "     is another seek after the duration of playback has completed.\n"
+        "     If the final playback duration is omitted, playback continues\n"
+        "     until the end of the file. --loop and --seek can coexist.\n"
+*/
+
         "\n",
         argv0, DEFAULT_DECODEBUF, DEFAULT_AUDIOBUF);
 } /* output_usage */
@@ -144,7 +160,8 @@ static void output_credits(void)
            "absolutely NO WARRANTY for playsound.\n"
            "\n"
            "    Written by Ryan C. Gordon, Torbjörn Andersson, Max Horn,\n"
-           "     Tsuyoshi Iguchi, Tyler Montbriand, and a cast of thousands.\n"
+           "     Tsuyoshi Iguchi, Tyler Montbriand, Darrell Walisser,\n"
+           "     and a cast of thousands.\n"
            "\n"
            "    Website and source code: http://icculus.org/SDL_sound/\n"
            "\n",
@@ -237,9 +254,9 @@ static void close_archive(const char *filename)
 
 static void deinit_archive(void)
 {
-    #if SUPPORT_PHYSFS
-        PHYSFS_deinit();
-    #endif
+#if SUPPORT_PHYSFS
+    PHYSFS_deinit();
+#endif
 } /* deinit_archive */
 
 
@@ -272,12 +289,19 @@ void sigint_catcher(int signum)
 } /* sigint_catcher */
 
 
+/* global decoding state. */
+/* !!! FIXME: Put this in a struct and pass a pointer to it as the
+ * !!! FIXME:  audio callback's argument. This will clean up the
+ * !!! FIXME:  namespace and let me reinitialize this for each file in
+ * !!! FIXME:  a cleaner way.
+ */
 static Uint8 *decoded_ptr = NULL;
 static Uint32 decoded_bytes = 0;
 static int predecode = 0;
 static int looping = 0;
 static int wants_volume_change = 0;
 static float volume = 1.0;
+
 
 /*
  * This updates (decoded_bytes) and (decoder_ptr) with more audio data,
@@ -309,6 +333,8 @@ static int read_more_data(Sound_Sample *sample)
 
     if (!looping)
         return(0);
+
+    looping--;
 
     /* we just need to point predecoded samples to the start of the buffer. */
     if (predecode)
@@ -398,6 +424,7 @@ static void memcpy_with_volume(Sound_Sample *sample,
     }
 }
 
+
 static void audio_callback(void *userdata, Uint8 *stream, int len)
 {
     Sound_Sample *sample = (Sound_Sample *) userdata;
@@ -461,19 +488,18 @@ int main(int argc, char **argv)
     int use_specific_audiofmt = 0;
     int i;
     int delay;
+    int new_sample = 1;
 
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
 
-        /* !!! FIXME: Move this to a parse_cmdline() function... */
     if (argc < 2)
     {
         output_usage(argv[0]);
         return(42);
     } /* if */
 
-    memset(&sound_desired, '\0', sizeof (sound_desired));
-
+    /* Check some command lines upfront. */
     for (i = 0; i < argc; i++)
     {
         if (strncmp(argv[i], "--", 2) != 0)
@@ -496,8 +522,75 @@ int main(int argc, char **argv)
             output_usage(argv[0]);
             return(42);
         } /* if */
- 
-        else if (strcmp(argv[i], "--rate") == 0 && argc > i + 1)
+
+        else if (strcmp(argv[i], "--decoders") == 0)
+        {
+            if (!Sound_Init())
+            {
+                fprintf(stderr, "Sound_Init() failed!\n"
+                                "  reason: [%s].\n", Sound_GetError());
+                SDL_Quit();
+                return(42);
+            } /* if */
+
+            output_decoders();
+            Sound_Quit();
+            return(0);
+        } /* else if */
+
+        /* !!! FIXME: Verify other --arguments are valid. */
+        #if 0
+        else
+        {
+            fprintf(stderr, "unknown option: \"%s\"\n", argv[i]);
+            return(42);
+        } /* else */
+        #endif
+    } /* for */
+
+    if (!init_archive(argv[0]))
+        return(42);
+
+    if (SDL_Init(SDL_INIT_AUDIO) == -1)
+    {
+        fprintf(stderr, "SDL_Init(SDL_INIT_AUDIO) failed!\n"
+                        "  reason: [%s].\n", SDL_GetError());
+        return(42);
+    } /* if */
+
+    if (!Sound_Init())
+    {
+        fprintf(stderr, "Sound_Init() failed!\n"
+                        "  reason: [%s].\n", Sound_GetError());
+        SDL_Quit();
+        return(42);
+    } /* if */
+
+    signal(SIGINT, sigint_catcher);
+
+    for (i = 1; i < argc; i++)
+    {
+        char *filename = NULL;
+
+        /* set variables back to defaults for next file... */
+        if (new_sample)
+        {
+            new_sample = 0;
+            memset(&sound_desired, '\0', sizeof (sound_desired));
+            done_flag = 0;
+            decoded_ptr = NULL;
+            decoded_bytes = 0;
+            predecode = 0;
+            looping = 0;
+            audio_buffersize = DEFAULT_AUDIOBUF;
+            decode_buffersize = DEFAULT_DECODEBUF;
+            sample = NULL;
+            use_specific_audiofmt = 0;
+            wants_volume_change = 0;
+            volume = 1.0;
+        } /* if */
+
+        if (strcmp(argv[i], "--rate") == 0 && argc > i + 1)
         {
             use_specific_audiofmt = 1;
             sound_desired.rate = atoi(argv[++i]);
@@ -550,21 +643,6 @@ int main(int argc, char **argv)
                 wants_volume_change = 1;
         } /* else if */
 
-        else if (strcmp(argv[i], "--decoders") == 0)
-        {
-            if (!Sound_Init())
-            {
-                fprintf(stderr, "Sound_Init() failed!\n"
-                                "  reason: [%s].\n", Sound_GetError());
-                SDL_Quit();
-                return(42);
-            } /* if */
-
-            output_decoders();
-            Sound_Quit();
-            return(0);
-        } /* else if */
-
         else if (strcmp(argv[i], "--predecode") == 0)
         {
             predecode = 1;
@@ -572,69 +650,10 @@ int main(int argc, char **argv)
 
         else if (strcmp(argv[i], "--loop") == 0)
         {
-            looping = 1;
+            looping = atoi(argv[++i]);
         } /* else if */
 
         else if (strcmp(argv[i], "--stdin") == 0)
-        {
-            /* deal with it at Sound_Sample creation time... */
-        } /* else if */
-
-        else
-        {
-            fprintf(stderr, "unknown option: \"%s\"\n", argv[i]);
-            return(42);
-        } /* else */
-    } /* for */
-
-        /* Pick sensible defaults for any value not explicitly specified. */
-    if (use_specific_audiofmt)
-    {
-        if (sound_desired.rate == 0)
-            sound_desired.rate = 44100;
-        if (sound_desired.format == 0)
-            sound_desired.format = AUDIO_S16SYS;
-        if (sound_desired.channels == 0)
-            sound_desired.channels = 2;
-    } /* if */
-
-    if (!init_archive(argv[0]))
-        return(42);
-
-    if (SDL_Init(SDL_INIT_AUDIO) == -1)
-    {
-        fprintf(stderr, "SDL_Init(SDL_INIT_AUDIO) failed!\n"
-                        "  reason: [%s].\n", SDL_GetError());
-        return(42);
-    } /* if */
-
-    if (!Sound_Init())
-    {
-        fprintf(stderr, "Sound_Init() failed!\n"
-                        "  reason: [%s].\n", Sound_GetError());
-        SDL_Quit();
-        return(42);
-    } /* if */
-
-    signal(SIGINT, sigint_catcher);
-
-    for (i = 1; i < argc; i++)
-    {
-        char *filename = NULL;
-
-            /* !!! FIXME: This is ugly! */
-        if ( (strcmp(argv[i], "--rate") == 0) ||
-             (strcmp(argv[i], "--format") == 0) ||
-             (strcmp(argv[i], "--channels") == 0) ||
-             (strcmp(argv[i], "--audiobuf") == 0) ||
-             (strcmp(argv[i], "--decodebuf") == 0) ||
-             (strcmp(argv[i], "--volume") == 0) )
-        {
-            i++;
-            continue;
-        } /* if */
-
-        if (strcmp(argv[i], "--stdin") == 0)
         {
             SDL_RWops *rw = SDL_RWFromFP(stdin, 1);
             filename = "...from stdin...";
@@ -649,9 +668,7 @@ int main(int argc, char **argv)
         } /* if */
 
         else if (strncmp(argv[i], "--", 2) == 0)
-        {
-            continue;
-        } /* else if */
+            /* ignore it. */ ;
 
         else
         {
@@ -668,10 +685,16 @@ int main(int argc, char **argv)
             } /* if */
         } /* else */
 
-        if (!sample)
+        if (filename == NULL) /* still parsing command line stuff? */
+            continue;
+
+        new_sample = 1;
+
+        if (sample == NULL)
         {
             fprintf(stderr, "Couldn't load \"%s\"!\n"
-                            "  reason: [%s].\n", filename, Sound_GetError());
+                            "  reason: [%s].\n",
+                            filename, Sound_GetError());
             continue;
         } /* if */
 
@@ -681,6 +704,14 @@ int main(int argc, char **argv)
              */
         if (use_specific_audiofmt)
         {
+            /* Pick sensible default for any value not explicitly specified. */
+            if (sound_desired.rate == 0)
+                sound_desired.rate = 44100;
+            if (sound_desired.format == 0)
+                sound_desired.format = AUDIO_S16SYS;
+            if (sound_desired.channels == 0)
+                sound_desired.channels = 2;
+
             sdl_desired.freq = sound_desired.rate;
             sdl_desired.format = sound_desired.format;
             sdl_desired.channels = sound_desired.channels;
@@ -726,7 +757,6 @@ int main(int argc, char **argv)
             } /* else */
         } /* if */
 
-        done_flag = 0;
         SDL_PauseAudio(0);
         while (!done_flag)
         {
