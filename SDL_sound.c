@@ -44,6 +44,10 @@
 
 /* The various decoder drivers... */
 
+#if (defined SOUND_SUPPORTS_MP3)
+extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MP3;
+#endif
+
 #if (defined SOUND_SUPPORTS_VOC)
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_VOC;
 #endif
@@ -54,6 +58,10 @@ extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_RAW;
 
 static const Sound_DecoderFunctions *decoderFuncs[] =
 {
+#if (defined SOUND_SUPPORTS_MP3)
+    &__Sound_DecoderFunctions_MP3,
+#endif
+
 #if (defined SOUND_SUPPORTS_VOC)
     &__Sound_DecoderFunctions_VOC,
 #endif
@@ -152,7 +160,10 @@ void Sound_ClearError(void)
 void Sound_SetError(const char *err)
 {
     if (err != NULL)
+    {
+        _D(("Sound_SetError(\"%s\");\n", err));
         SDL_SetError(err);
+    } /* if */
 } /* Sound_SetError */
 
 
@@ -226,6 +237,30 @@ static Sound_Sample *alloc_sample(SDL_RWops *rw, Sound_AudioInfo *desired,
     retval->opaque = internal;
     return(retval);
 } /* alloc_sample */
+
+
+#if (defined DEBUG_CHATTER)
+static __inline__ const char *fmt_to_str(Uint16 fmt)
+{
+    switch(fmt)
+    {
+        case AUDIO_U8:
+            return("U8");
+        case AUDIO_S8:
+            return("S8");
+        case AUDIO_U16LSB:
+            return("U16LSB");
+        case AUDIO_S16LSB:
+            return("S16LSB");
+        case AUDIO_U16MSB:
+            return("U16MSB");
+        case AUDIO_S16MSB:
+            return("S16MSB");
+    } /* switch */
+
+    return("Unknown");
+} /* fmt_to_str */
+#endif
 
 
 /*
@@ -302,6 +337,19 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
             internal->prev = sample;
     } /* if */
     samplesList = sample;
+
+    _D(("New sample DESIRED format: %s format, %d rate, %d channels.\n",
+        fmt_to_str(sample->desired.format),
+        sample->desired.rate,
+        sample->desired.channels));
+
+    _D(("New sample ACTUAL format: %s format, %d rate, %d channels.\n",
+        fmt_to_str(sample->actual.format),
+        sample->actual.rate,
+        sample->actual.channels));
+
+    _D(("On-the-fly conversion: %s.\n",
+        internal->sdlcvt.needed ? "ENABLED" : "DISABLED"));
 
     return(1);
 } /* init_sample */
