@@ -3,10 +3,10 @@
  */
 
 04242002 - Added --seek option and bugfixes to playsound.c. Torbjörn comes
-           through with seek support for the FLAC, MIDI, Mikmod, and ModPlug
-           decoders, and a bugfix for sample flag manipulation in the base
-           library (and his own --seek code for playsound, which unfortunately
-           we're not using).
+           through with seek support for the FLAC, MIDI, and ModPlug
+           decoders (and some stub code for MikMod), and a bugfix for sample
+           flag manipulation in the base library (and his own --seek code for
+           playsound, which unfortunately we're not using).
 04232002 - Cleaned up the playsound command line handling. Most command line
            options (--rate, --format, --predecode, etc) are specified per-file
            and reset to their defaults after each sample is played back.
