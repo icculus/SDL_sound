@@ -72,6 +72,9 @@
            so I could stop my whining. Other autoconf goodies (such as
            reenabling -Werror for debug builds, etc). Torbjörn brings in a
            MIDI decoder, which reads from a Timidity process through a pipe.
+           Changed playsound to open the audio device to match the properties
+           of each sound file, which results in less conversion (and therefore,
+           more chance of correct playback).
 
 --ryan. (icculus@clutteredmind.org)
 
