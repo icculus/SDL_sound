@@ -2,7 +2,9 @@
  * CHANGELOG.
  */
 
-07102002 - Fixed a bug in command line handling in playsound.c.
+07102002 - Fixed a bug in command line handling in playsound.c. Fixes from
+           Torbjörn and myself to get flac.c friendly between versions of
+           libFLAC.
 07092002 - Fixed typo in documentation (SDL_sound.h).
 07052002 - Cleaned up some stuff in playsound.c, removing some FIXMEs.
            Commandline validation is improved, too. FIXME removal in 
