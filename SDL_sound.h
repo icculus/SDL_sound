@@ -37,7 +37,7 @@
  * Support is in place or planned for the following sound formats:
  *   - .WAV  (Microsoft WAVfile RIFF data, internal.)
  *   - .VOC  (Creative Labs' Voice format, internal.)
- *   - .MP3  (MPEG-1 Layer 3 support, via the SMPEG library.)
+ *   - .MP3  (MPEG-1 Layer 3 support, via the SMPEG and mpglib libraries.)
  *   - .MID  (MIDI music converted to Waveform data, internal.)
  *   - .MOD  (MOD files, via MikMod and ModPlug.)
  *   - .OGG  (Ogg files, via Ogg Vorbis libraries.)
@@ -81,7 +81,7 @@ extern "C" {
  *   To use: "if (sample->flags & SOUND_SAMPLEFLAG_ERROR) { dosomething(); }"
  *
  *  @param SOUND_SAMPLEFLAG_NONE     null flag.
- *  @param SOUND_SAMPLEFLAG_NEEDSEEK SDL_RWops must be able to seek.
+ *  @param SOUND_SAMPLEFLAG_CANSEEK  sample can seek to arbitrary points.
  *  @param SOUND_SAMPLEFLAG_EOF      end of input stream.
  *  @param SOUND_SAMPLEFLAG_ERROR    unrecoverable error.
  *  @param SOUND_SAMPLEFLAG_EAGAIN   function would block, or temp error.
@@ -91,7 +91,7 @@ typedef enum __SOUND_SAMPLEFLAGS__
     SOUND_SAMPLEFLAG_NONE      = 0,
 
         /* these are set at sample creation time... */
-    SOUND_SAMPLEFLAG_NEEDSEEK  = 1,
+    SOUND_SAMPLEFLAG_CANSEEK  = 1,
 
         /* these are set during decoding... */
     SOUND_SAMPLEFLAG_EOF       = 1 << 29,
@@ -484,6 +484,46 @@ extern DECLSPEC Uint32 Sound_DecodeAll(Sound_Sample *sample);
   *           error can be gleaned from Sound_GetError().
   */
 extern DECLSPEC int Sound_Rewind(Sound_Sample *sample);
+
+
+ /**
+  * Reposition a sample's stream. If successful, the next call to
+  *  Sound_Decode[All]() will give audio data from the offset you
+  *  specified.
+  *
+  * The offset is specified in milliseconds from the start of the
+  *  sample.
+  *
+  * Beware that this function can fail for several reasons. If the 
+  *  SDL_RWops that feeds the decoder can not seek, this call will almost 
+  *  certainly fail, but this can theoretically be avoided by wrapping it 
+  *  in some sort of buffering SDL_RWops. Some decoders can never seek, 
+  *  others can only seek with certain files. The decoders will set a flag 
+  *  in the sample at creation time to help you determine this.
+  *
+  * You should check sample->flags & SOUND_SAMPLEFLAG_CANSEEK
+  *  before attempting. Sound_Seek() reports failure immediately if this
+  *  flag isn't set. This function can still fail for other reasons if the 
+  *  flag is set.
+  *
+  * This function can be emulated in the application with Sound_Rewind() 
+  *  and predecoding a specific amount of the sample, but this can be 
+  *  extremely inefficient. Sound_Seek() accelerates the seek on a 
+  *  with decoder-specific code.
+  *
+  * If this function fails, the sample should continue to function as if 
+  *  this call was never made. If there was an unrecoverable error,
+  *  sample->flags & SOUND_SAMPLEFLAG_ERROR will be set, which you regular
+  *  decoding loop can pick up.
+  *
+  * On success, ERROR, EOF, and EAGAIN are cleared from sample->flags.
+  *
+  *    @param sample The Sound_Sample to seek.
+  *    @param ms The new position, in milliseconds from start of sample.
+  *   @return nonzero on success, zero on error. Specifics of the
+  *           error can be gleaned from Sound_GetError().
+  */
+extern DECLSPEC int Sound_Seek(Sound_Sample *sample, Uint32 ms);
 
 
 #ifdef __cplusplus
