@@ -37,6 +37,8 @@
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 
+#if (defined SOUND_SUPPORTS_VOC)
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,11 +47,6 @@
 
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
-
-#if (!defined SOUND_SUPPORTS_VOC)
-#error SOUND_SUPPORTS_VOC must be defined.
-#endif
-
 
 static int VOC_init(void);
 static void VOC_quit(void);
@@ -484,6 +481,6 @@ static Uint32 VOC_read(Sound_Sample *sample)
     return(v->bufpos);
 } /* VOC_read */
 
+#endif /* SOUND_SUPPORTS_VOC */
 
 /* end of voc.c ... */
-

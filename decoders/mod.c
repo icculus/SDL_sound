@@ -29,6 +29,8 @@
  *  This file written by Torbjörn Andersson (d91tan@Update.UU.SE)
  */
 
+#ifdef SOUND_SUPPORTS_MOD
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,10 +40,6 @@
 
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
-
-#if (!defined SOUND_SUPPORTS_MOD)
-#error SOUND_SUPPORTS_MOD must be defined.
-#endif
 
 static int MOD_init(void);
 static void MOD_quit(void);
@@ -265,6 +263,8 @@ static Uint32 MOD_read(Sound_Sample *sample)
     } /* if */
     return((Uint32) VC_WriteBytes(internal->buffer, internal->buffer_size));
 } /* MOD_read */
+
+#endif /* SOUND_SUPPORTS_MOD */
 
 
 /* end of mod.c ... */

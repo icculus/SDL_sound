@@ -28,6 +28,8 @@
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 
+#ifdef SOUND_SUPPORTS_WAV
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,10 +38,6 @@
 
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
-
-#if (!defined SOUND_SUPPORTS_WAV)
-#error SOUND_SUPPORTS_WAV must be defined.
-#endif
 
 static int WAV_init(void);
 static void WAV_quit(void);
@@ -279,6 +277,7 @@ static Uint32 WAV_read(Sound_Sample *sample)
     return(retval);
 } /* WAV_read */
 
+#endif /* SOUND_SUPPORTS_WAV */
 
 /* end of wav.c ... */
 

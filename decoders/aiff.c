@@ -41,6 +41,8 @@
  *  This file was written by Torbjörn Andersson. (d91tan@Update.UU.SE)
  */
 
+#ifdef SOUND_SUPPORTS_AIFF
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,10 +54,6 @@
 
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
-
-#if (!defined SOUND_SUPPORTS_AIFF)
-#error SOUND_SUPPORTS_AIFF must be defined.
-#endif
 
 static int AIFF_init(void);
 static void AIFF_quit(void);
@@ -387,6 +385,8 @@ static Uint32 AIFF_read(Sound_Sample *sample)
 
     return(retval);
 } /* AIFF_read */
+
+#endif /* SOUND_SUPPORTS_AIFF */
 
 
 /* end of aiff.c ... */

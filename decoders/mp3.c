@@ -29,6 +29,8 @@
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 
+#ifdef SOUND_SUPPORTS_MP3
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,10 +42,6 @@
 
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
-
-#if (!defined SOUND_SUPPORTS_MP3)
-#error SOUND_SUPPORTS_MP3 must be defined.
-#endif
 
 
 static int MP3_init(void);
@@ -222,6 +220,8 @@ static Uint32 MP3_read(Sound_Sample *sample)
 
     return(retval);
 } /* MP3_read */
+
+#endif /* SOUND_SUPPORTS_MP3 */
 
 /* end of mp3.c ... */
 

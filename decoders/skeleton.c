@@ -29,6 +29,8 @@
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 
+#ifdef SOUND_SUPPORTS_FMT
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,10 +39,6 @@
 
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
-
-#if (!defined SOUND_SUPPORTS_FMT)
-#error SOUND_SUPPORTS_FMT must be defined.
-#endif
 
 
 static int FMT_init(void);
@@ -134,6 +132,8 @@ static Uint32 FMT_read(Sound_Sample *sample)
 
     return(retval);
 } /* FMT_read */
+
+#endif /* SOUND_SUPPORTS_FMT */
 
 
 /* end of fmt.c ... */

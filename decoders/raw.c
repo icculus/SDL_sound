@@ -38,6 +38,8 @@
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 
+#ifdef SOUND_SUPPORTS_RAW
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,10 +48,6 @@
 
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
-
-#if (!defined SOUND_SUPPORTS_RAW)
-#error SOUND_SUPPORTS_RAW must be defined.
-#endif
 
 
 static int RAW_init(void);
@@ -155,6 +153,8 @@ static Uint32 RAW_read(Sound_Sample *sample)
 
     return(retval);
 } /* RAW_read */
+
+#endif /* SOUND_SUPPORTS_RAW */
 
 
 /* end of raw.c ... */
