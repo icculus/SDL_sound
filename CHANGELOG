@@ -2,6 +2,8 @@
  * CHANGELOG.
  */
 
+02072002 - Committed a patch Torbjörn sent in awhile ago for preventing
+           confusion with Timidity++-specific stuff in the timidity.cfg file.
 02052002 - Fixed a cleanup I broke last night. Added CWProject.sit to the
            EXTRA_DIST section of Makefile.am, and updated the README with
            MacOS (9/X) install instructions.
