@@ -13,46 +13,58 @@ functions.
 
 
 UNIX:
+ (If you pulled the source from CVS), run ./bootstrap
 
-(If you pulled the source from CVS), run ./bootstrap
+ run ./configure --help, and see if there's any options you need. Rerun
+ configure with those options. If this is confusing to you, just run
+ ./configure with no options: the defaults are generally decent, and
+ configure is usually smart enough to figure out what's best..
 
-run ./configure --help, and see if there's any options you need. Rerun 
-configure with those options. If this is confusing to you, just run 
-./configure with no options: the defaults are generally decent, and 
-configure is usually smart enough to figure out what's best..
+ If configuration succeeded, run "make".
 
-If configuration succeeded, run "make".
+ Run "make install" as root to install the library for use on your system.
 
-Run "make install" as root to install the library for use on your system.
-
-This should work for most Unix-style systems, including Linux, *BSD, BeOS, and
-MacOS X. Reports of success and failure are welcome.
+ This should work for most Unix-style systems, including Linux, *BSD, BeOS, and
+ MacOS X. Reports of success and failure are welcome.
 
 
-MacOS 9:
-CWProject.sit contains project files for CodeWarrior 5.0 and above. Unpack
-this into the root of the SDL_sound folder.
+MacOS 9 users:
+ Included with the source is CWProject.sit, which contains project files for
+ CodeWarrior 5.0 and later.
 
 
 MacOS X command line tools:
-You can use the "UNIX" instructions above if you like the command line tools.
+ You can use the "UNIX" instructions above if you like the command line tools.
 
 
 MacOS X PowerBuilder:
-If you prefer to use PowerBuilder, download this file:
-  http://icculus.org/SDL_sound/downloads/PBProjects.tar.gz
-...and unpack it in the root of the SDL_sound folder. This archive contains
-several external libraries you would have to download/install manually if you
-used the command line tools (these libraries are for extra decoders, and are
-NOT required for SDL_sound to function...however, without them, the number of
-sound formats you can decode is reduced.)
+ If you prefer to use PowerBuilder, download this file:
+    http://icculus.org/SDL_sound/downloads/PBProjects.tar.gz
+ ...and unpack it in the root of the SDL_sound folder. This archive contains
+ several external libraries you would have to download/install manually if you
+ used the command line tools (these libraries are for extra decoders, and are
+ NOT required for SDL_sound to function...however, without them, the number of
+ sound formats you can decode is reduced.)
 
 
-WIN32:
-Download http://icculus.org/SDL_sound/downloads/SDL_sound_win32.zip ...
-Unzip that file in the root of the source directory. That will give you 
-some needed external libraries, and Visual C++ project files. Use the 
-project files to compile.
+Win32 Visual C:
+ For Visual C, download
+   http://icculus.org/SDL_sound/downloads/sdl_sound_visualc_srcs.zip
+ ...and unzip it somewhere. This zipfile has a complete copy of the
+ SDL_sound sources, Visual C project files, and several external libraries,
+ too. This zip is everything you should need, and you can scrap this copy of
+ the source.
+
+
+Win32 Cygwin:
+ Cygwin users can try their luck with the Unix build instructions in this
+ tarball instead.
+
+
+
+If building is successful, there will be a shared library and a binary
+ called "playsound".
+
 
 
 OTHER PLATFORMS:
