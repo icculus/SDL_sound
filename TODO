@@ -1,6 +1,5 @@
 
-Stuff TODO:
-- Implement base API. (Done.)
+General stuff TODO:
 - Use autoconf?
 - Verify portability to various Unixes (BSD, etc)
 - Port to Win32.
@@ -9,21 +8,23 @@ Stuff TODO:
 - Port to MacOS X.
 - Port to PowerPC Linux.
 
+More immediate:
+- Handle compression and other chunks in WAV files.
+- Cleanup up VOC decoder (seems messy to me).
+
 Decoders to implement:
 - .WAV
-- .VOC (Done.)
 - .MP3
 - .MOD
 - .OGG
 - .MID
 - .CDA
-- .RAW (Done.)
 - .AU
 - .AIFF
 - ...and more...
 
+Ongoing:
+- look for "FIXME"s in the code.
+
 /* end of TODO ... */
-
-
-
 

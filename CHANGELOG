@@ -4,9 +4,22 @@
 
 09132001 - Initial spec proposed on SDL mailing list, under name "SDL_voice".
 09142001 - Changed name to SDL_sound, added Sound_DecodeAll() to spec.
-09172001 - Changed some overlooked "voice" to "sound".
-09182001 - Implemented base API. So...tired. Everything's different.  :)
+09172001 - Changed some overlooked "voice" to "sound". Implemented base API.
+           So...tired. Everything's different.  :)
            Also put in a RAW decoder and a simple test program.
+09182001 - Implemented MP3 support through SMPEG (not working yet, though) and
+           wrote the Reference Counting RWops wrapper. Added other little
+           things like the _D(()) macro. Added VOC support, which went up with
+           surprisingly little struggle, which means it MUST be leaking
+           memory.  :)
+09192001 - Added a skeleton decoder source file. Changed voc_read() to
+           voc_read_waveform(), so it wouldn't be confused with VOC_read().
+           Fixed a byte ordering bug in voc.c (reported as AUDIO_S16LSB, but
+           we were swapping byte order of data ourselves. Fixed). Added basic
+           .WAV support. Fixed Makefile so that -I. is always first;
+           otherwise, a previously installed header might get used for the
+           compiles, which is not good. SDL_sound.h now includes SDL_endian.h,
+           since SDL.h doesn't, for some reason.
 
 --ryan. (icculus@clutteredmind.org)
 
