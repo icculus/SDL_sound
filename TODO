@@ -17,6 +17,8 @@ More immediate:
 - Rename "test" directory to "playsound".
 - Have default make build playsound, and make install install it.
 - Make some of the SNDDBG() strings more uniform.
+- SMPEG only works after calling SDL_OpenAudio(). Why?
+- Shrink buffer in Sound_DecodeAll to fit exact size of sample after decoding.
 
 Decoders to implement:
 - .MID
