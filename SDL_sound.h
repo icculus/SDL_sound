@@ -61,6 +61,11 @@
 extern "C" {
 #endif
 
+#define SOUND_VER_MAJOR 0
+#define SOUND_VER_MINOR 1
+#define SOUND_VER_PATCH 1
+
+
 /*
  * These are flags that are used in a Sound_Sample (below) to show various
  *  states.
@@ -140,10 +145,6 @@ typedef struct __SOUND_VERSION__
 
 
 /* functions and macros... */
-
-#define SOUND_VER_MAJOR 0
-#define SOUND_VER_MINOR 1
-#define SOUND_VER_PATCH 0
 
 #define SOUND_VERSION(x) { \
                            (x)->major = SOUND_VER_MAJOR; \
