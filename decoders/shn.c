@@ -1326,6 +1326,10 @@ static int SHN_rewind(Sound_Sample *sample)
 
 static int SHN_seek(Sound_Sample *sample, Uint32 ms)
 {
+    /*
+     * (This CAN be done for SHNs that have a seek table at the end of the
+     *  stream, btw.)
+     */
     BAIL_MACRO("SHN: Seeking not implemented", 0);
 } /* SHN_seek */
 
