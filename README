@@ -30,34 +30,13 @@ These external libraries are OPTIONAL. SDL_sound will build and function
 
 
 Building/Installing:
-
-MacOS X users:
-   If you want to use the command line tools, read the next section. If you
-   prefer to use PowerBuilder, download this file:
-    http://icculus.org/SDL_sound/downloads/PBProjects.tar.gz
-   ...and extract it into your SDL_sound directory. The PowerBuilder project
-   files include several of the external libraries, whereas you will have to
-   find and install those libraries yourself with the command line tools.
-
-MacOS 9 users:
-   Included with the source is CWProject.sit, which contains project files for
-   CodeWarrior 5.0 and later.
-
-Linux, Unix, BeOS, MacOS X command line, BSD users:
-   If you pulled from CVS, run "./bootstrap" first.
-   Then, run ./configure with your favorite options, "make", "make install".
-
-Win32 users:
-   Download http://icculus.org/SDL_sound/downloads/SDL_sound_win32.zip and
-   unzip it in the root of the source tree (the directory with SDL_sound.c,
-   etc). This will give you Visual C++ project files and some other needed
-   code.
-
-There will be a shared library and a binary called "playsound".
-
+  Please read the INSTALL document.
 
 Reporting bugs/commenting:
  There is a mailing list available. To subscribe, send a blank email to
  sdlsound-subscribe@icculus.org. This is the best way to get in touch with
  SDL_sound developers.
+
+
+--ryan. (icculus@clutteredmind.org)
 
