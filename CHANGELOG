@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+08052003 - Fixed MIDI decoder on bigendian systems.
 03102003 - Never actually created samplelist_mutex (Thanks, Glenn Maynard!).
 01302003 - Patches to make SDL_sound more Visual C happy (Thanks, Eric!).
 01122003 - Fix to smpeg.c's rewinding code (Thanks, Eric). Put Visual C 6
