@@ -35,7 +35,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "SDL_sound.h"
 
@@ -209,6 +208,7 @@ static int MIKMOD_init(void)
          */
     md_mode |= (DMODE_SOFT_MUSIC | DMODE_16BITS);
     md_mixfreq = 0;
+    md_reverb = 1;
 
     BAIL_IF_MACRO(MikMod_Init(""), MikMod_strerror(MikMod_errno), 0);
 
