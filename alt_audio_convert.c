@@ -58,7 +58,7 @@ static const int filter[_fsize/2] = {
 /* !!! FIXME: Lose all the "short" vars for "Sint16", etc. */
 
 /*-------------------------------------------------------------------------*/
-int DECLSPEC Sound_ConvertAudio( Sound_AudioCVT *Data )
+int Sound_ConvertAudio( Sound_AudioCVT *Data )
 {
    AdapterC Temp;
    int i;
@@ -91,7 +91,7 @@ int DECLSPEC Sound_ConvertAudio( Sound_AudioCVT *Data )
 }
 
 /*-------------------------------------------------------------------------*/
-int expand8BitTo16Bit( AdapterC Data, int length )
+static int expand8BitTo16Bit( AdapterC Data, int length )
 {
    int i;
    char* inp = (char*)Data.buffer-1;
@@ -102,7 +102,7 @@ int expand8BitTo16Bit( AdapterC Data, int length )
 }
 
 /*-------------------------------------------------------------------------*/
-int swapBytes( AdapterC Data, int length )
+static int swapBytes( AdapterC Data, int length )
 {
    int i;
    unsigned short a,b;
@@ -118,7 +118,7 @@ int swapBytes( AdapterC Data, int length )
 }
 
 /*-------------------------------------------------------------------------*/
-int cut16BitTo8Bit( AdapterC Data, int length )
+static int cut16BitTo8Bit( AdapterC Data, int length )
 {
    int i;
    short* inp = Data.buffer-1;
@@ -129,7 +129,7 @@ int cut16BitTo8Bit( AdapterC Data, int length )
 }
 
 /*-------------------------------------------------------------------------*/
-int changeSigned( AdapterC Data, int length )
+static int changeSigned( AdapterC Data, int length )
 {
    int i;
    short* buffer = Data.buffer;
@@ -139,7 +139,7 @@ int changeSigned( AdapterC Data, int length )
 }
 
 /*-------------------------------------------------------------------------*/
-int convertStereoToMono( AdapterC Data, int length )
+static int convertStereoToMono( AdapterC Data, int length )
 {
    int i;
    short* buffer = Data.buffer;
@@ -154,7 +154,7 @@ int convertStereoToMono( AdapterC Data, int length )
 }
 
 /*-------------------------------------------------------------------------*/
-int convertMonoToStereo( AdapterC Data, int length )
+static int convertMonoToStereo( AdapterC Data, int length )
 {
    int i;
    short* buffer = Data.buffer-2;
@@ -170,7 +170,7 @@ int convertMonoToStereo( AdapterC Data, int length )
 }
 
 /*-------------------------------------------------------------------------*/
-int minus5dB( AdapterC Data, int length )
+static int minus5dB( AdapterC Data, int length )
 {
    int i;
    short* buffer = Data.buffer;
@@ -180,37 +180,37 @@ int minus5dB( AdapterC Data, int length )
 }
 
 /*-------------------------------------------------------------------------*/
-int doubleRateStereo( AdapterC Data, int length )
+static int doubleRateStereo( AdapterC Data, int length )
 {
    _doubleRate2( Data.buffer, Data.mode, length/2 );
    return 2*_doubleRate2( Data.buffer+1, Data.mode, length/2 );
 }
 
-int doubleRateMono( AdapterC Data, int length )
+static int doubleRateMono( AdapterC Data, int length )
 {
    return _doubleRate1( Data.buffer, Data.mode, length );
 }
 
 /*-------------------------------------------------------------------------*/
-int halfRateStereo( AdapterC Data, int length )
+static int halfRateStereo( AdapterC Data, int length )
 {
    _halfRate2( Data.buffer, Data.mode, length/2 );
    return 2*_halfRate2( Data.buffer+1, Data.mode, length/2 );
 }
 
-int halfRateMono( AdapterC Data, int length )
+static int halfRateMono( AdapterC Data, int length )
 {
    return _halfRate2( Data.buffer, Data.mode, length );
 }
 
 /*-------------------------------------------------------------------------*/
-int varRateStereo( AdapterC Data, int length )
+static int varRateStereo( AdapterC Data, int length )
 {
    _varRate2( Data.buffer, Data.mode, Data.filter, length/2 );
    return 2*_varRate2( Data.buffer+1, Data.mode, Data.filter, length/2 );
 }
 
-int varRateMono( AdapterC Data, int length )
+static int varRateMono( AdapterC Data, int length )
 {
    return _varRate1( Data.buffer, Data.mode, Data.filter, length );
 }
@@ -222,7 +222,7 @@ typedef struct{
 } Fraction;
 
 /*-------------------------------------------------------------------------*/
-Fraction findFraction( float Value )
+static Fraction findFraction( float Value )
 {
 /* gives a maximal error of 3% and typical less than 0.2% */
    const char frac[96]={
@@ -266,13 +266,14 @@ Fraction findFraction( float Value )
 }
 
 
-float sinc( float x )
+static float sinc( float x )
 {
    if( x > -1e-24 && x < 1e-24 ) return 1.;
    else return sin(x)/x;
 }
 
-void calculateVarFilter( short* dst, float Ratio, float phase, float scale )
+static void calculateVarFilter( short* dst, float Ratio, float phase,
+                                float scale )
 {
    const unsigned short KaiserWindow7[]= {
        22930, 16292, 14648, 14288, 14470, 14945, 15608, 16404,
@@ -301,12 +302,12 @@ typedef struct{
    int incr;
 } VarFilterMode;
 
-const VarFilterMode Up = { 0.0211952, 0 };
-const VarFilterMode Down = { 0.0364733, 2 };
+static const VarFilterMode Up = { 0.0211952, 0 };
+static const VarFilterMode Down = { 0.0364733, 2 };
 
 
-void setupVarFilter( VarFilter* filter,
-                    float Ratio, VarFilterMode Direction )
+static void setupVarFilter( VarFilter* filter,
+                            float Ratio, VarFilterMode Direction )
 {
    int i,n,d;
    Fraction IRatio;
@@ -336,8 +337,8 @@ void setupVarFilter( VarFilter* filter,
    }
 }
 
-int createRateConverter( Sound_AudioCVT *Data, int filter_index,
-                        int SrcRate, int DestRate, int Channel )
+static int createRateConverter( Sound_AudioCVT *Data, int filter_index,
+                                int SrcRate, int DestRate, int Channel )
 {
    int VarPos = 0;
    int Mono = 2 - Channel;
@@ -387,7 +388,7 @@ int createRateConverter( Sound_AudioCVT *Data, int filter_index,
    return 0;
 }
 
-int DECLSPEC Sound_BuildAudioCVT(Sound_AudioCVT *Data,
+static int BuildAudioCVT(Sound_AudioCVT *Data,
    Uint16 src_format, Uint8 src_channels, int src_rate,
    Uint16 dst_format, Uint8 dst_channels, int dst_rate)
 {
@@ -405,20 +406,29 @@ int DECLSPEC Sound_BuildAudioCVT(Sound_AudioCVT *Data,
    switch( src_format & AUDIO_FORMAT)
    {
    case AUDIO_8:
+       fprintf (stderr, "Filter: expand8BitTo16Bit\n");
        Data->adapter[filter_index++] = expand8BitTo16Bit;
        Data->len_mult *= 2;
        break;
    case AUDIO_16WRONG:
+       fprintf (stderr, "Filter: swapBytes\n");
        Data->adapter[filter_index++] = swapBytes;
+       break;
    }
 
    /* Second adapter: Sign conversion -- unsigned/signed */
    if( src_format & AUDIO_SIGN )
+   {
+       fprintf (stderr, "Filter: changeSigned\n");
        Data->adapter[filter_index++] = changeSigned;
+   }
 
    /* Third adapter:  Stereo->Mono conversion */
    if( src_channels == 2 && dst_channels == 1 )
+   {
+       fprintf (stderr, "convertStereoToMono\n");
        Data->adapter[filter_index++] = convertStereoToMono;
+   }
 
    /* Do rate conversion */
    if( src_channels == 2 && dst_channels == 2 )
@@ -432,6 +442,7 @@ int DECLSPEC Sound_BuildAudioCVT(Sound_AudioCVT *Data,
 
    /* adapter: Mono->Stereo conversion */
    if( src_channels == 1 && dst_channels == 2 ){
+       fprintf (stderr, "Filter: convertMonoToStereo\n");
        Data->adapter[filter_index++] = convertMonoToStereo;
        Data->add *= 2;
        Data->len_mult *= 2;
@@ -439,16 +450,22 @@ int DECLSPEC Sound_BuildAudioCVT(Sound_AudioCVT *Data,
 
    /* adapter: final Sign conversion -- unsigned/signed */
    if( dst_format & AUDIO_SIGN )
+   {
+       fprintf (stderr, "Filter: changeSigned\n");
        Data->adapter[filter_index++] = changeSigned;
+   }
 
    /* final adapter: Size/Endian conversion */
    switch( dst_format & AUDIO_FORMAT)
    {
    case AUDIO_8:
+       fprintf (stderr, "Filter: cut16BitTo8Bit\n");
        Data->adapter[filter_index++] = cut16BitTo8Bit;
        break;
    case AUDIO_16WRONG:
+       fprintf (stderr, "Filter: swapBytes\n");
        Data->adapter[filter_index++] = swapBytes;
+       break;
    }
    /* Set up the filter information */
    Data->adapter[filter_index] = NULL;
@@ -459,5 +476,187 @@ error_exit:
    Data->adapter[0] = NULL;
    return -1;
 }
+
+/*
+ * Frank's audio converter has its own ideas about how to represent audio
+ * format, so at least for a transition period we use this to glue his code
+ * to our's.
+ *
+ * + The expand8BitTo16Bit filter will only convert to system byte order.
+ * + The cut16BitTo8Bit filter will only convert from system byte order.
+ * + The changeSigned filter only works on 16-bit samples, system byte order.
+ */
+
+static char *fmt_to_str(Uint16 fmt)
+{
+    switch (fmt)
+    {
+        case AUDIO_U8:     return "    U8"; break;
+        case AUDIO_S8:     return "    S8"; break;
+        case AUDIO_U16MSB: return "U16MSB"; break;
+        case AUDIO_S16MSB: return "S16MSB"; break;
+        case AUDIO_U16LSB: return "U16LSB"; break;
+        case AUDIO_S16LSB: return "S16LSB"; break;
+    }
+    return "??????";
+}
+
+#define IS_8BIT(x)    ((x) & 0x0008)
+#define IS_16BIT(x)   ((x) & 0x0010)
+#define ENDIAN(x)     ((x) & 0x1000)
+#define SIGNED(x)     ((x) & 0x8000)
+
+int Sound_BuildAudioCVT(Sound_AudioCVT *Data,
+   Uint16 src_in_format, Uint8 src_channels, int src_rate,
+   Uint16 dst_in_format, Uint8 dst_channels, int dst_rate)
+{
+    Uint16 src_format = 0;
+    Uint16 dst_format = 0;
+
+    fprintf (stderr,
+             "format:   %s -> %s\n"
+             "channels: %6d -> %6d\n"
+             "rate:     %6d -> %6d\n",
+             fmt_to_str (src_in_format), fmt_to_str (dst_in_format),
+             src_channels, dst_channels,
+             src_rate, dst_rate);
+
+    if ( IS_8BIT(src_in_format) && IS_16BIT(dst_in_format) )
+    {
+        src_format |= AUDIO_8;
+
+            /*
+             * Signedness and byte-order changes must wait until the data
+             * has been converted to 16-bit samples.
+             */
+        if ( SIGNED(src_in_format) != SIGNED(dst_in_format) )
+        {
+            dst_format |= AUDIO_SIGN;
+        } /* if */
+
+        if ( ENDIAN(dst_in_format) != ENDIAN(AUDIO_U16SYS) )
+        {
+            dst_format |= AUDIO_16WRONG;
+        } /* if */
+    } /* if */
+    else if ( IS_16BIT(src_in_format) && IS_8BIT(dst_in_format) )
+    {
+        dst_format |= AUDIO_8;
+
+            /*
+             * Byte-order and signedness changes must be made before the data
+             * has been converted to 8-bit samples.
+             */
+        if ( ENDIAN(src_in_format) != ENDIAN(AUDIO_U16SYS) )
+        {
+            src_format |= AUDIO_16WRONG;
+        } /* if */
+
+        if ( SIGNED(src_in_format) != SIGNED(dst_in_format) )
+        {
+            src_format |= AUDIO_SIGN;
+        } /* if */
+    } /* else if */
+    else if ( IS_16BIT(src_in_format) && IS_16BIT(dst_in_format) )
+    {
+        if ( ENDIAN(src_in_format) != ENDIAN(dst_in_format) )
+        {
+            if ( ENDIAN(src_in_format) == ENDIAN(AUDIO_U16SYS) )
+            {
+                dst_format |= AUDIO_16WRONG;
+
+                    /*
+                     * The data is already is system byte order, so any
+                     * signedness change has to be made before changing byte
+                     * order.
+                     */
+                if ( SIGNED(src_in_format) != SIGNED(dst_in_format) )
+                {
+                    src_format |= AUDIO_SIGN;
+                } /* if */
+            } /* if */
+            else
+            {
+                src_format |= AUDIO_16WRONG;
+
+                    /*
+                     * The data is not in system byte order, so any signedness
+                     * change has to be made after changing byte order.
+                     */
+                if ( SIGNED(src_in_format) != SIGNED(dst_in_format) )
+                {
+                    dst_format |= AUDIO_SIGN;
+                } /* if */
+            } /* else */
+        } /* if */
+        else if ( ENDIAN(src_in_format) != SIGNED(AUDIO_U16SYS) )
+        {
+            if ( SIGNED(src_in_format) != SIGNED(dst_in_format) )
+            {
+                    /*
+                     * !!! FIXME !!!
+                     *
+                     * The changeSigned filter only works on system byte
+                     * order. In this case, both source and destination is
+                     * in opposite byte order, but the sign has to changed
+                     * so we need to convert to system byte order, change
+                     * sign, and then convert back to the original byte
+                     * order again. This is not an optimal solution.
+                     */
+                src_format |= ( AUDIO_16WRONG | AUDIO_SIGN );
+                dst_format |= AUDIO_16WRONG;
+            } /* if */
+        } /* else if */
+        else if ( SIGNED(src_in_format) != SIGNED(dst_in_format) )
+        {
+            src_format |= AUDIO_SIGN;
+        } /* else if */
+    } /* else if */
+    else if ( IS_8BIT(src_in_format) && IS_8BIT(dst_in_format) )
+    {
+            /*
+             * !!! FIXME !!!
+             *
+             * The changeSigned filter only works on 16-bit samples, so if
+             * the signedness differs we have to convert from 8 to 16 bits,
+             * change the sign and then convert back to 8 bits again. This
+             * is not an optimal solution.
+             */
+        if ( SIGNED(src_in_format) != SIGNED(dst_in_format) )
+        {
+            src_format |= ( AUDIO_8 | AUDIO_SIGN );
+            dst_format |= AUDIO_8;
+        } /* if */
+
+            /*
+             * !!! FIXME !!!
+             *
+             * The convertMonoToStereo and convertStereoToMono filters only
+             * work with 16-bit samples. So if those are to be applied, we
+             * need to convert to 16-bit samples, and then back again.
+             */
+        if ( src_channels != dst_channels )
+        {
+            src_format |= AUDIO_8;
+            dst_format |= AUDIO_8;
+        } /* if */
+
+            /*
+             * !!! FIXME !!!
+             *
+             * The rate conversion filters almost certainly only work with
+             * 16-bit samples. Yadda, yadda, yadda.
+             */
+        if ( src_rate != dst_rate )
+        {
+            src_format |= AUDIO_8;
+            dst_format |= AUDIO_8;
+        } /* if */
+    } /* else if */
+
+    return BuildAudioCVT(Data, src_format, src_channels, src_rate,
+                         dst_format, dst_channels, dst_rate);
+}
+
 /*-------------------------------------------------------------------------*/
 
