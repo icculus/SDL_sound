@@ -248,5 +248,5 @@ AC_OUTPUT([
 Makefile
 decoders/Makefile
 decoders/timidity/Makefile
-test/Makefile
+playsound/Makefile
 ])
