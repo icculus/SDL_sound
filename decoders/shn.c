@@ -21,15 +21,15 @@
  * Shorten decoder for SDL_sound.
  *
  * This driver handles Shorten-compressed waveforms. Despite the fact that
- *  SHNs are popular in online music trading communities, they tend to be
- *  much bigger than MP3s. If an MP3 crunches the waveform to 10-20 percent
- *  of its original size, SHNs only go to about 50-60%. Why do the Phish fans
- *  of the world use this format then? Rabid music traders appreciate the
- *  sound quality; SHNs, unlike MP3s, do not throw away any part of the
- *  waveform. Yes, there are people that notice this, and further more, they
- *  demand it...and if they can't get a good transfer of those larger files
- *  over the 'net, they haven't underestimated the bandwidth of CDs travelling
- *  the world through the postal system.
+ *  SHNs tend to be much bigger than MP3s, they are still the de facto
+ *  standard in online music trading communities. If an MP3 crunches the
+ *  waveform to 10-20 percent of its original size, SHNs only go to about
+ *  50-60%. Why do the Phish fans of the world use this format then? Rabid
+ *  music traders appreciate the sound quality; SHNs, unlike MP3s, do not
+ *  throw away any part of the waveform. Yes, there are people that notice
+ *  this, and further more, they demand it...and if they can't get a good
+ *  transfer of those larger files over the 'net, they haven't underestimated
+ *  the bandwidth of CDs travelling the world through the postal system.
  *
  * Shorten homepage: http://www.softsound.com/Shorten.html
  *
