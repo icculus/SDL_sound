@@ -53,8 +53,24 @@ static Uint32 MIKMOD_read(Sound_Sample *sample);
 
 static const char *extensions_mikmod[] =
 {
-    "MOD", "IT",  "XM",  "S3M", "MTM", "669", "STM", "ULT",
-    "FAR", "MED", "AMF", "DSM", "IMF", "GDM", "STX", "OKT",
+    "669",   /* Composer 669                                                */
+    "AMF",   /* DMP Advanced Module Format                                  */
+    "DSM",   /* DSIK internal format                                        */
+    "FAR",   /* Farandole module                                            */
+    "GDM",   /* General DigiMusic module                                    */
+    "IMF",   /* Imago Orpheus module                                        */
+    "IT",    /* Impulse tracker                                             */
+    "M15",   /* 15 instrument MOD / Ultimate Sound Tracker (old M15 format) */
+    "MED",   /* Amiga MED module                                            */
+    "MOD",   /* Generic MOD (Protracker, StarTracker, FastTracker, etc)     */
+    "MTM",   /* MTM module                                                  */
+    "OKT",   /* Oktalyzer module                                            */
+    "S3M",   /* Screamtracker module                                        */
+    "STM",   /* Screamtracker 2 module                                      */
+    "STX",   /* STMIK 0.2 module                                            */
+    "ULT",   /* Ultratracker module                                         */
+    "UNI",   /* UNIMOD - libmikmod's and APlayer's internal module format   */
+    "XM",    /* Fasttracker module                                          */
     NULL
 };
 

@@ -52,26 +52,33 @@ static Uint32 MODPLUG_read(Sound_Sample *sample);
 
 static const char *extensions_modplug[] =
 {
-    /* Plays 22 different mod formats (there are two kinds of AMF), including:
-     */
-    "MOD", "S3M", "XM",  "IT",  "669", "AMF", "AMS", "DMB",
-    "DMF", "DSM", "FAR", "MDL", "MED", "MHM", "OKT", "PTM",
-    "STM", "ULT", "UMX", "MT2", "PSM",
-
-    /* Plays zip, rar, gzip, and bzip2 compressed mods. The following
-     * extensions are recognized:
-     */
-    "MDZ", "S3Z", "XMZ", "ITZ",       /* zip  */
-    "MDR", "S3R", "XMR", "ITR",       /* rar  */
-    "MDGZ", "S3GZ", "XMGZ", "ITGZ",   /* gzip */
-
-    /* You can also load plain old ZIP, RAR, and GZ files. If ModPlug finds
-     * a mod in them, it will play it.
-     */
+        /* The XMMS plugin is apparently able to load compressed modules as
+         * well, but libmodplug does not handle this.
+         */
+    "669",   /* Composer 669 / UNIS 669 module                              */
+    "AMF",   /* ASYLUM Music Format / Advanced Music Format(DSM)            */
+    "AMS",   /* AMS module                                                  */
+    "DBM",   /* DigiBooster Pro Module                                      */
+    "DMF",   /* DMF DELUSION DIGITAL MUSIC FILEFORMAT (X-Tracker)           */
+    "DSM",   /* DSIK Internal Format module                                 */
+    "FAR",   /* Farandole module                                            */
+    "IT",    /* Impulse Tracker IT file                                     */
+    "MDL",   /* DigiTracker module                                          */
 #if 0
-    "ZIP", "RAR", "GZ",
+    "J2B",   /* Not implemented? What is it anyway?                         */
 #endif
-
+    "MED",   /* OctaMed MED file                                            */
+    "MOD",   /* ProTracker / NoiseTracker MOD/NST file                      */
+    "MT2",   /* MadTracker 2.0                                              */
+    "MTM",   /* MTM file                                                    */
+    "OKT",   /* Oktalyzer module                                            */
+    "PTM",   /* PTM PolyTracker module                                      */
+    "PSM",   /* PSM module                                                  */
+    "S3M",   /* ScreamTracker file                                          */
+    "STM",   /* ST 2.xx                                                     */
+    "ULT",   
+    "UMX",
+    "XM",    /* FastTracker II                                              */
     NULL
 };
 
@@ -124,6 +131,7 @@ static int MODPLUG_init(void)
 
 static void MODPLUG_quit(void)
 {
+    /* it's a no-op. */
 } /* MODPLUG_quit */
 
 
@@ -139,7 +147,27 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
     Uint8 *data;
     size_t size;
     Uint32 retval;
+    int has_extension = 0;
+    int i;
 
+    /* Apparently ModPlug's loaders are too forgiving. They gladly accept
+     * streams that they shouldn't. For now, rely on file extension instead.
+     */
+    for (i = 0; extensions_modplug[i] != NULL; i++)
+    {
+	if (__Sound_strcasecmp(ext, extensions_modplug[i]) == 0)
+	{
+	    has_extension = 1;
+	    break;
+	} /* if */
+    } /* for */
+
+    if (!has_extension)
+    {
+	SNDDBG(("MODPLUG: Unrecognized file type: %s\n", ext));
+	return(0);
+    }
+    
         /* ModPlug needs the entire stream in one big chunk. I don't like it,
          * but I don't think there's any way around it.
          */
