@@ -10,11 +10,8 @@
 #include "mpg123_sdlsound.h"
 #include "mpglib_sdlsound.h"
 
-/* Global mp .. it's a hack */
-/*struct mpstr *gmp;*/
 
-
-BOOL InitMP3(struct mpstr *mp) 
+BOOL InitMP3(struct mpstr *mp)
 {
 	static int init = 0;
 

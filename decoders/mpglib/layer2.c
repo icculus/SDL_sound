@@ -247,7 +247,8 @@ static void II_select_table(struct frame *fr)
   fr->II_sblimit = sblim;
 }
 
-int do_layer2(struct frame *fr,unsigned char *pcm_sample,int *pcm_point,struct mpstr *mp)
+int do_layer2(struct frame *fr,unsigned char *pcm_sample,
+              int *pcm_point,struct mpstr *mp)
 {
   int clip=0;
   int i,j;

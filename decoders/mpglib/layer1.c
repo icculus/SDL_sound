@@ -111,7 +111,8 @@ void I_step_two(real fraction[2][SBLIMIT],unsigned int balloc[2*SBLIMIT],
   }
 }
 
-int do_layer1(struct frame *fr,unsigned char *pcm_sample,int *pcm_point,struct mpstr *mp)
+int do_layer1(struct frame *fr,unsigned char *pcm_sample,
+              int *pcm_point,struct mpstr *mp)
 {
   int clip=0;
   int i,stereo = fr->stereo;
