@@ -40,6 +40,7 @@
 #include "options.h"
 #include "common.h"
 #include "instrum.h"
+#include "instrum_dls.h"
 #include "resample.h"
 #include "tables.h"
 
@@ -178,7 +179,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
   if (!name) return 0;
   
   /* Open patch file */
-  if (!(rw=open_file(name)))
+  if ((rw=open_file(name)) == NULL)
     {
       noluck=1;
       /* Try with various extensions */
@@ -188,7 +189,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
 	    {
 	      strcpy(tmp, name);
 	      strcat(tmp, patch_ext[i]);
-	      if ((rw=open_file(tmp)))
+	      if ((rw=open_file(tmp)) != NULL)
 		{
 		  noluck=0;
 		  break;
@@ -273,6 +274,8 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
       READ_LONG(sp->low_freq);
       READ_LONG(sp->high_freq);
       READ_LONG(sp->root_freq);
+      sp->low_vel = 0;
+      sp->high_vel = 127;
       SDL_RWseek(rw, 2, SEEK_CUR); /* Why have a "root frequency" and then
 				    * "tuning"?? */
       
@@ -527,6 +530,11 @@ static int fill_bank(MidiSong *song, int dr, int b)
     {
       if (bank->instrument[i]==MAGIC_LOAD_INSTRUMENT)
 	{
+          bank->instrument[i]=load_instrument_dls(song, dr, b, i);
+          if (bank->instrument[i])
+            {
+              continue;
+            }
 	  if (!(bank->tone[i].name))
 	    {
 	      SNDDBG(("No instrument mapped to %s %d, program %d%s\n",

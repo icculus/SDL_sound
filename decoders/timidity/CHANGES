@@ -1,5 +1,5 @@
 This version of TiMidity should contain all the fixes from the
-December 13 2001 SDL_mixer CVS snapshot. In addition, I've made some
+September 25 2003 SDL_mixer CVS snapshot. In addition, I've made some
 changes of my own, e.g.:
 
 * All file access is done through SDL_RWops. This means the MIDI
@@ -70,3 +70,8 @@ changes of my own, e.g.:
 
 * config.h has been renamed as options.h to avoid confusion with the
   automatically generated config.h for SDL_sound.
+
+* Added support for loading DLS format instruments:
+	Timidity_LoadDLS(), Timidity_FreeDLS(), Timidity_LoadDLSSong()
+
+* Added Timidity_Init_NoConfig()
