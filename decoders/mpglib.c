@@ -223,7 +223,7 @@ static Uint32 MPGLIB_read(Sound_Sample *sample)
                 return(bw);
             } /* else if */
 
-            rc = decodeMP3(&mpg->mp, mpg->inbuf, sizeof (mpg->inbuf),
+            rc = decodeMP3(&mpg->mp, mpg->inbuf, rc,
                            mpg->outbuf, sizeof (mpg->outbuf), &mpg->outleft);
             if (rc == MP3_ERR)
             {
