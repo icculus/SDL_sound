@@ -2,6 +2,10 @@
  * CHANGELOG.
  */
 
+12052001 - Put our names in a "--credits" option in playsound, and put the
+           standard GNU disclaimers in there too, for good measure. Renamed
+           LICENSE to COPYING to match GNU standards more closely (and
+           end Max's torment.  :)  )
 11302001 - Torbjörn and I make Sound_DecodeAll() more robust: checks for
            previous decoding failures and sets an appropriate error, handles
            decoders that change their buffers on the fly (such as the FLAC
