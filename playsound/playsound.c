@@ -196,6 +196,12 @@ static int read_more_data(Sound_Sample *sample)
     if (!(sample->flags & (SOUND_SAMPLEFLAG_ERROR | SOUND_SAMPLEFLAG_EOF)))
     {
         decoded_bytes = Sound_Decode(sample);
+        if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
+        {
+            fprintf(stderr, "Error in decoding sound file!\n"
+                            "  reason: [%s].\n", Sound_GetError());
+        } /* if */
+
         decoded_ptr = sample->buffer;
         return(read_more_data(sample));  /* handle loops conditions. */
     } /* if */
@@ -599,12 +605,6 @@ int main(int argc, char **argv)
              */
         delay = 2 * 1000 * sdl_desired.samples / sdl_desired.freq;
         SDL_Delay(delay);
-
-        if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
-        {
-            fprintf(stderr, "Error in decoding sound file!\n"
-                            "  reason: [%s].\n", Sound_GetError());
-        } /* if */
 
         SDL_CloseAudio();  /* reopen with next sample's format if possible */
         Sound_FreeSample(sample);
