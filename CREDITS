@@ -19,7 +19,10 @@ Code cleanups,
 MP3 fixes,
 AIFF driver,
 MikMod driver:
-Torbjörn Andersson
+    Torbjörn Andersson
+
+autoconf:
+    Max Horn
 
 Other stuff:
     Your name here! Patches go to icculus@clutteredmind.org ...

@@ -54,7 +54,7 @@
            anyhow). Renamed test_sdlsound to playsound, and made it more
            robust in general: fixed potential overflow in audio_callback,
            made it chatter less, made it take multiple files and some other
-           command lines.
+           command lines. Initial autoconf support, thanks to Max Horn.
 
 --ryan. (icculus@clutteredmind.org)
 
