@@ -2,16 +2,87 @@
  * CHANGELOG.
  */
 
-09132001 - Initial spec proposed on SDL mailing list, under name "SDL_voice".
-09142001 - Changed name to SDL_sound, added Sound_DecodeAll() to spec.
-09172001 - Changed some overlooked "voice" to "sound". Implemented base API.
-           So...tired. Everything's different.  :)
-           Also put in a RAW decoder and a simple test program.
-09182001 - Implemented MP3 support through SMPEG (not working yet, though) and
-           wrote the Reference Counting RWops wrapper. Added other little
-           things like the _D(()) macro. Added VOC support, which went up with
-           surprisingly little struggle, which means it MUST be leaking
-           memory.  :)
+11092001 - Torbjörn fixes playsound's audio callback after I broke it, again.
+           A bug in configure.in was preventing SMPEG from being used unless
+           --enable-debug was set; fixed. Changed this file to list latest
+           changes first.
+11012001 - API COMPATIBILITY BREAKAGE: Decoders can now list multiple file
+           extensions each. Playsound has been updated to handle this.
+           Playsound now registers a SIGINT handler, so you can skip tracks
+           and/or abort the way that mpg123 does.
+10232001 - Rewrote playsound.c's audio_callback() to no longer need the
+           overflow buffer hack, which streamlines it a little and trims the
+           memory requirements for playsound by about 16 kilobytes.
+10172001 - Torbjörn catches a problem with the overflow buffer in playsound's
+           audio callback.
+10152001 - Torbjörn sends in a default sample format for the MIDI decoder, 
+           and the starts of the audio conversion funcitonality (ripped 
+           from SDL). Officially released 0.1.3. Added LICENSE and 
+           CHANGELOG to the distribution. (Again, from Torbjörn) added in 
+           the start of a tweaked audio converter.
+10122001 - Torbjörn Andersson submitted command line enhancements to 
+           playsound, and I cleaned up the --help output.
+10092001 - Patches to shn.c for Visual C compatibility. Visual C project files
+           available from the website. Changed Corona688 to Tyler Montbriand
+           in CREDITS. Upped version to 0.1.3.
+10082001 - Restructured decoders/wav.c to allow for multiple formats, and 
+           put the start of a handler for the ADPCM format in place.
+10072001 - Changed the way decoders/mod.c handles samplerate so that it should
+           work universally. This isn't an idea solution, but it's probably
+           the best we can do without rewriting mikmod. Made a change to ogg.c
+           for portability: changed an int64_t to ogg_int64_t.
+10062001 - Made a change to SDL_sound.c for compiling on non-GNU toolchains.
+10052001 - Removed #include "SDL_endian" from aiff.c.
+10042001 - Changed some #if (defined SOUND_SUPPORTS_*) lines to
+           #ifdef SOUND_SUPPORTS_* in voc.c and shn.c, for consistency with
+           the other decoders.
+10032001 - After hours of tracking down a bogus pointer, the SHN decoder works!
+           I can die happy. :)  Max placated me with an --enable-debug option
+           so I could stop my whining. Other autoconf goodies (such as
+           reenabling -Werror for debug builds, etc). Torbjörn brings in a
+           MIDI decoder, which reads from a Timidity process through a pipe.
+           Changed playsound to open the audio device to match the properties
+           of each sound file, which results in less conversion (and therefore,
+           more chance of correct playback).
+10022001 - Changed a comment in mod.c to not refer to "the mikmod 
+           directory" anymore. Committed Torbjörn's patch for MP3 detection.
+           (better late than never). __Sound_strcasecmp() now handles NULL
+           strings gracefully, fixing the crash with "playsound bootstrap".
+           More work on the SHN decoder.
+10012001 - Fixed a memory leak that Torbjörn found in the MOD decoder.
+09252001 - More autoconf work. Gave Max Horn write access to the CVS
+           repository, so I don't drive him nuts tweaking this thing.  :)
+           Fixed a const complaint and some other stuff needed for compilation
+           under Visual C++ 6.0 (no, it isn't ported yet). Put the SHN source
+           in CVS, even though it isn't ready (and doesn't even compile). Do
+           NOT enable it in your build!
+09242001 - Thank goodness, Torbjörn came through with the MP3 fix. Apparently
+           SMPEG mixes each chunk of decoded data with whatever is already
+           in the buffer you give it. I hate that. I'm going to patch SMPEG
+           to let the programmer enable and disable that behaviour in a given
+           (SMPEG *), since it's just a CPU eater in this case. The _D(())
+           macro is now SNDDBG(()), since _D is taken on MacOS X's version of
+           gcc (which was bound to happen on some platform sooner than later
+           anyhow). Renamed test_sdlsound to playsound, and made it more
+           robust in general: fixed potential overflow in audio_callback,
+           made it chatter less, made it take multiple files and some other
+           command lines. Initial autoconf support, thanks to Max Horn.
+09222001 - Torbjörn Andersson strikes again, with a collection of patches.
+           First, some cosmetic tweaks for decoders/aiff.c. Next, a MOD player
+           based on MikMod. This inspired me to add two more methods to
+           Sound_DecoderFunctions: init() and quit(). Third, a fix to
+           decoders/mp3.c so that SMPEG won't claim every stream it sees, MP3
+           or not. I removed the multiple-streams-per-rwops code, after
+           discussion on the mailing list. The init() and quit() methods
+           led to the possibility that certain decoders will flag themselves
+           as unavailable at runtime, and SDL_sound now handles this.
+           Added [LIB|INC]PATH_[OGG|MOD]. Bigendian fixes; now works on
+           PowerPC Linux. MikMod tweaks. Changed version to 0.1.2.
+09202001 - Torbjörn Andersson submitted several patches: fixed a comment in
+           the .WAV decoder (whoops...screwed up my own search-and-replace.
+           Hah.), made an attempt at putting multiple sound streams behind
+           one RWops (gotta think on that one first), and, most importantly,
+           added an AIFF decoder, which is very cool.
 09192001 - Added a skeleton decoder source file. Changed voc_read() to
            voc_read_waveform(), so it wouldn't be confused with VOC_read().
            Fixed a byte ordering bug in voc.c (reported as AUDIO_S16LSB, but
@@ -28,86 +99,16 @@
            decoder. Rewrote the test program's SDL audio callback to be more
            robust (Ogg exposed a nasty bug in it). Fixed a byte-ordering issue
            in the VOC decoder.
-09202001 - Torbjörn Andersson submitted several patches: fixed a comment in
-           the .WAV decoder (whoops...screwed up my own search-and-replace.
-           Hah.), made an attempt at putting multiple sound streams behind
-           one RWops (gotta think on that one first), and, most importantly,
-           added an AIFF decoder, which is very cool.
-09222001 - Torbjörn Andersson strikes again, with a collection of patches.
-           First, some cosmetic tweaks for decoders/aiff.c. Next, a MOD player
-           based on MikMod. This inspired me to add two more methods to
-           Sound_DecoderFunctions: init() and quit(). Third, a fix to
-           decoders/mp3.c so that SMPEG won't claim every stream it sees, MP3
-           or not. I removed the multiple-streams-per-rwops code, after
-           discussion on the mailing list. The init() and quit() methods
-           led to the possibility that certain decoders will flag themselves
-           as unavailable at runtime, and SDL_sound now handles this.
-           Added [LIB|INC]PATH_[OGG|MOD]. Bigendian fixes; now works on
-           PowerPC Linux. MikMod tweaks. Changed version to 0.1.2.
-09242001 - Thank goodness, Torbjörn came through with the MP3 fix. Apparently
-           SMPEG mixes each chunk of decoded data with whatever is already
-           in the buffer you give it. I hate that. I'm going to patch SMPEG
-           to let the programmer enable and disable that behaviour in a given
-           (SMPEG *), since it's just a CPU eater in this case. The _D(())
-           macro is now SNDDBG(()), since _D is taken on MacOS X's version of
-           gcc (which was bound to happen on some platform sooner than later
-           anyhow). Renamed test_sdlsound to playsound, and made it more
-           robust in general: fixed potential overflow in audio_callback,
-           made it chatter less, made it take multiple files and some other
-           command lines. Initial autoconf support, thanks to Max Horn.
-09252001 - More autoconf work. Gave Max Horn write access to the CVS
-           repository, so I don't drive him nuts tweaking this thing.  :)
-           Fixed a const complaint and some other stuff needed for compilation
-           under Visual C++ 6.0 (no, it isn't ported yet). Put the SHN source
-           in CVS, even though it isn't ready (and doesn't even compile). Do
-           NOT enable it in your build!
-10012001 - Fixed a memory leak that Torbjörn found in the MOD decoder.
-10022001 - Changed a comment in mod.c to not refer to "the mikmod 
-           directory" anymore. Committed Torbjörn's patch for MP3 detection.
-           (better late than never). __Sound_strcasecmp() now handles NULL
-           strings gracefully, fixing the crash with "playsound bootstrap".
-           More work on the SHN decoder.
-10032001 - After hours of tracking down a bogus pointer, the SHN decoder works!
-           I can die happy. :)  Max placated me with an --enable-debug option
-           so I could stop my whining. Other autoconf goodies (such as
-           reenabling -Werror for debug builds, etc). Torbjörn brings in a
-           MIDI decoder, which reads from a Timidity process through a pipe.
-           Changed playsound to open the audio device to match the properties
-           of each sound file, which results in less conversion (and therefore,
-           more chance of correct playback).
-10042001 - Changed some #if (defined SOUND_SUPPORTS_*) lines to
-           #ifdef SOUND_SUPPORTS_* in voc.c and shn.c, for consistency with
-           the other decoders.
-10052001 - Removed #include "SDL_endian" from aiff.c.
-10062001 - Made a change to SDL_sound.c for compiling on non-GNU toolchains.
-10072001 - Changed the way decoders/mod.c handles samplerate so that it should
-           work universally. This isn't an idea solution, but it's probably
-           the best we can do without rewriting mikmod. Made a change to ogg.c
-           for portability: changed an int64_t to ogg_int64_t.
-10082001 - Restructured decoders/wav.c to allow for multiple formats, and 
-           put the start of a handler for the ADPCM format in place.
-10092001 - Patches to shn.c for Visual C compatibility. Visual C project files
-           available from the website. Changed Corona688 to Tyler Montbriand
-           in CREDITS. Upped version to 0.1.3.
-10122001 - Torbjörn Andersson submitted command line enhancements to 
-           playsound, and I cleaned up the --help output.
-10152001 - Torbjörn sends in a default sample format for the MIDI decoder, 
-           and the starts of the audio conversion funcitonality (ripped 
-           from SDL). Officially released 0.1.3. Added LICENSE and 
-           CHANGELOG to the distribution. (Again, from Torbjörn) added in 
-           the start of a tweaked audio converter.
-10172001 - Torbjörn catches a problem with the overflow buffer in playsound's
-           audio callback.
-10232001 - Rewrote playsound.c's audio_callback() to no longer need the
-           overflow buffer hack, which streamlines it a little and trims the
-           memory requirements for playsound by about 16 kilobytes.
-11012001 - API COMPATIBILITY BREAKAGE: Decoders can now list multiple file
-           extensions each. Playsound has been updated to handle this.
-           Playsound now registers a SIGINT handler, so you can skip tracks
-           and/or abort the way that mpg123 does.
-11092001 - Torbjörn fixes playsound's audio callback after I broke it, again.
-           A bug in configure.in was preventing SMPEG from being used unless
-           --enable-debug was set; fixed.
+09182001 - Implemented MP3 support through SMPEG (not working yet, though) and
+           wrote the Reference Counting RWops wrapper. Added other little
+           things like the _D(()) macro. Added VOC support, which went up with
+           surprisingly little struggle, which means it MUST be leaking
+           memory.  :)
+09172001 - Changed some overlooked "voice" to "sound". Implemented base API.
+           So...tired. Everything's different.  :)
+           Also put in a RAW decoder and a simple test program.
+09142001 - Changed name to SDL_sound, added Sound_DecodeAll() to spec.
+09132001 - Initial spec proposed on SDL mailing list, under name "SDL_voice".
 
 --ryan. (icculus@clutteredmind.org)
 
