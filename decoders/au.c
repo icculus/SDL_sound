@@ -171,11 +171,8 @@ static int AU_open(Sound_Sample *sample, const char *ext)
     struct audec *dec;
     char c;
 
-    if (!read_au_header(rw, &hdr)) /* does byte order swapping. */
-    {
-        Sound_SetError("AU: Not an .au file (bad header)");
-        return(0);
-    } /* if */
+    /* read_au_header() will do byte order swapping. */
+    BAIL_IF_MACRO(!read_au_header(rw, &hdr), "AU: bad header", 0);
 
     dec = malloc(sizeof *dec);
     BAIL_IF_MACRO(dec == NULL, ERR_OUT_OF_MEMORY, 0);
@@ -203,9 +200,8 @@ static int AU_open(Sound_Sample *sample, const char *ext)
                 break;
 
             default:
-                Sound_SetError("AU: Unsupported .au encoding");
                 free(dec);
-                return 0;
+                BAIL_MACRO("AU: Unsupported .au encoding", 0);
         } /* switch */
 
         sample->actual.rate = hdr.sample_rate;
@@ -244,9 +240,8 @@ static int AU_open(Sound_Sample *sample, const char *ext)
 
     else
     {
-        Sound_SetError("AU: Not an .AU stream.");
         free(dec);
-        return(0);
+        BAIL_MACRO("AU: Not an .AU stream.", 0);
     } /* else */
 
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;

@@ -146,9 +146,8 @@ static inline int voc_readbytes(SDL_RWops *src, vs_t *v, void *p, int size)
 {
     if (SDL_RWread(src, p, size, 1) != 1)
     {
-        Sound_SetError("VOC: i/o error");
         v->error = 1;
-        return 0;
+        BAIL_MACRO("VOC: i/o error", 0);
     } /* if */
 
     return(1);
@@ -167,8 +166,7 @@ static inline int voc_check_header(SDL_RWops *src)
 
     if (memcmp(signature, "Creative Voice File\032", sizeof (signature)) != 0)
     {
-        Sound_SetError("VOC: Wrong signature; not a VOC file.");
-        return(0);
+        BAIL_MACRO("VOC: Wrong signature; not a VOC file.", 0);
     } /* if */
 
         /* get the offset where the first datablock is located */
@@ -179,8 +177,7 @@ static inline int voc_check_header(SDL_RWops *src)
 
     if (SDL_RWseek(src, datablockofs, SEEK_SET) != datablockofs)
     {
-        Sound_SetError("VOC: Failed to seek to data block.");
-        return(0);
+        BAIL_MACRO("VOC: Failed to seek to data block.", 0);
     } /* if */
 
     return(1);  /* success! */
@@ -227,17 +224,10 @@ static int voc_get_block(Sound_Sample *sample)
                 /* block, the DATA blocks rate value is invalid */
                 if (!v->extended)
                 {
-                    if (uc == 0)
-                    {
-                        Sound_SetError("VOC Sample rate is zero?");
-                        return 0;
-                    } /* if */
+                    BAIL_IF_MACRO(uc == 0, "VOC: Sample rate is zero?", 0);
 
                     if ((v->rate != -1) && (uc != v->rate))
-                    {
-                        Sound_SetError("VOC sample rate codes differ");
-                        return 0;
-                    } /* if */
+                        BAIL_MACRO("VOC sample rate codes differ", 0);
 
                     v->rate = uc;
                     sample->actual.rate = 1000000.0/(256 - v->rate);
@@ -245,13 +235,9 @@ static int voc_get_block(Sound_Sample *sample)
                 } /* if */
 
                 if (!voc_readbytes(src, v, &uc, sizeof (uc)))
-                    return 0;
+                    return(0);
 
-                if (uc != 0)
-                {
-                    Sound_SetError("VOC decoder only interprets 8-bit data");
-                    return 0;
-                } /* if */
+                BAIL_IF_MACRO(uc != 0, "VOC: only supports 8-bit data", 0);
 
                 v->extended = 0;
                 v->rest = sblen - 2;
@@ -263,16 +249,11 @@ static int voc_get_block(Sound_Sample *sample)
                     return 0;
 
                 new_rate_long = SDL_SwapLE32(new_rate_long);
-                if (new_rate_long == 0)
-                {
-                    Sound_SetError("VOC Sample rate is zero?");
-                    return 0;
-                } /* if */
+                BAIL_IF_MACRO(!new_rate_long, "VOC: Sample rate is zero?", 0);
+
                 if ((v->rate != -1) && (new_rate_long != v->rate))
-                {
-                    Sound_SetError("VOC sample rate codes differ");
-                    return 0;
-                } /* if */
+                    BAIL_MACRO("VOC: sample rate codes differ", 0);
+
                 v->rate = new_rate_long;
                 sample->actual.rate = new_rate_long;
 
@@ -284,8 +265,7 @@ static int voc_get_block(Sound_Sample *sample)
                     case 8:  v->size = ST_SIZE_BYTE; break;
                     case 16: v->size = ST_SIZE_WORD; break;
                     default:
-                        Sound_SetError("VOC with unknown data size");
-                        return 0;
+                        BAIL_MACRO("VOC: unknown data size", 0);
                 } /* switch */
 
                 if (!voc_readbytes(src, v, &v->channels, sizeof (Uint8)))
@@ -310,11 +290,7 @@ static int voc_get_block(Sound_Sample *sample)
                 if (!voc_readbytes(src, v, &uc, sizeof (uc)))
                     return 0;
 
-                if (uc == 0)
-                {
-                    Sound_SetError("VOC silence sample rate is zero");
-                    return 0;
-                } /* if */
+                BAIL_IF_MACRO(uc == 0, "VOC: silence sample rate is zero", 0);
 
                 /*
                  * Some silence-packed files have gratuitously
@@ -333,7 +309,7 @@ static int voc_get_block(Sound_Sample *sample)
             case VOC_LOOPEND:
                 for(i = 0; i < sblen; i++)   /* skip repeat loops. */
                 {
-                    if (!voc_readbytes(src, v, trash, sizeof (Uint8)))
+                   if (!voc_readbytes(src, v, trash, sizeof (Uint8)))
                         return 0;
                 } /* for */
                 break;
@@ -348,26 +324,17 @@ static int voc_get_block(Sound_Sample *sample)
                     return 0;
 
                 new_rate_short = SDL_SwapLE16(new_rate_short);
-                if (new_rate_short == 0)
-                {
-                   Sound_SetError("VOC sample rate is zero");
-                   return 0;
-                } /* if */
+                BAIL_IF_MACRO(!new_rate_short, "VOC: sample rate is zero", 0);
+
                 if ((v->rate != -1) && (new_rate_short != v->rate))
-                {
-                   Sound_SetError("VOC sample rate codes differ");
-                   return 0;
-                } /* if */
+                   BAIL_MACRO("VOC: sample rate codes differ", 0);
+
                 v->rate = new_rate_short;
 
                 if (!voc_readbytes(src, v, &uc, sizeof (uc)))
                     return 0;
 
-                if (uc != 0)
-                {
-                    Sound_SetError("VOC decoder only interprets 8-bit data");
-                    return 0;
-                } /* if */
+                BAIL_IF_MACRO(uc != 0, "VOC: only supports 8-bit data", 0);
 
                 if (!voc_readbytes(src, v, &uc, sizeof (uc)))
                     return 0;
@@ -391,8 +358,11 @@ static int voc_get_block(Sound_Sample *sample)
                 /* Falling! Falling! */
 
             default:  /* text block or other krapola. */
-                if (!voc_readbytes(src, v, &trash, sizeof (Uint8) * sblen))
-                    return 0;
+                for(i = 0; i < sblen; i++)   /* skip repeat loops. */
+                {
+                   if (!voc_readbytes(src, v, trash, sizeof (Uint8)))
+                        return 0;
+                } /* for */
 
                 if (block == VOC_TEXT)
                     continue;    /* get next block */
@@ -443,7 +413,7 @@ static int voc_read_waveform(Sound_Sample *sample, int fill_buf, Uint32 max)
             done = SDL_RWread(src, buf + v->bufpos, 1, max);
             if (done < max)
             {
-                Sound_SetError("VOC: i/o error");
+                __Sound_SetError("VOC: i/o error");
                 sample->flags |= SOUND_SAMPLEFLAG_ERROR;
             } /* if */
         } /* if */
@@ -459,7 +429,7 @@ static int voc_read_waveform(Sound_Sample *sample, int fill_buf, Uint32 max)
                     done = rc - cur;
                 else
                 {
-                    Sound_SetError("VOC: seek error");
+                    __Sound_SetError("VOC: seek error");
                     sample->flags |= SOUND_SAMPLEFLAG_ERROR;
                 } /* else */
             } /* if */
@@ -496,9 +466,8 @@ static int VOC_open(Sound_Sample *sample, const char *ext)
 
     if (v->rate == -1)
     {
-        Sound_SetError("VOC data had no sound!");
         free(v);
-        return(0);
+        BAIL_MACRO("VOC: data had no sound!", 0);
     } /* if */
 
     SNDDBG(("VOC: Accepting data stream.\n"));

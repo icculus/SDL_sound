@@ -347,8 +347,7 @@ static int III_get_side_info_1(struct III_sideinfo *si,int stereo,
            gr_info->full_gain[i] = gr_info->pow2gain + (getbits_fast(3)<<3);
 
          if(gr_info->block_type == 0) {
-           Sound_SetError("MPGLIB: Blocktype == 0 and window-switching == 1 not allowed.");
-           return 0;
+           BAIL_MACRO("MPGLIB: Blocktype == 0 and window-switching == 1 not allowed.", 0);
          }
          /* region_count/start parameters are implicit in this case. */       
          gr_info->region1start = 36>>1;
@@ -421,8 +420,7 @@ static int III_get_side_info_2(struct III_sideinfo *si,int stereo,
            gr_info->full_gain[i] = gr_info->pow2gain + (getbits_fast(3)<<3);
 
          if(gr_info->block_type == 0) {
-           Sound_SetError("MPGLIB: Blocktype == 0 and window-switching == 1 not allowed.");
-           return 0;
+           BAIL_MACRO("MPGLIB: Blocktype == 0 and window-switching == 1 not allowed.", 0);
          }
          /* region_count/start parameters are implicit in this case. */       
 /* check this again! */
@@ -956,8 +954,8 @@ static int III_dequantize_sample(real xr[SBLIMIT][SSLIMIT],int *scf,
   if(part2remain > 0)
     getbits(part2remain);
   else if(part2remain < 0) {
-    Sound_SetError("MPGLIB: Can't rewind stream!"); /* !!! FIXME: Need formatting: by %d bits!\n",-part2remain);*/
-    return 1; /* -> error */
+    /* !!! FIXME: Need formatting: by %d bits!\n",-part2remain);*/
+    BAIL_MACRO("MPGLIB: Can't rewind stream!", 1); /* -> error */
   }
   return 0;
 }
@@ -1367,8 +1365,8 @@ static int III_dequantize_sample_ms(real xr[2][SBLIMIT][SSLIMIT],int *scf,
   if(part2remain > 0 )
     getbits(part2remain);
   else if(part2remain < 0) {
-    Sound_SetError("MPGLIB: Can't rewind stream!"); /* !!! FIXME: Need formatting: by %d bits!\n",-part2remain); */
-    return 1; /* -> error */
+    /* !!! FIXME: Need formatting: by %d bits!\n",-part2remain);*/
+    BAIL_MACRO("MPGLIB: Can't rewind stream!", 1); /* -> error */
   }
   return 0;
 }
@@ -1906,7 +1904,7 @@ int do_layer3(struct frame *fr,unsigned char *pcm_sample,
     if(!III_get_side_info_1(&sideinfo,stereo,ms_stereo,sfreq,single))
       return -1;
 #else
-    Sound_SetError("MPGLIB: Not supported!");
+    __Sound_SetError("MPGLIB: Not supported!");
 #endif
   }
 
@@ -1927,7 +1925,7 @@ int do_layer3(struct frame *fr,unsigned char *pcm_sample,
 #ifdef MPEG1
         part2bits = III_get_scale_factors_1(scalefacs[0],gr_info);
 #else
-        Sound_SetError("MPGLIB: Not supported!");
+        __Sound_SetError("MPGLIB: Not supported!");
 #endif
       }
       if(III_dequantize_sample(hybridIn[0], scalefacs[0],gr_info,sfreq,part2bits))
@@ -1942,7 +1940,7 @@ int do_layer3(struct frame *fr,unsigned char *pcm_sample,
 #ifdef MPEG1
         part2bits = III_get_scale_factors_1(scalefacs[1],gr_info);
 #else
-        Sound_SetError("MPGLIB: Not supported!");
+        __Sound_SetError("MPGLIB: Not supported!");
 #endif
       }
 

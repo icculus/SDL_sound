@@ -189,8 +189,7 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
     if (!has_extension)
     {
         SNDDBG(("MODPLUG: Unrecognized file type: %s\n", ext));
-        Sound_SetError("MODPLUG: Not a module file.");
-        return(0);
+        BAIL_MACRO("MODPLUG: Not a module file.", 0);
     } /* if */
     
         /*

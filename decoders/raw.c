@@ -100,10 +100,7 @@ static int RAW_open(Sound_Sample *sample, const char *ext)
          *  determine whether we should handle this data or not.
          */
     if (__Sound_strcasecmp(ext, "RAW") != 0)
-    {
-        Sound_SetError("RAW: extension isn't explicitly \"RAW\".");
-        return(0);
-    } /* if */
+        BAIL_MACRO("RAW: extension isn't explicitly \"RAW\".", 0);
 
         /*
          * You must also specify a desired format, so we know how to
@@ -114,8 +111,7 @@ static int RAW_open(Sound_Sample *sample, const char *ext)
          (sample->desired.rate == 0)     ||
          (sample->desired.format == 0) )
     {
-        Sound_SetError("RAW: invalid desired format.");
-        return(0);
+        BAIL_MACRO("RAW: invalid desired format.", 0);
     } /* if */
 
     SNDDBG(("RAW: Accepting data stream.\n"));

@@ -420,7 +420,7 @@ static void init_shn_offset(Sint32 **offset, int nchan, int nblock, int ftype)
             mean = 0x8000;
             break;
         default:
-            Sound_SetError("SHN: unknown file type");
+            __Sound_SetError("SHN: unknown file type");
             return;
     } /* switch */
 
@@ -640,7 +640,7 @@ static int SHN_open(Sound_Sample *sample, const char *ext)
         shn->qlpc = (int *) malloc((Uint32) (shn->maxnlpc * sizeof (Sint32)));
         if (shn->qlpc == NULL)
         {
-            Sound_SetError(ERR_OUT_OF_MEMORY);
+            __Sound_SetError(ERR_OUT_OF_MEMORY);
             goto shn_open_puke;
         } /* if */
     } /* if */
@@ -655,8 +655,8 @@ static int SHN_open(Sound_Sample *sample, const char *ext)
          (cmd != SHN_FN_VERBATIM) ||
          (!parse_riff_header(shn, sample)) )
     {
-        if (cmd != SHN_FN_VERBATIM)
-            Sound_SetError("SHN: Expected VERBATIM function");
+        if (cmd != SHN_FN_VERBATIM) /* the other conditions set error state */
+            __Sound_SetError("SHN: Expected VERBATIM function");
 
         goto shn_open_puke;
         return(0);
@@ -667,7 +667,7 @@ static int SHN_open(Sound_Sample *sample, const char *ext)
     shn = (shn_t *) malloc(sizeof (shn_t));
     if (shn == NULL)
     {
-        Sound_SetError(ERR_OUT_OF_MEMORY);
+        __Sound_SetError(ERR_OUT_OF_MEMORY);
         goto shn_open_puke;
     } /* if */
 
@@ -1290,9 +1290,8 @@ static Uint32 SHN_read(Sound_Sample *sample)
 
             case SHN_FN_VERBATIM:
             default:
-                Sound_SetError("SHN: Unhandled function.");
                 sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-                return(retval);
+                BAIL_MACRO("SHN: Unhandled function.", retval);
         } /* switch */
     } /* while */
 

@@ -70,8 +70,7 @@ int decode_header(struct frame *fr,unsigned long newhead)
     
     fr->lay = 4-((newhead>>17)&3);
     if( ((newhead>>10)&0x3) == 0x3) {
-      Sound_SetError("MPGLIB: Corrupted header");
-      return 0;
+      BAIL_MACRO("MPGLIB: Corrupted header", 0);
     }
     if(fr->mpeg25) {
       fr->sampling_frequency = 6 + ((newhead>>10)&0x3);
@@ -96,8 +95,7 @@ int decode_header(struct frame *fr,unsigned long newhead)
 
     if(!fr->bitrate_index)
     {
-      Sound_SetError("MPGLIB: Free format not supported.");
-      return (0);
+      BAIL_MACRO("MPGLIB: Free format not supported.", 0);
     }
 
     switch(fr->lay)
@@ -112,7 +110,7 @@ int decode_header(struct frame *fr,unsigned long newhead)
         fr->framesize /= mpglib_freqs[fr->sampling_frequency];
         fr->framesize  = ((fr->framesize+fr->padding)<<2)-4;
 #else
-        Sound_SetError("MPGLIB: Not supported!");
+        __Sound_SetError("MPGLIB: Not supported!");
 #endif
         break;
       case 2:
@@ -125,7 +123,7 @@ int decode_header(struct frame *fr,unsigned long newhead)
         fr->framesize /= mpglib_freqs[fr->sampling_frequency];
         fr->framesize += fr->padding - 4;
 #else
-        Sound_SetError("MPGLIB: Not supported!");
+        __Sound_SetError("MPGLIB: Not supported!");
 #endif
         break;
       case 3:
@@ -146,8 +144,7 @@ int decode_header(struct frame *fr,unsigned long newhead)
           fr->framesize = fr->framesize + fr->padding - 4;
         break; 
       default:
-        Sound_SetError("MPGLIB: Unknown layer type.");
-        return (0);
+        BAIL_MACRO("MPGLIB: Unknown layer type.", 0);
     }
     return 1;
 }
