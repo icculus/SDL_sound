@@ -27,7 +27,12 @@
            test program from running on FreeBSD 4.3. Sweet. Added Ogg Vorbis
            decoder. Rewrote the test program's SDL audio callback to be more
            robust (Ogg exposed a nasty bug in it). Fixed a byte-ordering issue
-	   in the VOC decoder.
+           in the VOC decoder.
+09202001 - Torbjörn Andersson submitted several patches: fixed a comment in
+           the .WAV decoder (whoops...screwed up my own search-and-replace.
+           Hah.), made an attempt at putting multiple sound streams behind
+           one RWops (gotta think on that one first), and, most importantly,
+           added an AIFF decoder, which is very cool.
 
 --ryan. (icculus@clutteredmind.org)
 
