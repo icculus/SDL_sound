@@ -223,7 +223,7 @@ extern DECLSPEC void Sound_GetLinkedVersion(Sound_Version *ver);
  *  may not configure SDL to your liking by itself.
  *
  *  @returns nonzero on success, zero on error. Specifics of the
- *           error can be gleaned from Sound_GetLastError().
+ *           error can be gleaned from Sound_GetError().
  */
 extern DECLSPEC int Sound_Init(void);
 
@@ -242,7 +242,7 @@ extern DECLSPEC int Sound_Init(void);
  *  for you!
  *
  *  @returns nonzero on success, zero on error. Specifics of the error
- *           can be gleaned from Sound_GetLastError(). If failure, state of
+ *           can be gleaned from Sound_GetError(). If failure, state of
  *           SDL_sound is undefined, and probably badly screwed up.
  */
 extern DECLSPEC int Sound_Quit(void);
@@ -310,7 +310,7 @@ extern DECLSPEC void Sound_ClearError(void);
  *  it can handle it, until one accepts it. In such a case your SDL_RWops will
  *  need to be capable of rewinding to the start of the stream.
  * If no decoders can handle the data, a NULL value is returned, and a human
- *  readable error message can be fetched from Sound_GetLastError().
+ *  readable error message can be fetched from Sound_GetError().
  * Optionally, a desired audio format can be specified. If the incoming data
  *  is in a different format, SDL_sound will convert it to the desired format
  *  on the fly. Note that this can be an expensive operation, so it may be
@@ -330,11 +330,11 @@ extern DECLSPEC void Sound_ClearError(void);
  *  take. Note that different data formats require more or less space to
  *  store. This buffer can be resized via Sound_SetBufferSize() ...
  * The buffer size specified must be a multiple of the size of a single
- *  sample (not to be confused with a single Sound_Sample). So, if you want
- *  16-bit, stereo samples, then your sample size is (2 channels * 16 bits),
- *  or 32 bits per sample, which is four bytes. In such a case, you could
- *  specify 128 or 132 bytes for a buffer, but not 129, 130, or 131, although
- *  in reality, you'll want to specify a MUCH larger buffer.
+ *  sample point. So, if you want 16-bit, stereo samples, then your sample
+ *  point size is (2 channels * 16 bits), or 32 bits per sample, which is four
+ *  bytes. In such a case, you could specify 128 or 132 bytes for a buffer,
+ *  but not 129, 130, or 131 (although in reality, you'll want to specify a
+ *  MUCH larger buffer).
  * When you are done with this Sound_Sample pointer, you can dispose of it
  *  via Sound_FreeSample().
  * You do not have to keep a reference to (rw) around. If this function
@@ -349,7 +349,7 @@ extern DECLSPEC void Sound_ClearError(void);
  *                   if you don't need conversion.
  *   @returns Sound_Sample pointer, which is used as a handle to several other
  *            SDL_sound APIs. NULL on error. If error, use
- *            Sound_GetLastError() to see what went wrong.
+ *            Sound_GetError() to see what went wrong.
  */
 extern DECLSPEC Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
                                               Sound_AudioInfo *desired,
@@ -369,7 +369,7 @@ extern DECLSPEC Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
  *    @param bufferSize size, in bytes, of initial read buffer.
  *   @returns Sound_Sample pointer, which is used as a handle to several other
  *            SDL_sound APIs. NULL on error. If error, use
- *            Sound_GetLastError() to see what went wrong.
+ *            Sound_GetError() to see what went wrong.
  */
 extern DECLSPEC Sound_Sample *Sound_NewSampleFromFile(const char *filename,
                                                       Sound_AudioInfo *desired,
@@ -397,11 +397,11 @@ extern DECLSPEC void Sound_FreeSample(Sound_Sample *sample);
  *  it yourself.
  *
  * The buffer size specified must be a multiple of the size of a single
- *  sample (not to be confused with a single Sound_Sample). So, if you want
- *  16-bit, stereo samples, then your sample size is (2 channels * 16 bits),
- *  or 32 bits per sample, which is four bytes. In such a case, you could
- *  specify 128 or 132 bytes for a buffer, but not 129, 130, or 131, although
- *  in reality, you'll want to specify a MUCH larger buffer.
+ *  sample point. So, if you want 16-bit, stereo samples, then your sample
+ *  point size is (2 channels * 16 bits), or 32 bits per sample, which is four
+ *  bytes. In such a case, you could specify 128 or 132 bytes for a buffer,
+ *  but not 129, 130, or 131 (although in reality, you'll want to specify a
+ *  MUCH larger buffer).
  *
  *    @param sample The Sound_Sample whose buffer to modify.
  *    @param new_size The desired size, in bytes, of the new buffer.
@@ -418,7 +418,7 @@ extern DECLSPEC int Sound_SetBufferSize(Sound_Sample *sample, Uint32 new_size);
  *  sample->flags to determine if this was an End-of-stream or error condition.
  *
  *    @param sample Do more decoding to this Sound_Sample.
- *   @returns number of bytes decoded into sample->buffer. If it is less than
+ *  @returns number of bytes decoded into sample->buffer. If it is less than
  *           sample->buffer_size, then you should check sample->flags to see
  *           what the current state of the sample is (EOF, error, read again).
  */
