@@ -57,6 +57,9 @@
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
 
+#ifdef _MSC_VER
+#	define inline __inline
+#endif
 
 static int SHN_init(void);
 static void SHN_quit(void);
@@ -1045,7 +1048,7 @@ static Uint32 put_to_buffers(Sound_Sample *sample, Uint32 bw)
     } /* switch */
 
     i = MIN_MACRO(internal->buffer_size - bw, bsiz);
-    memcpy(internal->buffer + bw, shn->backBuffer, i);
+    memcpy((char *)internal->buffer + bw, shn->backBuffer, i);
     shn->backBufLeft = bsiz - i;
     memcpy(shn->backBuffer, shn->backBuffer + i, shn->backBufLeft);
     return(i);
