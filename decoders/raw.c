@@ -52,6 +52,8 @@
 #endif
 
 
+static int RAW_init(void);
+static void RAW_quit(void);
 static int RAW_open(Sound_Sample *sample, const char *ext);
 static void RAW_close(Sound_Sample *sample);
 static Uint32 RAW_read(Sound_Sample *sample);
@@ -65,10 +67,24 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW =
         "http://www.icculus.org/SDL_sound/"
     },
 
-    RAW_open,       /* open() method       */
-    RAW_close,      /* close() method       */
-    RAW_read        /* read() method       */
+    RAW_init,       /*  init() method */
+    RAW_quit,       /*  quit() method */
+    RAW_open,       /*  open() method */
+    RAW_close,      /* close() method */
+    RAW_read        /*  read() method */
 };
+
+
+static int RAW_init(void)
+{
+    return(1);  /* always succeeds. */
+} /* RAW_init */
+
+
+static void RAW_quit(void)
+{
+    /* it's a no-op. */
+} /* RAW_quit */
 
 
 static int RAW_open(Sound_Sample *sample, const char *ext)

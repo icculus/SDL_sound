@@ -57,7 +57,8 @@
 #error SOUND_SUPPORTS_AIFF must be defined.
 #endif
 
-
+static int AIFF_init(void);
+static void AIFF_quit(void);
 static int AIFF_open(Sound_Sample *sample, const char *ext);
 static void AIFF_close(Sound_Sample *sample);
 static Uint32 AIFF_read(Sound_Sample *sample);
@@ -71,9 +72,11 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_AIFF =
         "http://www.icculus.org/SDL_sound/"
     },
 
-    AIFF_open,      /* open() method       */
-    AIFF_close,     /* close() method       */
-    AIFF_read       /* read() method       */
+    AIFF_init,      /*  init() method */
+    AIFF_quit,      /*  quit() method */
+    AIFF_open,      /*  open() method */
+    AIFF_close,     /* close() method */
+    AIFF_read       /*  read() method */
 };
 
 
@@ -133,6 +136,19 @@ typedef struct
     pstring compressionName;
 #endif
 } comm_t;
+
+
+
+static int AIFF_init(void)
+{
+    return(1);  /* always succeeds. */
+} /* AIFF_init */
+
+
+static void AIFF_quit(void)
+{
+    /* it's a no-op. */
+} /* AIFF_quit */
 
 
 /*

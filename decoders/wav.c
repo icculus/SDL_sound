@@ -41,6 +41,8 @@
 #error SOUND_SUPPORTS_WAV must be defined.
 #endif
 
+static int WAV_init(void);
+static void WAV_quit(void);
 static int WAV_open(Sound_Sample *sample, const char *ext);
 static void WAV_close(Sound_Sample *sample);
 static Uint32 WAV_read(Sound_Sample *sample);
@@ -54,9 +56,11 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV =
         "http://www.icculus.org/SDL_sound/"
     },
 
-    WAV_open,       /* open() method       */
-    WAV_close,      /* close() method       */
-    WAV_read        /* read() method       */
+    WAV_init,       /*  init() method */
+    WAV_quit,       /*  quit() method */
+    WAV_open,       /*  open() method */
+    WAV_close,      /* close() method */
+    WAV_read        /*  read() method */
 };
 
 
@@ -88,6 +92,18 @@ typedef struct
     Uint16 wBlockAlign;
     Uint16 wBitsPerSample;
 } fmt_t;
+
+
+static int WAV_init(void)
+{
+    return(1);  /* always succeeds. */
+} /* WAV_init */
+
+
+static void WAV_quit(void)
+{
+    /* it's a no-op. */
+} /* WAV_quit */
 
 
 /*

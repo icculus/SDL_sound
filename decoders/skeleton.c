@@ -43,6 +43,8 @@
 #endif
 
 
+static int FMT_init(void);
+static void FMT_quit(void);
 static int FMT_open(Sound_Sample *sample, const char *ext);
 static void FMT_close(Sound_Sample *sample);
 static Uint32 FMT_read(Sound_Sample *sample);
@@ -56,10 +58,26 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_FMT =
         "http://www.icculus.org/SDL_sound/"
     },
 
+    FMT_init,       /* init() method       */
+    FMT_quit,       /* quit() method       */
     FMT_open,       /* open() method       */
     FMT_close,      /* close() method       */
     FMT_read        /* read() method       */
 };
+
+
+static int FMT_init(void)
+{
+    /* do any global decoder/library initialization you need here. */
+
+    return(1);  /* initialization successful. */
+} /* FMT_init */
+
+
+static void FMT_quit(void)
+{
+    /* do any global decoder/library cleanup you need here. */
+} /* FMT_quit */
 
 
 static int FMT_open(Sound_Sample *sample, const char *ext)

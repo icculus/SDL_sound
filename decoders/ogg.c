@@ -49,7 +49,8 @@
 #error SOUND_SUPPORTS_OGG must be defined.
 #endif
 
-
+static int OGG_init(void);
+static void OGG_quit(void);
 static int OGG_open(Sound_Sample *sample, const char *ext);
 static void OGG_close(Sound_Sample *sample);
 static Uint32 OGG_read(Sound_Sample *sample);
@@ -63,10 +64,25 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_OGG =
         "http://www.icculus.org/SDL_sound/"
     },
 
-    OGG_open,       /* open() method       */
-    OGG_close,      /* close() method       */
-    OGG_read        /* read() method       */
+    OGG_init,       /*  init() method */
+    OGG_quit,       /*  quit() method */
+    OGG_open,       /*  open() method */
+    OGG_close,      /* close() method */
+    OGG_read        /*  read() method */
 };
+
+
+static int OGG_init(void)
+{
+    return(1);  /* always succeeds. */
+} /* OGG_init */
+
+
+static void OGG_quit(void)
+{
+    /* it's a no-op. */
+} /* OGG_quit */
+
 
 
     /*

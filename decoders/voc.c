@@ -51,6 +51,8 @@
 #endif
 
 
+static int VOC_init(void);
+static void VOC_quit(void);
 static int VOC_open(Sound_Sample *sample, const char *ext);
 static void VOC_close(Sound_Sample *sample);
 static Uint32 VOC_read(Sound_Sample *sample);
@@ -64,9 +66,11 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_VOC =
         "http://www.icculus.org/SDL_sound/"
     },
 
-    VOC_open,       /* open() method       */
-    VOC_close,      /* close() method       */
-    VOC_read        /* read() method       */
+    VOC_init,       /*  init() method */
+    VOC_quit,       /*  quit() method */
+    VOC_open,       /*  open() method */
+    VOC_close,      /* close() method */
+    VOC_read        /*  read() method */
 };
 
 
@@ -115,6 +119,18 @@ typedef struct vocstuff {
 #define VOC_LOOPEND   7
 #define VOC_EXTENDED  8
 #define VOC_DATA_16   9
+
+
+static int VOC_init(void)
+{
+    return(1);  /* always succeeds. */
+} /* VOC_init */
+
+
+static void VOC_quit(void)
+{
+    /* it's a no-op. */
+} /* VOC_quit */
 
 
 static __inline__ int voc_check_header(SDL_RWops *src)
