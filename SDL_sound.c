@@ -782,5 +782,25 @@ Uint32 Sound_DecodeAll(Sound_Sample *sample)
     return(newBufSize);
 } /* Sound_DecodeAll */
 
+
+int Sound_Rewind(Sound_Sample *sample)
+{
+    Sound_SampleInternal *internal;
+    BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, 0);
+
+    internal = (Sound_SampleInternal *) sample->opaque;
+    if (!internal->funcs->rewind(sample))
+    {
+        sample->flags |= SOUND_SAMPLEFLAG_ERROR;
+        return(0);
+    } /* if */
+
+    sample->flags &= !SOUND_SAMPLEFLAG_EAGAIN;
+    sample->flags &= !SOUND_SAMPLEFLAG_ERROR;
+    sample->flags &= !SOUND_SAMPLEFLAG_EOF;
+    return(1);
+} /* Sound_Rewind */
+
+
 /* end of SDL_sound.c ... */
 
