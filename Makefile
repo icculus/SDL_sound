@@ -84,6 +84,7 @@ use_decoder_raw := true
 use_decoder_mp3 := false
 use_decoder_voc := true
 use_decoder_wav := true
+use_decoder_aiff := true
 use_decoder_ogg := true
 
 #-----------------------------------------------------------------------------#
@@ -258,6 +259,11 @@ ifeq ($(strip $(use_decoder_wav)),true)
   CFLAGS += -DSOUND_SUPPORTS_WAV
 endif
 
+ifeq ($(strip $(use_decoder_aiff)),true)
+  MAINSRCS += decoders/aiff.c
+  CFLAGS += -DSOUND_SUPPORTS_AIFF
+endif
+
 ifeq ($(strip $(use_decoder_ogg)),true)
   MAINSRCS += decoders/ogg.c
   CFLAGS += -DSOUND_SUPPORTS_OGG
@@ -370,6 +376,7 @@ showcfg:
 	@echo "Building DLLs         : $(build_dll)"
 	@echo "Install prefix        : $(install_prefix)"
 	@echo "Supports .WAV         : $(use_decoder_wav)"
+	@echo "Supports .AIFF        : $(use_decoder_aiff)"
 	@echo "Supports .RAW         : $(use_decoder_raw)"
 	@echo "Supports .MP3         : $(use_decoder_mp3)"
 	@echo "Supports .VOC         : $(use_decoder_voc)"
