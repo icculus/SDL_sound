@@ -109,12 +109,12 @@ static decoder_element decoders[] =
     { 0, &__Sound_DecoderFunctions_MP3 },
 #endif
 
-#if (defined SOUND_SUPPORTS_MIKMOD)
-    { 0, &__Sound_DecoderFunctions_MIKMOD },
-#endif
-
 #if (defined SOUND_SUPPORTS_MODPLUG)
     { 0, &__Sound_DecoderFunctions_MODPLUG },
+#endif
+
+#if (defined SOUND_SUPPORTS_MIKMOD)
+    { 0, &__Sound_DecoderFunctions_MIKMOD },
 #endif
 
 #if (defined SOUND_SUPPORTS_WAV)
@@ -163,16 +163,17 @@ static decoder_element decoders[] =
 typedef struct __SOUND_ERRMSGTYPE__
 {
     Uint32 tid;
-    int errorAvailable;
-    char errorString[128];
+    int error_available;
+    char error_string[128];
     struct __SOUND_ERRMSGTYPE__ *next;
 } ErrMsg;
 
-static ErrMsg *errorMessages = NULL;
+static ErrMsg *error_msgs = NULL;
 static SDL_mutex *errorlist_mutex = NULL;
 
-/* !!! FIXME: This needs a mutex. */
-static Sound_Sample *samplesList = NULL;  /* this is a linked list. */
+static Sound_Sample *sample_list = NULL;  /* this is a linked list. */
+static SDL_mutex *samplelist_mutex = NULL;
+
 static const Sound_DecoderInfo **available_decoders = NULL;
 static int initialized = 0;
 
@@ -197,14 +198,15 @@ int Sound_Init(void)
     size_t total = sizeof (decoders) / sizeof (decoders[0]);
     BAIL_IF_MACRO(initialized, ERR_IS_INITIALIZED, 0);
 
-    samplesList = NULL;
-    errorMessages = NULL;
+    sample_list = NULL;
+    error_msgs = NULL;
 
     available_decoders = (const Sound_DecoderInfo **)
                             malloc((total) * sizeof (Sound_DecoderInfo *));
     BAIL_IF_MACRO(available_decoders == NULL, ERR_OUT_OF_MEMORY, 0);
 
     SDL_Init(SDL_INIT_AUDIO);
+
     errorlist_mutex = SDL_CreateMutex();
 
     for (i = 0; decoders[i].funcs != NULL; i++)
@@ -232,10 +234,14 @@ int Sound_Quit(void)
 
     BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, 0);
 
-    while (((volatile Sound_Sample *) samplesList) != NULL)
-        Sound_FreeSample(samplesList);
+    while (((volatile Sound_Sample *) sample_list) != NULL)
+        Sound_FreeSample(sample_list);
 
-    samplesList = NULL;
+    initialized = 0;
+
+    SDL_DestroyMutex(samplelist_mutex);
+    samplelist_mutex = NULL;
+    sample_list = NULL;
 
     for (i = 0; decoders[i].funcs != NULL; i++)
     {
@@ -252,13 +258,12 @@ int Sound_Quit(void)
 
     /* clean up error state for each thread... */
     SDL_LockMutex(errorlist_mutex);
-    for (err = errorMessages; err != NULL; err = nexterr)
+    for (err = error_msgs; err != NULL; err = nexterr)
     {
         nexterr = err->next;
         free(err);
     } /* for */
-    errorMessages = NULL;
-    initialized = 0;
+    error_msgs = NULL;
     SDL_UnlockMutex(errorlist_mutex);
     SDL_DestroyMutex(errorlist_mutex);
     errorlist_mutex = NULL;
@@ -278,12 +283,12 @@ static ErrMsg *findErrorForCurrentThread(void)
     ErrMsg *i;
     Uint32 tid;
 
-    if (errorMessages != NULL)
+    if (error_msgs != NULL)
     {
         tid = SDL_ThreadID();
 
         SDL_LockMutex(errorlist_mutex);
-        for (i = errorMessages; i != NULL; i = i->next)
+        for (i = error_msgs; i != NULL; i = i->next)
         {
             if (i->tid == tid)
             {
@@ -307,10 +312,10 @@ const char *Sound_GetError(void)
         return(ERR_NOT_INITIALIZED);
 
     err = findErrorForCurrentThread();
-    if ((err != NULL) && (err->errorAvailable))
+    if ((err != NULL) && (err->error_available))
     {
-        retval = err->errorString;
-        err->errorAvailable = 0;
+        retval = err->error_string;
+        err->error_available = 0;
     } /* if */
 
     return(retval);
@@ -326,7 +331,7 @@ void Sound_ClearError(void)
 
     err = findErrorForCurrentThread();
     if (err != NULL)
-        err->errorAvailable = 0;
+        err->error_available = 0;
 } /* Sound_ClearError */
 
 
@@ -357,14 +362,14 @@ void Sound_SetError(const char *str)
         err->tid = SDL_ThreadID();
 
         SDL_LockMutex(errorlist_mutex);
-        err->next = errorMessages;
-        errorMessages = err;
+        err->next = error_msgs;
+        error_msgs = err;
         SDL_UnlockMutex(errorlist_mutex);
     } /* if */
 
-    err->errorAvailable = 1;
-    strncpy(err->errorString, str, sizeof (err->errorString));
-    err->errorString[sizeof (err->errorString) - 1] = '\0';
+    err->error_available = 1;
+    strncpy(err->error_string, str, sizeof (err->error_string));
+    err->error_string[sizeof (err->error_string) - 1] = '\0';
 } /* Sound_SetError */
 
 
@@ -539,14 +544,13 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
     internal->buffer_size = sample->buffer_size / internal->sdlcvt.len_mult;
     internal->sdlcvt.len = internal->buffer_size;
 
-    /* Prepend our new Sound_Sample to the samplesList... */
-    if (samplesList != NULL)
-    {
-        internal->next = samplesList;
-        if (samplesList != NULL)
-            internal->prev = sample;
-    } /* if */
-    samplesList = sample;
+    /* Prepend our new Sound_Sample to the sample_list... */
+    SDL_LockMutex(samplelist_mutex);
+    internal->next = sample_list;
+    if (sample_list != NULL)
+        ((Sound_SampleInternal *) sample_list->opaque)->prev = sample;
+    sample_list = sample;
+    SDL_UnlockMutex(samplelist_mutex);
 
     SNDDBG(("New sample DESIRED format: %s format, %d rate, %d channels.\n",
             fmt_to_str(sample->desired.format),
@@ -592,6 +596,7 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
                     {
                         if (init_sample(decoder->funcs, retval, ext, desired))
                             return(retval);
+                        break;  /* done with this decoder either way. */
                     } /* if */
                     decoderExt++;
                 } /* while */
@@ -604,8 +609,25 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
     {
         if (decoder->available)
         {
-            if (init_sample(decoder->funcs, retval, ext, desired))
-                return(retval);
+            int should_try = 1;
+            const char **decoderExt = decoder->funcs->info.extensions;
+
+                /* skip if we would have tried decoder above... */
+            while (*decoderExt)
+            {
+                if (__Sound_strcasecmp(*decoderExt, ext) == 0)
+                {
+                    should_try = 0;
+                    break;
+                } /* if */
+                decoderExt++;
+            } /* while */
+
+            if (should_try)
+            {
+                if (init_sample(decoder->funcs, retval, ext, desired))
+                    return(retval);
+            } /* if */
         } /* if */
     } /* for */
 
@@ -659,9 +681,9 @@ void Sound_FreeSample(Sound_Sample *sample)
 
     internal = (Sound_SampleInternal *) sample->opaque;
 
-    internal->funcs->close(sample);
+    SDL_LockMutex(samplelist_mutex);
 
-    /* update the samplesList... */
+    /* update the sample_list... */
     if (internal->prev != NULL)
     {
         Sound_SampleInternal *prevInternal;
@@ -670,8 +692,8 @@ void Sound_FreeSample(Sound_Sample *sample)
     } /* if */
     else
     {
-        assert(samplesList == sample);
-        samplesList = internal->next;
+        assert(sample_list == sample);
+        sample_list = internal->next;
     } /* else */
 
     if (internal->next != NULL)
@@ -681,7 +703,11 @@ void Sound_FreeSample(Sound_Sample *sample)
         nextInternal->prev = internal->prev;
     } /* if */
 
+    SDL_UnlockMutex(samplelist_mutex);
+
     /* nuke it... */
+    internal->funcs->close(sample);
+
     if (internal->rw != NULL)  /* this condition is a "just in case" thing. */
         SDL_RWclose(internal->rw);
 
