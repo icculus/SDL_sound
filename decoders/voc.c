@@ -229,8 +229,9 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
                         BAIL_MACRO("VOC sample rate codes differ", 0);
 
                     v->rate = uc;
-                    sample->actual.rate = 1000000.0/(256 - v->rate);
                     v->channels = 1;
+                    sample->actual.rate = 1000000.0/(256 - v->rate);
+                    sample->actual.channels = 1;
                 } /* if */
 
                 if (!voc_readbytes(src, v, &uc, sizeof (uc)))
