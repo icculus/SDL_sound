@@ -3,7 +3,7 @@
  */
 
 06062002 - Added URLs for official and unofficial versions of ModPlug in
-           decoders/modplug.c.
+           decoders/modplug.c. Cleaned up some FIXMEs.
 05222002 - Torbjörn sent in some more fixes for altcvt: mono to stereo
            conversion works, now.
 05222002 - Torbjörn sent in some initial cleanups and fixes for altcvt, and
