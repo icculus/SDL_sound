@@ -80,12 +80,33 @@ debugging_chatter := true
 # Set the decoder types you'd like to support.
 #  Note that various decoders may need external libraries.
 #-----------------------------------------------------------------------------#
-use_decoder_raw := true
-use_decoder_mp3 := false
-use_decoder_voc := true
-use_decoder_wav := true
+use_decoder_raw  := true
+use_decoder_mp3  := false
+use_decoder_mod  := true
+use_decoder_voc  := true
+use_decoder_wav  := true
 use_decoder_aiff := true
-use_decoder_ogg := true
+use_decoder_ogg  := true
+
+
+#-----------------------------------------------------------------------------#
+# If use_decoder_mod is set to true, and libmikmod is in a nonstandard place,
+#  note that here. It's usually safe to leave these commented if you installed
+#  MikMod from a package like an RPM, or from source with the defaults.
+#-----------------------------------------------------------------------------#
+#INCPATH_MOD := -I/usr/local/include
+#LIBPATH_MOD := -L/usr/local/lib
+
+
+#-----------------------------------------------------------------------------#
+# If use_decoder_ogg is set to true, and libvorbis and libvorbisfile are
+#  in a nonstandard place, set them here. It's usually safe to leave these
+#  commented if you installed Ogg Vorbis from a package like an RPM, or from
+#  source with the defaults.
+#-----------------------------------------------------------------------------#
+#INCPATH_OGG := -I/usr/local/include
+#LIBPATH_OGG := -L/usr/local/lib
+
 
 #-----------------------------------------------------------------------------#
 # Set to "true" if you'd like to build a DLL. Set to "false" otherwise.
@@ -201,7 +222,7 @@ SRCDIR := .
 
 CFLAGS := -I$(SRCDIR) $(CFLAGS)
 CFLAGS += $(use_asm) -D_REENTRANT -fsigned-char -DPLATFORM_UNIX
-CFLAGS += -Wall -Werror -fno-exceptions -fno-rtti -ansi -pedantic
+CFLAGS += -Wall -fno-exceptions -fno-rtti -ansi -pedantic
 
 LDFLAGS += -lm
 
@@ -249,6 +270,12 @@ ifeq ($(strip $(use_decoder_mp3)),true)
   LDFLAGS += $(shell smpeg-config --libs)
 endif
 
+ifeq ($(strip $(use_decoder_mod)),true)
+  MAINSRCS += decoders/mod.c
+  CFLAGS += -DSOUND_SUPPORTS_MOD -DUSE_RWOPS
+  LDFLAGS += -lmikmod
+endif
+
 ifeq ($(strip $(use_decoder_voc)),true)
   MAINSRCS += decoders/voc.c
   CFLAGS += -DSOUND_SUPPORTS_VOC
@@ -266,8 +293,8 @@ endif
 
 ifeq ($(strip $(use_decoder_ogg)),true)
   MAINSRCS += decoders/ogg.c
-  CFLAGS += -DSOUND_SUPPORTS_OGG
-  LDFLAGS += -lvorbisfile -lvorbis
+  CFLAGS += -DSOUND_SUPPORTS_OGG $(INCPATH_OGG)
+  LDFLAGS += $(LIBPATH_OGG) -lvorbisfile -lvorbis
 endif
 
 ifeq ($(strip $(need_extra_rwops)),true)
@@ -379,6 +406,7 @@ showcfg:
 	@echo "Supports .AIFF        : $(use_decoder_aiff)"
 	@echo "Supports .RAW         : $(use_decoder_raw)"
 	@echo "Supports .MP3         : $(use_decoder_mp3)"
+	@echo "Supports .MOD         : $(use_decoder_mod)"
 	@echo "Supports .VOC         : $(use_decoder_voc)"
 	@echo "Supports .OGG         : $(use_decoder_ogg)"
 
