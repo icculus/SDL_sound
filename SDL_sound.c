@@ -184,7 +184,7 @@ int Sound_Quit(void)
     } /* for */
 
     if (available_decoders != NULL)
-        free(available_decoders);
+        free((void *) available_decoders);
     available_decoders = NULL;
 
     initialized = 0;
