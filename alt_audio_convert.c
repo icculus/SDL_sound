@@ -26,7 +26,6 @@
  */
 
 #include "alt_audio_convert.h"
-#include <stdlib.h>
 #include <math.h>
 
 /* just to make sure this is defined... */
@@ -35,8 +34,8 @@
 #define min(x, y) ( ((x) < (y)) ? (x) : (y) )
 #endif
 
-#ifndef max
-#define max(x, y) ( ((x) > (y)) ? (x) : (y) )
+#ifndef abs
+#define abs(x) ( ((x) > (0)) ? (x) : -(x) )
 #endif
 
 
@@ -47,17 +46,6 @@
 #define IS_FLOAT(x)   ((x).format & 0x0020)
 #define IS_SIGNED(x)  ((x).format & 0x8000)
 #define IS_SYSENDIAN(x) ((~AUDIO_U16SYS ^ (x).format) & 0x1000)
-
-
-/*-------------------------------------------------------------------------*/
-/* this filter (Kaiser-window beta=6.8) gives a decent -80dB attentuation  */
-static const int filter[_fsize / 2] =
-{
-    0, 20798, 0, -6764, 0, 3863, 0, -2560,
-    0,  1800, 0, -1295, 0,  936, 0,  -671,
-    0,   474, 0,  -326, 0,  217, 0,  -138,
-    0,    83, 0,   -46, 0,   23, 0,    -9
-};
 
 
 /*-------------------------------------------------------------------------*/
@@ -87,7 +75,7 @@ static const int filter[_fsize / 2] =
    incremented or decremented depending on down or up conversion and the
    first two input value are taken into account. This procedure repeats
    until the filter has processed all zeroes. The distance of the pointer
-   movement is stored in flength.
+   movement is stored in flength, always positive.
 
    Further a pointer cinp to the sample buffer itself is stored. The pointer
    to the sample buffer is shifted too, so that on the first use of this
@@ -95,7 +83,7 @@ static const int filter[_fsize / 2] =
    over the sample buffer until it reaches the other end. The distance of
    the movement is stored in clength.
 
-   Finally the decay of the filter is done by linp, llength like finp,
+   Finally the decay of the filter is done by linp and llength like finp,
    flength, but in reverse order.
 
    buffer denotes the start or the end of the output buffer, depending
@@ -106,7 +94,7 @@ static const int filter[_fsize / 2] =
 
 typedef struct
 {
-    Sint16 inbuffer[6*_fsize];
+    Sint16 inbuffer[24*_fsize];
     Sint16 *finp, *cinp, *linp;
     Sint16 *buffer;
     int flength, clength, llength;
@@ -361,24 +349,28 @@ static int minus5dB( AdapterC Data, int length )
 }
 
 /*-------------------------------------------------------------------------*/
+enum RateConverterType { varRate = 0, hlfRate = 1, dblRate = 2 };
 static void initRateConverterBuffer( RateConverterBuffer *rcb,
-    AdapterC* Data, int length, int rel_size )
+    AdapterC* Data, int length, RateConverterType r, int rel_size )
 {
-    int size, slength;
-    int den, num;
+    int size, dir;
+    int den[] = { 0, 1, 2};
+    int num[] = { 0, 2, 1};
     int i;
 
-    den = Data->filter->denominator;
-    num = Data->filter->numerator;
-    size = _fsize * rel_size;
+    den[0] = Data->filter->denominator;
+    num[0] = Data->filter->numerator;
+
+    size = 2 * _fsize * abs(rel_size);
+    dir = rel_size > 0 ? 1 : 0;
     length >>= 1;
-    slength = rel_size > 0 ? length : -length;
 
     rcb->buffer = (Sint16*)( Data->buffer );
 
     if( Data->mode & SDL_AI_Loop )
     {
-        // !!!FIXME: modulo length, take scale into account
+        // !!!FIXME: modulo length, take scale into account,
+        // check against the 'else' part
         for( i = 0; i < size; i++ )
         {
             rcb->inbuffer[i] = rcb->buffer[length-size+i];
@@ -386,26 +378,35 @@ static void initRateConverterBuffer( RateConverterBuffer *rcb,
         }
         rcb->finp = rcb->linp = rcb->inbuffer + size;
         if( size < 0 )
-            rcb->buffer += num * ( length + 2 * size ) / den;
+            rcb->buffer += num[r] * ( length + 2 * size ) / den[r];
     }
     else
     {
         for( i = 0; i < size; i++ )
         {
-            int j;
-            j = length-size+i;
-            rcb->inbuffer[i] = j < 0 ? 0 : rcb->buffer[j];
+            int k;
+            k = length-size+i;
+            rcb->inbuffer[i] = k < 0 ? 0 : rcb->buffer[k];
             rcb->inbuffer[i+size] = 0;
             rcb->inbuffer[i+2*size] = i < length ? rcb->buffer[i] : 0;
         }
         // !!!FIXME: take lenght < size into account
-        rcb->finp = rcb->inbuffer + abs( 3*size/2 ) + size/2;
-        rcb->linp = rcb->inbuffer + abs( 3*size/2 ) - size/2;
-        rcb->flength = rcb->llength = 2*size;
-        rcb->clength = slength - 2*size;
+        rcb->flength = rcb->llength = size;
+        rcb->clength = length - size;
 
-        if( size < 0 )
-            rcb->buffer += num * ( length + 2 * size ) / den;
+        if( dir )
+        {
+            rcb->finp = rcb->inbuffer + 5*size/2;
+            rcb->cinp = rcb->buffer + length - size/2;
+            rcb->linp = rcb->inbuffer + 3*size/2;
+            rcb->buffer += den[r] * ( length + size ) / num[r];
+        }
+        else
+        {
+            rcb->finp = rcb->inbuffer + size/2;
+            rcb->cinp = rcb->buffer + size/2;
+            rcb->linp = rcb->inbuffer + 3*size/2;
+        }
     }
 }
 
@@ -436,14 +437,14 @@ static int doRateConversion( RateConverterBuffer* rcb,
 static int doubleRateMono( AdapterC Data, int length )
 {
     RateConverterBuffer rcb;
-    initRateConverterBuffer( &rcb, &Data, length, 1 );
+    initRateConverterBuffer( &rcb, &Data, length, dblRate, 1 );
     return doRateConversion( &rcb, doubleRate1, NULL );
 }
 
 static int doubleRateStereo( AdapterC Data, int length )
 {
     RateConverterBuffer rcb;
-    initRateConverterBuffer( &rcb, &Data, length, 2 );
+    initRateConverterBuffer( &rcb, &Data, length, dblRate, 2 );
     doRateConversion( &rcb, doubleRate2, NULL );
     nextRateConverterBuffer( &rcb );
     return 2 + doRateConversion( &rcb, doubleRate2, NULL );
@@ -453,14 +454,14 @@ static int doubleRateStereo( AdapterC Data, int length )
 static int halfRateMono( AdapterC Data, int length )
 {
     RateConverterBuffer rcb;
-    initRateConverterBuffer( &rcb, &Data, length, -1 );
+    initRateConverterBuffer( &rcb, &Data, length, hlfRate, -1 );
     return doRateConversion( &rcb, halfRate1, NULL );
 }
 
 static int halfRateStereo( AdapterC Data, int length )
 {
     RateConverterBuffer rcb;
-    initRateConverterBuffer( &rcb, &Data, length, -2 );
+    initRateConverterBuffer( &rcb, &Data, length, hlfRate, -2 );
     doRateConversion( &rcb, halfRate2, NULL );
     nextRateConverterBuffer( &rcb );
     return 2 + doRateConversion( &rcb, halfRate2, NULL );
@@ -470,14 +471,14 @@ static int halfRateStereo( AdapterC Data, int length )
 static int increaseRateMono( AdapterC Data, int length )
 {
     RateConverterBuffer rcb;
-    initRateConverterBuffer( &rcb, &Data, length, 2 );
+    initRateConverterBuffer( &rcb, &Data, length, varRate, 2 );
     return doRateConversion( &rcb, increaseRate1, Data.filter );
 }
 
 static int increaseRateStereo( AdapterC Data, int length )
 {
     RateConverterBuffer rcb;
-    initRateConverterBuffer( &rcb, &Data, length, 4 );
+    initRateConverterBuffer( &rcb, &Data, length, varRate, 4 );
     doRateConversion( &rcb, increaseRate2, Data.filter );
     nextRateConverterBuffer( &rcb );
     return 2 + doRateConversion( &rcb, increaseRate2, Data.filter );
@@ -487,14 +488,14 @@ static int increaseRateStereo( AdapterC Data, int length )
 static int decreaseRateMono( AdapterC Data, int length )
 {
     RateConverterBuffer rcb;
-    initRateConverterBuffer( &rcb, &Data, length, -2 );
+    initRateConverterBuffer( &rcb, &Data, length, varRate, -2 );
     return doRateConversion( &rcb, decreaseRate1, Data.filter );
 }
 
 static int decreaseRateStereo( AdapterC Data, int length )
 {
     RateConverterBuffer rcb;
-    initRateConverterBuffer( &rcb, &Data, length, -4 );
+    initRateConverterBuffer( &rcb, &Data, length, varRate, -4 );
     doRateConversion( &rcb, decreaseRate2, Data.filter );
     nextRateConverterBuffer( &rcb );
     return doRateConversion( &rcb, decreaseRate2, Data.filter );
@@ -535,7 +536,7 @@ static Fraction findFraction( float Value )
     float RelErr, BestErr = 0;
     if( Value < 31/64. || Value > 64/31. ) return Result;
 
-    for( n = 0; n < sizeof(frac); num=frac[n++] )
+    for( n = 0; n < SDL_TABLESIZE(frac); num=frac[n++] )
     {
          if( num < 0 ) den++;
          RelErr = Value * num / den;
@@ -609,10 +610,10 @@ static void setupVarFilter( VarFilter* filter,
         if( phase >= n )
         {
             phase -= d;
-            filter->incr[i] = Direction.incr;
+            filter->incr[i] = abs(Direction.incr);
         }
         else
-            filter->incr[i] = 1+Direction.incr;
+            filter->incr[i] = abs(1+Direction.incr);
 
         calculateVarFilter( filter->c[i], Ratio, phase/(float)n,
                             Direction.scale );
@@ -899,13 +900,11 @@ static void show_AudioCVT( Sound_AudioCVT *Data )
         AdapterDesc(decreaseRateStereo),
         { NULL,    "----------NULL-----------" }
     };
-    const int AdapterDescMax = sizeof(AdapterDescription)
-                             / sizeof(*AdapterDescription);
 
     fprintf( stderr, "\nAdapter List:    \n" );
     for( i = 0; i < 32; i++ )
     {
-        for( j = 0; j < AdapterDescMax; j++ )
+        for( j = 0; j < SDL_TABLESIZE(AdapterDescription); j++ )
         {
             if( Data->adapter[i] == AdapterDescription[j].adapter )
             {

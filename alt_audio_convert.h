@@ -25,16 +25,16 @@
  * (This code blatantly abducted for SDL_sound. Thanks, Frank! --ryan.)
  */
 
-#ifndef _INCLUDE_ALT_AUDIO_CONVERT_H_
-#define _INCLUDE_ALT_AUDIO_CONVERT_H_
+#ifndef _INCLUDE_AUDIO_CONVERT_H_
+#define _INCLUDE_AUDIO_CONVERT_H_
 
 #include "SDL_audio.h"
 #define Sound_AI_Loop 0x2
-#define _fsize 64
+#define _fsize 32
 
 
 typedef struct{
-   Sint16 c[16][2*_fsize];
+   Sint16 c[16][4*_fsize];
    char incr[16];
    int denominator;
    int numerator;
@@ -74,5 +74,5 @@ extern DECLSPEC int Sound_BuildAudioCVT( Sound_AudioCVT *Data,
    Uint16 src_format, Uint8 src_channels, int src_rate,
    Uint16 dst_format, Uint8 dst_channels, int dst_rate );
 
-#endif /* _INCLUDE_ALT_AUDIO_CONVERT_H_ */
+#endif /* _INCLUDE_AUDIO_CONVERT_H_ */
 
