@@ -110,7 +110,7 @@ SDL_RWops *RWops_RWRefCounter_new(SDL_RWops *rw)
         data = (RWRefCounterData *) malloc(sizeof (RWRefCounterData));
         if (data == NULL)
         {
-            SDL_OutOfMemory();
+            SDL_SetError("Out of memory.");
             SDL_FreeRW(retval);
             retval = NULL;
         } /* if */
