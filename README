@@ -1,6 +1,17 @@
 SDL_sound. An abstract soundfile decoder.
 
-Check here, until I get to write more of this README:
+SDL_sound is a library that handles the decoding of several popular sound file
+ formats, such as .WAV and .MP3. It is meant to make the programmer's sound
+ playback tasks simpler. The programmer gives SDL_sound a filename, or feeds
+ it data directly from one of many sources, and then reads the decoded
+ waveform data back at her leisure. If resource constraints are a concern,
+ SDL_sound can process sound data in programmer-specified blocks. Alternately,
+ SDL_sound can decode a whole sound file and hand back a single pointer to the
+ whole waveform. SDL_sound can also handle sample rate, audio format, and
+ channel conversion on-the-fly and behind-the-scenes, if the programmer
+ desires.
+
+Please check the website for the most up-to-date information about SDL_sound:
    http://icculus.org/SDL_sound/
 
 SDL_sound _REQUIRES_ Simple Directmedia Layer (SDL) to function, and cannot
@@ -28,7 +39,6 @@ These external libraries are OPTIONAL. SDL_sound will build and function
  - MIDI files
  - Raw waveform data
 
-
 Building/Installing:
   Please read the INSTALL document.
 
@@ -36,7 +46,6 @@ Reporting bugs/commenting:
  There is a mailing list available. To subscribe, send a blank email to
  sdlsound-subscribe@icculus.org. This is the best way to get in touch with
  SDL_sound developers.
-
 
 --ryan. (icculus@clutteredmind.org)
 
