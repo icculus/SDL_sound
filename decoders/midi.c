@@ -126,8 +126,18 @@ static int MIDI_open(Sound_Sample *sample, const char *ext)
     int fd2[2];
     pid_t pid;
 
-        /* TiMidity does all the conversions we need. */
-    memcpy(&sample->actual, &sample->desired, sizeof (Sound_AudioInfo));
+        /*
+         * Use the desired format if available, or pick sensible defaults.
+         * TiMidity does all the conversions we need.
+         */
+    if (sample->desired.rate == 0)
+    {
+        sample->actual.channels = 2;
+        sample->actual.rate = 44100;
+        sample->actual.format = AUDIO_S16SYS;
+    } /* if */
+    else
+        memcpy(&sample->actual, &sample->desired, sizeof (Sound_AudioInfo));
     sample->flags = SOUND_SAMPLEFLAG_NONE;
 
     if (pipe(fd1) < 0 || pipe(fd2) < 0)
