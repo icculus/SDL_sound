@@ -121,18 +121,18 @@ static int MP3_open(Sound_Sample *sample, const char *ext)
     } /* if */
 
     _D(("MP3: Accepting data stream.\n"));
-    _D(("MP3: has_audio == %s.\n", smpeg_info.has_audio ? "TRUE" : "FALSE"));
-    _D(("MP3: has_video == %s.\n", smpeg_info.has_video ? "TRUE" : "FALSE"));
-    _D(("MP3: width == %d.\n", smpeg_info.width));
-    _D(("MP3: height == %d.\n", smpeg_info.height));
-    _D(("MP3: current_frame == %d.\n", smpeg_info.current_frame));
-    _D(("MP3: current_fps == %f.\n", smpeg_info.current_fps));
+    _D(("MP3: has_audio == {%s}.\n", smpeg_info.has_audio ? "TRUE" : "FALSE"));
+    _D(("MP3: has_video == {%s}.\n", smpeg_info.has_video ? "TRUE" : "FALSE"));
+    _D(("MP3: width == (%d).\n", smpeg_info.width));
+    _D(("MP3: height == (%d).\n", smpeg_info.height));
+    _D(("MP3: current_frame == (%d).\n", smpeg_info.current_frame));
+    _D(("MP3: current_fps == (%f).\n", smpeg_info.current_fps));
     _D(("MP3: audio_string == [%s].\n", smpeg_info.audio_string));
-    _D(("MP3: audio_current_frame == %d.\n", smpeg_info.audio_current_frame));
-    _D(("MP3: current_offset == %d.\n", smpeg_info.current_offset));
-    _D(("MP3: total_size == %d.\n", smpeg_info.total_size));
-    _D(("MP3: current_time == %f.\n", smpeg_info.current_time));
-    _D(("MP3: total_time == %f.\n", smpeg_info.total_time));
+    _D(("MP3: audio_current_frame == (%d).\n", smpeg_info.audio_current_frame));
+    _D(("MP3: current_offset == (%d).\n", smpeg_info.current_offset));
+    _D(("MP3: total_size == (%d).\n", smpeg_info.total_size));
+    _D(("MP3: current_time == (%f).\n", smpeg_info.current_time));
+    _D(("MP3: total_time == (%f).\n", smpeg_info.total_time));
 
     SMPEG_enablevideo(smpeg, 0);
     SMPEG_enableaudio(smpeg, 1);
