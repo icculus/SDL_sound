@@ -128,6 +128,8 @@ static decoder_element decoders[] =
 #if (defined SOUND_SUPPORTS_MIDI)
     { 0, &__Sound_DecoderFunctions_MIDI },
 #endif
+
+    { 0, NULL }
 };
 
 
@@ -163,10 +165,10 @@ int Sound_Init(void)
     SDL_Init(SDL_INIT_AUDIO);
 
     available_decoders = (const Sound_DecoderInfo **)
-                            malloc((total + 1) * sizeof (Sound_DecoderInfo *));
+                            malloc((total) * sizeof (Sound_DecoderInfo *));
     BAIL_IF_MACRO(available_decoders == NULL, ERR_OUT_OF_MEMORY, 0);
 
-    for (i = 0; i < total; i++)
+    for (i = 0; decoders[i].funcs != NULL; i++)
     {
         decoders[i].available = decoders[i].funcs->init();
         if (decoders[i].available)
@@ -185,7 +187,6 @@ int Sound_Init(void)
 
 int Sound_Quit(void)
 {
-    size_t total = sizeof (decoders) / sizeof (decoders[0]);
     size_t i;
 
     BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, 0);
@@ -193,7 +194,7 @@ int Sound_Quit(void)
     while (((volatile Sound_Sample *) samplesList) != NULL)
         Sound_FreeSample(samplesList);
 
-    for (i = 0; i < total; i++)
+    for (i = 0; decoders[i].funcs != NULL; i++)
     {
         if (decoders[i].available)
         {
@@ -443,7 +444,6 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
 Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
                               Sound_AudioInfo *desired, Uint32 bSize)
 {
-    size_t total = sizeof (decoders) / sizeof (decoders[0]);
     size_t i;
     Sound_Sample *retval;
 
@@ -457,7 +457,7 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
 
     if (ext != NULL)
     {
-        for (i = 0; i < total; i++)
+        for (i = 0; decoders[i].funcs != NULL; i++)
         {
             if (decoders[i].available)
             {
@@ -472,7 +472,7 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
     } /* if */
 
     /* no direct extension match? Try everything we've got... */
-    for (i = 0; i < total; i++)
+    for (i = 0; decoders[i].funcs != NULL; i++)
     {
         if (decoders[i].available)
         {
