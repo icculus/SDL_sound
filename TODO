@@ -1,12 +1,34 @@
-General stuff TODO:
-- Man pages for the API.
-
-More immediate:
+More immediate (needed for 1.0 release):
+- Man pages. Doxygen would be cool.
 - Handle compression and other chunks in WAV files.
 - Handle compression and other chunks in AIFF-C files.
 - Cleanup up VOC decoder (seems messy to me).
 - Fix the crappy rewind implementation in shn.c's SHN_rewind().
-- Add a sdlsound-config script.
+- Finish implementing seek() method in decoders, see below.
+- Add a sdlsound-config script?
+
+Decoders still needing seek() method:
+  (If decoder can't seek, clean up the stub and report an error.)
+- mikmod.c
+- shn.c
+- wav.c (adpcm compression; uncompressed is implemented.)
+- voc.c
+- mpglib.c
+- smpeg.c
+- aiff.c
+- au.c
+- ogg.c
+- quicktime.c
+
+
+General stuff TODO:
+- Man pages for the API.
+
+Quicktime stuff that'd be cool, but isn't crucial:
+- Integrate decoders/quicktime.c with build system (for OS X)?
+- Make decoders/quicktime.c more robust.
+- Make decoders/quicktime.c work on win32?
+- There's no seek() method. Not even a stub!
 
 Ongoing:
 - look for "FIXME"s in the code.
