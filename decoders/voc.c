@@ -454,7 +454,6 @@ static int VOC_open(Sound_Sample *sample, const char *ext)
     v = (vs_t *) malloc(sizeof (vs_t));
     BAIL_IF_MACRO(v == NULL, ERR_OUT_OF_MEMORY, 0);
     memset(v, '\0', sizeof (vs_t));
-    internal->decoder_private = v;
 
     v->start_pos = SDL_RWtell(internal->rw);
     v->rate = -1;
@@ -474,6 +473,7 @@ static int VOC_open(Sound_Sample *sample, const char *ext)
     sample->actual.format = (v->size == ST_SIZE_WORD) ? AUDIO_S16LSB:AUDIO_U8;
     sample->actual.channels = v->channels;
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
+    internal->decoder_private = v;
     return(1);
 } /* VOC_open */
 
