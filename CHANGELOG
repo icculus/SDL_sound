@@ -42,9 +42,11 @@
            discussion on the mailing list. The init() and quit() methods
            led to the possibility that certain decoders will flag themselves
            as unavailable at runtime, and SDL_sound now handles this.
-           Added [LIB|INC]PATH_[OGG|MOD]. Changed version to 0.1.2.
+           Added [LIB|INC]PATH_[OGG|MOD]. Bigendian fixes; no works on PowerPC
+	   Linux. MikMod tweaks. Changed version to 0.1.2.
 
 --ryan. (icculus@clutteredmind.org)
 
 /* end of CHANGELOG ... */
+
 

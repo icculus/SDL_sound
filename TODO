@@ -6,7 +6,6 @@ General stuff TODO:
 - Port to BeOS.
 - Port to MacOS Classic.
 - Port to MacOS X.
-- Port to PowerPC Linux.
 
 More immediate:
 - Handle compression and other chunks in WAV files.
@@ -17,7 +16,6 @@ More immediate:
 Decoders to implement:
 - .MP3 (implemented, but buggy)
 - .SHN
-- .MOD
 - .MID
 - .CDA
 - .AU
