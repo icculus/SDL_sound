@@ -150,8 +150,14 @@ if test x$enable_midi = xyes; then
   AC_DEFINE(SOUND_SUPPORTS_MIDI)
 fi
 
+
+dnl Note that we intentionally look for a symbol in FLAC 1.0.4, since the
+dnl  FLAC developers tend to break their API with every release, so we're
+dnl  checking for the latest-and-greatest here so we don't have to support
+dnl  obsolete versions.
+
 dnl Hooray for shitty autoconf bugs!
-x="C__stream_decoder_new"
+x="C__seekable_stream_decoder_process_single"
 flcsym="FLA$x"
 dnl Check for libFLAC
 AC_ARG_ENABLE(flac,
@@ -163,20 +169,6 @@ if test x$enable_flac = xyes; then
   if test x$have_flac_hdr = xyes -a x$have_flac_lib = xyes; then
     LIBS="$LIBS -lFLAC"
     AC_DEFINE(SOUND_SUPPORTS_FLAC)
-  fi
-fi
-
-dnl Hooray for shitty autoconf bugs!
-x="C__seekable_stream_decoder_new"
-flcsym="FLA$x"
-dnl Check if libFLAC is recent enough for a seekable decoder
-AC_ARG_ENABLE(seekable-flac,
-[  --enable-seekable-flac     enable the seekable decoder [default=yes]],
-              , enable_seekable_flac=yes)
-if test x$enable_seekable_flac = xyes; then
-  AC_CHECK_LIB(FLAC, $flcsym, have_seekable_flac_lib=yes)
-  if test x$have_flac_hdr = xyes -a x$have_seekable_flac_lib = xyes; then
-    AC_DEFINE(SOUND_SUPPORTS_SEEKABLE_FLAC)
   fi
 fi
 

@@ -44,26 +44,14 @@
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
 
-/*
- * FLAC 1.0.1 added a seekable stream decoder. To be able to reuse as much as
- * possible of the non-seekable FLAC decoder, we define a set of wrapper
- * macros and typedefs to map onto the right set of functions and data types.
- *
- * An added benefit is that we get identifiers of manageable length.
- */
-
-#if SOUND_SUPPORTS_SEEKABLE_FLAC
-
-#define FLAC_IS_SEEKABLE 1
-
 #include "FLAC/seekable_stream_decoder.h"
 
 #define D_END_OF_STREAM               FLAC__SEEKABLE_STREAM_DECODER_END_OF_STREAM
 
 #define d_new()                       FLAC__seekable_stream_decoder_new()
 #define d_init(x)                     FLAC__seekable_stream_decoder_init(x)
-#define d_process_metadata(x)         FLAC__seekable_stream_decoder_process_metadata(x)
-#define d_process_one_frame(x)        FLAC__seekable_stream_decoder_process_one_frame(x)
+#define d_process_metadata(x)         FLAC__seekable_stream_decoder_process_until_end_of_metadata(x)
+#define d_process_one_frame(x)        FLAC__seekable_stream_decoder_process_single(x)
 #define d_get_state(x)                FLAC__seekable_stream_decoder_get_state(x)
 #define d_finish(x)                   FLAC__seekable_stream_decoder_finish(x)
 #define d_delete(x)                   FLAC__seekable_stream_decoder_delete(x)
@@ -75,8 +63,6 @@
 
 typedef FLAC__SeekableStreamDecoder           decoder_t;
 typedef FLAC__SeekableStreamDecoderReadStatus d_read_status_t;
-
-/* Only in the seekable decoder */
 
 #define D_SEEK_STATUS_OK              FLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_OK
 #define D_SEEK_STATUS_ERROR           FLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_ERROR
@@ -95,71 +81,15 @@ typedef FLAC__SeekableStreamDecoderSeekStatus   d_seek_status_t;
 typedef FLAC__SeekableStreamDecoderTellStatus   d_tell_status_t;
 typedef FLAC__SeekableStreamDecoderLengthStatus d_length_status_t;
 
-#else
-
-#include "FLAC/stream_decoder.h"
-
-#define FLAC_IS_SEEKABLE 0
-
-#define D_END_OF_STREAM               FLAC__STREAM_DECODER_END_OF_STREAM
-
-#define d_new()                       FLAC__stream_decoder_new()
-#define d_init(x)                     FLAC__stream_decoder_init(x)
-#define d_process_metadata(x)         FLAC__stream_decoder_process_metadata(x)
-#define d_process_one_frame(x)        FLAC__stream_decoder_process_one_frame(x)
-#define d_get_state(x)                FLAC__stream_decoder_get_state(x)
-#define d_finish(x)                   FLAC__stream_decoder_finish(x)
-#define d_delete(x)                   FLAC__stream_decoder_delete(x)
-#define d_set_read_callback(x, y)     FLAC__stream_decoder_set_read_callback(x, y)
-#define d_set_write_callback(x, y)    FLAC__stream_decoder_set_write_callback(x, y)
-#define d_set_metadata_callback(x, y) FLAC__stream_decoder_set_metadata_callback(x, y)
-#define d_set_error_callback(x, y)    FLAC__stream_decoder_set_error_callback(x, y)
-#define d_set_client_data(x, y)       FLAC__stream_decoder_set_client_data(x, y)
-
-typedef FLAC__StreamDecoder           decoder_t;
-typedef FLAC__StreamDecoderReadStatus d_read_status_t;
-
-/* Only in the non-seekable decoder */
-
-#define d_reset(x)                    FLAC__stream_decoder_reset(x)
-
-#endif
-
-/*
- * FLAC 1.0.3 changed some symbol names, so we need to change what we
- *  reference depending on what version of their headers we compile against.
- *  We check for a #define that was included in FLAC 1.0.3 but doesn't exist
- *  in 1.0.2 and earlier. Fun.  --ryan.
- */
-#if (defined FLAC__STREAM_SYNC_LENGTH)
-  #define FLAC_VERSION_102_OR_LESS 0
-#else
-  #define FLAC_VERSION_102_OR_LESS 1
-#endif
-
-
-/* These are the same for both decoders, so they're just cosmetics. */
-
-#if FLAC_VERSION_102_OR_LESS
-#define D_WRITE_CONTINUE     FLAC__STREAM_DECODER_WRITE_CONTINUE
-#define D_READ_END_OF_STREAM FLAC__STREAM_DECODER_READ_END_OF_STREAM
-#define D_READ_ABORT         FLAC__STREAM_DECODER_READ_ABORT
-#define D_READ_CONTINUE      FLAC__STREAM_DECODER_READ_CONTINUE
-#else
 #define D_WRITE_CONTINUE     FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE
 #define D_READ_END_OF_STREAM FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM
 #define D_READ_ABORT         FLAC__STREAM_DECODER_READ_STATUS_ABORT
 #define D_READ_CONTINUE      FLAC__STREAM_DECODER_READ_STATUS_CONTINUE
-#endif
 
 #define d_error_status_string FLAC__StreamDecoderErrorStatusString
 
 typedef FLAC__StreamDecoderErrorStatus d_error_status_t;
-#if FLAC_VERSION_102_OR_LESS
-typedef FLAC__StreamMetaData           d_metadata_t;
-#else
 typedef FLAC__StreamMetadata           d_metadata_t;
-#endif
 typedef FLAC__StreamDecoderWriteStatus d_write_status_t;
 
 
@@ -199,12 +129,7 @@ typedef struct
     Sound_Sample *sample;
     Uint32 frame_size;
     Uint8 is_flac;
-
-#if !SOUND_SUPPORTS_SEEKABLE_FLAC
-    Uint32 data_offset;
-#else
     Uint32 stream_length;
-#endif
 } flac_t;
 
 
@@ -251,11 +176,7 @@ static d_read_status_t read_callback(
 
 static d_write_status_t write_callback(
     const decoder_t *decoder, const FLAC__Frame *frame,
-#if FLAC_VERSION_102_OR_LESS
-    const FLAC__int32 * buffer[],
-#else
     const FLAC__int32 * const buffer[],
-#endif
     void *client_data)
 {
     flac_t *f = (flac_t *) client_data;
@@ -346,8 +267,6 @@ static void error_callback(
 } /* error_callback */
 
 
-#if SOUND_SUPPORTS_SEEKABLE_FLAC
-
 static d_seek_status_t seek_callback(
     const decoder_t *decoder,
     FLAC__uint64 absolute_byte_offset,
@@ -419,15 +338,9 @@ static FLAC__bool eof_callback(
     return(false);
 } /* eof_callback */
 
-#endif
 
 static int FLAC_init(void)
 {
-    SNDDBG(("FLAC: we are using libFLAC version %s 1.0.2.\n",
-              FLAC_VERSION_102_OR_LESS ? "<=" : ">"));
-    SNDDBG(("FLAC: We %shave seeking support.\n",
-              FLAC_IS_SEEKABLE ? "" : "do NOT "));
-
     return(1);  /* always succeeds. */
 } /* FLAC_init */
 
@@ -448,10 +361,7 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     flac_t *f;
     int i;
     int has_extension = 0;
-    
-#if SOUND_SUPPORTS_SEEKABLE_FLAC
     Uint32 pos;
-#endif
 
     /*
      * If the extension is "flac", we'll believe that this is really meant
@@ -494,14 +404,11 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     d_set_write_callback(decoder, write_callback);
     d_set_metadata_callback(decoder, metadata_callback);
     d_set_error_callback(decoder, error_callback);
-
-#if SOUND_SUPPORTS_SEEKABLE_FLAC
     d_set_seek_callback(decoder, seek_callback);
     d_set_tell_callback(decoder, tell_callback);
     d_set_length_callback(decoder, length_callback);
     d_set_eof_callback(decoder, eof_callback);
-#endif
-    
+
     d_set_client_data(decoder, f);
 
     f->rw = internal->rw;
@@ -515,8 +422,6 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
 
     sample->flags = SOUND_SAMPLEFLAG_NONE;
 
-#if SOUND_SUPPORTS_SEEKABLE_FLAC
-
     pos = SDL_RWtell(f->rw);
     if (SDL_RWseek(f->rw, 0, SEEK_END) > 0)
     {
@@ -528,18 +433,6 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
         } /* if */
         sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
     } /* if */
-
-#else
-
-        /*
-         * Annoyingly, the rewind method will put the FLAC decoder in a state
-         * where it expects to read metadata, so we have to set this marker
-         * before the metadata block.
-         */
-    f->data_offset = SDL_RWtell(f->rw);
-
-#endif
-    
 
         /*
          * If we are not sure this is a FLAC stream, check for the STREAMINFO
@@ -601,36 +494,19 @@ static Uint32 FLAC_read(Sound_Sample *sample)
 
 static int FLAC_rewind(Sound_Sample *sample)
 {
-#if SOUND_SUPPORTS_SEEKABLE_FLAC
     return FLAC_seek(sample, 0);
-#else
-    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    flac_t *f = (flac_t *) internal->decoder_private;
-    int rc = SDL_RWseek(f->rw, f->data_offset, SEEK_SET);
-    
-    BAIL_IF_MACRO(rc != f->data_offset, ERR_IO_ERROR, 0);
-    BAIL_IF_MACRO(!d_reset(f->decoder), "FLAC: could not reset decoder", 0);
-    d_process_metadata(f->decoder);
-    return(1);
-#endif
 } /* FLAC_rewind */
 
 
 static int FLAC_seek(Sound_Sample *sample, Uint32 ms)
 {
-#if SOUND_SUPPORTS_SEEKABLE_FLAC
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     flac_t *f = (flac_t *) internal->decoder_private;
 
     d_seek_absolute(f->decoder, (ms * sample->actual.rate) / 1000);
     return(1);
-#else
-    BAIL_MACRO("FLAC: This is the non-seekable version of the decoder!", 0);
-#endif
 } /* FLAC_seek */
 
-
 #endif /* SOUND_SUPPORTS_FLAC */
-
 
 /* end of flac.c ... */
