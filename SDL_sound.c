@@ -48,6 +48,10 @@
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MP3;
 #endif
 
+#if (defined SOUND_SUPPORTS_MOD)
+extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MOD;
+#endif
+
 #if (defined SOUND_SUPPORTS_WAV)
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_WAV;
 #endif
@@ -68,33 +72,43 @@ extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_VOC;
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_RAW;
 #endif
 
-static const Sound_DecoderFunctions *decoderFuncs[] =
+
+
+typedef struct
+{
+    int available;
+    const Sound_DecoderFunctions *funcs;
+} decoder_element;
+
+static decoder_element decoders[] =
 {
 #if (defined SOUND_SUPPORTS_MP3)
-    &__Sound_DecoderFunctions_MP3,
+    { 0, &__Sound_DecoderFunctions_MP3 },
+#endif
+
+#if (defined SOUND_SUPPORTS_MOD)
+    { 0, &__Sound_DecoderFunctions_MOD },
 #endif
 
 #if (defined SOUND_SUPPORTS_WAV)
-    &__Sound_DecoderFunctions_WAV,
+    { 0, &__Sound_DecoderFunctions_WAV },
 #endif
 
 #if (defined SOUND_SUPPORTS_AIFF)
-    &__Sound_DecoderFunctions_AIFF,
+    { 0, &__Sound_DecoderFunctions_AIFF },
 #endif
 
 #if (defined SOUND_SUPPORTS_OGG)
-    &__Sound_DecoderFunctions_OGG,
+    { 0, &__Sound_DecoderFunctions_OGG },
 #endif
 
 #if (defined SOUND_SUPPORTS_VOC)
-    &__Sound_DecoderFunctions_VOC,
+    { 0, &__Sound_DecoderFunctions_VOC },
 #endif
 
 #if (defined SOUND_SUPPORTS_RAW)
-    &__Sound_DecoderFunctions_RAW,
+    { 0, &__Sound_DecoderFunctions_RAW },
 #endif
-
-    NULL
 };
 
 
@@ -122,22 +136,28 @@ void Sound_GetLinkedVersion(Sound_Version *ver)
 int Sound_Init(void)
 {
     size_t i;
+    size_t pos = 0;
+    size_t total = sizeof (decoders) / sizeof (decoders[0]);
     BAIL_IF_MACRO(initialized, ERR_IS_INITIALIZED, 0);
     samplesList = NULL;
 
     SDL_Init(SDL_INIT_AUDIO);
 
-    for (i = 0; decoderFuncs[i] != NULL; i++)
-        ; /* do nothing. */
-
     available_decoders = (const Sound_DecoderInfo **)
-                            malloc((i + 1) * sizeof (Sound_DecoderInfo *));
+                            malloc((total + 1) * sizeof (Sound_DecoderInfo *));
     BAIL_IF_MACRO(available_decoders == NULL, ERR_OUT_OF_MEMORY, 0);
 
-    for (i = 0; decoderFuncs[i] != NULL; i++)
-        available_decoders[i] = &decoderFuncs[i]->info;
+    for (i = 0; i < total; i++)
+    {
+        decoders[i].available = decoders[i].funcs->init();
+        if (decoders[i].available)
+        {
+            available_decoders[pos] = &(decoders[i].funcs->info);
+            pos++;
+        } /* if */
+    } /* for */
 
-    available_decoders[i] = NULL;
+    available_decoders[pos] = NULL;
 
     initialized = 1;
     return(1);
@@ -146,10 +166,22 @@ int Sound_Init(void)
 
 int Sound_Quit(void)
 {
+    size_t total = sizeof (decoders) / sizeof (decoders[0]);
+    size_t i;
+
     BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, 0);
 
     while (((volatile Sound_Sample *) samplesList) != NULL)
         Sound_FreeSample(samplesList);
+
+    for (i = 0; i < total; i++)
+    {
+        if (decoders[i].available)
+        {
+            decoders[i].funcs->quit();
+            decoders[i].available = 0;
+        } /* if */
+    } /* for */
 
     if (available_decoders != NULL)
         free(available_decoders);
@@ -363,10 +395,6 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
     } /* if */
     samplesList = sample;
 
-#if (defined MULTIPLE_STREAMS_PER_RWOPS)
-    internal->pos = SDL_RWtell(internal->rw);
-#endif
-
     _D(("New sample DESIRED format: %s format, %d rate, %d channels.\n",
         fmt_to_str(sample->desired.format),
         sample->desired.rate,
@@ -387,6 +415,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
 Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
                               Sound_AudioInfo *desired, Uint32 bSize)
 {
+    size_t total = sizeof (decoders) / sizeof (decoders[0]);
     size_t i;
     Sound_Sample *retval;
 
@@ -400,22 +429,28 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
 
     if (ext != NULL)
     {
-        for (i = 0; decoderFuncs[i] != NULL; i++)
+        for (i = 0; i < total; i++)
         {
-            const char *decoderExt = decoderFuncs[i]->info.extension;
-            if (__Sound_strcasecmp(decoderExt, ext) == 0)
+            if (decoders[i].available)
             {
-                if (init_sample(decoderFuncs[i], retval, ext, desired))
-                    return(retval);
+                const char *decoderExt = decoders[i].funcs->info.extension;
+                if (__Sound_strcasecmp(decoderExt, ext) == 0)
+                {
+                    if (init_sample(decoders[i].funcs, retval, ext, desired))
+                        return(retval);
+                } /* if */
             } /* if */
         } /* for */
     } /* if */
 
     /* no direct extension match? Try everything we've got... */
-    for (i = 0; decoderFuncs[i] != NULL; i++)
+    for (i = 0; i < total; i++)
     {
-        if (init_sample(decoderFuncs[i], retval, ext, desired))
-            return(retval);
+        if (decoders[i].available)
+        {
+            if (init_sample(decoders[i].funcs, retval, ext, desired))
+                return(retval);
+        } /* if */
     } /* for */
 
     /* nothing could handle the sound data... */
@@ -543,20 +578,7 @@ Uint32 Sound_Decode(Sound_Sample *sample)
 
         /* reset EAGAIN. Decoder can flip it back on if it needs to. */
     sample->flags &= !SOUND_SAMPLEFLAG_EAGAIN;
-
-#if (defined MULTIPLE_STREAMS_PER_RWOPS)
-    if (SDL_RWseek(internal->rw, internal->pos, SEEK_SET) == -1)
-    {
-        sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-        return(0);
-    } /* if */
-#endif
-
     retval = internal->funcs->read(sample);
-
-#if (defined MULTIPLE_STREAMS_PER_RWOPS)
-    internal->pos = SDL_RWtell(internal->rw);
-#endif
 
     if (internal->sdlcvt.needed)
     {
