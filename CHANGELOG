@@ -78,6 +78,7 @@
 10042001 - Changed some #if (defined SOUND_SUPPORTS_*) lines to
            #ifdef SOUND_SUPPORTS_* in voc.c and shn.c, for consistency with
            the other decoders.
+10052001 - Removed #include "SDL_endian" from aiff.c.
 
 --ryan. (icculus@clutteredmind.org)
 
