@@ -17,4 +17,5 @@ libdecoders_la_SOURCES =	\
 	voc.c		\
 	midi.c		\
 	flac.c		\
+	speex.c		\
 	wav.c

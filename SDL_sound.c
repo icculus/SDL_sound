@@ -103,6 +103,10 @@ extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_FLAC;
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_QuickTime;
 #endif
 
+#if (defined SOUND_SUPPORTS_SPEEX)
+extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_SPEEX;
+#endif
+
 typedef struct
 {
     int available;
@@ -165,6 +169,10 @@ static decoder_element decoders[] =
 
 #if (defined SOUND_SUPPORTS_QUICKTIME)
     { 0, &__Sound_DecoderFunctions_QuickTime },
+#endif
+
+#if (defined SOUND_SUPPORTS_SPEEX)
+    { 0, &__Sound_DecoderFunctions_SPEEX },
 #endif
 
     { 0, NULL }
