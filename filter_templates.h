@@ -29,57 +29,81 @@
 #error include filter_template.h with defined Suffix macro!
 #else
 #define CH(x) (Suffix((x)*))
-/*-------------------------------------------------------------------------*/
-   /*
-    * !!! FIXME !!!
-    *
-    *
-    * Tune doubleRate(), halfRate() and varRate() for speed
-    * - Frank
-    */
 
 /*-------------------------------------------------------------------------*/
+/* this filter (Kaiser-window beta=6.8) gives a decent -80dB attentuation  */
+/*-------------------------------------------------------------------------*/
+#define sum_d(v,dx) ((int) v[CH(dx)] + v[CH(1-dx)])
 static Sint16* Suffix(doubleRate)( Sint16 *outp, Sint16 *inp, int length,
                                    VarFilter* filt, int* cpos  )
 {
-    static const int fsize = _fsize;
-    int i, out;
-    Sint16* to;
+    int out;
+    Sint16 *to;
 
-    inp += fsize;
-    to = inp + length;
+    to = inp - length;
 
-    for(; inp > to; inp -= CH(1) )
+    while( inp > to )
     {
-        out = 0;
-        for( i = 1; i < 1+fsize; i++ )
-            out+= filter[2*i] * ( inp[CH(i)] + inp[CH(1-i)] );
+        out =     0;
+        out-=     9 * sum_d( inp, 16);
+        out+=    23 * sum_d( inp, 15);
+        out-=    46 * sum_d( inp, 14);
+        out+=    83 * sum_d( inp, 13);
+        out-=   138 * sum_d( inp, 12);
+        out+=   217 * sum_d( inp, 11);
+        out-=   326 * sum_d( inp, 10);
+        out+=   474 * sum_d( inp,  9);
+        out-=   671 * sum_d( inp,  8);
+        out+=   936 * sum_d( inp,  7);
+        out-=  1295 * sum_d( inp,  6);
+        out+=  1800 * sum_d( inp,  5);
+        out-=  2560 * sum_d( inp,  4);
+        out+=  3863 * sum_d( inp,  3);
+        out-=  6764 * sum_d( inp,  2);
+        out+= 20798 * sum_d( inp,  1);
 
         outp[CH(1)] = ( 32770 * inp[CH(1)] + out) >> 16;
         outp[CH(0)] = ( 32770 * inp[CH(0)] + out) >> 16;
+
+        inp -= CH(1);
         outp -= CH(2);
     }
     return outp;
 }
 
 /*-------------------------------------------------------------------------*/
+#define sum_h(v,dx) ((int) v[CH(dx)] + v[CH(-dx)])
 static Sint16* Suffix(halfRate)( Sint16 *outp, Sint16 *inp, int length,
                                  VarFilter* filt, int* cpos  )
 {
-    static const int fsize = CH(_fsize/2);
-    int i, out;
+    int out;
     Sint16* to;
 
-    inp -= fsize;
     to = inp + length;
 
-    for(; inp < to; inp+= CH(2) )
+    while( inp < to )
     {
-        out = 32770 * inp[0];
-        for( i = 1; i < fsize/2; i+=2 )
-    	    out+= filter[i]*( (int)inp[CH(i)] + inp[CH(-i)] );
+        out =     0;
+        out-=     9 * sum_h( inp, 31);
+        out+=    23 * sum_h( inp, 29);
+        out-=    46 * sum_h( inp, 27);
+        out+=    83 * sum_h( inp, 25);
+        out-=   138 * sum_h( inp, 23);
+        out+=   217 * sum_h( inp, 21);
+        out-=   326 * sum_h( inp, 19);
+        out+=   474 * sum_h( inp, 17);
+        out-=   671 * sum_h( inp, 15);
+        out+=   936 * sum_h( inp, 13);
+        out-=  1295 * sum_h( inp, 11);
+        out+=  1800 * sum_h( inp,  9);
+        out-=  2560 * sum_h( inp,  7);
+        out+=  3863 * sum_h( inp,  5);
+        out+= 20798 * sum_h( inp,  1);
+        out+= 32770 * (int)inp[0];
+
         outp[0] = out >> 16;
 
+        inp+= CH(2);
         outp += CH(1);
     }
     return outp;
@@ -89,21 +113,21 @@ static Sint16* Suffix(halfRate)( Sint16 *outp, Sint16 *inp, int length,
 static Sint16* Suffix(increaseRate)( Sint16 *outp, Sint16 *inp, int length,
                                      VarFilter* filt, int* cpos )
 {
-    const static int fsize = 2*_fsize;
+    const static int fsize = CH(2*_fsize);
     Sint16 *filter;
     int out;
     int i, pos;
     Sint16* to;
 
-    inp += fsize;
-    to = inp + length;
+    inp -= fsize;
+    to = inp - length;
 
     while( inp > to )
     {
         pos = *cpos;
         out = 0;
         filter = filt->c[pos];
-        for( i = 0; i < 2*_fsize; i++ )
+        for( i = 0; i < 4*_fsize; i++ )
     	    out+= filter[i] * (int)inp[CH(i)];
         outp[0] = out >> 16;
 
@@ -118,7 +142,7 @@ static Sint16* Suffix(increaseRate)( Sint16 *outp, Sint16 *inp, int length,
 static Sint16* Suffix(decreaseRate)( Sint16 *outp, Sint16 *inp, int length,
                                      VarFilter* filt, int* cpos )
 {
-    const static int fsize = 2*_fsize;
+    const static int fsize = CH(2*_fsize);
     Sint16 *filter;
     int out;
     int i, pos;
@@ -132,8 +156,8 @@ static Sint16* Suffix(decreaseRate)( Sint16 *outp, Sint16 *inp, int length,
         pos = *cpos;
         out = 0;
         filter = filt->c[pos];
-        for( i = 0; i < 2*_fsize; i++ )
-    	    out+= filter[i] * (int)inp[CH(i)];
+        for( i = 0; i < 4*_fsize; i++ )
+    	    out+= filter[i] * inp[CH(i)];
         outp[0] = out >> 16;
 
         inp += CH(filt->incr[pos]);
@@ -144,6 +168,8 @@ static Sint16* Suffix(decreaseRate)( Sint16 *outp, Sint16 *inp, int length,
 }
 
 /*-------------------------------------------------------------------------*/
+#undef sum_d
+#undef sum_h
 #undef CH
 #endif /* Suffix */
 
