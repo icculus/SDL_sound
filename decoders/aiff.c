@@ -482,12 +482,12 @@ static int AIFF_open(Sound_Sample *sample, const char *ext)
     if (c.sampleSize <= 8)
     {
         sample->actual.format = AUDIO_S8;
-        bytes_per_sample = 1;
+        bytes_per_sample = c.numChannels;
     } /* if */
     else if (c.sampleSize <= 16)
     {
         sample->actual.format = AUDIO_S16MSB;
-        bytes_per_sample = 2;
+        bytes_per_sample = 2 * c.numChannels;
     } /* if */
     else
     {
