@@ -457,19 +457,19 @@ static Uint32 read_sample_fmt_adpcm(Sound_Sample *sample)
                 } /* if */
 
                 /* only write first sample frame for now. */
-                put_adpcm_sample_frame2(internal->buffer + bw, fmt);
+                put_adpcm_sample_frame2((Uint8 *) internal->buffer + bw, fmt);
                 fmt->fmt.adpcm.samples_left_in_block--;
                 bw += fmt->sample_frame_size;
                 break;
 
             case 1:  /* output last sample frame of block... */
-                put_adpcm_sample_frame1(internal->buffer + bw, fmt);
+                put_adpcm_sample_frame1((Uint8 *) internal->buffer + bw, fmt);
                 fmt->fmt.adpcm.samples_left_in_block--;
                 bw += fmt->sample_frame_size;
                 break;
 
             default: /* output latest sample frame and read a new one... */
-                put_adpcm_sample_frame1(internal->buffer + bw, fmt);
+                put_adpcm_sample_frame1((Uint8 *) internal->buffer + bw, fmt);
                 fmt->fmt.adpcm.samples_left_in_block--;
                 bw += fmt->sample_frame_size;
 
