@@ -35,7 +35,7 @@
 
 #include "SDL.h"
 
-#if ((defined _MSC_VER) && (!defined inline))
+#if (defined(_MSC_VER) && !defined(inline))
 #	define inline __inline__
 #endif
 

@@ -2,10 +2,6 @@
 #include <stdlib.h>
 #include <signal.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
 #include "SDL_sound.h"
 
 #define __SDL_SOUND_INTERNAL__

@@ -174,7 +174,7 @@ static int MPGLIB_open(Sound_Sample *sample, const char *ext)
     internal->decoder_private = mpg;
     sample->actual.rate = mpglib_freqs[mpg->mp.fr.sampling_frequency];
     sample->actual.channels = mpg->mp.fr.stereo;
-    sample->actual.format = AUDIO_S16LSB; /* !!! FIXME: Is this right? */
+    sample->actual.format = AUDIO_S16SYS; /* !!! FIXME: Is this right? */
     sample->flags = SOUND_SAMPLEFLAG_NONE;
 
     return(1); /* we'll handle this data. */

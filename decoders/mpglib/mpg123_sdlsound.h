@@ -2,15 +2,18 @@
 #include        <string.h>
 #include        <signal.h>
 
-#ifndef WIN32
+#if !defined(WIN32) && !defined(macintosh)
 #include        <unistd.h>
 #endif
 
 #include        <math.h>
 
-#ifdef _WIN32
+#if defined(_WIN32)
 # undef WIN32
 # define WIN32
+#endif
+
+#if defined(WIN32) || defined(macintosh)
 
 # define M_PI       3.14159265358979323846
 # define M_SQRT2	1.41421356237309504880

@@ -36,4 +36,5 @@ EXTRA_DIST =	\
 	CREDITS \
 	COPYING \
 	CHANGELOG \
-	CWProject.sit
+	CWProject.sit \
+	PBProjects.tar.gz
