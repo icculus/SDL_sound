@@ -111,9 +111,12 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MODPLUG =
 static ModPlug_Settings settings;
 static Sound_AudioInfo current_audioinfo;
 static unsigned int total_mods_decoding = 0;
+static SDL_mutex *modplug_mutex = NULL;
 
 static int MODPLUG_init(void)
 {
+    assert(modplug_mutex == NULL);
+
         /*
          * The settings will require some experimenting. I've borrowed some
          *  of them from the XMMS ModPlug plugin.
@@ -145,6 +148,8 @@ static int MODPLUG_init(void)
     current_audioinfo.format = AUDIO_S16SYS;
     total_mods_decoding = 0;
 
+    modplug_mutex = SDL_CreateMutex();
+
     ModPlug_SetSettings(&settings);
     return(1);  /* success. */
 } /* MODPLUG_init */
@@ -153,7 +158,12 @@ static int MODPLUG_init(void)
 static void MODPLUG_quit(void)
 {
     assert(total_mods_decoding == 0);
-    /* it's a no-op. */
+
+    if (modplug_mutex != NULL)
+    {
+        SDL_DestroyMutex(modplug_mutex);
+        modplug_mutex = NULL;
+    } /* if */
 } /* MODPLUG_quit */
 
 
@@ -215,7 +225,10 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
          * It's only safe to change these settings when there're
          *  no other mods being decoded...
          */
-    if (total_mods_decoding > 0)  /* !!! FIXME: Should we mutex this? */
+    if (modplug_mutex != NULL)
+        SDL_LockMutex(modplug_mutex);
+
+    if (total_mods_decoding > 0)
     {
         /* other mods decoding: use the same settings they are. */
         memcpy(&sample->actual, &current_audioinfo, sizeof (Sound_AudioInfo));
@@ -244,15 +257,24 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
          */
     module = ModPlug_Load((void *) data, size);
     free(data);
-    BAIL_IF_MACRO(module == NULL, "MODPLUG: Not a module file.", 0);
+    if (module == NULL)
+    {
+        if (modplug_mutex != NULL)
+            SDL_UnlockMutex(modplug_mutex);
+
+        BAIL_MACRO("MODPLUG: Not a module file.", 0);
+    } /* if */
+
+    total_mods_decoding++;
+
+    if (modplug_mutex != NULL)
+        SDL_UnlockMutex(modplug_mutex);
 
     SNDDBG(("MODPLUG: [%d ms] %s\n",
             ModPlug_GetLength(module), ModPlug_GetName(module)));
 
     internal->decoder_private = (void *) module;
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
-
-    total_mods_decoding++; /* !!! FIXME: Should we mutex this? */
 
     SNDDBG(("MODPLUG: Accepting data stream\n"));
     return(1); /* we'll handle this data. */
@@ -263,7 +285,14 @@ static void MODPLUG_close(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     ModPlugFile *module = (ModPlugFile *) internal->decoder_private;
+
+    if (modplug_mutex != NULL)
+        SDL_LockMutex(modplug_mutex);
+
     total_mods_decoding--;
+
+    if (modplug_mutex != NULL)
+        SDL_UnlockMutex(modplug_mutex);
 
     ModPlug_Unload(module);
 } /* MODPLUG_close */
