@@ -151,7 +151,7 @@ static int _SMPEG_open(Sound_Sample *sample, const char *ext)
         if (mp3_magic[0] != 0xFF || (mp3_magic[1] & 0xF0) != 0xF0)
             BAIL_MACRO("MP3: Not an MP3 stream.", 0);
 
-            /* !!! FIXME: If the seek fails, we'll probably miss a frame */
+            /* If the seek fails, we'll probably miss a frame, but oh well */
         SDL_RWseek(internal->rw, -sizeof (mp3_magic), SEEK_CUR);
     } /* if */
 

@@ -144,7 +144,7 @@ static int MPGLIB_open(Sound_Sample *sample, const char *ext)
         if (mp3_magic[0] != 0xFF || (mp3_magic[1] & 0xF0) != 0xF0)
             BAIL_MACRO("MP3: Not an MP3 stream.", 0);
 
-            /* !!! FIXME: If the seek fails, we'll probably miss a frame */
+            /* If the seek fails, we'll probably miss a frame, but oh well. */
         SDL_RWseek(internal->rw, -sizeof (mp3_magic), SEEK_CUR);
     } /* if */
 
@@ -170,11 +170,10 @@ static int MPGLIB_open(Sound_Sample *sample, const char *ext)
 
     SNDDBG(("MPGLIB: Accepting data stream.\n"));
 
-    /* !!! FIXME: Determine what format mpglib is spitting out... */
     internal->decoder_private = mpg;
     sample->actual.rate = mpglib_freqs[mpg->mp.fr.sampling_frequency];
     sample->actual.channels = mpg->mp.fr.stereo;
-    sample->actual.format = AUDIO_S16SYS; /* !!! FIXME: Is this right? */
+    sample->actual.format = AUDIO_S16SYS;
     sample->flags = SOUND_SAMPLEFLAG_NONE;
 
     return(1); /* we'll handle this data. */
@@ -290,7 +289,7 @@ static int MPGLIB_rewind(Sound_Sample *sample)
 
 static int MPGLIB_seek(Sound_Sample *sample, Uint32 ms)
 {
-    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+    BAIL_MACRO("MPGLIB: Seeking not implemented", 0);
 } /* MPGLIB_seek */
 
 #endif /* SOUND_SUPPORTS_MPGLIB */

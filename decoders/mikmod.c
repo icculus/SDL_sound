@@ -311,7 +311,7 @@ static int MIKMOD_seek(Sound_Sample *sample, Uint32 ms)
     Player_SetPosition(ms);
     return(1);
 #else
-    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+    BAIL_MACRO("MIKMOD: Seeking not implemented", 0);
 #endif
 } /* MIKMOD_seek */
 
