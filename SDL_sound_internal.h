@@ -47,6 +47,29 @@ typedef struct __SOUND_DECODERFUNCTIONS__
     const Sound_DecoderInfo info;
 
         /*
+         * This is called during the Sound_Init() function. Use this to
+         *  set up any global state that your decoder needs, such as
+         *  initializing an external library, etc.
+         *
+         * Return non-zero if initialization is successful, zero if there's
+         *  a fatal error. If this method fails, then this decoder is
+         *  flagged as unavailable until SDL_sound() is shut down and
+         *  reinitialized, in which case this method will be tried again.
+         *
+         * Note that the decoders quit() method won't be called if this
+         *  method fails, so if you can't intialize, you'll have to clean
+         *  up the half-initialized state in this method.
+         */
+    int (*init)(void);
+
+        /*
+         * This is called during the Sound_Quit() function. Use this to
+         *  clean up any global state that your decoder has used during its
+         *  lifespan.
+         */
+    void (*quit)(void);
+
+        /*
          * Returns non-zero if (sample) has a valid fileformat that this
          *  driver can handle. Zero if this driver can NOT handle the data.
          *
@@ -135,19 +158,11 @@ typedef struct __SOUND_DECODERFUNCTIONS__
 } Sound_DecoderFunctions;
 
 
-/* (for now. --ryan.) */
-#define MULTIPLE_STREAMS_PER_RWOPS 1
-
-
-
 typedef struct __SOUND_SAMPLEINTERNAL__
 {
     Sound_Sample *next;
     Sound_Sample *prev;
     SDL_RWops *rw;
-#if (defined MULTIPLE_STREAMS_PER_RWOPS)
-    int pos; /* !!! FIXME: Int? Really? */
-#endif
     const Sound_DecoderFunctions *funcs;
     SDL_AudioCVT sdlcvt;
     void *buffer;
