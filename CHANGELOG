@@ -3,7 +3,9 @@
  */
 
 03142002 - Changed configure script's --enable-vorbis to --enable-ogg. Removed
-           global state variable from mpglib, so it should be reentrant now.
+           global state variable from mpglib, so it should be reentrant now
+           (patches sent to mpglib's actual maintainer). playsound can now
+           read from stdin.
 03102002 - Added a FIXME note to decoders/mpglib.c. playsound now reports
            errors in the thread where they occured, which also fixes a double
            report of errors during predecoding. Removed all calls to exit() in
