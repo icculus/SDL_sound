@@ -105,6 +105,7 @@
            extensions each. Playsound has been updated to handle this.
            Playsound now registers a SIGINT handler, so you can skip tracks
            and/or abort the way that mpg123 does.
+11092001 - Torbjörn fixes playsound's audio callback after I broke it, again.
 
 --ryan. (icculus@clutteredmind.org)
 
