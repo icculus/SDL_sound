@@ -185,11 +185,10 @@ static __inline__ int voc_check_header(SDL_RWops *src)
 
 
 /* Read next block header, save info, leave position at start of data */
-static int voc_get_block(Sound_Sample *sample)
+static int voc_get_block(Sound_Sample *sample, vs_t *v)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SDL_RWops *src = internal->rw;
-    vs_t *v = (vs_t *) internal->decoder_private;
     Uint8 bits24[3];
     Uint8 uc, block;
     Uint32 sblen;
@@ -384,7 +383,7 @@ static int voc_read_waveform(Sound_Sample *sample, int fill_buf, Uint32 max)
 
     if (v->rest == 0)
     {
-        if (!voc_get_block(sample))
+        if (!voc_get_block(sample, v))
             return 0;
     } /* if */
 
@@ -457,7 +456,7 @@ static int VOC_open(Sound_Sample *sample, const char *ext)
 
     v->start_pos = SDL_RWtell(internal->rw);
     v->rate = -1;
-    if (!voc_get_block(sample))
+    if (!voc_get_block(sample, v))
     {
         free(v);
         return(0);
@@ -502,7 +501,7 @@ static Uint32 VOC_read(Sound_Sample *sample)
             break;
         } /* if */
 
-        if (!voc_get_block(sample))
+        if (!voc_get_block(sample, v))
         {
             sample->flags |= (v->error) ? 
                                  SOUND_SAMPLEFLAG_ERROR :
@@ -551,7 +550,7 @@ static int VOC_seek(Sound_Sample *sample, Uint32 ms)
     while (offset > 0)
     {
         Uint32 rc = voc_read_waveform(sample, 0, offset);
-        if ( (rc == 0) || (!voc_get_block(sample)) )
+        if ( (rc == 0) || (!voc_get_block(sample, v)) )
         {
             SDL_RWseek(internal->rw, origpos, SEEK_SET);
             v->rest = origrest;
