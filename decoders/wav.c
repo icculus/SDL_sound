@@ -158,7 +158,7 @@ static int read_data_chunk(SDL_RWops *rw, data_t *data)
     data->chunkSize = SDL_SwapLE32(data->chunkSize);
 
     return(1);
-} /* read_fmt_chunk */
+} /* read_data_chunk */
 
 
 static int find_chunk(SDL_RWops *rw, Uint32 id)
