@@ -2,7 +2,9 @@
  * CHANGELOG.
  */
 
-01192001 - Torbjörn sent in patches implementing the rewind method for the
+01232002 - Fixed decoders/Makefile.am to work with seperate build directories.
+           Corrected some dates in this file.
+01192002 - Torbjörn sent in patches implementing the rewind method for the
            rest of the decoders except shn.c, for which I added a kludged
            implementation. Added more info to the README. Hunted down the
            reason why SMPEG can't decode before calling SDL_OpenAudio(), and
@@ -11,7 +13,7 @@
            Mutex-protected the internal samples list, and fixed some bugs in
            the management of that list. Changed some stuff to use uniform
            coding conventions.
-01182001 - SDL_sound/playsound builds and runs on BeOS now. Fixed an assertion
+01182002 - SDL_sound/playsound builds and runs on BeOS now. Fixed an assertion
            bug I introduced yesterday.
 01172002 - Implemented Sound_Rewind(), and added a --loop command line to
            playsound for testing. Rewrote the audio callback to handle looping
