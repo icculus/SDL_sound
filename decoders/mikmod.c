@@ -249,8 +249,7 @@ static int MIKMOD_open(Sound_Sample *sample, const char *ext)
     Player_Start(module);
     Player_SetPosition(0);
 
-    /* !!! FIXME: A little late to be giving this information... */
-    sample->flags = SOUND_SAMPLEFLAG_NEEDSEEK;
+    sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
 
     SNDDBG(("MIKMOD: Name: %s\n", module->songname));
     SNDDBG(("MIKMOD: Type: %s\n", module->modtype));
