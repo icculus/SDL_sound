@@ -2,7 +2,11 @@
  * CHANGELOG.
  */
 
+01062005 - Fixed Project Builder project files (Thanks, Martin!)
 11122004 - Fixed automake nonsense. Fixed logic bug in voc decoder.
+07032004 - Removed altcvt from the source tree. Started pounding out initial
+           mixer implementation.
+05152004 - Added Sound_NewSampleFromMem(), and implementation of RWops pooling.
 05112004 - Added Sound_GetDuration() and moved total_time out of Sound_Sample
            struct and into it's opaque data...this fixes binary compatibility
            with apps written for SDL_sound 1.0.
