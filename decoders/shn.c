@@ -398,7 +398,7 @@ static inline int determine_shn_version(Sound_Sample *sample, const char *ext)
 } /* determine_shn_version */
 
 
-static int init_shn_offset(Sint32 **offset, int nchan, int nblock, int ftype)
+static void init_shn_offset(Sint32 **offset, int nchan, int nblock, int ftype)
 {
     Sint32 mean = 0;
     int chan;
