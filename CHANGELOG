@@ -2,6 +2,9 @@
  * CHANGELOG.
  */
 
+01192001 - Torbjörn sent in patches implementing the rewind method for the
+           rest of the decoders except shn.c, for which I added a kludged
+           implementation. Added more info to the README.
 01182001 - SDL_sound/playsound builds and runs on BeOS now. Fixed an assertion
            bug I introduced yesterday.
 01172002 - Implemented Sound_Rewind(), and added a --loop command line to
