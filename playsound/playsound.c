@@ -118,10 +118,8 @@ static void output_usage(const char *argv0)
         "     --version      Display version information and exit.\n"
         "     --decoders     List supported data formats and exit.\n"
         "     --predecode    Decode entire sample before playback.\n"
-        "     --loop n       Loop playback n times. 0=forever.\n"
-
-        /*"     --seek list    List of seek points and playback durations.\n"*/
-
+        "     --loop n       Loop playback n times.\n"
+        "     --seek list    List of seek points and playback durations.\n"
         "     --credits      Shameless promotion.\n"
         "     --help         Display this information and exit.\n"
         "\n"
@@ -132,8 +130,6 @@ static void output_usage(const char *argv0)
         "     U16MSB  Unsigned 16-bit (most significant byte first).\n"
         "     S16LSB  Signed 16-bit (least significant byte first).\n"
         "     S16MSB  Signed 16-bit (most significant byte first).\n"
-
-/*
         "\n"
         "   Valid arguments to the --seek options look like:\n"
         "     --seek=\"mm:ss;mm:ss;mm:ss\"\n"
@@ -143,8 +139,6 @@ static void output_usage(const char *argv0)
         "     is another seek after the duration of playback has completed.\n"
         "     If the final playback duration is omitted, playback continues\n"
         "     until the end of the file. --loop and --seek can coexist.\n"
-*/
-
         "\n",
         argv0, DEFAULT_DECODEBUF, DEFAULT_AUDIOBUF);
 } /* output_usage */
@@ -295,28 +289,99 @@ void sigint_catcher(int signum)
  * !!! FIXME:  namespace and let me reinitialize this for each file in
  * !!! FIXME:  a cleaner way.
  */
-static Uint8 *decoded_ptr = NULL;
-static Uint32 decoded_bytes = 0;
-static int predecode = 0;
-static int looping = 0;
-static int wants_volume_change = 0;
-static float volume = 1.0;
+static volatile Uint8 *decoded_ptr = NULL;
+static volatile Uint32 decoded_bytes = 0;
+static volatile int predecode = 0;
+static volatile int looping = 0;
+static volatile int wants_volume_change = 0;
+static volatile float volume = 1.0;
+static volatile Uint32 total_seeks = 0;
+static volatile Uint32 *seek_list = NULL;
+static volatile Uint32 seek_index = 0;
+static volatile Sint32 bytes_before_next_seek = -1;
+
+static Uint32 cvtMsToBytePos(Sound_AudioInfo *info, Uint32 ms)
+{
+    /* "frames" == "sample frames" */
+    float frames_per_ms = ((float) info->rate) / 1000.0;
+    Uint32 frame_offset = (Uint32) (frames_per_ms * ((float) ms));
+    Uint32 frame_size = (Uint32) ((info->format & 0xFF) / 8) * info->channels;
+    return(frame_offset * frame_size);
+} /* cvtMsToBytePos */
+
+
+static void do_seek(Sound_Sample *sample)
+{
+    printf("Seeking to %.2d:%.2d...\n",
+            ((seek_list[seek_index] / 1000) / 60),
+            ((seek_list[seek_index] / 1000) % 60));
+
+    if (predecode)
+    {
+        Uint32 pos = cvtMsToBytePos(&sample->desired, seek_list[seek_index]);
+        if (pos > sample->buffer_size)
+        {
+            fprintf(stderr, "Seek past end of predecoded buffer.\n");
+            done_flag = 1;
+        } /* if */
+        else
+        {
+            decoded_ptr = (((Uint8 *) sample->buffer) + pos);
+            decoded_bytes = sample->buffer_size - pos;
+        } /* else */
+    } /* if */
+    else
+    {
+        if (!Sound_Seek(sample, seek_list[seek_index]))
+        {
+            fprintf(stderr, "Sound_Seek() failed: %s\n", Sound_GetError());
+            done_flag = 1;
+        } /* if */
+    } /* else */
+
+    seek_index++;
+    if (seek_index >= total_seeks)
+        bytes_before_next_seek = -1;  /* no more seeks. */
+    else
+    {
+        bytes_before_next_seek = cvtMsToBytePos(&sample->desired,
+                                                seek_list[seek_index]);
+        seek_index++;
+    } /* else */
+} /* do_seek */
 
 
 /*
- * This updates (decoded_bytes) and (decoder_ptr) with more audio data,
- *  taking into account looping and/or predecoding.
+ * This updates (decoded_bytes) and (decoded_ptr) with more audio data,
+ *  taking into account potential looping, seeking and predecoding.
  */
 static int read_more_data(Sound_Sample *sample)
 {
     if (done_flag)              /* probably a sigint; stop trying to read. */
+    {
         decoded_bytes = 0;
+        return(0);
+    } /* if */
+
+    if ((bytes_before_next_seek >= 0) &&
+        (decoded_bytes > bytes_before_next_seek))
+    {
+        decoded_bytes = bytes_before_next_seek;
+    } /* if */
 
     if (decoded_bytes > 0)      /* don't need more data; just return. */
         return(decoded_bytes);
 
-        /* need more. See if there's more to be read... */
-    if (!(sample->flags & (SOUND_SAMPLEFLAG_ERROR | SOUND_SAMPLEFLAG_EOF)))
+        /* Need more audio data. See if we're supposed to seek... */
+    if ((bytes_before_next_seek == 0) && (seek_index < total_seeks))
+    {
+        do_seek(sample);  /* do it, baby! */
+        return(read_more_data(sample));  /* handle loops conditions. */
+    } /* if */
+
+        /* See if there's more to be read... */
+    if ( (bytes_before_next_seek != 0) &&
+         (!(sample->flags & (SOUND_SAMPLEFLAG_ERROR | SOUND_SAMPLEFLAG_EOF))) )
     {
         decoded_bytes = Sound_Decode(sample);
         if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
@@ -336,21 +401,21 @@ static int read_more_data(Sound_Sample *sample)
 
     looping--;
 
+    seek_index = 0;
+    bytes_before_next_seek = (total_seeks > 0) ? 0 : -1;
+
     /* we just need to point predecoded samples to the start of the buffer. */
     if (predecode)
     {
         decoded_bytes = sample->buffer_size;
         decoded_ptr = sample->buffer;
-        return(decoded_bytes);
     } /* if */
     else
     {
         Sound_Rewind(sample);  /* error is checked in recursion. */
-        return(read_more_data(sample));
     } /* else */
 
-    assert(0);  /* shouldn't ever hit this point. */
-    return(0);
+    return(read_more_data(sample));
 } /* read_more_data */
 
 
@@ -450,13 +515,81 @@ static void audio_callback(void *userdata, Uint8 *stream, int len)
 
         if (cpysize > 0)
         {
-            memcpy_with_volume(sample, stream + bw, decoded_ptr, cpysize);
+            memcpy_with_volume(sample, stream + bw,
+                               (Uint8 *) decoded_ptr, cpysize);
             bw += cpysize;
             decoded_ptr += cpysize;
             decoded_bytes -= cpysize;
+            if (bytes_before_next_seek >= 0)
+                bytes_before_next_seek -= cpysize;
         } /* if */
     } /* while */
 } /* audio_callback */
+
+
+static int count_seek_list(const char *list)
+{
+    const char *ptr;
+    int retval = 0;
+
+    for (ptr = list; ptr != NULL; ptr = strchr(ptr + 1, ';'))
+        retval++;
+
+    return(retval);
+} /* count_seek_list */
+
+
+static Uint32 parse_time_str(char *str)
+{
+    Uint32 minutes = 0;
+    Uint32 seconds = 0;
+    char *ptr = strchr(str, ':');
+    if (ptr != NULL)
+    {
+        *ptr = '\0';
+        minutes = atoi(str);
+        str = ptr + 1;
+    } /* if */
+
+    seconds = atoi(str);
+
+    return( ((minutes * 60) + seconds) * 1000 );
+} /* parse_time_str */
+
+
+static void parse_seek_list(const char *_list)
+{
+    Uint32 i;
+    char *list = alloca(strlen(_list) + 1);
+    if (list == NULL)
+    {
+        fprintf(stderr, "alloca() failed. Skipping seek list.\n");
+        return;
+    } /* if */
+
+    strcpy(list, _list);
+
+    if (seek_list != NULL)
+        free((void *) seek_list);
+
+    total_seeks = count_seek_list(list);
+    seek_list = (Uint32 *) malloc(total_seeks * sizeof (Uint32));
+    if (seek_list == NULL)
+    {
+        fprintf(stderr, "malloc() failed. Skipping seek list.\n");
+        total_seeks = 0;
+        return;
+    } /* if */
+
+    for (i = 0; i < total_seeks; i++)
+    {
+        char *ptr = strchr(list, ';');
+        if (ptr != NULL)
+            *ptr = '\0';
+        seek_list[i] = parse_time_str(list);
+        list = ptr + 1;
+    } /* for */
+} /* parse_seek_list */
 
 
 static int str_to_fmt(char *str)
@@ -572,6 +705,7 @@ int main(int argc, char **argv)
     {
         char *filename = NULL;
 
+        /* !!! FIXME: Go read gripe about all the global variables. */
         /* set variables back to defaults for next file... */
         if (new_sample)
         {
@@ -588,6 +722,14 @@ int main(int argc, char **argv)
             use_specific_audiofmt = 0;
             wants_volume_change = 0;
             volume = 1.0;
+            if (seek_list != NULL)
+            {
+                free((void *) seek_list);
+                seek_list = NULL;
+            } /* if */
+            total_seeks = 0;
+            seek_index = 0;
+            bytes_before_next_seek = -1;
         } /* if */
 
         if (strcmp(argv[i], "--rate") == 0 && argc > i + 1)
@@ -598,7 +740,7 @@ int main(int argc, char **argv)
             {
                 fprintf(stderr, "Bad argument to --rate!\n");
                 return(42);
-            }
+            } /* if */
         } /* else if */
 
         else if (strcmp(argv[i], "--format") == 0 && argc > i + 1)
@@ -610,7 +752,7 @@ int main(int argc, char **argv)
                 fprintf(stderr, "Bad argument to --format! Try one of:\n"
                                 "U8, S8, U16LSB, S16LSB, U16MSB, S16MSB\n");
                 return(42);
-            }
+            } /* if */
         } /* else if */
 
         else if (strcmp(argv[i], "--channels") == 0 && argc > i + 1)
@@ -623,7 +765,7 @@ int main(int argc, char **argv)
                         "Bad argument to --channels! Try 1 (mono) or 2 "
                         "(stereo).\n");
                 return(42);
-            }
+            } /* if */
         } /* else if */
 
         else if (strcmp(argv[i], "--audiobuf") == 0 && argc > i + 1)
@@ -653,6 +795,11 @@ int main(int argc, char **argv)
             looping = atoi(argv[++i]);
         } /* else if */
 
+        else if (strcmp(argv[i], "--seek") == 0)
+        {
+            parse_seek_list(argv[++i]);
+        } /* else if */
+
         else if (strcmp(argv[i], "--stdin") == 0)
         {
             SDL_RWops *rw = SDL_RWFromFP(stdin, 1);
@@ -668,7 +815,9 @@ int main(int argc, char **argv)
         } /* if */
 
         else if (strncmp(argv[i], "--", 2) == 0)
-            /* ignore it. */ ;
+        {
+            /* ignore it. */
+        } /* else if */
 
         else
         {
@@ -696,6 +845,19 @@ int main(int argc, char **argv)
                             "  reason: [%s].\n",
                             filename, Sound_GetError());
             continue;
+        } /* if */
+
+        if (total_seeks > 0)
+        {
+            if ((!predecode) && (!(sample->flags & SOUND_SAMPLEFLAG_CANSEEK)))
+            {
+                fprintf(stderr, "Want seeks, but sample cannot handle it!\n");
+                Sound_FreeSample(sample);
+                close_archive(filename);
+                continue;
+            } /* if */
+
+            bytes_before_next_seek = 0;
         } /* if */
 
             /*
