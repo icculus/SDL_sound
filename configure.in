@@ -105,6 +105,23 @@ if test x$enable_aiff = xyes; then
 fi
 
 
+dnl DO NOT ENABLE THIS YET. IT'S NOT COMPLETE.
+dnl DO NOT ENABLE THIS YET. IT'S NOT COMPLETE.
+dnl DO NOT ENABLE THIS YET. IT'S NOT COMPLETE.
+dnl DO NOT ENABLE THIS YET. IT'S NOT COMPLETE.
+dnl Check for shn decoder inclusion...
+AC_ARG_ENABLE(shn,
+[  --enable-shn               enable SHN decoding [default=no]],
+              , enable_shn=no)
+if test x$enable_shn = xyes; then
+    AC_DEFINE(SOUND_SUPPORTS_SHN)
+fi
+dnl DO NOT ENABLE THIS YET. IT'S NOT COMPLETE.
+dnl DO NOT ENABLE THIS YET. IT'S NOT COMPLETE.
+dnl DO NOT ENABLE THIS YET. IT'S NOT COMPLETE.
+dnl DO NOT ENABLE THIS YET. IT'S NOT COMPLETE.
+
+
 dnl Check for libmikmod
 AC_ARG_ENABLE(mikmod,
 [  --enable-mikmod            enable MOD decoding via mikmod [default=yes]],
