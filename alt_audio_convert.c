@@ -1,50 +1,117 @@
 /*
-    Extended Audio Converter for SDL (Simple DirectMedia Layer)
-    Copyright (C) 2002  Frank Ranostaj
-                        Institute of Applied Physik
-                        Johann Wolfgang Goethe-Universität
-                        Frankfurt am Main, Germany
+ *  Extended Audio Converter for SDL (Simple DirectMedia Layer)
+ *  Copyright (C) 2002  Frank Ranostaj
+ *                      Institute of Applied Physik
+ *                      Johann Wolfgang Goethe-Universität
+ *                      Frankfurt am Main, Germany
+ *
+ *   This library is free software; you can redistribute it and/or
+ *   modify it under the terms of the GNU Library General Public
+ *   License as published by the Free Software Foundation; either
+ *   version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Library General Public
+ *  License along with this library; if not, write to the Free
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ *  Frank Ranostaj
+ *  ranostaj@stud.uni-frankfurt.de
+ *
+ * (This code blatantly abducted for SDL_sound. Thanks, Frank! --ryan.)
+ */
 
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
-
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
-
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    Frank Ranostaj
-    ranostaj@stud.uni-frankfurt.de
-
-(This code blatantly abducted for SDL_sound. Thanks, Frank! --ryan.)
-
-*/
 #include "alt_audio_convert.h"
 #include <stdlib.h>
 #include <math.h>
+
+/* just to make sure this is defined... */
+
+#ifndef min
+#define min(x, y) ( ((x) < (y)) ? (x) : (y) )
+#endif
+
+#ifndef max
+#define max(x, y) ( ((x) > (y)) ? (x) : (y) )
+#endif
+
 
 /* some macros for "parsing" format */
 
 #define IS_8BIT(x)    ((x).format & 0x0008)
 #define IS_16BIT(x)   ((x).format & 0x0010)
-#define IS_FLOAT(x)   ((x).format & 0x0020) /* !!! FIXME: is this ok? */
+#define IS_FLOAT(x)   ((x).format & 0x0020)
 #define IS_SIGNED(x)  ((x).format & 0x8000)
-#define IS_SYSENDIAN(x) ((AUDIO_U16SYS ^ (x).format) & 0x1000)
+#define IS_SYSENDIAN(x) ((~AUDIO_U16SYS ^ (x).format) & 0x1000)
 
 
 /*-------------------------------------------------------------------------*/
 /* this filter (Kaiser-window beta=6.8) gives a decent -80dB attentuation  */
-static const int filter[_fsize/2] = {
+static const int filter[_fsize / 2] =
+{
     0, 20798, 0, -6764, 0, 3863, 0, -2560,
     0,  1800, 0, -1295, 0,  936, 0,  -671,
     0,   474, 0,  -326, 0,  217, 0,  -138,
-    0,    83, 0,   -46, 0,   23, 0,    -9 };
+    0,    83, 0,   -46, 0,   23, 0,    -9
+};
+
+
+/*-------------------------------------------------------------------------*/
+/* the purpose of the RateConverterBuffer is to provide a continous storage
+   for head and tail of the (sample)-buffer. This allows a simple and
+   perfomant implemantation of the sample rate converters. Depending of the
+   operation mode, two layouts for the RateConverterBuffer.inbuffer are
+   possible:
+
+   in the Loop Mode:
+   ... T-4 T-3 T-2 T-1 H+0 H+1 H+2 H+3 H+4 ...
+                       |
+                       linp, finp
+
+   in the Single Mode (non Loop):
+   ... T-4 T-3 T-2 T-1 0   0   0 ... 0   0   0   H+0 H+1 H+2 H+3 H+4 ...
+                       |                          |
+                       linp                       finp
+
+   The RateConverterBuffer allows an accurate attack and decay of the
+   filters in the rate Converters.
+
+   The pointer finp are actually shifted against the depicted position so
+   that on the first invocation of the rate converter the input of the
+   filter is nearly complete in the zero region, only one input value is
+   used. After the calculation of the first output value, the pointer are
+   incremented or decremented depending on down or up conversion and the
+   first two input value are taken into account. This procedure repeats
+   until the filter has processed all zeroes. The distance of the pointer
+   movement is stored in flength.
+
+   Further a pointer cinp to the sample buffer itself is stored. The pointer
+   to the sample buffer is shifted too, so that on the first use of this
+   pointer the filter is complete in the sample buffer. The pointer moves
+   over the sample buffer until it reaches the other end. The distance of
+   the movement is stored in clength.
+
+   Finally the decay of the filter is done by linp, llength like finp,
+   flength, but in reverse order.
+
+   buffer denotes the start or the end of the output buffer, depending
+   on direction of the rate conversion.
+
+   All pointer and length referring the buffer as Sint16. All length
+   are refering to the input buffer */
+
+typedef struct
+{
+    Sint16 inbuffer[6*_fsize];
+    Sint16 *finp, *cinp, *linp;
+    Sint16 *buffer;
+    int flength, clength, llength;
+} RateConverterBuffer;
+
 
 /* Mono (1 channel ) */
 #define Suffix(x) x##1
@@ -56,9 +123,10 @@ static const int filter[_fsize/2] = {
 #include "filter_templates.h"
 #undef Suffix
 
+
 /*-------------------------------------------------------------------------*/
 static int ConvertAudio( Sound_AudioCVT *Data,
-    Uint8* buffer, int length, int mode )
+                         Uint8* buffer, int length, int mode )
 {
     AdapterC Temp;
     int i;
@@ -293,59 +361,145 @@ static int minus5dB( AdapterC Data, int length )
 }
 
 /*-------------------------------------------------------------------------*/
-static int doubleRateStereo( AdapterC Data, int length )
+static void initRateConverterBuffer( RateConverterBuffer *rcb,
+    AdapterC* Data, int length, int rel_size )
 {
-    length >>= 2;
-    _doubleRate2( (Sint16*)Data.buffer, Data.mode, length );
-    return 4*_doubleRate2( (Sint16*)Data.buffer+1, Data.mode, length );
+    int size, slength;
+    int den, num;
+    int i;
+
+    den = Data->filter->denominator;
+    num = Data->filter->numerator;
+    size = _fsize * rel_size;
+    length >>= 1;
+    slength = rel_size > 0 ? length : -length;
+
+    rcb->buffer = (Sint16*)( Data->buffer );
+
+    if( Data->mode & SDL_AI_Loop )
+    {
+        // !!!FIXME: modulo length, take scale into account
+        for( i = 0; i < size; i++ )
+        {
+            rcb->inbuffer[i] = rcb->buffer[length-size+i];
+            rcb->inbuffer[i+size] = rcb->buffer[i];
+        }
+        rcb->finp = rcb->linp = rcb->inbuffer + size;
+        if( size < 0 )
+            rcb->buffer += num * ( length + 2 * size ) / den;
+    }
+    else
+    {
+        for( i = 0; i < size; i++ )
+        {
+            int j;
+            j = length-size+i;
+            rcb->inbuffer[i] = j < 0 ? 0 : rcb->buffer[j];
+            rcb->inbuffer[i+size] = 0;
+            rcb->inbuffer[i+2*size] = i < length ? rcb->buffer[i] : 0;
+        }
+        // !!!FIXME: take lenght < size into account
+        rcb->finp = rcb->inbuffer + abs( 3*size/2 ) + size/2;
+        rcb->linp = rcb->inbuffer + abs( 3*size/2 ) - size/2;
+        rcb->flength = rcb->llength = 2*size;
+        rcb->clength = slength - 2*size;
+
+        if( size < 0 )
+            rcb->buffer += num * ( length + 2 * size ) / den;
+    }
 }
 
+static void nextRateConverterBuffer( RateConverterBuffer *rcb )
+{
+    rcb->buffer++;
+    rcb->finp++;
+    rcb->cinp++;
+    rcb->linp++;
+}
+
+typedef Sint16* (*RateConverter)( Sint16*, Sint16*, int, VarFilter*, int*);
+static int doRateConversion( RateConverterBuffer* rcb,
+                             RateConverter ffp, VarFilter* filter )
+{
+    int pos = 0;
+    Sint16 *outp;
+    outp = rcb->buffer;
+
+    outp = (*ffp)( outp, rcb->finp, rcb->flength, filter, &pos );
+    outp = (*ffp)( outp, rcb->cinp, rcb->clength, filter, &pos );
+    outp = (*ffp)( outp, rcb->linp, rcb->llength, filter, &pos );
+    return 2 * abs( rcb->buffer - outp );
+}
+
+
+/*-------------------------------------------------------------------------*/
 static int doubleRateMono( AdapterC Data, int length )
 {
-    return 2*_doubleRate1( (Sint16*)Data.buffer, Data.mode, length>>1 );
+    RateConverterBuffer rcb;
+    initRateConverterBuffer( &rcb, &Data, length, 1 );
+    return doRateConversion( &rcb, doubleRate1, NULL );
+}
+
+static int doubleRateStereo( AdapterC Data, int length )
+{
+    RateConverterBuffer rcb;
+    initRateConverterBuffer( &rcb, &Data, length, 2 );
+    doRateConversion( &rcb, doubleRate2, NULL );
+    nextRateConverterBuffer( &rcb );
+    return 2 + doRateConversion( &rcb, doubleRate2, NULL );
 }
 
 /*-------------------------------------------------------------------------*/
-static int halfRateStereo( AdapterC Data, int length )
-{
-    length >>= 2;
-    _halfRate2( (Sint16*)Data.buffer, Data.mode, length );
-    return 4*_halfRate2( (Sint16*)Data.buffer+1, Data.mode, length );
-}
-
 static int halfRateMono( AdapterC Data, int length )
 {
-    return 2*_halfRate2( (Sint16*)Data.buffer, Data.mode, length>>1 );
+    RateConverterBuffer rcb;
+    initRateConverterBuffer( &rcb, &Data, length, -1 );
+    return doRateConversion( &rcb, halfRate1, NULL );
+}
+
+static int halfRateStereo( AdapterC Data, int length )
+{
+    RateConverterBuffer rcb;
+    initRateConverterBuffer( &rcb, &Data, length, -2 );
+    doRateConversion( &rcb, halfRate2, NULL );
+    nextRateConverterBuffer( &rcb );
+    return 2 + doRateConversion( &rcb, halfRate2, NULL );
 }
 
 /*-------------------------------------------------------------------------*/
-static int varRateUpStereo( AdapterC Data, int length )
+static int increaseRateMono( AdapterC Data, int length )
 {
-    length >>= 2;
-    _varRateUp2( (Sint16*)Data.buffer, Data.mode, Data.filter, length );
-    return 4 * _varRateUp2( (Sint16*)Data.buffer+1,
-                            Data.mode, Data.filter, length );
+    RateConverterBuffer rcb;
+    initRateConverterBuffer( &rcb, &Data, length, 2 );
+    return doRateConversion( &rcb, increaseRate1, Data.filter );
 }
 
-static int varRateUpMono( AdapterC Data, int length )
+static int increaseRateStereo( AdapterC Data, int length )
 {
-    return 2 * _varRateUp1( (Sint16*)Data.buffer,
-                            Data.mode, Data.filter, length>>1 );
+    RateConverterBuffer rcb;
+    initRateConverterBuffer( &rcb, &Data, length, 4 );
+    doRateConversion( &rcb, increaseRate2, Data.filter );
+    nextRateConverterBuffer( &rcb );
+    return 2 + doRateConversion( &rcb, increaseRate2, Data.filter );
 }
 
-static int varRateDownStereo( AdapterC Data, int length )
+/*-------------------------------------------------------------------------*/
+static int decreaseRateMono( AdapterC Data, int length )
 {
-    length >>= 2;
-    _varRateDown2( (Sint16*)Data.buffer, Data.mode, Data.filter, length );
-    return 2 * _varRateDown2( (Sint16*)Data.buffer+1,
-                              Data.mode, Data.filter, length );
+    RateConverterBuffer rcb;
+    initRateConverterBuffer( &rcb, &Data, length, -2 );
+    return doRateConversion( &rcb, decreaseRate1, Data.filter );
 }
 
-static int varRateDownMono( AdapterC Data, int length )
+static int decreaseRateStereo( AdapterC Data, int length )
 {
-    return _varRateDown1( (Sint16*)Data.buffer,
-                          Data.mode, Data.filter, length>>1 );
+    RateConverterBuffer rcb;
+    initRateConverterBuffer( &rcb, &Data, length, -4 );
+    doRateConversion( &rcb, decreaseRate2, Data.filter );
+    nextRateConverterBuffer( &rcb );
+    return doRateConversion( &rcb, decreaseRate2, Data.filter );
 }
+
 
 /*-------------------------------------------------------------------------*/
 typedef struct{
@@ -353,11 +507,11 @@ typedef struct{
     Sint16 numerator;
 } Fraction;
 
+/* gives a maximal error of 3% and typical less than 0.2% */
 static Fraction findFraction( float Value )
 {
-/* gives a maximal error of 3% and typical less than 0.2% */
-    const Uint8 frac[96]={
-      1, 2,                                                  -1, /*  /1 */
+    const Sint8 frac[95]={
+         2,                                                  -1, /*  /1 */
       1,    3,                                               -1, /*  /2 */
          2,    4, 5,                                         -1, /*  /3 */
             3,    5,    7,                                   -1, /*  /4 */
@@ -376,12 +530,12 @@ static Fraction findFraction( float Value )
 
 
     Fraction Result = {0,0};
-    int n,num,den=1;
+    int n,num=1,den=1;
 
     float RelErr, BestErr = 0;
     if( Value < 31/64. || Value > 64/31. ) return Result;
 
-    for( n = 0; n < sizeof(frac); num=frac[++n] )
+    for( n = 0; n < sizeof(frac); num=frac[n++] )
     {
          if( num < 0 ) den++;
          RelErr = Value * num / den;
@@ -403,7 +557,8 @@ static float sinc( float x )
     else return sin(x)/x;
 }
 
-static void calculateVarFilter( Sint16* dst, float Ratio, float phase, float scale )
+static void calculateVarFilter( Sint16* dst,
+                                float Ratio, float phase, float scale )
 {
     const Uint16 KaiserWindow7[]= {
         22930, 16292, 14648, 14288, 14470, 14945, 15608, 16404,
@@ -440,13 +595,14 @@ static void setupVarFilter( VarFilter* filter,
 {
     int i,n,d;
     Fraction IRatio;
-    float phase;
+    float phase = 0.;
     IRatio = findFraction( Ratio );
     Ratio = min( Ratio, 1/Ratio );
 
     n = IRatio.numerator;
     d = IRatio.denominator;
-    filter->pos_mod = d;
+    filter->denominator = d;
+    filter->numerator = n;
 
     for( i = 0; i < d; i++ )
     {
@@ -466,7 +622,7 @@ static void setupVarFilter( VarFilter* filter,
 
 /*-------------------------------------------------------------------------*/
 static void createRateConverter( Sound_AudioCVT *Data, int* fip,
-                         int SrcRate, int DestRate, int Channel )
+                                 int SrcRate, int DestRate, int Channel )
 {
     int filter_index = *fip;
 
@@ -506,7 +662,7 @@ static void createRateConverter( Sound_AudioCVT *Data, int* fip,
     {
         setupVarFilter( &Data->filter, Ratio, Up );
         Data->adapter[VarPos] =
-            Mono ? varRateUpMono : varRateUpStereo;
+            Mono ? increaseRateMono : increaseRateStereo;
         Data->len_mult *= 2;
         Data->add *= 2;
         Data->add += _fsize;
@@ -515,7 +671,7 @@ static void createRateConverter( Sound_AudioCVT *Data, int* fip,
     {
         setupVarFilter( &Data->filter, Ratio, Down );
         Data->adapter[filter_index++] =
-            Mono ? varRateDownMono : varRateDownStereo;
+            Mono ? decreaseRateMono : decreaseRateStereo;
     }
     *fip = filter_index;
 }
@@ -643,8 +799,8 @@ static void createFormatConverter(Sound_AudioCVT *Data, int *fip,
 
 
 /*-------------------------------------------------------------------------*/
-DECLSPEC int BuildAudioCVT(Sound_AudioCVT *Data,
-    SDL_AudioSpec src, SDL_AudioSpec dst )
+int BuildAudioCVT( Sound_AudioCVT *Data,
+                   SDL_AudioSpec src, SDL_AudioSpec dst )
 {
     SDL_AudioSpec intrm;
     int filter_index = 0;
@@ -733,14 +889,14 @@ static void show_AudioCVT( Sound_AudioCVT *Data )
         AdapterDesc(convertMonoToStereo16Bit),
         AdapterDesc(convertMonoToStereo8Bit),
         AdapterDesc(minus5dB),
-        AdapterDesc(doubleRateStereo),
         AdapterDesc(doubleRateMono),
-        AdapterDesc(halfRateStereo),
+        AdapterDesc(doubleRateStereo),
         AdapterDesc(halfRateMono),
-        AdapterDesc(varRateUpStereo),
-        AdapterDesc(varRateUpMono),
-        AdapterDesc(varRateDownStereo),
-        AdapterDesc(varRateDownMono),
+        AdapterDesc(halfRateStereo),
+        AdapterDesc(increaseRateMono),
+        AdapterDesc(increaseRateStereo),
+        AdapterDesc(decreaseRateMono),
+        AdapterDesc(decreaseRateStereo),
         { NULL,    "----------NULL-----------" }
     };
     const int AdapterDescMax = sizeof(AdapterDescription)
@@ -766,8 +922,8 @@ static void show_AudioCVT( Sound_AudioCVT *Data )
 
 
 int Sound_BuildAudioCVT(Sound_AudioCVT *Data,
-   Uint16 src_format, Uint8 src_channels, int src_rate,
-   Uint16 dst_format, Uint8 dst_channels, int dst_rate)
+    Uint16 src_format, Uint8 src_channels, int src_rate,
+    Uint16 dst_format, Uint8 dst_channels, int dst_rate)
 {
     SDL_AudioSpec src, dst;
     int ret;
