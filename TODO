@@ -13,6 +13,7 @@ Decoders still needing seek() method:
 
 General stuff TODO:
 - Hack on the experimental audio conversion routines.
+- Add the altivec-optimized libvorbis to the project?
 - Handle compression and other chunks in WAV files.
 - Handle compression and other chunks in AIFF-C files.
 - Reduce malloc() pressure.
