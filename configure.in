@@ -148,7 +148,7 @@ AC_ARG_ENABLE(flac,
 [  --enable-flac              enable FLAC decoding via libFLAC [default=yes]],
               , enable_flac=yes)
 if test x$enable_flac = xyes; then
-  AC_CHECK_HEADER(FLAC/all.h, have_flac_hdr=yes)
+  AC_CHECK_HEADER(FLAC/stream_decoder.h, have_flac_hdr=yes)
   AC_CHECK_LIB(FLAC, FLAC__stream_decoder_new, have_flac_lib=yes)
   if test x$have_flac_hdr = xyes -a x$have_flac_lib = xyes; then
     LIBS="$LIBS -lFLAC"
