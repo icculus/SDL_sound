@@ -2,9 +2,13 @@
  * CHANGELOG.
  */
 
+12162001 - FLAC decoder now checks for the magic number unless the file
+           extension is recognized. This was changed back because searching
+           for metadata, while probably more effective, is VERY expensive (and
+           useless) on non-FLAC streams.
 12052001 - Put our names in a "--credits" option in playsound, and put the
            standard GNU disclaimers in there too, for good measure. Renamed
-           LICENSE to COPYING to match GNU standards more closely (and
+           LICENSE to COPYING to match GNU standards more closely (and to
            end Max's torment.  :)  ) Tweaks to wav.c, and work on aiff.c to
            make it easier to support multiple audio formats (for compression
            handling later down the road).
