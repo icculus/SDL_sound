@@ -6,6 +6,8 @@
            Commandline validation is improved, too. FIXME removal in 
            voc.c; should report i/o errors correctly now. Changed DECLSPEC
            to SNDDECLSPEC to prevent SDL conflict, and added SDLCALL support.
+           Removed all instances of Sound_SetError()...now they are either
+           __Sound_SetError or BAIL*_MACRO.
 07022002 - Added WinCE support pack to website, updated INSTALL with CE info.
            More altcvt fixes from Frank Ranostaj.
 07012002 - Fixed configure.in to work around bug in older autoconfs. Started
