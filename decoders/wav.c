@@ -142,6 +142,8 @@ typedef struct S_WAV_FMT_T
     Uint16 wBlockAlign;
     Uint16 wBitsPerSample;
 
+    Uint32 next_chunk_offset;
+    
     Uint32 sample_frame_size;
     Uint32 data_starting_offset;
     Uint32 total_bytes;
@@ -182,6 +184,9 @@ static int read_fmt_chunk(SDL_RWops *rw, fmt_t *fmt)
     fmt->chunkID = fmtID;
 
     BAIL_IF_MACRO(!read_le32(rw, &fmt->chunkSize), NULL, 0);
+    BAIL_IF_MACRO(fmt->chunkSize < 16, "WAV: Invalid chunk size", 0);
+    fmt->next_chunk_offset = SDL_RWtell(rw) + fmt->chunkSize;
+    
     BAIL_IF_MACRO(!read_le16(rw, &fmt->wFormatTag), NULL, 0);
     BAIL_IF_MACRO(!read_le16(rw, &fmt->wChannels), NULL, 0);
     BAIL_IF_MACRO(!read_le32(rw, &fmt->dwSamplesPerSec), NULL, 0);
@@ -708,6 +713,7 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
     } /* else */
 
     BAIL_IF_MACRO(!read_fmt(rw, fmt), NULL, 0);
+    SDL_RWseek(rw, fmt->next_chunk_offset, SEEK_SET);
     BAIL_IF_MACRO(!find_chunk(rw, dataID), "WAV: No data chunk.", 0);
     BAIL_IF_MACRO(!read_data_chunk(rw, &d), "WAV: Can't read data chunk.", 0);
 
