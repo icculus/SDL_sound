@@ -98,6 +98,9 @@
            the start of a tweaked audio converter.
 10172001 - Torbjörn catches a problem with the overflow buffer in playsound's
            audio callback.
+10232001 - Rewrote playsound.c's audio_callback() to no longer need the
+           overflow buffer hack, which streamlines it a little and trims the
+           memory requirements for playsound by about 16 kilobytes.
 
 --ryan. (icculus@clutteredmind.org)
 
