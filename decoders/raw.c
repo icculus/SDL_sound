@@ -38,10 +38,9 @@
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 
-#include "SDL_sound.h"
-
-#define __SDL_SOUND_INTERNAL__
-#include "SDL_sound_internal.h"
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
 
 #ifdef SOUND_SUPPORTS_RAW
 
@@ -49,6 +48,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#include "SDL_sound.h"
+
+#define __SDL_SOUND_INTERNAL__
+#include "SDL_sound_internal.h"
 
 static int RAW_init(void);
 static void RAW_quit(void);
