@@ -14,10 +14,10 @@ More immediate:
 - Rename "test" directory to "playsound".
 - Have default make build playsound, and make install install it.
 - Make some of the SNDDBG() strings more uniform.
-- Shrink buffer in Sound_DecodeAll to fit exact size of sample after decoding.
-- Make Sound_SetError() and Sound_GetError() use their own buffers, so they
-  don't piddle over SDL errors, and vice-versa.
 - Run through ElectricFence, dmalloc, etc...
+- Verify thread safety. SDL_sound should be fully reentrant right now, with
+  the exception of Sound_NewSample*()...starting two sounds at once can cause
+  the internal linked list of currently-decoding samples to scramble.
 
 Decoders to implement:
 - .CDA (Does this need specific decoding? Or is a RWops needed?)
