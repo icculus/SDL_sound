@@ -41,6 +41,8 @@
  *   - .OGG     (Ogg files, via Ogg Vorbis libraries.)
  *   - .RAWDATA (Raw sound data in any format, internal.)
  *   - .CDA     (CD audio read into a sound buffer, internal.)
+ *   - .AU
+ *   - .AIFF
  *
  *   (...and more to come...)
  *
@@ -49,8 +51,8 @@
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 
-#ifndef _INCLUDE_SDL_VOICE_H_
-#define _INCLUDE_SDL_VOICE_H_
+#ifndef _INCLUDE_SDL_SOUND_H_
+#define _INCLUDE_SDL_SOUND_H_
 
 #include "SDL.h"
 
@@ -62,20 +64,20 @@ extern "C" {
  * These are flags that are used in a Sound_Sample (below) to show various
  *  states.
  *
- *   To use: "if (sample->flags & VOICE_SAMPLEFLAGS_ERROR) { dosomething(); }"
+ *   To use: "if (sample->flags & SOUND_SAMPLEFLAGS_ERROR) { dosomething(); }"
  */
-typedef enum __VOICE_SAMPLEFLAGS__
+typedef enum __SOUND_SAMPLEFLAGS__
 {
-    VOICE_SAMPLEFLAG_NONE      = 0,       /* Null flag.                      */
+    SOUND_SAMPLEFLAG_NONE      = 0,       /* Null flag.                      */
 
         /* these are set at sample creation time... */
-    VOICE_SAMPLEFLAG_NEEDSEEK  = 1,       /* SDL_RWops must be able to seek. */
-    VOICE_SAMPLEFLAG_STREAMING = 1 << 1,  /* source is streaming (no EOF).   */
+    SOUND_SAMPLEFLAG_NEEDSEEK  = 1,       /* SDL_RWops must be able to seek. */
+    SOUND_SAMPLEFLAG_STREAMING = 1 << 1,  /* source is streaming (no EOF).   */
 
         /* these are set during decoding... */
-    VOICE_SAMPLEFLAG_EOF       = 1 << 29, /* end of input stream.            */
-    VOICE_SAMPLEFLAG_ERROR     = 1 << 30, /* unrecoverable error.            */
-    VOICE_SAMPLEFLAG_AGAIN     = 1 << 31  /* couldn't read without blocking. */
+    SOUND_SAMPLEFLAG_EOF       = 1 << 29, /* end of input stream.            */
+    SOUND_SAMPLEFLAG_ERROR     = 1 << 30, /* unrecoverable error.            */
+    SOUND_SAMPLEFLAG_AGAIN     = 1 << 31  /* couldn't read without blocking. */
 } Sound_SampleFlags;
 
 
@@ -85,7 +87,7 @@ typedef enum __VOICE_SAMPLEFLAGS__
  *  EVERY FIELD IN THIS IS READ-ONLY. Please use the API functions to
  *  change them.
  */
-typedef struct __VOICE_SAMPLE__
+typedef struct __SOUND_SAMPLE__
 {
     void *opaque;                /* Internal use only.                   */
     Sound_DecoderInfo *decoder;  /* Decoder used for this sample.        */
@@ -113,7 +115,7 @@ typedef struct __PHYSFS_ARCHIVEINFO__
 /*
  * Just what it says: a x.y.z style version number...
  */
-typedef struct __VOICE_VERSION__
+typedef struct __SOUND_VERSION__
 {
     int major;
     int minor;
@@ -124,14 +126,14 @@ typedef struct __VOICE_VERSION__
 
 /* functions and macros... */
 
-#define VOICE_VER_MAJOR 0
-#define VOICE_VER_MINOR 0
-#define VOICE_VER_PATCH 1
+#define SOUND_VER_MAJOR 0
+#define SOUND_VER_MINOR 0
+#define SOUND_VER_PATCH 1
 
-#define VOICE_VERSION(x) { \
-                           (x)->major = VOICE_VER_MAJOR; \
-                           (x)->minor = VOICE_VER_MINOR; \
-                           (x)->patch = VOICE_VER_PATCH; \
+#define SOUND_VERSION(x) { \
+                           (x)->major = SOUND_VER_MAJOR; \
+                           (x)->minor = SOUND_VER_MINOR; \
+                           (x)->patch = SOUND_VER_PATCH; \
                          }
 
 /**
@@ -139,13 +141,13 @@ typedef struct __VOICE_VERSION__
  *  are using a shared library (DLL) version of SDL_sound, then it is possible
  *  that it will be different than the version you compiled against.
  *
- * This is a real function; the macro VOICE_VERSION tells you what version
+ * This is a real function; the macro SOUND_VERSION tells you what version
  *  of SDL_sound you compiled against:
  *
  * Sound_Version compiled;
  * Sound_Version linked;
  *
- * VOICE_VERSION(&compiled);
+ * SOUND_VERSION(&compiled);
  * Sound_GetLinkedVersion(&linked);
  * printf("We compiled against SDL_sound version %d.%d.%d ...\n",
  *           compiled.major, compiled.minor, compiled.patch);
@@ -331,7 +333,7 @@ extern DECLSPEC Uint32 Sound_DecodeAll(Sound_Sample *sample);
 }
 #endif
 
-#endif  /* !defined _INCLUDE_SDL_VOICE_H_ */
+#endif  /* !defined _INCLUDE_SDL_SOUND_H_ */
 
 /* end of SDL_sound.h ... */
 
