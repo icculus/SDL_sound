@@ -4,6 +4,8 @@
 
 01042001 - Forgot to bump playsound's version to match SDL_sound's. Fixed.
            Added some notes to the top of COPYING about other libraries, etc.
+           A real MIDI decoder (using a hacked version of the hacked version
+           of Timidity from SDL_mixer) is now in place and working well.
 01012001 - Happy New Year. Added some debug output to wav.c for future
            codecs (GSM comes to mind). Fixed the SMPEG decoder's URL to point
            to Loki's webpage.
