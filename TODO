@@ -2,7 +2,6 @@ More immediate (needed for 1.0 release):
 - Man pages. Doxygen would be cool.
 - Handle compression and other chunks in WAV files.
 - Handle compression and other chunks in AIFF-C files.
-- Cleanup up VOC decoder (seems messy to me).
 - Fix the crappy rewind implementation in shn.c's SHN_rewind().
 - Finish implementing seek() method in decoders, see below.
 - Add a sdlsound-config script?
