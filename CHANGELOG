@@ -2,12 +2,20 @@
  * CHANGELOG.
  */
 
-01042001 - Forgot to bump playsound's version to match SDL_sound's. Fixed.
+01092002 - Torbjörn comes through with a ModPlug-based decoder, which should
+           work nicely for decoding multiple .MODs at once. Now we need to
+           figure out what to do with two decoders that can decode the same
+           file. For now, if you explicitly want either MikMod or ModPlug, you
+           should explicitly enable one decoder and disable the other on the
+           configure command line ("--enable-modplug --disable-mikmod", for
+           example), otherwise configure will try to sort out the best one for
+           your system. Choice is a wonderful thing.  :)
+01042002 - Forgot to bump playsound's version to match SDL_sound's. Fixed.
            Added some notes to the top of COPYING about other libraries, etc.
            A real MIDI decoder (using a hacked version of the hacked version
            of Timidity from SDL_mixer) is now in place and working well,
            thanks to Torbjörn.
-01012001 - Happy New Year. Added some debug output to wav.c for future
+01012002 - Happy New Year. Added some debug output to wav.c for future
            codecs (GSM comes to mind). Fixed the SMPEG decoder's URL to point
            to Loki's webpage.
 12302001 - Upped version to 0.1.4.
