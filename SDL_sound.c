@@ -218,7 +218,7 @@ int Sound_Init(void)
                             malloc((total) * sizeof (Sound_DecoderInfo *));
     BAIL_IF_MACRO(available_decoders == NULL, ERR_OUT_OF_MEMORY, 0);
 
-    SDL_Init(SDL_INIT_AUDIO);
+    SDL_InitSubSystem(SDL_INIT_AUDIO);
 
     errorlist_mutex = SDL_CreateMutex();
 
