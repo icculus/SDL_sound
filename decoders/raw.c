@@ -54,7 +54,7 @@
 
 static int RAW_open(Sound_Sample *sample, const char *ext);
 static void RAW_close(Sound_Sample *sample);
-static int RAW_read(Sound_Sample *sample);
+static Uint32 RAW_read(Sound_Sample *sample);
 
 const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW =
 {
@@ -73,43 +73,67 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW =
 
 static int RAW_open(Sound_Sample *sample, const char *ext)
 {
+        /*
+         * We check this explicitly, since we have no other way to
+         *  determine whether we should handle this data or not.
+         */
     if (__Sound_strcasecmp(ext, "RAW") != 0)
+    {
+        Sound_SetError("RAW: extension isn't explicitly \"RAW\".");
         return(0);
+    } /* if */
 
+        /*
+         * You must also specify a desired format, so we know how to
+         *  treat the bits that are otherwise binary garbage.
+         */
     if ( (sample->desired.channels < 1)  ||
          (sample->desired.channels > 2)  ||
          (sample->desired.rate == 0)     ||
          (sample->desired.format == 0) )
     {
+        Sound_SetError("RAW: invalid desired format.");
         return(0);
     } /* if */
 
+    _D(("RAW: Accepting data stream.\n"));
+
+        /*
+         * We never convert raw samples; what you ask for is what you get.
+         */
     memcpy(&sample->actual, &sample->desired, sizeof (Sound_AudioInfo));
     sample->flags = SOUND_SAMPLEFLAG_NONE;
-    return(1);
+
+    return(1); /* we'll handle this data. */
 } /* RAW_open */
 
 
 static void RAW_close(Sound_Sample *sample)
 {
-    /* we don't allocate anything. That's easy, eh? */
+    /* we don't allocate anything that we need to free. That's easy, eh? */
 } /* RAW_close */
 
 
-static int RAW_read(Sound_Sample *sample)
+static Uint32 RAW_read(Sound_Sample *sample)
 {
-    int retval;
+    Uint32 retval;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+
+        /*
+         * We don't actually do any decoding, so we read the raw data
+         *  directly into the internal buffer...
+         */
     retval = SDL_RWread(internal->rw, internal->buffer,
                         1, internal->buffer_size);
 
+        /* Make sure the read went smoothly... */
     if (retval == 0)
         sample->flags |= SOUND_SAMPLEFLAG_EOF;
 
     else if (retval == -1)
         sample->flags |= SOUND_SAMPLEFLAG_ERROR;
 
-        /* next call this may be a EOF or error... */
+        /* (next call this EAGAIN may turn into an EOF or error.) */
     else if (retval < internal->buffer_size)
         sample->flags |= SOUND_SAMPLEFLAG_EAGAIN;
 
