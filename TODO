@@ -1,10 +1,31 @@
+Left todo for 0.1.5:
+- Implement rewind method in decoders missing it:
+    * mikmod.c
+    * ogg.c
+    * flac.c
+    * modplug.c
+    * voc.c
+    * midi.c
+    * mp3.c
+    * shn.c
+- SMPEG only works after calling SDL_OpenAudio(), but I don't think this
+  is a universal truth (i.e. - OpenAL uses it without outputting through
+  SDL...) Figure out if this can be fixed.
+- in Sound_NewSample*, if a decoder is selected by file extension and
+  fails, it should not be tried again when going through the rest of the
+  decoders. Or should we just opt to give up if the specified decoder
+  fails?
+- Port to BeOS. Getting BeOS up and running is probably harder than
+  porting SDL_sound to it, I should think.
+- Rename the "test" directory to "playsound".
+- Have the default "make" build playsound, and "make install" install it.
+- Update the Visual C project files.
 
 General stuff TODO:
 - Verify portability to various Unixes (BSD, etc)
 - Port to BeOS.
 - Port to MacOS Classic.
 - Man pages for the API.
-- Add Sound_Rewind().
 
 More immediate:
 - Write a decent README.
