@@ -179,7 +179,8 @@ static int read_comm_chunk(SDL_RWops *rw, comm_t *comm)
         return(0);
     comm->numChannels = SDL_SwapBE16(comm->numChannels);
 
-    if (SDL_RWread(rw, &comm->numSampleFrames, sizeof (comm->numSampleFrames), 1) != 1)
+    if (SDL_RWread(rw, &comm->numSampleFrames,
+                   sizeof (comm->numSampleFrames), 1) != 1)
         return(0);
     comm->numSampleFrames = SDL_SwapBE32(comm->numSampleFrames);
 
@@ -187,7 +188,7 @@ static int read_comm_chunk(SDL_RWops *rw, comm_t *comm)
         return(0);
     comm->sampleSize = SDL_SwapBE16(comm->sampleSize);
 
-    if (SDL_RWread(rw, sampleRate, sizeof(sampleRate), 1) != 1)
+    if (SDL_RWread(rw, sampleRate, sizeof (sampleRate), 1) != 1)
         return(0);
     comm->sampleRate = SANE_to_Uint32(sampleRate);
 
@@ -196,7 +197,8 @@ static int read_comm_chunk(SDL_RWops *rw, comm_t *comm)
                          + sizeof(comm->sampleSize)
                          + sizeof(sampleRate))
     {
-        if (SDL_RWread(rw, &comm->compressionType, sizeof (comm->compressionType), 1) != 1)
+        if (SDL_RWread(rw, &comm->compressionType,
+                       sizeof (comm->compressionType), 1) != 1)
             return(0);
         comm->compressionType = SDL_SwapBE32(comm->compressionType);
     } /* if */
@@ -228,16 +230,17 @@ static int read_ssnd_chunk(SDL_RWops *rw, ssnd_t *ssnd)
         return(0);
     ssnd->ckDataSize = SDL_SwapBE32(ssnd->ckDataSize);
 
-    if (SDL_RWread(rw, &ssnd->offset, sizeof(ssnd->offset), 1) != 1)
+    if (SDL_RWread(rw, &ssnd->offset, sizeof (ssnd->offset), 1) != 1)
         return(0);
     ssnd->offset = SDL_SwapBE32(ssnd->offset);
 
-    if (SDL_RWread(rw, &ssnd->blockSize, sizeof(ssnd->blockSize), 1) != 1)
+    if (SDL_RWread(rw, &ssnd->blockSize, sizeof (ssnd->blockSize), 1) != 1)
         return(0);
     ssnd->blockSize = SDL_SwapBE32(ssnd->blockSize);
 
     /* Leave the SDL_RWops position indicator at the start of the samples */
-    if (SDL_RWseek(rw, (int) ssnd->offset, SEEK_CUR) == -1) /* !!! FIXME: Int? Really? */
+    /* !!! FIXME: Int? Really? */
+    if (SDL_RWseek(rw, (int) ssnd->offset, SEEK_CUR) == -1)
         return(0);
 
     return(1);
@@ -287,10 +290,12 @@ static int AIFF_open(Sound_Sample *sample, const char *ext)
     pos = SDL_RWtell(rw);
 
     BAIL_IF_MACRO(!find_chunk(rw, commID), "AIFF: No common chunk.", 0);
-    BAIL_IF_MACRO(!read_comm_chunk(rw, &c), "AIFF: Can't read common chunk.", 0);
+    BAIL_IF_MACRO(!read_comm_chunk(rw, &c),
+                  "AIFF: Can't read common chunk.", 0);
 
     /* !!! FIXME: This will have to change for compression types... */
-    BAIL_IF_MACRO(c.compressionType != noneID, "AIFF: Unsupported encoding.", 0);
+    BAIL_IF_MACRO(c.compressionType != noneID,
+                  "AIFF: Unsupported encoding.", 0);
 
     BAIL_IF_MACRO(c.sampleRate == 0, "AIFF: Unsupported sample rate.", 0);
 
@@ -313,12 +318,15 @@ static int AIFF_open(Sound_Sample *sample, const char *ext)
     SDL_RWseek(rw, pos, SEEK_SET);
 
     BAIL_IF_MACRO(!find_chunk(rw, ssndID), "AIFF: No sound data chunk.", 0);
-    BAIL_IF_MACRO(!read_ssnd_chunk(rw, &s), "AIFF: Can't read sound data chunk.", 0);
+    BAIL_IF_MACRO(!read_ssnd_chunk(rw, &s),
+                  "AIFF: Can't read sound data chunk.", 0);
 
     a = (aiff_t *) malloc(sizeof(aiff_t));
     BAIL_IF_MACRO(a == NULL, ERR_OUT_OF_MEMORY, 0);
     a->bytesLeft = bytes_per_sample * c.numSampleFrames;
     internal->decoder_private = (void *) a;
+
+    sample->flags = SOUND_SAMPLEFLAG_NONE;
 
     _D(("AIFF: Accepting data stream.\n"));
     return(1); /* we'll handle this data. */
