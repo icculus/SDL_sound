@@ -2,7 +2,8 @@
  * CHANGELOG.
  */
 
-01122003 - Fix to smpeg.c's rewinding code (Thanks, Eric).
+01122003 - Fix to smpeg.c's rewinding code (Thanks, Eric). Put Visual C 6
+           project files in CVS, without external binaries (Thanks, Eric).
 12212002 - Fixed ogg.c to decode a full buffer at a time instead of one ogg
            packet per call, and mikmod has a check during initialization to
            prevent a clash with SDL_mixer (Thanks, Eric).
