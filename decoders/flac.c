@@ -45,7 +45,7 @@
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
 
-#include "FLAC/all.h"
+#include "FLAC/stream_decoder.h"
 
 
 static int FLAC_init(void);
@@ -79,6 +79,7 @@ typedef struct
     SDL_RWops *rw;
     Sound_Sample *sample;
     Uint32 frame_size;
+    Uint8 metadata_found;
 } flac_t;
 
 
@@ -90,14 +91,13 @@ static FLAC__StreamDecoderReadStatus FLAC_read_callback(
     Uint32 retval;
 
 #if 0
-    SNDDBG(("FLAC: Read callback\n"));
+    SNDDBG(("FLAC: Read callback.\n"));
 #endif
     
     retval = SDL_RWread(f->rw, (Uint8 *) buffer, 1, *bytes);
 
     if (retval == 0)
     {
-        SNDDBG(("FLAC: End of file\n"));
         *bytes = 0;
         f->sample->flags |= SOUND_SAMPLEFLAG_EOF;
         return(FLAC__STREAM_DECODER_READ_END_OF_STREAM);
@@ -171,6 +171,7 @@ void FLAC_metadata_callback(
     if (metadata->type == FLAC__METADATA_TYPE_STREAMINFO)
     {
         SNDDBG(("FLAC: Metadata is streaminfo.\n"));
+        f->metadata_found = 1;
         f->sample->actual.channels = metadata->data.stream_info.channels;
         f->sample->actual.rate = metadata->data.stream_info.sample_rate;
 
@@ -186,7 +187,7 @@ void FLAC_metadata_callback(
                 f->sample->actual.format = AUDIO_S16MSB;
                 break;
             default:
-                Sound_SetError("FLAC: Unsupported sample width.\n");
+                Sound_SetError("FLAC: Unsupported sample width.");
                 f->sample->actual.format = 0;
                 break;
         } /* switch */
@@ -199,8 +200,8 @@ void FLAC_error_callback(
     void *client_data)
 {
     flac_t *f = (flac_t *) client_data;
-    
-    SNDDBG(("FLAC: Error callback.\n"));
+
+    Sound_SetError(FLAC__StreamDecoderErrorStatusString[status]);
     f->sample->flags |= SOUND_SAMPLEFLAG_ERROR;
 } /* FLAC_error_callback */
 
@@ -222,22 +223,7 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SDL_RWops *rw = internal->rw;
     FLAC__StreamDecoder *decoder;
-    Uint8 flac_magic[4];
     flac_t *f;
-
-    if (SDL_RWread(rw, flac_magic, sizeof (flac_magic), 1) != 1)
-    {
-        Sound_SetError("FLAC: Could not read FLAC magic.");
-        return(0);
-    } /* if */
-
-    if (strncmp(flac_magic, "fLaC", sizeof (flac_magic)) != 0)
-    {
-        Sound_SetError("FLAC: Not a FLAC stream.");
-        return(0);
-    } /* if */
-
-    SDL_RWseek(internal->rw, -sizeof (flac_magic), SEEK_CUR);
 
     f = (flac_t *) malloc(sizeof (flac_t));
     BAIL_IF_MACRO(f == NULL, ERR_OUT_OF_MEMORY, 0);
@@ -263,17 +249,21 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     FLAC__stream_decoder_init(decoder);
     internal->decoder_private = f;
 
-    SNDDBG(("FLAC: Accepting data stream.\n"));
-
+    f->metadata_found = 0;
+    f->sample->actual.format = 0;
     FLAC__stream_decoder_process_metadata(decoder);
 
     if (f->sample->actual.format == 0)
     {
+        if (f->metadata_found == 0)
+            Sound_SetError("FLAC: No metadata found.");
         FLAC__stream_decoder_finish(decoder);
         FLAC__stream_decoder_delete(decoder);
         free(f);
         return(0);
     } /* if */
+
+    SNDDBG(("FLAC: Accepting data stream.\n"));
 
     sample->flags = SOUND_SAMPLEFLAG_NONE;
     return(1);
@@ -305,11 +295,15 @@ static Uint32 FLAC_read(Sound_Sample *sample)
 
     if (!FLAC__stream_decoder_process_one_frame(f->decoder))
     {
-        SNDDBG(("FLAC: Couldn't decode frame.\n"));
+        Sound_SetError("FLAC: Couldn't decode frame.");
         sample->flags |= SOUND_SAMPLEFLAG_ERROR;
         return(0);
     } /* if */
 
+        /* An error may have been signalled through the error callback. */    
+    if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
+        return(0);
+    
     return(f->frame_size);
 } /* FLAC_read */
 
