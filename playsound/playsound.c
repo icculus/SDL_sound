@@ -90,9 +90,9 @@ static volatile int done_flag = 0;
 static void audio_callback(void *userdata, Uint8 *stream, int len)
 {
     static Uint8 overflow[16384]; /* this is a hack. */
-    static Uint32 overflowBytes = 0;
+    static int overflowBytes = 0;
     Sound_Sample *sample = *((Sound_Sample **) userdata);
-    Uint32 bw = 0; /* bytes written to stream*/
+    int bw = 0; /* bytes written to stream*/
     Uint32 rc;  /* return code */
 
     if (overflowBytes > 0)
@@ -107,7 +107,7 @@ static void audio_callback(void *userdata, Uint8 *stream, int len)
         rc = Sound_Decode(sample);
         if (rc > 0)
         {
-            if (bw + rc > len)
+            if ((bw + (int) rc) > len)
             {
                 overflowBytes = (bw + rc) - len;
                 memcpy(overflow,
@@ -140,7 +140,8 @@ static void audio_callback(void *userdata, Uint8 *stream, int len)
 
 static void output_usage(const char *argv0)
 {
-    fprintf(stderr, "USAGE: %s <soundFile1> [soundFile2] ... [soundFileN]\n",
+    fprintf(stderr,
+            "USAGE: %s [--decoders] [soundFile1] ... [soundFileN]\n",
             argv0);
 } /* output_usage */
 
