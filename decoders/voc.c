@@ -380,10 +380,10 @@ static int voc_get_block(Sound_Sample *sample)
     }
 
     return 1;
-}
+} /* voc_get_block */
 
 
-static int voc_read_waveform(Sound_Sample *sample)
+static int voc_read_waveform(Sound_Sample *sample, int fill_buf, Uint32 max)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SDL_RWops *src = internal->rw;
@@ -396,10 +396,12 @@ static int voc_read_waveform(Sound_Sample *sample)
     {
         if (!voc_get_block(sample))
             return 0;
-    }
+    } /* if */
 
     if (v->rest == 0)
         return 0;
+
+    max = (v->rest < max) ? v->rest : max;
 
     if (v->silent)
     {
@@ -407,19 +409,32 @@ static int voc_read_waveform(Sound_Sample *sample)
             silence = 0x00;
 
         /* Fill in silence */
-        memset(buf, silence, v->rest);
-        done = v->rest;
-        v->rest = 0;
-    }
+        if (fill_buf)
+            memset(buf + v->bufpos, silence, max);
+
+        done = max;
+        v->rest -= done;
+    } /* if */
 
     else
     {
-        Uint32 max = (v->rest < internal->buffer_size) ?
-                        v->rest : internal->buffer_size;
-        done = SDL_RWread(src, buf + v->bufpos, 1, max);
+        if (fill_buf)
+            done = SDL_RWread(src, buf + v->bufpos, 1, max);
+        else
+        {
+            int cur, rc;
+            cur = SDL_RWtell(src);
+            if (cur >= 0)
+            {
+                rc = SDL_RWseek(src, max, SEEK_CUR);
+                if (rc >= 0)
+                    done = rc - cur;
+            } /* if */
+        } /* else */
+
         v->rest -= done;
         v->bufpos += done;
-    }
+    } /* else */
 
     return done;
 } /* voc_read_waveform */
@@ -456,7 +471,7 @@ static int VOC_open(Sound_Sample *sample, const char *ext)
     SNDDBG(("VOC: Accepting data stream.\n"));
     sample->actual.format = (v->size == ST_SIZE_WORD) ? AUDIO_S16LSB:AUDIO_U8;
     sample->actual.channels = v->channels;
-    sample->flags = SOUND_SAMPLEFLAG_NONE;
+    sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
     return(1);
 } /* VOC_open */
 
@@ -476,7 +491,7 @@ static Uint32 VOC_read(Sound_Sample *sample)
     v->bufpos = 0;
     while (v->bufpos < internal->buffer_size)
     {
-        Uint32 rc = voc_read_waveform(sample);
+        Uint32 rc = voc_read_waveform(sample, 1, internal->buffer_size);
         if (rc == 0)  /* !!! FIXME: Could be an error... */
         {
             sample->flags |= SOUND_SAMPLEFLAG_EOF;
@@ -507,9 +522,41 @@ static int VOC_rewind(Sound_Sample *sample)
 
 static int VOC_seek(Sound_Sample *sample, Uint32 ms)
 {
-    BAIL_MACRO("!!! FIXME: Not implemented", 0);
-} /* VOC_seek */
+    /*
+     * VOCs don't lend themselves well to seeking, since you have to
+     *  parse each section, which is an arbitrary size. The best we can do
+     *  is rewind, set a flag saying not to write the waveforms to a buffer,
+     *  and decode to the point that we want. Ugh. Fortunately, there's
+     *  really no such thing as a large VOC, due to the era and hardware that
+     *  spawned them, so even though this is inefficient, this is still a
+     *  relatively fast operation in most cases.
+     */
 
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    vs_t *v = (vs_t *) internal->decoder_private;
+    int offset = __Sound_convertMsToBytePos(&sample->actual, ms);
+    int origpos = SDL_RWtell(internal->rw);
+    int origrest = v->rest;
+
+    BAIL_IF_MACRO(!VOC_rewind(sample), NULL, 0);
+
+    v->bufpos = 0;
+
+    while (offset > 0)
+    {
+        Uint32 rc = voc_read_waveform(sample, 0, offset);
+        if ( (rc == 0) || (!voc_get_block(sample)) )
+        {
+            SDL_RWseek(internal->rw, origpos, SEEK_SET);
+            v->rest = origrest;
+            return(0);
+        } /* if */
+
+        offset -= rc;
+    } /* while */
+
+    return(1);
+} /* VOC_seek */
 
 #endif /* SOUND_SUPPORTS_VOC */
 
