@@ -18,10 +18,12 @@ FreeBSD testing:
 Code cleanups,
 MP3 fixes,
 AIFF driver,
-MikMod driver:
+MikMod driver,
+FLAC driver:
     Torbjörn Andersson
 
-autoconf:
+autoconf,
+MacOS X support:
     Max Horn
 
 win32 support,
