@@ -6,8 +6,6 @@ More immediate (needed for 1.0 release):
 - Fix the crappy rewind implementation in shn.c's SHN_rewind().
 - Finish implementing seek() method in decoders, see below.
 - Add a sdlsound-config script?
-- playsound is a little wonky when specifying only --rate (or only --channel
-  or only --format? Look into this.).
 
 Decoders still needing seek() method:
   (If decoder can't seek, clean up the stub and report an error.)
