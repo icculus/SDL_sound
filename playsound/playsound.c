@@ -32,10 +32,12 @@
 #include "SDL.h"
 #include "SDL_sound.h"
 
+#define DEFAULT_DECODEBUF 16384
+#define DEFAULT_AUDIOBUF  4096
+
 #define PLAYSOUND_VER_MAJOR  0
 #define PLAYSOUND_VER_MINOR  1
 #define PLAYSOUND_VER_PATCH  3
-
 
 static void output_versions(const char *argv0)
 {
@@ -96,27 +98,29 @@ static void output_decoders(void)
 static void output_usage(const char *argv0)
 {
     fprintf(stderr,
-            "USAGE: %s [...options...] [soundFile1] ... [soundFileN]\n"	
-            "\n"
-            "   Options:\n"
-            "     --rate x      Playback at sample rate of x HZ.\n"
-            "     --format fmt  Playback in fmt format (see below).\n"
-            "     --channels n  Playback on n channels (1 or 2).\n"
-            "     --version     Display version information and exit.\n"
-            "     --decoders    List supported sound formats and exit.\n"
-            "     --predecode   Decode entire sample before playback.\n"
-            "     --credits     Shameless promotion.\n"
-            "     --help        Display this information and exit.\n"
-            "\n"
-            "   Valid arguments to the --format option are:\n"
-            "     U8      Unsigned 8-bit.\n"
-            "     S8      Signed 8-bit.\n"
-            "     U16LSB  Unsigned 16-bit (least significant byte first).\n"
-            "     U16MSB  Unsigned 16-bit (most significant byte first).\n"
-            "     S16LSB  Signed 16-bit (least significant byte first).\n"
-            "     S16MSB  Signed 16-bit (most significant byte first).\n"
-            "\n",
-            argv0);
+        "USAGE: %s [...options...] [soundFile1] ... [soundFileN]\n"
+        "\n"
+        "   Options:\n"
+        "     --rate n       Playback at sample rate of n HZ.\n"
+        "     --format fmt   Playback in fmt format (see below).\n"
+        "     --channels n   Playback on n channels (1 or 2).\n"
+        "     --decodebuf n  Buffer n decoded bytes at a time (default %d).\n"
+        "     --audiobuf n   Buffer n samples to audio device (default %d).\n"
+        "     --version      Display version information and exit.\n"
+        "     --decoders     List supported data formats and exit.\n"
+        "     --predecode    Decode entire sample before playback.\n"
+        "     --credits      Shameless promotion.\n"
+        "     --help         Display this information and exit.\n"
+        "\n"
+        "   Valid arguments to the --format option are:\n"
+        "     U8      Unsigned 8-bit.\n"
+        "     S8      Signed 8-bit.\n"
+        "     U16LSB  Unsigned 16-bit (least significant byte first).\n"
+        "     U16MSB  Unsigned 16-bit (most significant byte first).\n"
+        "     S16LSB  Signed 16-bit (least significant byte first).\n"
+        "     S16MSB  Signed 16-bit (most significant byte first).\n"
+        "\n",
+        argv0, DEFAULT_DECODEBUF, DEFAULT_AUDIOBUF);
 } /* output_usage */
 
 
@@ -228,6 +232,8 @@ static int str_to_fmt(char *str)
 int main(int argc, char **argv)
 {
     Sound_AudioInfo sound_desired;
+    Uint32 audio_buffersize = DEFAULT_AUDIOBUF;
+    Uint32 decode_buffersize = DEFAULT_DECODEBUF;
     SDL_AudioSpec sdl_desired;
     SDL_AudioSpec sdl_actual;
     Sound_Sample *sample;
@@ -306,6 +312,16 @@ int main(int argc, char **argv)
             }
         } /* else if */
 
+        else if (strcmp(argv[i], "--audiobuf") == 0 && argc > i + 1)
+        {
+            audio_buffersize = atoi(argv[++i]);
+        } /* else if */
+
+        else if (strcmp(argv[i], "--decodebuf") == 0 && argc > i + 1)
+        {
+            decode_buffersize = atoi(argv[++i]);
+        } /* else if */
+
         else if (strcmp(argv[i], "--decoders") == 0)
         {
             if (!Sound_Init())
@@ -366,7 +382,9 @@ int main(int argc, char **argv)
             /* !!! FIXME: This is ugly! */
         if ( (strcmp(argv[i], "--rate") == 0) ||
              (strcmp(argv[i], "--format") == 0) ||
-             (strcmp(argv[i], "--channels") == 0) )
+             (strcmp(argv[i], "--channels") == 0) ||
+             (strcmp(argv[i], "--audiobuf") == 0) ||
+             (strcmp(argv[i], "--decodebuf") == 0) )
         {
             i++;
             continue;
@@ -376,7 +394,8 @@ int main(int argc, char **argv)
             continue;
 
         sample = Sound_NewSampleFromFile(argv[i],
-                     use_specific_audiofmt ? &sound_desired : NULL, 4096 * 4);
+                     use_specific_audiofmt ? &sound_desired : NULL,
+                     decode_buffersize);
 
         if (!sample)
         {
@@ -402,7 +421,7 @@ int main(int argc, char **argv)
             sdl_desired.channels = sample->actual.channels;
         } /* else */
 
-        sdl_desired.samples = 4096;
+        sdl_desired.samples = audio_buffersize;
         sdl_desired.callback = audio_callback;
         sdl_desired.userdata = sample;
 
@@ -426,7 +445,7 @@ int main(int argc, char **argv)
             {
                 fprintf(stderr,
                         "Couldn't fully decode \"%s\"!\n"
-                        "  reason: [%s].\n",
+                        "  reason: [%s].\n"
                         "  (playing first %lu bytes of decoded data...)\n",
                         argv[i], Sound_GetError(), decoded_bytes);
             } /* if */
