@@ -153,6 +153,97 @@ static void output_credits(void)
 
 
 
+/* archive stuff... */
+
+static int init_archive(const char *argv0)
+{
+    int retval = 1;
+
+#if SUPPORT_PHYSFS
+    retval = PHYSFS_init(argv0);
+    if (!retval)
+    {
+        fprintf(stderr, "Couldn't init PhysicsFS: %s\n",
+                PHYSFS_getLastError());
+    } /* if */
+#endif
+
+    return(retval);
+} /* init_archive */
+
+
+#if SUPPORT_PHYSFS
+static SDL_RWops *rwops_from_physfs(const char *filename)
+{
+    SDL_RWops *retval = NULL;
+
+    char *path = (char *) alloca(strlen(filename) + 1);
+    char *archive;
+
+    strcpy(path, filename);
+    archive = strchr(path, '@');
+    if (archive != NULL)
+    {
+        *(archive++) = '\0';  /* blank '@', point to archive name. */
+        if (!PHYSFS_addToSearchPath(archive, 0))
+        {
+            fprintf(stderr, "Couldn't open archive: %s\n",
+                    PHYSFS_getLastError());
+            return(NULL);
+        } /* if */
+
+        retval = PHYSFSRWOPS_openRead(path);
+    } /* if */
+
+    return(retval);
+} /* rwops_from_physfs */
+#endif
+
+
+static Sound_Sample *sample_from_archive(const char *fname,
+                                         Sound_AudioInfo *desired,
+                                         Uint32 decode_buffersize)
+{
+#if SUPPORT_PHYSFS
+    SDL_RWops *rw = rwops_from_physfs(fname);
+    if (rw != NULL)
+    {
+        char *path = (char *) alloca(strlen(fname) + 1);
+        char *ptr;
+        strcpy(path, fname);
+        ptr = strchr(path, '@');
+        *ptr = '\0';
+        ptr = strrchr(path, '.');
+        if (ptr != NULL)
+            ptr++;
+
+        return(Sound_NewSample(rw, ptr, desired, decode_buffersize));
+    } /* if */
+#endif
+
+    return(NULL);
+} /* sample_from_archive */
+
+
+static void close_archive(const char *filename)
+{
+#if SUPPORT_PHYSFS
+    char *archive_name = strchr(filename, '@');
+    if (archive_name != NULL)
+        PHYSFS_removeFromSearchPath(archive_name + 1);
+#endif
+} /* close_archive */
+
+
+static void deinit_archive(void)
+{
+    #if SUPPORT_PHYSFS
+        PHYSFS_deinit();
+    #endif
+} /* deinit_archive */
+
+
+
 static volatile int done_flag = 0;
 
 
@@ -169,6 +260,7 @@ void sigint_catcher(int signum)
         SDL_CloseAudio();
         Sound_Quit();
         SDL_Quit();
+        deinit_archive();
         exit(1);
     } /* if */
 
@@ -358,67 +450,6 @@ static int str_to_fmt(char *str)
 } /* str_to_fmt */
 
 
-#if SUPPORT_PHYSFS
-static SDL_RWops *rwops_from_physfs(const char *argv0, const char *filename)
-{
-    SDL_RWops *retval = NULL;
-
-    char *path = (char *) alloca(strlen(filename) + 1);
-    char *archive;
-
-    strcpy(path, filename);
-    archive = strchr(path, '@');
-    if (archive != NULL)
-    {
-        *(archive++) = '\0';  /* blank '@', point to archive name. */
-
-        if (!PHYSFS_init(argv0))
-        {
-            fprintf(stderr, "Couldn't init PhysicsFS: %s\n",
-                    PHYSFS_getLastError());
-            return(NULL);
-        } /* if */
-
-        if (!PHYSFS_addToSearchPath(archive, 0))
-        {
-            fprintf(stderr, "Couldn't open archive: %s\n",
-                    PHYSFS_getLastError());
-            return(NULL);
-        } /* if */
-
-        retval = PHYSFSRWOPS_openRead(path);
-    } /* if */
-
-    return(retval);
-} /* rwops_from_physfs */
-#endif
-
-
-static Sound_Sample *sample_from_archive(const char *argv0, const char *fname,
-                                         Sound_AudioInfo *desired,
-                                         Uint32 decode_buffersize)
-{
-#if SUPPORT_PHYSFS
-    SDL_RWops *rw = rwops_from_physfs(argv0, fname);
-    if (rw != NULL)
-    {
-        char *path = (char *) alloca(strlen(fname) + 1);
-        char *ptr;
-        strcpy(path, fname);
-        ptr = strchr(path, '@');
-        *ptr = '\0';
-        ptr = strrchr(path, '.');
-        if (ptr != NULL)
-            ptr++;
-
-        return(Sound_NewSample(rw, ptr, desired, decode_buffersize));
-    } /* if */
-#endif
-
-    return(NULL);
-} /* sample_from_archive */
-
-
 int main(int argc, char **argv)
 {
     Sound_AudioInfo sound_desired;
@@ -567,6 +598,9 @@ int main(int argc, char **argv)
             sound_desired.channels = 2;
     } /* if */
 
+    if (!init_archive(argv[0]))
+        return(42);
+
     if (SDL_Init(SDL_INIT_AUDIO) == -1)
     {
         fprintf(stderr, "SDL_Init(SDL_INIT_AUDIO) failed!\n"
@@ -622,13 +656,13 @@ int main(int argc, char **argv)
         else
         {
             filename = argv[i];
-            sample = sample_from_archive(argv[0], filename,
+            sample = sample_from_archive(filename,
                             use_specific_audiofmt ? &sound_desired : NULL,
                             decode_buffersize);
 
             if (sample == NULL)
             {
-                sample = Sound_NewSampleFromFile(argv[i],
+                sample = Sound_NewSampleFromFile(filename,
                             use_specific_audiofmt ? &sound_desired : NULL,
                             decode_buffersize);
             } /* if */
@@ -711,13 +745,12 @@ int main(int argc, char **argv)
         SDL_CloseAudio();  /* reopen with next sample's format if possible */
         Sound_FreeSample(sample);
 
-        #if SUPPORT_PHYSFS
-            PHYSFS_deinit(); /* !!! FIXME: move this somewhere? */
-        #endif
+        close_archive(filename);
     } /* for */
 
     Sound_Quit();
     SDL_Quit();
+    deinit_archive();
     return(0);
 } /* main */
 
