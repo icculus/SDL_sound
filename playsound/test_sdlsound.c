@@ -65,7 +65,7 @@ static void output_decoders(void)
     const Sound_DecoderInfo **rc = Sound_AvailableDecoders();
     const Sound_DecoderInfo **i;
 
-    printf("Supported fileformats:\n");
+    printf("Supported sound formats:\n");
     if (*rc == NULL)
         printf(" * Apparently, NONE!\n");
     else
@@ -90,14 +90,11 @@ void test_callback(void *userdata, Uint8 *stream, int len)
     Uint32 rc = Sound_Decode(sample);
 
     if (sample->flags & SOUND_SAMPLEFLAG_EOF)
-    {
-        printf("EOF condition in decoding! (this is okay.)\n");
         done_flag = 1;
-    } /* if */
 
     else if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
     {
-        printf("Error condition in decoding! (this is bad.)\n");
+        printf("Error condition in decoding!\n");
         done_flag = 1;
     } /* else if */
 
@@ -162,6 +159,7 @@ int main(int argc, char **argv)
 	sdl_desired.callback = test_callback;
 	sdl_desired.userdata = sample;
 
+#if 1
 	if ( SDL_OpenAudio(&sdl_desired, NULL) < 0 )
     {
         printf("SDL_OpenAudio() failed!\n"
@@ -172,9 +170,22 @@ int main(int argc, char **argv)
     } /* if */
 
     SDL_PauseAudio(0);
-
     while (!done_flag)
         SDL_Delay(10);
+    SDL_PauseAudio(1);
+
+/*
+ * This just decodes the file, and dumps the decoded waveform to
+ *  stderr. Use with caution.
+ */
+#else
+    {
+        Uint32 rc;
+        while ((rc = Sound_Decode(sample)) == sample->buffer_size)
+            fwrite(sample->buffer, rc, 1, stderr);
+    }
+#endif
+
 
     Sound_FreeSample(sample);
 
