@@ -2,8 +2,10 @@
  * CHANGELOG.
  */
 
-01232002 - Fixed decoders/Makefile.am to work with seperate build directories.
-           Corrected some dates in this file.
+02042002 - Darrell Walisser submitted some cleanups and CodeWarrior project
+           files for MacOS 9. Sweet!
+01232002 - Max fixed decoders/Makefile.am to work with seperate build
+           directories, and corrected some dates in this file.
 01192002 - Torbjörn sent in patches implementing the rewind method for the
            rest of the decoders except shn.c, for which I added a kludged
            implementation. Added more info to the README. Hunted down the
