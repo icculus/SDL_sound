@@ -160,9 +160,21 @@ static decoder_element decoders[] =
 
 /* General SDL_sound state ... */
 
-static int initialized = 0;
+typedef struct __SOUND_ERRMSGTYPE__
+{
+    Uint32 tid;
+    int errorAvailable;
+    char errorString[128];
+    struct __SOUND_ERRMSGTYPE__ *next;
+} ErrMsg;
+
+static ErrMsg *errorMessages = NULL;
+static SDL_mutex *errorlist_mutex = NULL;
+
+/* !!! FIXME: This needs a mutex. */
 static Sound_Sample *samplesList = NULL;  /* this is a linked list. */
 static const Sound_DecoderInfo **available_decoders = NULL;
+static int initialized = 0;
 
 
 /* functions ... */
@@ -184,9 +196,12 @@ int Sound_Init(void)
     size_t pos = 0;
     size_t total = sizeof (decoders) / sizeof (decoders[0]);
     BAIL_IF_MACRO(initialized, ERR_IS_INITIALIZED, 0);
+
     samplesList = NULL;
+    errorMessages = NULL;
 
     SDL_Init(SDL_INIT_AUDIO);
+    errorlist_mutex = SDL_CreateMutex();
 
     available_decoders = (const Sound_DecoderInfo **)
                             malloc((total) * sizeof (Sound_DecoderInfo *));
@@ -211,12 +226,16 @@ int Sound_Init(void)
 
 int Sound_Quit(void)
 {
+    ErrMsg *err;
+    ErrMsg *nexterr = NULL;
     size_t i;
 
     BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, 0);
 
     while (((volatile Sound_Sample *) samplesList) != NULL)
         Sound_FreeSample(samplesList);
+
+    samplesList = NULL;
 
     for (i = 0; decoders[i].funcs != NULL; i++)
     {
@@ -231,8 +250,19 @@ int Sound_Quit(void)
         free((void *) available_decoders);
     available_decoders = NULL;
 
-    initialized = 0;
+    /* clean up error state for each thread... */
+    SDL_LockMutex(errorlist_mutex);
+    for (err = errorMessages; err != NULL; err = nexterr)
+    {
+        nexterr = err->next;
+        free(err);
+    } /* for */
+    SDL_UnlockMutex(errorlist_mutex);
+    SDL_DestroyMutex(errorlist_mutex);
+    errorMessages = NULL;
+    errorlist_mutex = NULL;
 
+    initialized = 0;
     return(1);
 } /* Sound_Quit */
 
@@ -243,28 +273,84 @@ const Sound_DecoderInfo **Sound_AvailableDecoders(void)
 } /* Sound_AvailableDecoders */
 
 
+static ErrMsg *findErrorForCurrentThread(void)
+{
+    ErrMsg *i;
+    Uint32 tid;
+
+    if (errorMessages != NULL)
+    {
+        tid = SDL_ThreadID();
+
+        SDL_LockMutex(errorlist_mutex);
+        for (i = errorMessages; i != NULL; i = i->next)
+        {
+            if (i->tid == tid)
+            {
+                SDL_UnlockMutex(errorlist_mutex);
+                return(i);
+            } /* if */
+        } /* for */
+        SDL_UnlockMutex(errorlist_mutex);
+    } /* if */
+
+    return(NULL);   /* no error available. */
+} /* findErrorForCurrentThread */
+
+
 const char *Sound_GetError(void)
 {
-    return(SDL_GetError());
+    const char *retval = NULL;
+    ErrMsg *err = findErrorForCurrentThread();
+    if ((err != NULL) && (err->errorAvailable))
+    {
+        retval = err->errorString;
+        err->errorAvailable = 0;
+    } /* if */
+
+    return(retval);
 } /* Sound_GetError */
 
 
 void Sound_ClearError(void)
 {
-    SDL_ClearError();
+    ErrMsg *err = findErrorForCurrentThread();
+    if (err != NULL)
+        err->errorAvailable = 0;
 } /* Sound_ClearError */
 
 
 /*
  * This is declared in the internal header.
  */
-void Sound_SetError(const char *err)
+void Sound_SetError(const char *str)
 {
-    if (err != NULL)
+    ErrMsg *err;
+
+    if (str == NULL)
+        return;
+
+    SNDDBG(("Sound_SetError(\"%s\");\n", str));
+
+    err = findErrorForCurrentThread();
+    if (err == NULL)
     {
-        SNDDBG(("Sound_SetError(\"%s\");\n", err));
-        SDL_SetError(err);
+        err = (ErrMsg *) malloc(sizeof (ErrMsg));
+        if (err == NULL)
+            return;   /* uhh...? */
+
+        memset((void *) err, '\0', sizeof (ErrMsg));
+        err->tid = SDL_ThreadID();
+
+        SDL_LockMutex(errorlist_mutex);
+        err->next = errorMessages;
+        errorMessages = err;
+        SDL_UnlockMutex(errorlist_mutex);
     } /* if */
+
+    err->errorAvailable = 1;
+    strncpy(err->errorString, str, sizeof (err->errorString));
+    err->errorString[sizeof (err->errorString) - 1] = '\0';
 } /* Sound_SetError */
 
 
