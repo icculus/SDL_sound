@@ -568,12 +568,15 @@ void Sound_FreeSample(Sound_Sample *sample)
     /* nuke it... */
     if (internal->rw != NULL)  /* this condition is a "just in case" thing. */
         SDL_RWclose(internal->rw);
-    assert(internal->buffer != NULL);
-    if (internal->buffer != sample->buffer)
+
+    if ((internal->buffer != NULL) && (internal->buffer != sample->buffer))
         free(internal->buffer);
+
     free(internal);
+
     if (sample->buffer != NULL)
         free(sample->buffer);
+
     free(sample);
 } /* Sound_FreeSample */
 
@@ -635,6 +638,7 @@ Uint32 Sound_DecodeAll(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = NULL;
     void *buf = NULL;
+    void *ptr;
     Uint32 newBufSize = 0;
 
     BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, 0);
@@ -644,7 +648,7 @@ Uint32 Sound_DecodeAll(Sound_Sample *sample)
     while ( ((sample->flags & SOUND_SAMPLEFLAG_EOF) == 0) &&
             ((sample->flags & SOUND_SAMPLEFLAG_ERROR) == 0) )
     {
-        void *ptr = realloc(buf, newBufSize + sample->buffer_size);
+        ptr = realloc(buf, newBufSize + sample->buffer_size);
         if (ptr == NULL)
         {
             sample->flags |= SOUND_SAMPLEFLAG_ERROR;
@@ -652,21 +656,26 @@ Uint32 Sound_DecodeAll(Sound_Sample *sample)
         } /* if */
         else
         {
-            Uint32 br = Sound_Decode(sample);
+            Uint32 br;
+            buf = ptr;
+            br = Sound_Decode(sample);
             memcpy( ((char *) buf) + newBufSize, sample->buffer, br );
             newBufSize += br;
         } /* else */
     } /* while */
 
+    if (internal->buffer != sample->buffer)
+        free(internal->buffer);
+
     free(sample->buffer);
-    sample->buffer = internal->buffer = internal->sdlcvt.buf = buf;
+
+    internal->sdlcvt.buf = internal->buffer = sample->buffer = buf;
     sample->buffer_size = newBufSize;
     internal->buffer_size = newBufSize / internal->sdlcvt.len_mult;
-    internal->sdlcvt.len_mult = internal->buffer_size;
+    internal->sdlcvt.len = internal->buffer_size;
 
     return(newBufSize);
 } /* Sound_DecodeAll */
-
 
 /* end of SDL_sound.c ... */
 
