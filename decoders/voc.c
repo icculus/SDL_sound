@@ -41,7 +41,7 @@
 #  include <config.h>
 #endif
 
-#if (defined SOUND_SUPPORTS_VOC)
+#ifdef SOUND_SUPPORTS_VOC
 
 #include <stdio.h>
 #include <stdlib.h>

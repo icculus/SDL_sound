@@ -45,7 +45,7 @@
 #  include <config.h>
 #endif
 
-#if (defined SOUND_SUPPORTS_SHN)
+#ifdef SOUND_SUPPORTS_SHN
 
 #include <stdio.h>
 #include <stdlib.h>
