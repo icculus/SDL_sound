@@ -2,6 +2,13 @@
  * CHANGELOG.
  */
 
+03102002 - Added a FIXME note to decoders/mpglib.c. playsound now reports
+           errors in the thread where they occured, which also fixes a double
+           report of errors during predecoding. Removed all calls to exit() in
+           mpglib. These calls now report errors correctly to SDL_sound, which
+           passes them on to the application (patch also sent to mpglib's
+           actual maintainer). Replaced all stderr chatter in mpglib with
+           Sound_SetError() calls.
 03072002 - decoders/mpglib.c now disregards ID3 tags instead of passing them
            on as valid MP3 data to mpglib. Added some (buggy) example code for
            adjusting an audio stream's volume (via the new --volume command
