@@ -33,6 +33,16 @@
            Hah.), made an attempt at putting multiple sound streams behind
            one RWops (gotta think on that one first), and, most importantly,
            added an AIFF decoder, which is very cool.
+09222001 - Torbjörn Andersson strikes again, with a collection of patches.
+           First, some cosmetic tweaks for decoders/aiff.c. Next, a MOD player
+           based on MikMod. This inspired me to add two more methods to
+           Sound_DecoderFunctions: init() and quit(). Third, a fix to
+           decoders/mp3.c so that SMPEG won't claim every stream it sees, MP3
+           or not. I removed the multiple-streams-per-rwops code, after
+           discussion on the mailing list. The init() and quit() methods
+           led to the possibility that certain decoders will flag themselves
+           as unavailable at runtime, and SDL_sound now handles this.
+           Added [LIB|INC]PATH_[OGG|MOD]. Changed version to 0.1.2.
 
 --ryan. (icculus@clutteredmind.org)
 
