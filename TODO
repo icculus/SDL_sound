@@ -4,7 +4,6 @@ Left todo for 0.1.5:
     * ogg.c
     * flac.c
     * modplug.c
-    * voc.c
     * midi.c
     * mp3.c
     * shn.c
