@@ -638,17 +638,19 @@ Uint32 Sound_DecodeAll(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = NULL;
     void *buf = NULL;
-    void *ptr;
     Uint32 newBufSize = 0;
 
     BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, 0);
+    BAIL_IF_MACRO(sample->flags & SOUND_SAMPLEFLAG_EOF, ERR_PREV_EOF, 0);
+    BAIL_IF_MACRO(sample->flags & SOUND_SAMPLEFLAG_ERROR, ERR_PREV_ERROR, 0);
 
     internal = (Sound_SampleInternal *) sample->opaque;
 
     while ( ((sample->flags & SOUND_SAMPLEFLAG_EOF) == 0) &&
             ((sample->flags & SOUND_SAMPLEFLAG_ERROR) == 0) )
     {
-        ptr = realloc(buf, newBufSize + sample->buffer_size);
+        Uint32 br = Sound_Decode(sample);
+        void *ptr = realloc(buf, newBufSize + br);
         if (ptr == NULL)
         {
             sample->flags |= SOUND_SAMPLEFLAG_ERROR;
@@ -656,13 +658,14 @@ Uint32 Sound_DecodeAll(Sound_Sample *sample)
         } /* if */
         else
         {
-            Uint32 br;
             buf = ptr;
-            br = Sound_Decode(sample);
             memcpy( ((char *) buf) + newBufSize, sample->buffer, br );
             newBufSize += br;
         } /* else */
     } /* while */
+
+    if (buf == NULL)  /* ...in case first call to realloc() fails... */
+        return(sample->buffer_size);
 
     if (internal->buffer != sample->buffer)
         free(internal->buffer);
