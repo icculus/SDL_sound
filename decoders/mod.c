@@ -188,20 +188,7 @@ static int MOD_init(void)
          * sound quality.
          */
     md_mode |= (DMODE_SOFT_MUSIC | DMODE_16BITS);
-
-#if 0 
-        /*
-         * SDL_mixer used to set these, but I don't know... is there
-         * something wrong with the defaults? Actually, the only difference
-         * from the defaults is md_reverb, which is usually 6.
-         */
-    md_device = 0;           /* Selects sound driver. 0 = autodetect */
-    md_volume = 96;          /* Overall sound volume, 0 - 128        */
-    md_musicvolume = 128;    /* Module volume, 0 - 128               */
-    md_sndfxvolume = 128;    /* Sound effect volume, 0 - 128         */
-    md_pansep = 128;         /* Stereo channels separation, 0 - 128  */
-    md_reverb = 0;           /* Sound reverbation, 0 - 15            */
-#endif
+    md_mixfreq = 0;
 
     BAIL_IF_MACRO(MikMod_Init(""), MikMod_strerror(MikMod_errno), 0);
 
@@ -212,6 +199,7 @@ static int MOD_init(void)
 static void MOD_quit(void)
 {
     MikMod_Exit();
+    md_mixfreq = 0;
 } /* MOD_quit */
 
 
@@ -229,7 +217,9 @@ static int MOD_open(Sound_Sample *sample, const char *ext)
     _mm_delete_rwops_reader(reader);
     BAIL_IF_MACRO(m->module == NULL, "MOD: Not a module file.", 0);
 
-    md_mixfreq = sample->desired.rate;
+    if (md_mixfreq == 0)
+        md_mixfreq = (!sample->desired.rate) ? 44100 : sample->desired.rate;
+
     sample->actual.channels = 2;
     sample->actual.rate = md_mixfreq;
     sample->actual.format = AUDIO_S16SYS;
