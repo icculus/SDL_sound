@@ -266,8 +266,19 @@ static int _SMPEG_rewind(Sound_Sample *sample)
          */
     status = SMPEG_status(smpeg);
     SMPEG_rewind(smpeg);
+    /* EW: I think SMPEG_play() has an independent and unrelated meaning
+     * to the flag, "SMPEG_PLAYING". This is why the SMPEG_play() call
+     * is done in the open() function even though the file is not yet
+     * technically playing. I believe SMPEG_play() must always be active
+     * because this seems to be what's causing the:
+     * "Can't rewind after the file has finished playing once" problem,
+     * because always recalling it here seems to make the problem go away.
+     */
+    /*
     if (status == SMPEG_PLAYING)
         SMPEG_play(smpeg);
+    */
+    SMPEG_play(smpeg);
     return(1);
 } /* _SMPEG_rewind */
 
