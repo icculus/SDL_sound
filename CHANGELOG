@@ -87,7 +87,8 @@
 10082001 - Restructured decoders/wav.c to allow for multiple formats, and 
            put the start of a handler for the ADPCM format in place.
 10092001 - Patches to shn.c for Visual C compatibility. Visual C project files
-           available from the website.
+           available from the website. Changed Corona686 to Tyler Montbriand
+           in CREDITS.
 
 --ryan. (icculus@clutteredmind.org)
 
