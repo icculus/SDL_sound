@@ -5,7 +5,8 @@
 02112002 - Committed a patch from Torbjörn to fix incorrect memory accesses
            in the Timidity code. Changed the magic number in the AU decoder
            to be bigendian (seems appropriate). Updated README for
-           completeness, and TODO for accuracy.
+           completeness, and TODO for accuracy. Darrell sent in updated
+           MacOS X Project Builder files (on the website).
 02072002 - Committed a patch Torbjörn sent in awhile ago for preventing
            confusion with Timidity++-specific stuff in the timidity.cfg file.
            Tyler Montbriand sent in an updated Visual C package.
