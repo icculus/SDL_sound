@@ -126,6 +126,13 @@ if test x$enable_aiff = xyes; then
     AC_DEFINE(SOUND_SUPPORTS_AIFF)
 fi
 
+dnl Check for au decoder inclusion
+AC_ARG_ENABLE(au,
+[  --enable-au              enable AU decoding [default=yes]],
+              , enable_au=yes)
+if test x$enable_au = xyes; then
+    AC_DEFINE(SOUND_SUPPORTS_AU)
+fi
 
 dnl Check for shn decoder inclusion...
 AC_ARG_ENABLE(shn,
