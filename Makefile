@@ -222,7 +222,7 @@ SRCDIR := .
 
 CFLAGS := -I$(SRCDIR) $(CFLAGS)
 CFLAGS += $(use_asm) -D_REENTRANT -fsigned-char -DPLATFORM_UNIX
-CFLAGS += -Wall -Werror -fno-exceptions -fno-rtti -ansi -pedantic
+CFLAGS += -Wall -Werror -fno-exceptions -fno-rtti -ansi
 
 LDFLAGS += -lm
 
@@ -253,7 +253,7 @@ endif
 
 MAINLIB := $(BINDIR)/$(strip $(BASELIBNAME))$(strip $(LIB_EXT))
 
-TESTSRCS := test/test_sdlsound.c
+PLAYSOUNDSRCS := test/playsound.c
 
 MAINSRCS := SDL_sound.c
 
@@ -308,7 +308,7 @@ endif
 #  MAINSRCS += platform/unix.c
 #endif
 
-TESTEXE := $(BINDIR)/test_sdlsound$(EXE_EXT)
+PLAYSOUNDEXE := $(BINDIR)/playsound$(EXE_EXT)
 
 # Rule for getting list of objects from source
 MAINOBJS1 := $(MAINSRCS:.c=.o)
@@ -317,11 +317,11 @@ MAINOBJS3 := $(MAINOBJS2:.asm=.o)
 MAINOBJS := $(foreach f,$(MAINOBJS3),$(BINDIR)/$(f))
 MAINSRCS := $(foreach f,$(MAINSRCS),$(SRCDIR)/$(f))
 
-TESTOBJS1 := $(TESTSRCS:.c=.o)
-TESTOBJS2 := $(TESTOBJS1:.cpp=.o)
-TESTOBJS3 := $(TESTOBJS2:.asm=.o)
-TESTOBJS := $(foreach f,$(TESTOBJS3),$(BINDIR)/$(f))
-TESTSRCS := $(foreach f,$(TESTSRCS),$(SRCDIR)/$(f))
+PLAYSOUNDOBJS1 := $(PLAYSOUNDSRCS:.c=.o)
+PLAYSOUNDOBJS2 := $(PLAYSOUNDOBJS1:.cpp=.o)
+PLAYSOUNDOBJS3 := $(PLAYSOUNDOBJS2:.asm=.o)
+PLAYSOUNDOBJS := $(foreach f,$(PLAYSOUNDOBJS3),$(BINDIR)/$(f))
+PLAYSOUNDSRCS := $(foreach f,$(PLAYSOUNDSRCS),$(SRCDIR)/$(f))
 
 CLEANUP = $(wildcard *.exe) $(wildcard *.obj) \
           $(wildcard $(BINDIR)/*.exe) $(wildcard $(BINDIR)/*.obj) \
@@ -345,13 +345,13 @@ $(BINDIR)/%.o: $(SRCDIR)/%.asm
 
 .PHONY: all clean distclean listobjs install showcfg showflags
 
-all: $(BINDIR) $(EXTRABUILD) $(MAINLIB) $(TESTEXE)
+all: $(BINDIR) $(EXTRABUILD) $(MAINLIB) $(PLAYSOUNDEXE)
 
 $(MAINLIB) : $(BINDIR) $(MAINOBJS)
 	$(LINKER) -o $(MAINLIB) $(SHAREDFLAGS) $(MAINOBJS) $(LDFLAGS)
 
-$(TESTEXE) : $(MAINLIB) $(TESTOBJS)
-	$(LINKER) -o $(TESTEXE) $(TESTLDFLAGS) $(TESTOBJS) -L$(BINDIR) -l$(strip $(PUREBASELIBNAME)) $(LDFLAGS)
+$(PLAYSOUNDEXE) : $(MAINLIB) $(PLAYSOUNDOBJS)
+	$(LINKER) -o $(PLAYSOUNDEXE) $(PLAYSOUNDOBJS) -L$(BINDIR) -l$(strip $(PUREBASELIBNAME)) $(LDFLAGS)
 
 
 install: all
@@ -360,7 +360,9 @@ install: all
 	mkdir -p $(install_prefix)/lib
 	mkdir -p $(install_prefix)/include
 	cp $(SRCDIR)/SDL_sound.h $(install_prefix)/include
-	cp $(TESTEXE) $(install_prefix)/bin
+	cp $(PLAYSOUNDEXE) $(install_prefix)/bin
+	rm -f $(install_prefix)/bin/test_sdlsound$(strip $(EXE_EXT))  # this line can be removed later.
+
 ifeq ($(strip $(cygwin)),true)
 	cp $(MAINLIB) $(install_prefix)/lib/$(strip $(BASELIBNAME))$(strip $(LIB_EXT))
 else
