@@ -26,6 +26,10 @@ Some optional external libraries that SDL_sound can use and where to find them:
  libModPlug (used to decode MODs, etc): http://modplug-xmms.sourceforge.net/
  libMikMod (used to decode MODs, etc, too): http://www.mikmod.org/
 
+ Experimental QuickTime support for the Mac is included, but has not been 
+ integrated with the build system, and probably doesn't work with 
+ QuickTime for Windows.
+
 These external libraries are OPTIONAL. SDL_sound will build and function
  without them, but various sound file formats are not supported unless these
  libraries are available. Unless explicitly disabled during initial build
@@ -49,4 +53,5 @@ Reporting bugs/commenting:
  SDL_sound developers.
 
 --ryan. (icculus@clutteredmind.org)
+
 
