@@ -6,6 +6,8 @@
            playsound to try and wait until SDL has completed playing a given
            sound before closing the audio device. Changed a macro in
            decoders/shn.c to be more uniform with the other decoders.
+           SDL_sound error messages are now maintained on a per-thread basis,
+           and do not interfere with SDL_[GS]etError() anymore.
 01112002 - Committed the rest of Torbjörn's MOD patches, to clean up file
            extension handling.
 01092002 - Torbjörn comes through with a ModPlug-based decoder, which should
