@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+11122004 - Backport from devtree: fix .voc decoder crash on file open.
 05082004 - Fixed "bootstrap" to work with MacOSX.
 05072004 - Backed out some commits, converted repository to Subversion, and
            branched off to a 1.1.0 development tree. Changed MikMod URL...old
