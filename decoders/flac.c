@@ -46,12 +46,94 @@
 #include "SDL_sound_internal.h"
 
 /*
- * libFLAC 1.0.1 added a seekable stream decoder, but if I understand the
- * documentation correctly it's still much easier for us to handle the rewind
- * method ourselves.
+ * FLAC 1.0.1 added a seekable stream decoder. To be able to reuse as much as
+ * possible of the non-seekable FLAC decoder, we define a set of wrapper
+ * macros and typedefs to map onto the right set of functions and data types.
+ *
+ * An added benefit is that we get identifiers of manageable length.
  */
 
+#if SOUND_SUPPORTS_SEEKABLE_FLAC
+
+#include "FLAC/seekable_stream_decoder.h"
+
+#define D_END_OF_STREAM               FLAC__SEEKABLE_STREAM_DECODER_END_OF_STREAM
+
+#define d_new()                       FLAC__seekable_stream_decoder_new()
+#define d_init(x)                     FLAC__seekable_stream_decoder_init(x)
+#define d_process_metadata(x)         FLAC__seekable_stream_decoder_process_metadata(x)
+#define d_process_one_frame(x)        FLAC__seekable_stream_decoder_process_one_frame(x)
+#define d_get_state(x)                FLAC__seekable_stream_decoder_get_state(x)
+#define d_finish(x)                   FLAC__seekable_stream_decoder_finish(x)
+#define d_delete(x)                   FLAC__seekable_stream_decoder_delete(x)
+#define d_set_read_callback(x, y)     FLAC__seekable_stream_decoder_set_read_callback(x, y)
+#define d_set_write_callback(x, y)    FLAC__seekable_stream_decoder_set_write_callback(x, y)
+#define d_set_metadata_callback(x, y) FLAC__seekable_stream_decoder_set_metadata_callback(x, y)
+#define d_set_error_callback(x, y)    FLAC__seekable_stream_decoder_set_error_callback(x, y)
+#define d_set_client_data(x, y)       FLAC__seekable_stream_decoder_set_client_data(x, y)
+
+typedef FLAC__SeekableStreamDecoder           decoder_t;
+typedef FLAC__SeekableStreamDecoderReadStatus d_read_status_t;
+
+/* Only in the seekable decoder */
+
+#define D_SEEK_STATUS_OK              FLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_OK
+#define D_SEEK_STATUS_ERROR           FLAC__SEEKABLE_STREAM_DECODER_SEEK_STATUS_ERROR
+#define D_TELL_STATUS_OK              FLAC__SEEKABLE_STREAM_DECODER_TELL_STATUS_OK
+#define D_TELL_STATUS_ERROR           FLAC__SEEKABLE_STREAM_DECODER_TELL_STATUS_ERROR
+#define D_LENGTH_STATUS_OK            FLAC__SEEKABLE_STREAM_DECODER_LENGTH_STATUS_OK
+#define D_LENGTH_STATUS_ERROR         FLAC__SEEKABLE_STREAM_DECODER_LENGTH_STATUS_ERROR
+
+#define d_set_seek_callback(x, y)     FLAC__seekable_stream_decoder_set_seek_callback(x, y)
+#define d_set_tell_callback(x, y)     FLAC__seekable_stream_decoder_set_tell_callback(x, y)
+#define d_set_length_callback(x, y)   FLAC__seekable_stream_decoder_set_length_callback(x, y)
+#define d_set_eof_callback(x, y)      FLAC__seekable_stream_decoder_set_eof_callback(x, y)
+#define d_seek_absolute(x, y)         FLAC__seekable_stream_decoder_seek_absolute(x, y)
+
+typedef FLAC__SeekableStreamDecoderSeekStatus   d_seek_status_t;
+typedef FLAC__SeekableStreamDecoderTellStatus   d_tell_status_t;
+typedef FLAC__SeekableStreamDecoderLengthStatus d_length_status_t;
+
+#else
+
 #include "FLAC/stream_decoder.h"
+
+#define D_END_OF_STREAM               FLAC__STREAM_DECODER_END_OF_STREAM
+
+#define d_new()                       FLAC__stream_decoder_new()
+#define d_init(x)                     FLAC__stream_decoder_init(x)
+#define d_process_metadata(x)         FLAC__stream_decoder_process_metadata(x)
+#define d_process_one_frame(x)        FLAC__stream_decoder_process_one_frame(x)
+#define d_get_state(x)                FLAC__stream_decoder_get_state(x)
+#define d_finish(x)                   FLAC__stream_decoder_finish(x)
+#define d_delete(x)                   FLAC__stream_decoder_delete(x)
+#define d_set_read_callback(x, y)     FLAC__stream_decoder_set_read_callback(x, y)
+#define d_set_write_callback(x, y)    FLAC__stream_decoder_set_write_callback(x, y)
+#define d_set_metadata_callback(x, y) FLAC__stream_decoder_set_metadata_callback(x, y)
+#define d_set_error_callback(x, y)    FLAC__stream_decoder_set_error_callback(x, y)
+#define d_set_client_data(x, y)       FLAC__stream_decoder_set_client_data(x, y)
+
+typedef FLAC__StreamDecoder           decoder_t;
+typedef FLAC__StreamDecoderReadStatus d_read_status_t;
+
+/* Only in the non-seekable decoder */
+
+#define d_reset(x)                    FLAC__stream_decoder_reset(x)
+
+#endif
+
+/* These are the same for both decoders, so they're just cosmetics. */
+
+#define D_WRITE_CONTINUE     FLAC__STREAM_DECODER_WRITE_CONTINUE
+#define D_READ_END_OF_STREAM FLAC__STREAM_DECODER_READ_END_OF_STREAM
+#define D_READ_ABORT         FLAC__STREAM_DECODER_READ_ABORT
+#define D_READ_CONTINUE      FLAC__STREAM_DECODER_READ_CONTINUE
+
+#define d_error_status_string FLAC__StreamDecoderErrorStatusString
+
+typedef FLAC__StreamDecoderWriteStatus d_write_status_t;
+typedef FLAC__StreamDecoderErrorStatus d_error_status_t;
+typedef FLAC__StreamMetaData           d_metadata_t;
 
 
 static int FLAC_init(void);
@@ -85,48 +167,49 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_FLAC =
     /* This is what we store in our internal->decoder_private field. */
 typedef struct
 {
-    FLAC__StreamDecoder *decoder;
+    decoder_t *decoder;
     SDL_RWops *rw;
     Sound_Sample *sample;
-    Uint32 data_starting_offset;
     Uint32 frame_size;
     Uint8 is_flac;
+
+#if !SOUND_SUPPORTS_SEEKABLE_FLAC
+    Uint32 data_offset;
+#else
+    Uint32 stream_length;
+#endif
 } flac_t;
 
 
 static void free_flac(flac_t *f)
 {
-    FLAC__stream_decoder_finish(f->decoder);
-    FLAC__stream_decoder_delete(f->decoder);
+    d_finish(f->decoder);
+    d_delete(f->decoder);
     free(f);
 } /* free_flac */
 
 
-static FLAC__StreamDecoderReadStatus FLAC_read_callback(
-    const FLAC__StreamDecoder *decoder, FLAC__byte buffer[],
+static d_read_status_t read_callback(
+    const decoder_t *decoder, FLAC__byte buffer[],
     unsigned int *bytes, void *client_data)
 {
     flac_t *f = (flac_t *) client_data;
     Uint32 retval;
 
-#if 0
-    SNDDBG(("FLAC: Read callback.\n"));
-#endif
-    
     retval = SDL_RWread(f->rw, (Uint8 *) buffer, 1, *bytes);
 
     if (retval == 0)
     {
         *bytes = 0;
         f->sample->flags |= SOUND_SAMPLEFLAG_EOF;
-        return(FLAC__STREAM_DECODER_READ_END_OF_STREAM);
+        return(D_READ_END_OF_STREAM);
     } /* if */
 
     if (retval == -1)
     {
         *bytes = 0;
         f->sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-        return(FLAC__STREAM_DECODER_READ_ABORT);
+        return(D_READ_ABORT);
     } /* if */
 
     if (retval < *bytes)
@@ -135,22 +218,18 @@ static FLAC__StreamDecoderReadStatus FLAC_read_callback(
         f->sample->flags |= SOUND_SAMPLEFLAG_EAGAIN;
     } /* if */
 
-    return(FLAC__STREAM_DECODER_READ_CONTINUE);
-} /* FLAC_read_callback */
+    return(D_READ_CONTINUE);
+} /* read_callback */
 
 
-static FLAC__StreamDecoderWriteStatus FLAC_write_callback(
-    const FLAC__StreamDecoder *decoder, const FLAC__Frame *frame,
+static d_write_status_t write_callback(
+    const decoder_t *decoder, const FLAC__Frame *frame,
     const FLAC__int32 *buffer[], void *client_data)
 {
     flac_t *f = (flac_t *) client_data;
     Uint32 i, j;
     Uint32 sample;
     Uint8 *dst;
-
-#if 0
-    SNDDBG(("FLAC: Write callback.\n"));
-#endif
 
     f->frame_size = frame->header.channels * frame->header.blocksize
         * frame->header.bits_per_sample / 8;
@@ -191,16 +270,17 @@ static FLAC__StreamDecoderWriteStatus FLAC_write_callback(
             } /* for */
     } /* else */
 
-    return(FLAC__STREAM_DECODER_WRITE_CONTINUE);
-} /* FLAC_write_callback */
+    return(D_WRITE_CONTINUE);
+} /* write_callback */
 
 
-void FLAC_metadata_callback(
-    const FLAC__StreamDecoder *decoder, const FLAC__StreamMetaData *metadata,
+static void metadata_callback(
+    const decoder_t *decoder,
+    const d_metadata_t *metadata,
     void *client_data)
 {
     flac_t *f = (flac_t *) client_data;
-    
+
     SNDDBG(("FLAC: Metadata callback.\n"));
 
         /* There are several kinds of metadata, but STREAMINFO is the only
@@ -219,20 +299,96 @@ void FLAC_metadata_callback(
         else
             f->sample->actual.format = AUDIO_S8;
     } /* if */
-} /* FLAC_metadata_callback */
+} /* metadata_callback */
 
 
-void FLAC_error_callback(
-    const FLAC__StreamDecoder *decoder, FLAC__StreamDecoderErrorStatus status,
+static void error_callback(
+    const decoder_t *decoder,
+    d_error_status_t status,
     void *client_data)
 {
     flac_t *f = (flac_t *) client_data;
 
         /* !!! FIXME: Is every error really fatal? I don't know... */
-    Sound_SetError(FLAC__StreamDecoderErrorStatusString[status]);
+    Sound_SetError(d_error_status_string[status]);
     f->sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-} /* FLAC_error_callback */
+} /* error_callback */
 
+
+#if SOUND_SUPPORTS_SEEKABLE_FLAC
+
+static d_seek_status_t seek_callback(
+    const decoder_t *decoder,
+    FLAC__uint64 absolute_byte_offset,
+    void *client_data)
+{
+    flac_t *f = (flac_t *) client_data;
+
+    if (SDL_RWseek(f->rw, absolute_byte_offset, SEEK_SET) >= 0)
+    {
+        return(D_SEEK_STATUS_OK);
+    } /* if */
+
+    return(D_SEEK_STATUS_ERROR);
+} /* seek_callback*/
+
+
+static d_tell_status_t tell_callback(
+    const decoder_t *decoder,
+    FLAC__uint64 *absolute_byte_offset,
+    void *client_data)
+{
+    flac_t *f = (flac_t *) client_data;
+    int pos; /* !!! FIXME: int? Really? */
+
+    pos = SDL_RWtell(f->rw);
+
+    if (pos < 0)
+    {
+        return(D_TELL_STATUS_ERROR);
+    } /* if */
+
+    *absolute_byte_offset = pos;
+    return(D_TELL_STATUS_OK);
+} /* tell_callback */
+
+
+static d_length_status_t length_callback(
+    const decoder_t *decoder,
+    FLAC__uint64 *stream_length,
+    void *client_data)
+{
+    flac_t *f = (flac_t *) client_data;
+
+    if (f->sample->flags & SOUND_SAMPLEFLAG_CANSEEK)
+    {
+        *stream_length = f->stream_length;
+        return(D_LENGTH_STATUS_OK);
+    } /* if */
+
+    return(D_LENGTH_STATUS_ERROR);
+} /* length_callback */
+
+
+static FLAC__bool eof_callback(
+    const decoder_t *decoder,
+    void *client_data)
+{
+    flac_t *f = (flac_t *) client_data;
+    int pos; /* !!! FIXME: int? Really? */
+
+        /* Maybe we could check for SOUND_SAMPLEFLAG_EOF here instead? */
+    pos = SDL_RWtell(f->rw);
+    
+    if (pos >= 0 && pos >= f->stream_length)
+    {
+        return(true);
+    } /* if */
+
+    return(false);
+} /* eof_callback */
+
+#endif
 
 static int FLAC_init(void)
 {
@@ -252,10 +408,14 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SDL_RWops *rw = internal->rw;
-    FLAC__StreamDecoder *decoder;
+    decoder_t *decoder;
     flac_t *f;
     int i;
     int has_extension = 0;
+    
+#if SOUND_SUPPORTS_SEEKABLE_FLAC
+    Uint32 pos;
+#endif
 
     /*
      * If the extension is "flac", we'll believe that this is really meant
@@ -287,7 +447,7 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     f = (flac_t *) malloc(sizeof (flac_t));
     BAIL_IF_MACRO(f == NULL, ERR_OUT_OF_MEMORY, 0);
     
-    decoder = FLAC__stream_decoder_new();
+    decoder = d_new();
     if (decoder == NULL)
     {
         Sound_SetError(ERR_OUT_OF_MEMORY);
@@ -295,11 +455,19 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
         return(0);
     } /* if */       
 
-    FLAC__stream_decoder_set_read_callback(decoder, FLAC_read_callback);
-    FLAC__stream_decoder_set_write_callback(decoder, FLAC_write_callback);
-    FLAC__stream_decoder_set_metadata_callback(decoder, FLAC_metadata_callback);
-    FLAC__stream_decoder_set_error_callback(decoder, FLAC_error_callback);
-    FLAC__stream_decoder_set_client_data(decoder, f);
+    d_set_read_callback(decoder, read_callback);
+    d_set_write_callback(decoder, write_callback);
+    d_set_metadata_callback(decoder, metadata_callback);
+    d_set_error_callback(decoder, error_callback);
+
+#if SOUND_SUPPORTS_SEEKABLE_FLAC
+    d_set_seek_callback(decoder, seek_callback);
+    d_set_tell_callback(decoder, tell_callback);
+    d_set_length_callback(decoder, length_callback);
+    d_set_eof_callback(decoder, eof_callback);
+#endif
+    
+    d_set_client_data(decoder, f);
 
     f->rw = internal->rw;
     f->sample = sample;
@@ -308,15 +476,33 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     f->is_flac = 0 /* !!! FIXME: should be "has_extension", not "0". */;
 
     internal->decoder_private = f;
-    FLAC__stream_decoder_init(decoder);
+    d_init(decoder);
 
+#if !SOUND_SUPPORTS_SEEKABLE_FLAC
         /*
          * Annoyingly, the rewind method will put the FLAC decoder in a state
          * where it expects to read metadata, so we have to set this marker
          * before the metadata block.
          */
-    f->data_starting_offset = SDL_RWtell(f->rw);
+    f->data_offset = SDL_RWtell(f->rw);
+#endif
     
+    sample->flags = SOUND_SAMPLEFLAG_NONE;
+
+#if SOUND_SUPPORTS_SEEKABLE_FLAC
+        /*
+         * FIXME?: For the seekable stream decoder to work, we need to know
+         * the length of the stream. This is so ugly...
+         */
+    pos = SDL_RWtell(f->rw);
+    if (SDL_RWseek(f->rw, 0, SEEK_END))
+    {
+        f->stream_length = SDL_RWtell(f->rw);
+        SDL_RWseek(f->rw, pos, SEEK_SET);
+        sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
+    } /* if */
+#endif
+
         /*
          * If we are not sure this is a FLAC stream, check for the STREAMINFO
          * metadata block. If not, we'd have to peek at the first audio frame
@@ -325,7 +511,7 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
          */
     if (!f->is_flac)
     {
-        FLAC__stream_decoder_process_metadata(decoder);
+        d_process_metadata(decoder);
 
         /* Still not FLAC? Give up. */
         if (!f->is_flac)
@@ -337,8 +523,6 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     } /* if */
 
     SNDDBG(("FLAC: Accepting data stream.\n"));
-
-    sample->flags = SOUND_SAMPLEFLAG_NONE;
     return(1);
 } /* FLAC_open */
 
@@ -358,14 +542,14 @@ static Uint32 FLAC_read(Sound_Sample *sample)
     flac_t *f = (flac_t *) internal->decoder_private;
     Uint32 len;
 
-    if (!FLAC__stream_decoder_process_one_frame(f->decoder))
+    if (!d_process_one_frame(f->decoder))
     {
         Sound_SetError("FLAC: Couldn't decode frame.");
         sample->flags |= SOUND_SAMPLEFLAG_ERROR;
         return(0);
     } /* if */
 
-    if (FLAC__stream_decoder_get_state(f->decoder) == FLAC__STREAM_DECODER_END_OF_STREAM)
+    if (d_get_state(f->decoder) == D_END_OF_STREAM)
     {
         sample->flags |= SOUND_SAMPLEFLAG_EOF;
         return(0);
@@ -381,21 +565,32 @@ static Uint32 FLAC_read(Sound_Sample *sample)
 
 static int FLAC_rewind(Sound_Sample *sample)
 {
+#if SOUND_SUPPORTS_SEEKABLE_FLAC
+    return FLAC_seek(sample, 0);
+#else
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     flac_t *f = (flac_t *) internal->decoder_private;
-    int rc = SDL_RWseek(f->rw, f->data_starting_offset, SEEK_SET);
+    int rc = SDL_RWseek(f->rw, f->data_offset, SEEK_SET);
     
-    BAIL_IF_MACRO(rc != f->data_starting_offset, ERR_IO_ERROR, 0);
-    BAIL_IF_MACRO(!FLAC__stream_decoder_reset(f->decoder),
-                  "FLAC: could not reset decoder", 0);
-    FLAC__stream_decoder_process_metadata(f->decoder);
+    BAIL_IF_MACRO(rc != f->data_offset, ERR_IO_ERROR, 0);
+    BAIL_IF_MACRO(!d_reset(f->decoder), "FLAC: could not reset decoder", 0);
+    d_process_metadata(f->decoder);
     return(1);
+#endif
 } /* FLAC_rewind */
 
 
 static int FLAC_seek(Sound_Sample *sample, Uint32 ms)
 {
-    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+#if SOUND_SUPPORTS_SEEKABLE_FLAC
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    flac_t *f = (flac_t *) internal->decoder_private;
+
+    d_seek_absolute(f->decoder, (ms * sample->actual.rate) / 1000);
+    return(1);
+#else
+    BAIL_MACRO("FLAC: This is the non-seekable version of the decoder!", 0);
+#endif
 } /* FLAC_seek */
 
 

@@ -208,7 +208,7 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
     sample->actual.format = AUDIO_S16SYS;
 
     internal->decoder_private = (void *) module;
-    sample->flags = SOUND_SAMPLEFLAG_NONE;
+    sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
 
     SNDDBG(("MODPLUG: Accepting data stream\n"));
     return(1); /* we'll handle this data. */
@@ -249,7 +249,12 @@ static int MODPLUG_rewind(Sound_Sample *sample)
 
 static int MODPLUG_seek(Sound_Sample *sample, Uint32 ms)
 {
-    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    ModPlugFile *module = (ModPlugFile *) internal->decoder_private;
+
+        /* Assume that this will work. */
+    ModPlug_Seek(module, ms);
+    return(1);
 } /* MODPLUG_seek */
 
 #endif /* SOUND_SUPPORTS_MODPLUG */

@@ -152,5 +152,6 @@ extern void Timidity_SetVolume(MidiSong *song, int volume);
 extern int Timidity_PlaySome(MidiSong *song, void *stream, Sint32 len);
 extern MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio);
 extern void Timidity_Start(MidiSong *song);
+extern void Timidity_Seek(MidiSong *song, Uint32 ms);
 extern void Timidity_FreeSong(MidiSong *song);
 extern void Timidity_Exit(void);
