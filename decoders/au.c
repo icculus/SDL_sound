@@ -124,7 +124,7 @@ struct audec
 };
 
 
-#define AU_MAGIC 0x646E732E  /* ".snd", in ASCII */
+#define AU_MAGIC 0x2E736E64  /* ".snd", in ASCII (bigendian number) */
 
 static int AU_open(Sound_Sample *sample, const char *ext)
 {
@@ -145,11 +145,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
         return(0);
     } /* if */
 
-        /*
-         * !!! FIXME: For correctness, we should calculate this as a bigendian
-         * !!! FIXME:  number, which means swapping AU_MAGIC around.
-         */
-    if (SDL_SwapLE32(hdr.magic) == AU_MAGIC)
+    if (SDL_SwapBE32(hdr.magic) == AU_MAGIC)
     {
         /* valid magic */
         dec->encoding = SDL_SwapBE32(hdr.encoding);
