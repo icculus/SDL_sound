@@ -140,7 +140,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
     r = SDL_RWread(rw, &hdr, 1, HDR_SIZE);
     if (r < HDR_SIZE)
     {
-        Sound_SetError("No .au file (bad header)");
+        Sound_SetError("AU: Not an .au file (bad header)");
         free(dec);
         return(0);
     } /* if */
@@ -167,7 +167,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
                 break;
 
             default:
-                Sound_SetError("Unsupported .au encoding");
+                Sound_SetError("AU: Unsupported .au encoding");
                 free(dec);
                 return 0;
         } /* switch */
@@ -202,7 +202,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
 
     else
     {
-        SNDDBG(("AU: Not an .AU stream.\n"));
+        Sound_SetError("AU: Not an .AU stream.");
         free(dec);
         return(0);
     } /* else */

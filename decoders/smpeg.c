@@ -144,16 +144,10 @@ static int _SMPEG_open(Sound_Sample *sample, const char *ext)
         Uint8 mp3_magic[2];
 
         if (SDL_RWread(internal->rw, mp3_magic, sizeof (mp3_magic), 1) != 1)
-        {
-            Sound_SetError("SMPEG: Could not read MP3 magic.");
-            return(0);
-        } /*if */
+            BAIL_MACRO("MP3: Could not read MP3 magic.", 0);
 
         if (mp3_magic[0] != 0xFF || (mp3_magic[1] & 0xF0) != 0xF0)
-        {
-            Sound_SetError("SMPEG: Not an MP3 stream.");
-            return(0);
-        } /* if */
+            BAIL_MACRO("MP3: Not an MP3 stream.", 0);
 
             /* !!! FIXME: If the seek fails, we'll probably miss a frame */
         SDL_RWseek(internal->rw, -sizeof (mp3_magic), SEEK_CUR);
