@@ -43,4 +43,9 @@ EXTRA_DIST =	\
 	COPYING \
 	CHANGELOG \
 	CWProject.sit \
-	PBProjects.tar.gz
+	PBProjects.tar.gz \
+	Doxyfile \
+    docs
+
+dist-hook:
+	rm -rf `find $(distdir)/docs -name CVS`
