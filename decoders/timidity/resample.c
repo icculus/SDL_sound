@@ -579,7 +579,12 @@ void pre_resample(MidiSong *song, Sample *sp)
   while (--count)
     {
       vptr = src + (ofs >> FRACTION_BITS);
-      v1 = *(vptr - 1);
+          /*
+           * Electric Fence to the rescue: Accessing *(vptr - 1) is not a
+           * good thing to do when vptr <= src. (TiMidity++ has a similar
+           * safe-guard here.)
+           */
+      v1 = (vptr > src) ? *(vptr - 1) : 0;
       v2 = *vptr;
       v3 = *(vptr + 1);
       v4 = *(vptr + 2);

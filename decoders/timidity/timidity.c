@@ -446,11 +446,13 @@ MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio)
     if (master_tonebank[i])
     {
       song->tonebank[i] = safe_malloc(sizeof(ToneBank));
+      memset(song->tonebank[i], 0, sizeof(ToneBank));
       song->tonebank[i]->tone = master_tonebank[i]->tone;
     }
     if (master_drumset[i])
     {
       song->drumset[i] = safe_malloc(sizeof(ToneBank));
+      memset(song->drumset[i], 0, sizeof(ToneBank));
       song->drumset[i]->tone = master_drumset[i]->tone;
     }
   }

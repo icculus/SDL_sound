@@ -2,7 +2,13 @@
 
 CC = gcc
 
+# Standard SDL_sound debugging
 CFLAGS = -g -I../.. -ansi -pedantic -Wall `sdl-config --cflags` -DDEBUG_CHATTER
+LIBS = `sdl-config --libs`
+
+# Electric Fence debugging
+# CFLAGS = -g -I../.. -ansi -pedantic -Wall `sdl-config --cflags`
+# LIBS = `sdl-config --libs` -lefence
 
 OBJECTS = common.o instrum.o mix.o output.o playmidi.o readmidi.o resample.o \
 	tables.o timidity.o testmidi.o
@@ -10,7 +16,7 @@ OBJECTS = common.o instrum.o mix.o output.o playmidi.o readmidi.o resample.o \
 all: testmidi
 
 testmidi: $(OBJECTS)
-	$(CC) $(OBJECTS) $(CFLAGS) -o testmidi `sdl-config --libs`
+	$(CC) $(OBJECTS) $(CFLAGS) -o testmidi $(LIBS)
 
 clean:
 	$(RM) testmidi *.o *~
