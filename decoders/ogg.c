@@ -207,7 +207,7 @@ static int OGG_open(Sound_Sample *sample, const char *ext)
     SNDDBG(("OGG: total seconds of sample == (%f).\n", ov_time_total(vf, -1)));
 
     internal->decoder_private = vf;
-    sample->flags = SOUND_SAMPLEFLAG_NONE;
+    sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
     sample->actual.rate = (Uint32) info->rate;
     sample->actual.channels = (Uint8) info->channels;
 
@@ -280,7 +280,11 @@ static int OGG_rewind(Sound_Sample *sample)
 
 static int OGG_seek(Sound_Sample *sample, Uint32 ms)
 {
-    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    OggVorbis_File *vf = (OggVorbis_File *) internal->decoder_private;
+    double timepos = (((double) ms) / 1000.0);
+    BAIL_IF_MACRO(ov_time_seek(vf, timepos) < 0, ERR_IO_ERROR, 0);
+    return(1);
 } /* OGG_seek */
 
 #endif /* SOUND_SUPPORTS_OGG */
