@@ -8,6 +8,7 @@ General stuff TODO:
 - Port to MacOS X.
 
 More immediate:
+- Write a decent README.
 - Handle compression and other chunks in WAV files.
 - Handle compression and other chunks in AIFF-C files.
 - Cleanup up VOC decoder (seems messy to me).
