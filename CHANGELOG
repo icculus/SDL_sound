@@ -2,6 +2,8 @@
  * CHANGELOG.
  */
 
+04212002 - Initial work to add a Sound_Seek() API. Removed the NEEDSEEK
+           sample flag (replaced it with CANSEEK).
 04082002 - Cleaned up the archive support in playsound a little bit, and 
            fixed a PhysicsFS bug in the process.
 03252002 - Win32 patches and fixes from Tyler Montbriand: handled "inline"
