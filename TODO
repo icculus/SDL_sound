@@ -3,6 +3,7 @@ More immediate (needed for 1.0 release):
 - Finish implementing seek() method in decoders, see below.
 - Add a sdlsound-config script?
 - Clean out FIXMEs. Either fix them or determine they aren't a problem.
+- Make sure we can build shared libs on Cygwin, BeOS, Mac OS X...
 
 Decoders still needing seek() method:
   (If decoder can't seek, clean up the stub and report an error.)
