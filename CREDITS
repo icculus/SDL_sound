@@ -8,6 +8,7 @@ VOC driver,
 MP3 driver,
 WAV driver,
 OGG driver,
+SHN driver,
 Unix support:
     Ryan C. Gordon
 
