@@ -1,6 +1,6 @@
 
 Stuff TODO:
-- Implement base API.
+- Implement base API. (Done.)
 - Use autoconf?
 - Verify portability to various Unixes (BSD, etc)
 - Port to Win32.

@@ -4,6 +4,9 @@
 
 09132001 - Initial spec proposed on SDL mailing list, under name "SDL_voice".
 09142001 - Changed name to SDL_sound, added Sound_DecodeAll() to spec.
+09172001 - Changed some overlooked "voice" to "sound".
+09182001 - Implemented base API. So...tired. Everything's different.  :)
+           Also put in a RAW decoder and a simple test program.
 
 --ryan. (icculus@clutteredmind.org)
 
