@@ -8,3 +8,6 @@ libtoolize --automake --copy --force
 
 automake --foreign --add-missing --copy
 autoconf
+
+echo "You are now ready to run ./configure ..."
+
