@@ -1,11 +1,11 @@
 
 General stuff TODO:
-- Use autoconf.
 - Verify portability to various Unixes (BSD, etc)
 - Port to Win32.
 - Port to BeOS.
 - Port to MacOS Classic.
 - Port to MacOS X.
+- Allow a decoder to register multiple file extensions.
 
 More immediate:
 - Write a decent README.
@@ -14,7 +14,6 @@ More immediate:
 - Cleanup up VOC decoder (seems messy to me).
 
 Decoders to implement:
-- .SHN
 - .MID
 - .CDA (Does this need specific decoding? Or is a RWops needed?)
 - .AU
