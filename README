@@ -1,8 +1,30 @@
 SDL_sound. An abstract soundfile decoder.
 
 Check here, until I get to write more of this README:
-
    http://icculus.org/SDL_sound/
+
+Some optional external libraries that SDL_sound can use and where to find them:
+  SMPEG (used to decode MP3s): http://www.lokigames.com/development/smpeg.php3
+  libvorbis (used to decode OGGs): http://www.xiph.org/ogg/vorbis/
+  libFLAC (used to decode FLACs): http://flac.sourceforge.net/
+  libModPlug (used to decode MODs, etc): http://modplug-xmms.sourceforge.net/
+  libMikMod (used to decode MODs, etc, too): http://www.mikmod.org/
+
+These external libraries are OPTIONAL. SDL_sound will build and function
+ without them, but various sound file formats are not supported unless these
+ libraries are available. Unless explicitly disabled during initial build
+ configuration, SDL_sound always supports these file formats:
+
+   Microsoft .WAV files (uncompressed and MS-ADPCM encoded).
+   Creative Labs .VOC files
+   Shorten (.SHN) files
+   Audio Interchange format (AIFF) files
+   Sun Audio (.AU) files
+   MIDI files
+   Raw waveform data
+
+
+Building/Installing:
 
 Unix, BeOS, MacOS X, BSD users:
    If you pulled from CVS, run "./bootstrap" first.
@@ -16,5 +38,9 @@ Win32 users:
 
 There will be a shared library and a binary called "playsound".
 
---ryan. (icculus@clutteredmind.org)
+
+Reporting bugs/commenting:
+ There is a mailing list available. To subscribe, send a blank email to
+ sdlsound-subscribe@icculus.org. This is the best way to get in touch with
+ SDL_sound developers.
 
