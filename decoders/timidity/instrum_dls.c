@@ -78,10 +78,8 @@ static void FreeRIFFChunk(RIFF_Chunk *chunk)
     if ( chunk->child ) {
         FreeRIFFChunk(chunk->child);
     }
-    while ( chunk->next ) {
-        RIFF_Chunk *freeable = chunk->next;
-        chunk->next = freeable->next;
-        FreeRIFFChunk(freeable);
+    if ( chunk->next ) {
+        FreeRIFFChunk(chunk->next);
     }
     free(chunk);
 }
