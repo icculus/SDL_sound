@@ -50,6 +50,7 @@ static void MIKMOD_quit(void);
 static int MIKMOD_open(Sound_Sample *sample, const char *ext);
 static void MIKMOD_close(Sound_Sample *sample);
 static Uint32 MIKMOD_read(Sound_Sample *sample);
+static int MIKMOD_rewind(Sound_Sample *sample);
 
 static const char *extensions_mikmod[] =
 {
@@ -83,11 +84,12 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MIKMOD =
         "http://www.mikmod.org/"
     },
 
-    MIKMOD_init,       /*  init() method */
-    MIKMOD_quit,       /*  quit() method */
-    MIKMOD_open,       /*  open() method */
-    MIKMOD_close,      /* close() method */
-    MIKMOD_read        /*  read() method */
+    MIKMOD_init,       /*   init() method */
+    MIKMOD_quit,       /*   quit() method */
+    MIKMOD_open,       /*   open() method */
+    MIKMOD_close,      /*  close() method */
+    MIKMOD_read,       /*   read() method */
+    MIKMOD_rewind      /* rewind() method */
 };
 
 
@@ -281,6 +283,17 @@ static Uint32 MIKMOD_read(Sound_Sample *sample)
     } /* if */
     return((Uint32) VC_WriteBytes(internal->buffer, internal->buffer_size));
 } /* MIKMOD_read */
+
+
+static int MIKMOD_rewind(Sound_Sample *sample)
+{
+    /* !!! FIXME. */
+    SNDDBG(("MIKMOD_rewind(): Write me!\n"));
+    assert(0);
+    return(0);
+} /* MIKMOD_rewind */
+
+
 
 #endif /* SOUND_SUPPORTS_MIKMOD */
 

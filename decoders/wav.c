@@ -49,6 +49,7 @@ static void WAV_quit(void);
 static int WAV_open(Sound_Sample *sample, const char *ext);
 static void WAV_close(Sound_Sample *sample);
 static Uint32 WAV_read(Sound_Sample *sample);
+static int WAV_rewind(Sound_Sample *sample);
 
 static const char *extensions_wav[] = { "WAV", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV =
@@ -60,11 +61,12 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV =
         "http://www.icculus.org/SDL_sound/"
     },
 
-    WAV_init,       /*  init() method */
-    WAV_quit,       /*  quit() method */
-    WAV_open,       /*  open() method */
-    WAV_close,      /* close() method */
-    WAV_read        /*  read() method */
+    WAV_init,       /*   init() method */
+    WAV_quit,       /*   quit() method */
+    WAV_open,       /*   open() method */
+    WAV_close,      /*  close() method */
+    WAV_read,       /*   read() method */
+    WAV_rewind      /* rewind() method */
 };
 
 
@@ -139,9 +141,12 @@ typedef struct S_WAV_FMT_T
     Uint16 wBitsPerSample;
 
     Uint32 sample_frame_size;
+    Uint32 data_starting_offset;
+    Uint32 total_bytes;
 
     void (*free)(struct S_WAV_FMT_T *fmt);
     Uint32 (*read_sample)(Sound_Sample *sample);
+    int (*rewind_sample)(Sound_Sample *sample);
 
     union
     {
@@ -268,12 +273,19 @@ static Uint32 read_sample_fmt_normal(Sound_Sample *sample)
 } /* read_sample_fmt_normal */
 
 
+static int rewind_sample_fmt_normal(Sound_Sample *sample)
+{
+    /* no-op. */
+    return(1);
+} /* rewind_sample_fmt_normal */
+
 
 static int read_fmt_normal(SDL_RWops *rw, fmt_t *fmt)
 {
     /* (don't need to read more from the RWops...) */
     fmt->free = NULL;
     fmt->read_sample = read_sample_fmt_normal;
+    fmt->rewind_sample = rewind_sample_fmt_normal;
     return(1);
 } /* read_fmt_normal */
 
@@ -486,6 +498,15 @@ static void free_fmt_adpcm(fmt_t *fmt)
 } /* free_fmt_adpcm */
 
 
+static int rewind_sample_fmt_adpcm(Sound_Sample *sample)
+{
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    wav_t *w = (wav_t *) internal->decoder_private;
+    w->fmt->fmt.adpcm.samples_left_in_block = 0;
+    return(1);
+} /* rewind_sample_fmt_adpcm */
+
+
 /*
  * Read in a the adpcm-specific info from disk. This makes this process 
  *  safe regardless of the processor's byte order or how the fmt_t 
@@ -498,6 +519,7 @@ static int read_fmt_adpcm(SDL_RWops *rw, fmt_t *fmt)
     memset(&fmt->fmt.adpcm, '\0', sizeof (fmt->fmt.adpcm));
     fmt->free = free_fmt_adpcm;
     fmt->read_sample = read_sample_fmt_adpcm;
+    fmt->rewind_sample = rewind_sample_fmt_adpcm;
 
     BAIL_IF_MACRO(!read_le16(rw, &fmt->fmt.adpcm.cbSize), NULL, 0);
     BAIL_IF_MACRO(!read_le16(rw, &fmt->fmt.adpcm.wSamplesPerBlock), NULL, 0);
@@ -629,7 +651,8 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
     w = (wav_t *) malloc(sizeof(wav_t));
     BAIL_IF_MACRO(w == NULL, ERR_OUT_OF_MEMORY, 0);
     w->fmt = fmt;
-    w->bytesLeft = d.chunkSize;
+    fmt->total_bytes = w->bytesLeft = d.chunkSize;
+    fmt->data_starting_offset = SDL_RWtell(rw);
 
     /* !!! FIXME: Move this to Sound_SampleInfo ? */
     fmt->sample_frame_size = ( ((sample->actual.format & 0xFF) / 8) *
@@ -683,6 +706,18 @@ static Uint32 WAV_read(Sound_Sample *sample)
     wav_t *w = (wav_t *) internal->decoder_private;
     return(w->fmt->read_sample(sample));
 } /* WAV_read */
+
+
+static int WAV_rewind(Sound_Sample *sample)
+{
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    wav_t *w = (wav_t *) internal->decoder_private;
+    fmt_t *fmt = w->fmt;
+    int rc = SDL_RWseek(internal->rw, fmt->data_starting_offset, SEEK_SET);
+    BAIL_IF_MACRO(rc != fmt->data_starting_offset, ERR_IO_ERROR, 0);
+    w->bytesLeft = fmt->total_bytes;
+    return(fmt->rewind_sample(sample));
+} /* WAV_rewind */
 
 #endif /* SOUND_SUPPORTS_WAV */
 

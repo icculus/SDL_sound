@@ -53,6 +53,7 @@ static void FLAC_quit(void);
 static int FLAC_open(Sound_Sample *sample, const char *ext);
 static void FLAC_close(Sound_Sample *sample);
 static Uint32 FLAC_read(Sound_Sample *sample);
+static int FLAC_rewind(Sound_Sample *sample);
 
 static const char *extensions_flac[] = { "FLAC", "FLA", NULL };
 
@@ -65,11 +66,12 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_FLAC =
         "http://flac.sourceforge.net/"
     },
 
-    FLAC_init,       /* init() method       */
-    FLAC_quit,       /* quit() method       */
-    FLAC_open,       /* open() method       */
-    FLAC_close,      /* close() method       */
-    FLAC_read        /* read() method       */
+    FLAC_init,       /*   init() method */
+    FLAC_quit,       /*   quit() method */
+    FLAC_open,       /*   open() method */
+    FLAC_close,      /*  close() method */
+    FLAC_read,       /*   read() method */
+    FLAC_rewind      /* rewind() method */
 };
 
     /* This is what we store in our internal->decoder_private field. */
@@ -359,6 +361,15 @@ static Uint32 FLAC_read(Sound_Sample *sample)
     
     return(f->frame_size);
 } /* FLAC_read */
+
+
+static int FLAC_rewind(Sound_Sample *sample)
+{
+    /* !!! FIXME. */
+    SNDDBG(("FLAC_rewind(): Write me!\n"));
+    assert(0);
+    return(0);
+} /* FLAC_rewind */
 
 #endif /* SOUND_SUPPORTS_FLAC */
 

@@ -65,6 +65,7 @@ static void AIFF_quit(void);
 static int AIFF_open(Sound_Sample *sample, const char *ext);
 static void AIFF_close(Sound_Sample *sample);
 static Uint32 AIFF_read(Sound_Sample *sample);
+static int AIFF_rewind(Sound_Sample *sample);
 
 static const char *extensions_aiff[] = { "AIFF", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_AIFF =
@@ -76,11 +77,12 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_AIFF =
         "http://www.icculus.org/SDL_sound/"
     },
 
-    AIFF_init,      /*  init() method */
-    AIFF_quit,      /*  quit() method */
-    AIFF_open,      /*  open() method */
-    AIFF_close,     /* close() method */
-    AIFF_read       /*  read() method */
+    AIFF_init,      /*   init() method */
+    AIFF_quit,      /*   quit() method */
+    AIFF_open,      /*   open() method */
+    AIFF_close,     /*  close() method */
+    AIFF_read,      /*   read() method */
+    AIFF_rewind     /* rewind() method */
 };
 
 
@@ -90,8 +92,14 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_AIFF =
 typedef struct S_AIFF_FMT_T
 {
     Uint32 type;
+
+    Uint32 total_bytes;
+    Uint32 data_starting_offset;
+
     void (*free)(struct S_AIFF_FMT_T *fmt);
-    Uint32(*read_sample)(Sound_Sample *sample);
+    Uint32 (*read_sample)(Sound_Sample *sample);
+    int (*rewind_sample)(Sound_Sample *sample);
+
 
 #if 0
 /*
@@ -315,6 +323,13 @@ static Uint32 read_sample_fmt_normal(Sound_Sample *sample)
 } /* read_sample_fmt_normal */
 
 
+static int rewind_sample_fmt_normal(Sound_Sample *sample)
+{
+    /* no-op. */
+    return(1);
+} /* rewind_sample_fmt_normal */
+
+
 static void free_fmt_normal(fmt_t *fmt)
 {
     /* it's a no-op. */
@@ -326,6 +341,7 @@ static int read_fmt_normal(SDL_RWops *rw, fmt_t *fmt)
     /* (don't need to read more from the RWops...) */
     fmt->free = free_fmt_normal;
     fmt->read_sample = read_sample_fmt_normal;
+    fmt->rewind_sample = rewind_sample_fmt_normal;
     return(1);
 } /* read_fmt_normal */
 
@@ -487,7 +503,8 @@ static int AIFF_open(Sound_Sample *sample, const char *ext)
         return(0);
     } /* if */
 
-    a->bytesLeft = bytes_per_sample * c.numSampleFrames;
+    a->fmt.total_bytes = a->bytesLeft = bytes_per_sample * c.numSampleFrames;
+    a->fmt.data_starting_offset = SDL_RWtell(rw);
     internal->decoder_private = (void *) a;
 
     sample->flags = SOUND_SAMPLEFLAG_NONE;
@@ -512,6 +529,18 @@ static Uint32 AIFF_read(Sound_Sample *sample)
     aiff_t *a = (aiff_t *) internal->decoder_private;
     return(a->fmt.read_sample(sample));
 } /* AIFF_read */
+
+
+static int AIFF_rewind(Sound_Sample *sample)
+{
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    aiff_t *a = (aiff_t *) internal->decoder_private;
+    fmt_t *fmt = &a->fmt;
+    int rc = SDL_RWseek(internal->rw, fmt->data_starting_offset, SEEK_SET);
+    BAIL_IF_MACRO(rc != fmt->data_starting_offset, ERR_IO_ERROR, 0);
+    a->bytesLeft = fmt->total_bytes;
+    return(fmt->rewind_sample(sample));
+} /* AIFF_rewind */
 
 #endif /* SOUND_SUPPORTS_AIFF */
 

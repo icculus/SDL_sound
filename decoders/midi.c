@@ -52,6 +52,7 @@ static void MIDI_quit(void);
 static int MIDI_open(Sound_Sample *sample, const char *ext);
 static void MIDI_close(Sound_Sample *sample);
 static Uint32 MIDI_read(Sound_Sample *sample);
+static int MIDI_rewind(Sound_Sample *sample);
 
 static const char *extensions_midi[] = { "MIDI", "MID", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_MIDI =
@@ -63,11 +64,12 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MIDI =
         "http://www.icculus.org/SDL_sound/"
     },
 
-    MIDI_init,       /* init() method       */
-    MIDI_quit,       /* quit() method       */
-    MIDI_open,       /* open() method       */
-    MIDI_close,      /* close() method       */
-    MIDI_read        /* read() method       */
+    MIDI_init,       /*   init() method */
+    MIDI_quit,       /*   quit() method */
+    MIDI_open,       /*   open() method */
+    MIDI_close,      /*  close() method */
+    MIDI_read,       /*   read() method */
+    MIDI_rewind      /* rewind() method */
 };
 
 
@@ -144,6 +146,16 @@ static Uint32 MIDI_read(Sound_Sample *sample)
 
     return(retval);
 } /* MIDI_read */
+
+
+static int MIDI_rewind(Sound_Sample *sample)
+{
+    /* !!! FIXME. */
+    SNDDBG(("MIDI_rewind(): Write me!\n"));
+    assert(0);
+    return(0);
+} /* MIDI_rewind */
+
 
 #endif /* SOUND_SUPPORTS_MIDI */
 

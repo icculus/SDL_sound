@@ -66,6 +66,7 @@ static void SHN_quit(void);
 static int SHN_open(Sound_Sample *sample, const char *ext);
 static void SHN_close(Sound_Sample *sample);
 static Uint32 SHN_read(Sound_Sample *sample);
+static int SHN_rewind(Sound_Sample *sample);
 
 static const char *extensions_shn[] = { "SHN", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_SHN =
@@ -77,11 +78,12 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_SHN =
         "http://www.icculus.org/SDL_sound/"
     },
 
-    SHN_init,       /* init() method       */
-    SHN_quit,       /* quit() method       */
-    SHN_open,       /* open() method       */
-    SHN_close,      /* close() method       */
-    SHN_read        /* read() method       */
+    SHN_init,       /*   init() method */
+    SHN_quit,       /*   quit() method */
+    SHN_open,       /*   open() method */
+    SHN_close,      /*  close() method */
+    SHN_read,       /*   read() method */
+    SHN_rewind      /* rewind() method */
 };
 
 
@@ -1295,6 +1297,15 @@ static Uint32 SHN_read(Sound_Sample *sample)
 
     return(retval);
 } /* SHN_read */
+
+
+static int SHN_rewind(Sound_Sample *sample)
+{
+    /* !!! FIXME. */
+    SNDDBG(("SHN_rewind(): Write me!\n"));
+    assert(0);
+    return(0);
+} /* SHN_rewind */
 
 #endif  /* defined SOUND_SUPPORTS_SHN */
 

@@ -48,6 +48,7 @@ static void AU_quit(void);
 static int AU_open(Sound_Sample *sample, const char *ext);
 static void AU_close(Sound_Sample *sample);
 static Uint32 AU_read(Sound_Sample *sample);
+static int AU_rewind(Sound_Sample *sample);
 
 /*
  * Sometimes the extension ".snd" is used for these files (mostly on the NeXT),
@@ -64,11 +65,12 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_AU =
         "http://www.icculus.org/SDL_sound/"
     },
 
-    AU_init,
-    AU_quit,
-    AU_open,
-    AU_close,
-    AU_read
+    AU_init,        /*   init() method */
+    AU_quit,        /*   quit() method */
+    AU_open,        /*   open() method */
+    AU_close,       /*  close() method */
+    AU_read,        /*   read() method */
+    AU_rewind       /* rewind() method */
 };
 
 /* no init/deinit needed */
@@ -115,7 +117,9 @@ enum
 
 struct audec
 {
-    unsigned remaining;
+    Uint32 total;
+    Uint32 remaining;
+    Uint32 start_offset;
     int encoding;
 };
 
@@ -141,6 +145,10 @@ static int AU_open(Sound_Sample *sample, const char *ext)
         return(0);
     } /* if */
 
+        /*
+         * !!! FIXME: For correctness, we should calculate this as a bigendian
+         * !!! FIXME:  number, which means swapping AU_MAGIC around.
+         */
     if (SDL_SwapLE32(hdr.magic) == AU_MAGIC)
     {
         /* valid magic */
@@ -204,6 +212,8 @@ static int AU_open(Sound_Sample *sample, const char *ext)
     } /* else */
 
     sample->flags = SOUND_SAMPLEFLAG_NONE;
+    dec->total = dec->remaining;
+    dec->start_offset = SDL_RWtell(rw);
 
     SNDDBG(("AU: Accepting data stream.\n"));
     return(1);
@@ -273,7 +283,7 @@ static Uint32 AU_read(Sound_Sample *sample)
         buf += maxlen;
     } /* if */
 
-    if(maxlen > dec->remaining)
+    if (maxlen > dec->remaining)
         maxlen = dec->remaining;
     ret = SDL_RWread(internal->rw, buf, 1, maxlen);
     if (ret == 0)
@@ -298,6 +308,17 @@ static Uint32 AU_read(Sound_Sample *sample)
 
     return(ret);
 } /* AU_read */
+
+
+static int AU_rewind(Sound_Sample *sample)
+{
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    struct audec *dec = (struct audec *) internal->decoder_private;
+    int rc = SDL_RWseek(internal->rw, dec->start_offset, SEEK_SET);
+    BAIL_IF_MACRO(rc != dec->start_offset, ERR_IO_ERROR, 0);
+    dec->remaining = dec->total;
+    return(1);
+} /* AU_rewind */
 
 #endif /* SOUND_SUPPORTS_AU */
 
