@@ -46,6 +46,8 @@
 #endif
 
 
+static int MP3_init(void);
+static void MP3_quit(void);
 static int MP3_open(Sound_Sample *sample, const char *ext);
 static void MP3_close(Sound_Sample *sample);
 static Uint32 MP3_read(Sound_Sample *sample);
@@ -59,10 +61,25 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MP3 =
         "http://www.icculus.org/SDL_sound/"
     },
 
-    MP3_open,       /* open() method       */
-    MP3_close,      /* close() method       */
-    MP3_read        /* read() method       */
+    MP3_init,       /*  init() method */
+    MP3_quit,       /*  quit() method */
+    MP3_open,       /*  open() method */
+    MP3_close,      /* close() method */
+    MP3_read        /*  read() method */
 };
+
+
+static int MP3_init(void)
+{
+    return(1);  /* always succeeds. */
+} /* MP3_init */
+
+
+static void MP3_quit(void)
+{
+    /* it's a no-op. */
+} /* MP3_quit */
+
 
 static __inline__ void output_version(void)
 {
@@ -86,8 +103,25 @@ static int MP3_open(Sound_Sample *sample, const char *ext)
     SDL_AudioSpec spec;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SDL_RWops *refCounter;
+    Uint8 mp3_magic[2];
 
     output_version();
+
+       /*
+        * SMPEG appears to be far too greedy about what it accepts as input.
+        * This test was adapted from SDL_mixer.
+        */
+    if (SDL_RWread(internal->rw, mp3_magic, sizeof (mp3_magic), 1) != 1)
+    {
+        Sound_SetError("MP3: Could not read MP3 magic.");
+        return(0);
+    }
+    if (mp3_magic[0] != 0xFF || (mp3_magic[1] & 0xF0) != 0xF0)
+    {
+        Sound_SetError("MP3: Not an MP3 stream.");
+        return(0);
+    }
+    SDL_RWseek(internal->rw, -sizeof (mp3_magic), SEEK_CUR);
 
     refCounter = RWops_RWRefCounter_new(internal->rw);
     if (refCounter == NULL)
