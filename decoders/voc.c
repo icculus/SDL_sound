@@ -88,7 +88,7 @@ typedef struct vocstuff {
     Uint32  bufpos;         /* byte position in internal->buffer. */
 } vs_t;
 
-/* Size field */
+/* Size field */ 
 /* SJB: note that the 1st 3 are sometimes used as sizeof(type) */
 #define ST_SIZE_BYTE     1
 #define ST_SIZE_8BIT     1
@@ -187,7 +187,7 @@ static int voc_get_block(Sound_Sample *sample)
 
         if (SDL_RWread(src, bits24, sizeof (bits24), 1) != 1)
             return 1;  /* assume that's the end of the file. */
-
+        
         /* Size is an 24-bit value. Ugh. */
         sblen = ( (bits24[0]) | (bits24[1] << 8) | (bits24[2] << 16) );
 
@@ -444,7 +444,7 @@ static int VOC_open(Sound_Sample *sample, const char *ext)
         return(0);
     } /* if */
 
-    _D(("VOC: Accepting data stream.\n"));
+    SNDDBG(("VOC: Accepting data stream.\n"));
     sample->actual.format = (v->size == ST_SIZE_WORD) ? AUDIO_S16LSB:AUDIO_U8;
     sample->actual.channels = v->channels;
     sample->flags = SOUND_SAMPLEFLAG_NONE;

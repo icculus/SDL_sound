@@ -237,7 +237,7 @@ static int MOD_open(Sound_Sample *sample, const char *ext)
     /* !!! FIXME: A little late to be giving this information... */
     sample->flags = SOUND_SAMPLEFLAG_NEEDSEEK;
 
-    _D(("MOD: Accepting data stream\n"));
+    SNDDBG(("MOD: Accepting data stream\n"));
     return(1); /* we'll handle this data. */
 } /* MOD_open */
 

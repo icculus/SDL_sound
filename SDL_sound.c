@@ -218,7 +218,7 @@ void Sound_SetError(const char *err)
 {
     if (err != NULL)
     {
-        _D(("Sound_SetError(\"%s\");\n", err));
+        SNDDBG(("Sound_SetError(\"%s\");\n", err));
         SDL_SetError(err);
     } /* if */
 } /* Sound_SetError */
@@ -395,18 +395,18 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
     } /* if */
     samplesList = sample;
 
-    _D(("New sample DESIRED format: %s format, %d rate, %d channels.\n",
-        fmt_to_str(sample->desired.format),
-        sample->desired.rate,
-        sample->desired.channels));
+    SNDDBG(("New sample DESIRED format: %s format, %d rate, %d channels.\n",
+            fmt_to_str(sample->desired.format),
+            sample->desired.rate,
+            sample->desired.channels));
 
-    _D(("New sample ACTUAL format: %s format, %d rate, %d channels.\n",
-        fmt_to_str(sample->actual.format),
-        sample->actual.rate,
-        sample->actual.channels));
+    SNDDBG(("New sample ACTUAL format: %s format, %d rate, %d channels.\n",
+            fmt_to_str(sample->actual.format),
+            sample->actual.rate,
+            sample->actual.channels));
 
-    _D(("On-the-fly conversion: %s.\n",
-        internal->sdlcvt.needed ? "ENABLED" : "DISABLED"));
+    SNDDBG(("On-the-fly conversion: %s.\n",
+            internal->sdlcvt.needed ? "ENABLED" : "DISABLED"));
 
     return(1);
 } /* init_sample */

@@ -36,9 +36,9 @@
 #include "SDL.h"
 
 #if (defined DEBUG_CHATTER)
-#define _D(x) printf x
+#define SNDDBG(x) printf x
 #else
-#define _D(x)
+#define SNDDBG(x)
 #endif
 
 typedef struct __SOUND_DECODERFUNCTIONS__

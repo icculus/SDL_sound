@@ -89,7 +89,7 @@ static __inline__ void output_version(void)
     {
         SMPEG_version v;
         SMPEG_VERSION(&v);
-        _D(("MP3: Compiled against SMPEG v%d.%d.%d.\n",
+        SNDDBG(("MP3: Compiled against SMPEG v%d.%d.%d.\n",
                     v.major, v.minor, v.patch));
         first_time = 0;
     } /* if */
@@ -126,7 +126,7 @@ static int MP3_open(Sound_Sample *sample, const char *ext)
     refCounter = RWops_RWRefCounter_new(internal->rw);
     if (refCounter == NULL)
     {
-        _D(("MP3: Failed to create reference counting RWops.\n"));
+        SNDDBG(("MP3: Failed to create reference counting RWops.\n"));
         return(0);
     } /* if */
 
@@ -154,19 +154,19 @@ static int MP3_open(Sound_Sample *sample, const char *ext)
         return(0);
     } /* if */
 
-    _D(("MP3: Accepting data stream.\n"));
-    _D(("MP3: has_audio == {%s}.\n", smpeg_info.has_audio ? "TRUE" : "FALSE"));
-    _D(("MP3: has_video == {%s}.\n", smpeg_info.has_video ? "TRUE" : "FALSE"));
-    _D(("MP3: width == (%d).\n", smpeg_info.width));
-    _D(("MP3: height == (%d).\n", smpeg_info.height));
-    _D(("MP3: current_frame == (%d).\n", smpeg_info.current_frame));
-    _D(("MP3: current_fps == (%f).\n", smpeg_info.current_fps));
-    _D(("MP3: audio_string == [%s].\n", smpeg_info.audio_string));
-    _D(("MP3: audio_current_frame == (%d).\n", smpeg_info.audio_current_frame));
-    _D(("MP3: current_offset == (%d).\n", smpeg_info.current_offset));
-    _D(("MP3: total_size == (%d).\n", smpeg_info.total_size));
-    _D(("MP3: current_time == (%f).\n", smpeg_info.current_time));
-    _D(("MP3: total_time == (%f).\n", smpeg_info.total_time));
+    SNDDBG(("MP3: Accepting data stream.\n"));
+    SNDDBG(("MP3: has_audio == {%s}.\n", smpeg_info.has_audio ? "TRUE" : "FALSE"));
+    SNDDBG(("MP3: has_video == {%s}.\n", smpeg_info.has_video ? "TRUE" : "FALSE"));
+    SNDDBG(("MP3: width == (%d).\n", smpeg_info.width));
+    SNDDBG(("MP3: height == (%d).\n", smpeg_info.height));
+    SNDDBG(("MP3: current_frame == (%d).\n", smpeg_info.current_frame));
+    SNDDBG(("MP3: current_fps == (%f).\n", smpeg_info.current_fps));
+    SNDDBG(("MP3: audio_string == [%s].\n", smpeg_info.audio_string));
+    SNDDBG(("MP3: audio_current_frame == (%d).\n", smpeg_info.audio_current_frame));
+    SNDDBG(("MP3: current_offset == (%d).\n", smpeg_info.current_offset));
+    SNDDBG(("MP3: total_size == (%d).\n", smpeg_info.total_size));
+    SNDDBG(("MP3: current_time == (%f).\n", smpeg_info.current_time));
+    SNDDBG(("MP3: total_time == (%f).\n", smpeg_info.total_time));
 
     SMPEG_enablevideo(smpeg, 0);
     SMPEG_enableaudio(smpeg, 1);

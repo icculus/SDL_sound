@@ -91,7 +91,7 @@ static int FMT_open(Sound_Sample *sample, const char *ext)
         return(0);
     } /* if */
 
-    _D(("FMT: Accepting data stream.\n"));
+    SNDDBG(("FMT: Accepting data stream.\n"));
     set up sample->actual;
     sample->flags = SOUND_SAMPLEFLAG_NONE;
     return(1); /* we'll handle this data. */

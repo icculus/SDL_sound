@@ -235,7 +235,7 @@ static int WAV_open(Sound_Sample *sample, const char *ext)
 
     sample->flags = SOUND_SAMPLEFLAG_NONE;
 
-    _D(("WAV: Accepting data stream.\n"));
+    SNDDBG(("WAV: Accepting data stream.\n"));
     return(1); /* we'll handle this data. */
 } /* WAV_open */
 

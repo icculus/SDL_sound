@@ -151,7 +151,7 @@ static void AIFF_quit(void)
 } /* AIFF_quit */
 
 
-/*
+/* 
  * Sample rate is encoded as an "80 bit IEEE Standard 754 floating point
  * number (Standard Apple Numeric Environment [SANE] data type Extended)".
  * Whose bright idea was that?
@@ -344,7 +344,7 @@ static int AIFF_open(Sound_Sample *sample, const char *ext)
 
     sample->flags = SOUND_SAMPLEFLAG_NONE;
 
-    _D(("AIFF: Accepting data stream.\n"));
+    SNDDBG(("AIFF: Accepting data stream.\n"));
     return(1); /* we'll handle this data. */
 } /* AIFF_open */
 

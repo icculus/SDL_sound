@@ -112,7 +112,7 @@ static int RAW_open(Sound_Sample *sample, const char *ext)
         return(0);
     } /* if */
 
-    _D(("RAW: Accepting data stream.\n"));
+    SNDDBG(("RAW: Accepting data stream.\n"));
 
         /*
          * We never convert raw samples; what you ask for is what you get.
