@@ -35,7 +35,7 @@
  * Support is in place or planned for the following sound formats:
  *   - .WAV  (Microsoft WAVfile RIFF data, internal.)
  *   - .VOC  (Creative Labs' Voice format, internal.)
- *   - .MP3  (MPEG-1 layer 3 support, via the SMPEG library.)
+ *   - .MP3  (MPEG-1 Layer 3 support, via the SMPEG library.)
  *   - .MID  (MIDI music converted to Waveform data, via Timidity.)
  *   - .MOD  (MOD files, via MikMod.)
  *   - .OGG  (Ogg files, via Ogg Vorbis libraries.)
@@ -209,7 +209,7 @@ extern DECLSPEC int Sound_Quit(void);
 /**
  * Get a list of sound formats supported by this implementation of SDL_sound.
  *  This is for informational purposes only. Note that the extension listed is
- *  merely convention: if we list "MP3", you can open an MPEG Audio layer 3
+ *  merely convention: if we list "MP3", you can open an MPEG-1 Layer 3 audio
  *  file with an extension of "XYZ", if you like. The file extensions are
  *  informational, and only required as a hint to choosing the correct
  *  decoder, since the sound data may not be coming from a file at all, thanks
