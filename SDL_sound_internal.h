@@ -35,6 +35,12 @@
 
 #include "SDL.h"
 
+#if (defined DEBUG_CHATTER)
+#define _D(x) printf x
+#else
+#define _D(x)
+#endif
+
 typedef struct __SOUND_DECODERFUNCTIONS__
 {
         /* This is a block of info about your decoder. See SDL_sound.h. */
@@ -68,6 +74,7 @@ typedef struct __SOUND_DECODERFUNCTIONS__
          *    SDL_AudioCVT sdlcvt; (offlimits)
          *    void *buffer;        (offlimits until read() method)
          *    Uint32 buffer_size;  (offlimits until read() method)
+         *    void *decoder_private; (read and write access)
          *
          * in rest of Sound_Sample:
          *    void *opaque;        (this was internal section, above)
@@ -124,7 +131,7 @@ typedef struct __SOUND_DECODERFUNCTIONS__
          *  SOUND_SAMPLEFLAG_EAGAIN flag is reset before each call to this
          *  method.
          */
-    int (*read)(Sound_Sample *sample);
+    Uint32 (*read)(Sound_Sample *sample);
 } Sound_DecoderFunctions;
 
 
@@ -137,6 +144,7 @@ typedef struct __SOUND_SAMPLEINTERNAL__
     SDL_AudioCVT sdlcvt;
     void *buffer;
     Uint32 buffer_size;
+    void *decoder_private;
 } Sound_SampleInternal;
 
 
