@@ -22,3 +22,4 @@ libSDL_sound.la
 config.log
 stamp-h
 stamp-h1
+config.cache
