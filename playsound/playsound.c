@@ -131,13 +131,15 @@ static void output_usage(const char *argv0)
         "     S16MSB  Signed 16-bit (most significant byte first).\n"
         "\n"
         "   Valid arguments to the --seek options look like:\n"
-        "     --seek=\"mm:ss;mm:ss;mm:ss\"\n"
-        "     Where the first \"mm:ss\" is the position, in minutes and\n"
-        "     seconds to seek to at start of playback. The second mm:ss\n"
-        "     is how long to play audio from that point. The third mm:ss\n"
-        "     is another seek after the duration of playback has completed.\n"
-        "     If the final playback duration is omitted, playback continues\n"
-        "     until the end of the file. --loop and --seek can coexist.\n"
+        "     --seek \"mm:SS:ss;mm:SS:ss;mm:SS:ss\"\n"
+        "     Where the first \"mm:SS:ss\" is the position, in minutes,\n"
+        "     seconds and milliseconds to seek to at start of playback. The\n"
+        "     next mm:SS:ss is how long to play audio from that point.\n"
+        "     The third mm:SS:ss is another seek after the duration of\n"
+        "     playback has completed. If the final playback duration is\n"
+        "     omitted, playback continues until the end of the file.\n"
+        "     The \"mm\" and \"SS\" portions may be omitted. --loop\n"
+        "     and --seek can coexist.\n"
         "\n",
         argv0, DEFAULT_DECODEBUF, DEFAULT_AUDIOBUF);
 } /* output_usage */
@@ -322,9 +324,10 @@ static Uint32 cvtMsToBytePos(Sound_AudioInfo *info, Uint32 ms)
 
 static void do_seek(Sound_Sample *sample)
 {
-    printf("Seeking to %.2d:%.2d...\n",
-            ((seek_list[seek_index] / 1000) / 60),
-            ((seek_list[seek_index] / 1000) % 60));
+    printf("Seeking to %.2d:%.2d:%.4d...\n",
+            (int) ((seek_list[seek_index] / 1000) / 60),
+            (int) ((seek_list[seek_index] / 1000) % 60),
+            (int) ((seek_list[seek_index] % 1000)));
 
     if (predecode)
     {
@@ -553,17 +556,29 @@ static Uint32 parse_time_str(char *str)
 {
     Uint32 minutes = 0;
     Uint32 seconds = 0;
+    Uint32 ms = 0;
+
     char *ptr = strchr(str, ':');
     if (ptr != NULL)
     {
+        char *ptr2;
+
         *ptr = '\0';
-        minutes = atoi(str);
+        ptr2 = strchr(ptr + 1, ':');
+        if (ptr2 != NULL)
+        {
+            *ptr2 = '\0';
+            minutes = atoi(str);
+            str = ptr + 1;
+            ptr = ptr2;
+        } /* if */
+
+        seconds = atoi(str);
         str = ptr + 1;
     } /* if */
 
-    seconds = atoi(str);
-
-    return( ((minutes * 60) + seconds) * 1000 );
+    ms = atoi(str);
+    return( (((minutes * 60) + seconds) * 1000) + ms );
 } /* parse_time_str */
 
 
