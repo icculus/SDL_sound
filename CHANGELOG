@@ -2,6 +2,9 @@
  * CHANGELOG.
  */
 
+02052002 - Fixed a cleanup I broke last night. Added CWProject.sit to the
+           EXTRA_DIST section of Makefile.am, and updated the README with
+           MacOS (9/X) install instructions.
 02042002 - Darrell Walisser submitted some cleanups and CodeWarrior project
            files for MacOS 9. Sweet!
 01232002 - Max fixed decoders/Makefile.am to work with seperate build

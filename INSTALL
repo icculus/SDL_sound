@@ -1,4 +1,5 @@
-Building is very easy.
+Building is pretty easy. Please read README, too, as it duplicates and
+expands upon much of this information.
 
 
 ALL PLATFORMS:
@@ -26,6 +27,25 @@ Run "make install" as root to install the library for use on your system.
 
 This should work for most Unix-style systems, including Linux, *BSD, BeOS, and
 MacOS X. Reports of success and failure are welcome.
+
+
+MacOS 9:
+CWProject.sit contains project files for CodeWarrior 5.0 and above. Unpack
+this into the root of the SDL_sound folder.
+
+
+MacOS X command line tools:
+You can use the "UNIX" instructions above if you like the command line tools.
+
+
+MacOS X PowerBuilder:
+If you prefer to use PowerBuilder, download this file:
+  http://icculus.org/SDL_sound/downloads/PBProjects.tar.gz
+...and unpack it in the root of the SDL_sound folder. This archive contains
+several external libraries you would have to download/install manually if you
+used the command line tools (these libraries are for extra decoders, and are
+NOT required for SDL_sound to function...however, without them, the number of
+sound formats you can decode is reduced.)
 
 
 WIN32:

@@ -31,7 +31,19 @@ These external libraries are OPTIONAL. SDL_sound will build and function
 
 Building/Installing:
 
-Linux, Unix, BeOS, MacOS X, BSD users:
+MacOS X users:
+   If you want to use the command line tools, read the next section. If you
+   prefer to use PowerBuilder, download this file:
+    http://icculus.org/SDL_sound/downloads/PBProjects.tar.gz
+   ...and extract it into your SDL_sound directory. The PowerBuilder project
+   files include several of the external libraries, whereas you will have to
+   find and install those libraries yourself with the command line tools.
+
+MacOS 9 users:
+   Included with the source is CWProject.sit, which contains project files for
+   CodeWarrior 5.0 and later.
+
+Linux, Unix, BeOS, MacOS X command line, BSD users:
    If you pulled from CVS, run "./bootstrap" first.
    Then, run ./configure with your favorite options, "make", "make install".
 
