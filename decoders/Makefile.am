@@ -1,6 +1,8 @@
 noinst_LTLIBRARIES = libdecoders.la
 
-INCLUDES = -I$(top_srcdir)
+SUBDIRS = timidity
+
+INCLUDES = -I$(top_srcdir) -Itimidity
 
 libdecoders_la_SOURCES =	\
 	aiff.c		\
@@ -8,7 +10,7 @@ libdecoders_la_SOURCES =	\
 	mp3.c		\
 	ogg.c		\
 	raw.c		\
-    shn.c		\
+	shn.c		\
 	voc.c		\
 	midi.c		\
 	flac.c		\

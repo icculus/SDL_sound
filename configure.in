@@ -137,8 +137,8 @@ fi
 
 dnl Check for the MIDI pipe decoder...
 AC_ARG_ENABLE(midi,
-[  --enable-midi              enable MIDI music via a pipe [default=no]],
-              , enable_midi=no)
+[  --enable-midi              enable software MIDI music [default=yes]],
+              , enable_midi=yes)
 if test x$enable_midi = xyes; then
   AC_DEFINE(SOUND_SUPPORTS_MIDI)
 fi
@@ -221,9 +221,12 @@ AC_TYPE_SIZE_T
 AC_FUNC_MEMCMP
 AC_CHECK_FUNCS([memset strrchr])
 
+dnl Add Makefile conditionals
+AM_CONDITIONAL(USE_TIMIDITY, test x$enable_midi = xyes)
 
 AC_OUTPUT([
 Makefile
 decoders/Makefile
+decoders/timidity/Makefile
 test/Makefile
 ])

@@ -13,14 +13,20 @@ libSDL_sound_la_SOURCES =	\
 	extra_rwops.h	\
 	audio_convert.c
 
+if USE_TIMIDITY
+TIMIDITY_LIB = decoders/timidity/libtimidity.la
+else
+TIMIDITY_LIB =
+endif
+
 libSDL_sound_la_LDFLAGS = 		\
 	-release $(LT_RELEASE)	\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
-libSDL_sound_la_LIBADD = decoders/libdecoders.la
-
+libSDL_sound_la_LIBADD =	\
+	decoders/libdecoders.la	\
+	$(TIMIDITY_LIB)
 
 EXTRA_DIST =	\
 	CREDITS \
 	COPYING \
 	CHANGELOG
-        
