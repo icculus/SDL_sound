@@ -482,7 +482,7 @@ SNDDECLSPEC Sound_Sample *Sound_NewSampleFromFile(const char *filename,
 
 /**
  * \fn void Sound_FreeSample(Sound_Sample *sample)
- * \brief Dispose of a Dispose of a Sound_Sample.
+ * \brief Dispose of a Sound_Sample.
  *
  * This will also close/dispose of the SDL_RWops that was used at creation
  *  time, so there's no need to keep a reference to that around.
