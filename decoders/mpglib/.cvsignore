@@ -1,1 +1,6 @@
 Makefile.in
+libmpglib.la
+Makefile
+.deps
+.libs
+
