@@ -99,7 +99,7 @@ static size_t RWops_ogg_read(void *ptr, size_t size, size_t nmemb, void *datasou
     return((size_t) SDL_RWread((SDL_RWops *) datasource, ptr, size, nmemb));
 } /* RWops_ogg_read */
 
-static int RWops_ogg_seek(void *datasource, int64_t offset, int whence)
+static int RWops_ogg_seek(void *datasource, ogg_int64_t offset, int whence)
 {
     return(SDL_RWseek((SDL_RWops *) datasource, offset, whence));
 } /* RWops_ogg_seek */
