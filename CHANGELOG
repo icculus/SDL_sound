@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+03162002 - Tied the PhysicsFS code into the build system.
 03152002 - Added PhysicsFS support to playsound, so you can play sound files
            that are in ZIP files without unzipping them. Needs to be merged
            into build system (I was just testing my PhysFS->RWops glue code).
