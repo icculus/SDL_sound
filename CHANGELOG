@@ -42,11 +42,15 @@
            discussion on the mailing list. The init() and quit() methods
            led to the possibility that certain decoders will flag themselves
            as unavailable at runtime, and SDL_sound now handles this.
-           Added [LIB|INC]PATH_[OGG|MOD]. Bigendian fixes; no works on PowerPC
-	   Linux. MikMod tweaks. Changed version to 0.1.2.
+           Added [LIB|INC]PATH_[OGG|MOD]. Bigendian fixes; now works on
+           PowerPC Linux. MikMod tweaks. Changed version to 0.1.2.
+09242001 - Thank goodness, Torbjörn came through with the MP3 fix. Apparently
+           SMPEG mixes each chunk of decoded data with whatever is already
+           in the buffer you give it. I hate that. I'm going to patch SMPEG
+           to let the programmer enable and disable that behaviour in a given
+           (SMPEG *), since it's just a CPU eater in this case.
 
 --ryan. (icculus@clutteredmind.org)
 
 /* end of CHANGELOG ... */
-
 

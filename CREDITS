@@ -5,7 +5,7 @@
 Initial API interface and implementation,
 RAW driver,
 VOC driver,
-MP3 driver (bugs and all),
+MP3 driver,
 WAV driver,
 OGG driver,
 Unix support:
@@ -16,7 +16,9 @@ FreeBSD testing:
     Tsuyoshi Iguchi
 
 Code cleanups,
-AIFF driver:
+MP3 fixes,
+AIFF driver,
+MikMod driver:
 Torbjörn Andersson
 
 Other stuff:

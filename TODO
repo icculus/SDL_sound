@@ -1,6 +1,6 @@
 
 General stuff TODO:
-- Use autoconf?
+- Use autoconf.
 - Verify portability to various Unixes (BSD, etc)
 - Port to Win32.
 - Port to BeOS.
@@ -10,11 +10,9 @@ General stuff TODO:
 More immediate:
 - Handle compression and other chunks in WAV files.
 - Handle compression and other chunks in AIFF-C files.
-- Fix the MP3 decoder; it's badly broken.
 - Cleanup up VOC decoder (seems messy to me).
 
 Decoders to implement:
-- .MP3 (implemented, but buggy)
 - .SHN
 - .MID
 - .CDA
