@@ -48,7 +48,13 @@
            SMPEG mixes each chunk of decoded data with whatever is already
            in the buffer you give it. I hate that. I'm going to patch SMPEG
            to let the programmer enable and disable that behaviour in a given
-           (SMPEG *), since it's just a CPU eater in this case.
+           (SMPEG *), since it's just a CPU eater in this case. The _D(())
+           macro is now SNDDBG(()), since _D is taken on MacOS X's version of
+           gcc (which was bound to happen on some platform sooner than later
+           anyhow). Renamed test_sdlsound to playsound, and made it more
+           robust in general: fixed potential overflow in audio_callback,
+           made it chatter less, made it take multiple files and some other
+           command lines.
 
 --ryan. (icculus@clutteredmind.org)
 
