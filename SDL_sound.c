@@ -236,6 +236,15 @@ int __Sound_strcasecmp(const char *x, const char *y)
 {
     int ux, uy;
 
+    if (x == y)  /* same pointer? Both NULL? */
+        return(0);
+
+    if (x == NULL)
+        return(-1);
+
+    if (y == NULL)
+        return(1);
+       
     do
     {
         ux = toupper((int) *x);
