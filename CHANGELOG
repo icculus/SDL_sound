@@ -2,6 +2,9 @@
  * CHANGELOG.
  */
 
+02212002 - Changed SMPEG's URL to point to the icculus.org site. Added an
+           mpglib decoder (internal to SDL_sound; relies on no external libs)
+           and changes mp3.c to smpeg.c (and other associated things).
 02112002 - Committed a patch from Torbjörn to fix incorrect memory accesses
            in the Timidity code. Changed the magic number in the AU decoder
            to be bigendian (seems appropriate). Updated README for

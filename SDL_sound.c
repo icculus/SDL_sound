@@ -47,8 +47,12 @@
 
 /* The various decoder drivers... */
 
-#if (defined SOUND_SUPPORTS_MP3)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MP3;
+#if (defined SOUND_SUPPORTS_SMPEG)
+extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_SMPEG;
+#endif
+
+#if (defined SOUND_SUPPORTS_MPGLIB)
+extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MPGLIB;
 #endif
 
 #if (defined SOUND_SUPPORTS_MIKMOD)
@@ -105,8 +109,12 @@ typedef struct
 
 static decoder_element decoders[] =
 {
-#if (defined SOUND_SUPPORTS_MP3)
-    { 0, &__Sound_DecoderFunctions_MP3 },
+#if (defined SOUND_SUPPORTS_SMPEG)
+    { 0, &__Sound_DecoderFunctions_SMPEG },
+#endif
+
+#if (defined SOUND_SUPPORTS_MPGLIB)
+    { 0, &__Sound_DecoderFunctions_MPGLIB },
 #endif
 
 #if (defined SOUND_SUPPORTS_MODPLUG)
