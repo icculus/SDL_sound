@@ -11,7 +11,7 @@
 #include "mpglib_sdlsound.h"
 
 /* Global mp .. it's a hack */
-struct mpstr *gmp;
+/*struct mpstr *gmp;*/
 
 
 BOOL InitMP3(struct mpstr *mp) 
@@ -158,8 +158,6 @@ int decodeMP3(struct mpstr *mp,char *in,int isize,char *out,
 {
 	int len;
 
-	gmp = mp;
-
 	if(osize < 4608) {
 		Sound_SetError("MPGLIB: Not enough output space for decoding!");
 		return MP3_ERR;
@@ -217,13 +215,13 @@ int decodeMP3(struct mpstr *mp,char *in,int isize,char *out,
            getbits(16);
         switch(mp->fr.lay) {
           case 1:
-	    do_layer1(&mp->fr,(unsigned char *) out,done);
+	    do_layer1(&mp->fr,(unsigned char *) out,done,mp);
             break;
           case 2:
-	    do_layer2(&mp->fr,(unsigned char *) out,done);
+	    do_layer2(&mp->fr,(unsigned char *) out,done,mp);
             break;
           case 3:
-	    do_layer3(&mp->fr,(unsigned char *) out,done);
+	    do_layer3(&mp->fr,(unsigned char *) out,done,mp);
             break;
         }
 
@@ -233,17 +231,17 @@ int decodeMP3(struct mpstr *mp,char *in,int isize,char *out,
 	return MP3_OK;
 }
 
-int set_pointer(long backstep)
+int set_pointer(long backstep, struct mpstr *mp)
 {
   unsigned char *bsbufold;
-  if(gmp->fsizeold < 0 && backstep > 0) {
+  if(mp->fsizeold < 0 && backstep > 0) {
     Sound_SetError("MPGLIB: Can't step back!"); /* FIXME: need formatting: %ld!\n",backstep); */
     return MP3_ERR;
   }
-  bsbufold = gmp->bsspace[gmp->bsnum] + 512;
+  bsbufold = mp->bsspace[mp->bsnum] + 512;
   wordpointer -= backstep;
   if (backstep)
-    memcpy(wordpointer,bsbufold+gmp->fsizeold-backstep,backstep);
+    memcpy(wordpointer,bsbufold+mp->fsizeold-backstep,backstep);
   bitindex = 0;
   return MP3_OK;
 }

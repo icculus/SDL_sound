@@ -16,10 +16,7 @@
 #include "mpglib_sdlsound.h"
 #include "huffman.h"
 
-extern struct mpstr *gmp;
-
 #define MPEG1
-
 
 static real ispow[8207];
 static real aa_ca[8],aa_cs[8];
@@ -1819,11 +1816,11 @@ static void dct12(real *in,real *rawout1,real *rawout2,register real *wi,registe
  * III_hybrid
  */
 static void III_hybrid(real fsIn[SBLIMIT][SSLIMIT],real tsOut[SSLIMIT][SBLIMIT],
-   int ch,struct gr_info_s *gr_info)
+   int ch,struct gr_info_s *gr_info,struct mpstr *mp)
 {
    real *tspnt = (real *) tsOut;
-   real (*block)[2][SBLIMIT*SSLIMIT] = gmp->hybrid_block;
-   int *blc = gmp->hybrid_blc;
+   real (*block)[2][SBLIMIT*SSLIMIT] = mp->hybrid_block;
+   int *blc = mp->hybrid_blc;
    real *rawout1,*rawout2;
    int bt;
    int sb = 0;
@@ -1870,7 +1867,7 @@ static void III_hybrid(real fsIn[SBLIMIT][SSLIMIT],real tsOut[SSLIMIT][SBLIMIT],
 /*
  * main layer3 handler
  */
-int do_layer3(struct frame *fr,unsigned char *pcm_sample,int *pcm_point)
+int do_layer3(struct frame *fr,unsigned char *pcm_sample,int *pcm_point,struct mpstr *mp)
 {
   int gr, ch, ss,clip=0;
   int scalefacs[2][39]; /* max 39 for short[13][3] mode, mixed: 38, long: 22 */
@@ -1912,7 +1909,7 @@ int do_layer3(struct frame *fr,unsigned char *pcm_sample,int *pcm_point)
 #endif
   }
 
-  if(set_pointer(sideinfo.main_data_begin) == MP3_ERR)
+  if(set_pointer(sideinfo.main_data_begin,mp) == MP3_ERR)
     return -1;
 
   for (gr=0;gr<granules;gr++) 
@@ -1929,7 +1926,7 @@ int do_layer3(struct frame *fr,unsigned char *pcm_sample,int *pcm_point)
 #ifdef MPEG1
         part2bits = III_get_scale_factors_1(scalefacs[0],gr_info);
 #else
-    Sound_SetError("MPGLIB: Not supported!");
+        Sound_SetError("MPGLIB: Not supported!");
 #endif
       }
       if(III_dequantize_sample(hybridIn[0], scalefacs[0],gr_info,sfreq,part2bits))
@@ -1944,7 +1941,7 @@ int do_layer3(struct frame *fr,unsigned char *pcm_sample,int *pcm_point)
 #ifdef MPEG1
         part2bits = III_get_scale_factors_1(scalefacs[1],gr_info);
 #else
-    Sound_SetError("MPGLIB: Not supported!");
+        Sound_SetError("MPGLIB: Not supported!");
 #endif
       }
 
@@ -1995,17 +1992,17 @@ int do_layer3(struct frame *fr,unsigned char *pcm_sample,int *pcm_point)
     for(ch=0;ch<stereo1;ch++) {
       struct gr_info_s *gr_info = &(sideinfo.ch[ch].gr[gr]);
       III_antialias(hybridIn[ch],gr_info);
-      III_hybrid(hybridIn[ch], hybridOut[ch], ch,gr_info);
+      III_hybrid(hybridIn[ch], hybridOut[ch], ch,gr_info,mp);
     }
 
     for(ss=0;ss<SSLIMIT;ss++) {
       if(single >= 0) {
-        clip += synth_1to1_mono(hybridOut[0][ss],pcm_sample,pcm_point);
+        clip += synth_1to1_mono(hybridOut[0][ss],pcm_sample,pcm_point,mp);
       }
       else {
         int p1 = *pcm_point;
-        clip += synth_1to1(hybridOut[0][ss],0,pcm_sample,&p1);
-        clip += synth_1to1(hybridOut[1][ss],1,pcm_sample,pcm_point);
+        clip += synth_1to1(hybridOut[0][ss],0,pcm_sample,&p1,mp);
+        clip += synth_1to1(hybridOut[1][ss],1,pcm_sample,pcm_point,mp);
       }
     }
   }

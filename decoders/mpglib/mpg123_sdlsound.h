@@ -96,18 +96,20 @@ struct parameter {
 	int checkrange;
 };
 
+struct mpstr;  /* forward declaration. */
+
 extern unsigned int   get1bit(void);
 extern unsigned int   getbits(int);
 extern unsigned int   getbits_fast(int);
-extern int set_pointer(long);
+extern int set_pointer(long,struct mpstr *);
 
 extern unsigned char *wordpointer;
 extern int bitindex;
 
 extern void make_decode_tables(long scaleval);
-extern int do_layer3(struct frame *fr,unsigned char *,int *);
-extern int do_layer2(struct frame *fr,unsigned char *,int *);
-extern int do_layer1(struct frame *fr,unsigned char *,int *);
+extern int do_layer3(struct frame *fr,unsigned char *,int *,struct mpstr *);
+extern int do_layer2(struct frame *fr,unsigned char *,int *,struct mpstr *);
+extern int do_layer1(struct frame *fr,unsigned char *,int *,struct mpstr *);
 extern int decode_header(struct frame *fr,unsigned long newhead);
 
 
@@ -142,9 +144,10 @@ struct III_sideinfo
   } ch[2];
 };
 
-extern int synth_1to1 (real *,int,unsigned char *,int *);
+
+extern int synth_1to1 (real *,int,unsigned char *,int *,struct mpstr *);
 extern int synth_1to1_8bit (real *,int,unsigned char *,int *);
-extern int synth_1to1_mono (real *,unsigned char *,int *);
+extern int synth_1to1_mono (real *,unsigned char *,int *,struct mpstr *);
 extern int synth_1to1_mono2stereo (real *,unsigned char *,int *);
 extern int synth_1to1_8bit_mono (real *,unsigned char *,int *);
 extern int synth_1to1_8bit_mono2stereo (real *,unsigned char *,int *);
