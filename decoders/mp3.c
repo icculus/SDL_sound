@@ -101,25 +101,49 @@ static int MP3_open(Sound_Sample *sample, const char *ext)
     SDL_AudioSpec spec;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SDL_RWops *refCounter;
-    Uint8 mp3_magic[2];
 
     output_version();
 
        /*
-        * SMPEG appears to be far too greedy about what it accepts as input.
-        * This test was adapted from SDL_mixer.
+        * If I understand things correctly, MP3 files don't really have any
+        * magic header we can check for. The MP3 player is expected to just
+        * pick the first thing that looks like a valid frame and start
+        * playing from there.
+        *
+        * So here's what we do: If the caller insists that this is really
+        * MP3 we'll take his word for it. Otherwise, use the same test as
+        * SDL_mixer does and check if the stream starts with something that
+        * looks like a frame.
+        *
+        * A frame begins with 11 bits of frame sync (all bits must be set),
+        * followed by a two-bit MPEG Audio version ID:
+        *
+        *   00 - MPEG Version 2.5 (later extension of MPEG 2)
+        *   01 - reserved
+        *   10 - MPEG Version 2 (ISO/IEC 13818-3)
+        *   11 - MPEG Version 1 (ISO/IEC 11172-3)
+        *
+        * Apparently we don't handle MPEG Version 2.5.
         */
-    if (SDL_RWread(internal->rw, mp3_magic, sizeof (mp3_magic), 1) != 1)
+    if (__Sound_strcasecmp(ext, "MP3") != 0)
     {
-        Sound_SetError("MP3: Could not read MP3 magic.");
-        return(0);
-    }
-    if (mp3_magic[0] != 0xFF || (mp3_magic[1] & 0xF0) != 0xF0)
-    {
-        Sound_SetError("MP3: Not an MP3 stream.");
-        return(0);
-    }
-    SDL_RWseek(internal->rw, -sizeof (mp3_magic), SEEK_CUR);
+        Uint8 mp3_magic[2];
+
+        if (SDL_RWread(internal->rw, mp3_magic, sizeof (mp3_magic), 1) != 1)
+        {
+            Sound_SetError("MP3: Could not read MP3 magic.");
+            return(0);
+        } /*if */
+
+        if (mp3_magic[0] != 0xFF || (mp3_magic[1] & 0xF0) != 0xF0)
+        {
+            Sound_SetError("MP3: Not an MP3 stream.");
+            return(0);
+        } /* if */
+
+            /* !!! FIXME: If the seek fails, we'll probably miss a frame */
+        SDL_RWseek(internal->rw, -sizeof (mp3_magic), SEEK_CUR);
+    } /* if */
 
     refCounter = RWops_RWRefCounter_new(internal->rw);
     if (refCounter == NULL)
@@ -171,8 +195,9 @@ static int MP3_open(Sound_Sample *sample, const char *ext)
     SMPEG_loop(smpeg, 0);
 
     SMPEG_wantedSpec(smpeg, &spec);
+
         /*
-         * One of the MP3:s I tried wouldn't work unless I added this line
+         * One of the MP3s I tried wouldn't work unless I added this line
          * to tell SMPEG that yes, it may have the spec it wants.
          */
     SMPEG_actualSpec(smpeg, &spec);
