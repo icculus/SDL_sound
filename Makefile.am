@@ -16,3 +16,7 @@ libSDL_sound_la_LDFLAGS = 		\
 	-release $(LT_RELEASE)	\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 libSDL_sound_la_LIBADD = decoders/libdecoders.la
+
+
+EXTRA_DIST =	\
+	CREDITS
