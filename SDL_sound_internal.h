@@ -155,6 +155,24 @@ typedef struct __SOUND_DECODERFUNCTIONS__
          *  method.
          */
     Uint32 (*read)(Sound_Sample *sample);
+
+        /*
+         * Reset the decoding to the beginning of the stream. Nonzero on
+         *  success, zero on failure.
+         *  
+         * The purpose of this method is to allow for higher efficiency than
+         *  an application could get by just recreating the sample externally;
+         *  not only do they not have to reopen the RWops, reallocate buffers,
+         *  and potentially pass the data through several rejecting decoders,
+         *  but certain decoders will not have to recreate their existing
+         *  state (search for metadata, etc) since they already know they
+         *  have a valid audio stream with a given set of characteristics.
+         *
+         * The decoder is responsible for calling seek() on the associated
+         *  SDL_RWops. A failing call to seek() should be the ONLY reason that
+         *  this method should ever fail!
+         */
+    int (*rewind)(Sound_Sample *sample);
 } Sound_DecoderFunctions;
 
 

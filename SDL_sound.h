@@ -455,6 +455,36 @@ extern DECLSPEC Uint32 Sound_Decode(Sound_Sample *sample);
  */
 extern DECLSPEC Uint32 Sound_DecodeAll(Sound_Sample *sample);
 
+
+ /**
+  * Restart a sample at the start of its waveform data, as if newly
+  *  created with Sound_NewSample(). If successful, the next call to
+  *  Sound_Decode[All]() will give audio data from the earliest point
+  *  in the stream.
+  *
+  * Beware that this function will fail if the SDL_RWops that feeds the
+  *  decoder can not be rewound via it's seek method, but this can
+  *  theoretically be avoided by wrapping it in some sort of buffering
+  *  SDL_RWops.
+  *
+  * This function should ONLY fail if the RWops is not seekable, or
+  *  SDL_sound is not initialized. Both can be controlled by the application,
+  *  and thus, it is up to the developer's paranoia to dictate whether this
+  *  function's return value need be checked at all.
+  *
+  * If this function fails, the state of the sample is undefined, but it
+  *  is still safe to call Sound_FreeSample() to dispose of it.
+  *
+  * On success, ERROR, EOF, and EAGAIN are cleared from sample->flags. The
+  *  ERROR flag is set on error.
+  *
+  *    @param sample The Sound_Sample to rewind.
+  *   @return nonzero on success, zero on error. Specifics of the
+  *           error can be gleaned from Sound_GetError().
+  */
+extern DECLSPEC int Sound_Rewind(Sound_Sample *sample);
+
+
 #ifdef __cplusplus
 }
 #endif
