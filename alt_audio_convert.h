@@ -32,12 +32,15 @@
 #define Sound_AI_Loop 0x2
 #define _fsize 32
 
+typedef struct{
+    Sint16 numerator;
+    Sint16 denominator;
+} Fraction;
 
 typedef struct{
    Sint16 c[16][4*_fsize];
    Uint8 incr[16];
-   int denominator;
-   int numerator;
+   Fraction ratio;
    Uint32 zero;
    int mask;
 } VarFilter;
@@ -48,9 +51,11 @@ typedef struct{
    VarFilter *filter;
 } AdapterC;
 
+typedef int (*Adapter) ( AdapterC Data, int length );
+
 typedef struct{
    VarFilter filter;
-   int (*adapter[32]) ( AdapterC Data, int length );
+   Adapter adapter[32];
 /* buffer must be len*len_mult(+len_add) big */
    int len_mult;
    int len_add;
