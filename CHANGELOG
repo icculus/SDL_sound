@@ -3,7 +3,9 @@
  */
 
 03072002 - decoders/mpglib.c now disregards ID3 tags instead of passing them
-           on as valid MP3 data to mpglib.
+           on as valid MP3 data to mpglib. Added some (buggy) example code for
+           adjusting an audio stream's volume (via the new --volume command
+           line in playsound).
 03032002 - Fixed mpglib's build configuration to include general build flags
            so that things like --enable-debug work as expected.
 02212002 - Changed SMPEG's URL to point to the icculus.org site. Added an
