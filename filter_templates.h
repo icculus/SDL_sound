@@ -130,17 +130,18 @@ static Sint16* Suffix(increaseRate)( Sint16 *outp, Sint16 *inp, int length,
     {
         out = 0;
         f = filter->c[pos];
-        for( i = _fsize + 1; --i; inp+=CH(8), f+=4 )
+        for( i = _fsize + 1; --i; inp+=CH(4), f+=4 )
         {
     	    out+= f[0] * (int)inp[CH(0)];
-    	    out+= f[1] * (int)inp[CH(2)];
-    	    out+= f[2] * (int)inp[CH(4)];
-    	    out+= f[3] * (int)inp[CH(6)];
+    	    out+= f[1] * (int)inp[CH(1)];
+    	    out+= f[2] * (int)inp[CH(2)];
+    	    out+= f[3] * (int)inp[CH(3)];
         }
         outp[0] = out >> 16;
 
-        pos = ( pos + filter->denominator - 1 ) % filter->denominator;
-        inp -= CH( 8 * _fsize );
+        pos = ( pos + filter->ratio.denominator - 1 )
+              % filter->ratio.denominator;
+        inp -= CH( 4 * _fsize );
         inp -= CH( filter->incr[pos] );
         outp -= CH(1);
     }
@@ -179,7 +180,7 @@ static Sint16* Suffix(decreaseRate)( Sint16 *outp, Sint16 *inp, int length,
         inp -= CH( 4 * _fsize );
         inp += CH( filter->incr[pos] );
         outp += CH(1);
-        pos = ( pos + 1 ) % filter->denominator;
+        pos = ( pos + 1 ) % filter->ratio.denominator;
     }
 
     *cpos = pos;
