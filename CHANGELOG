@@ -2,6 +2,9 @@
  * CHANGELOG.
  */
 
+07212002 - done_flag was not being reset between files in playsound, so the
+           first file would playback, and then any following tracks in a given
+           run would "finish" immediately. Fixed.
 07132002 - More altcvt fixes from Frank Ranostaj.
 07122002 - Changed inline keyword to compile universally.
 07102002 - Fixed a bug in command line handling in playsound.c. Fixes from
