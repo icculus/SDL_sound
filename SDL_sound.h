@@ -405,10 +405,19 @@ extern DECLSPEC Uint32 Sound_Decode(Sound_Sample *sample);
  *  memory before giving up...be sure to use this on finite sound sources
  *  only!
  *
+ * When decoding the sample in its entirety, the work is done one buffer at a
+ *  time. That is, sound is decoded in sample->buffer_size blocks, and
+ *  appended to a continually-growing buffer until the decoding completes.
+ *  That means that this function will need enough RAM to hold approximately
+ *  sample->buffer_size bytes plus the complete decoded sample at most. The
+ *  larger your buffer size, the less overhead this function needs, but beware
+ *  the possibility of paging to disk. Best to make this user-configurable if
+ *  the sample isn't specific and small.
+ *
  *    @param sample Do all decoding for this Sound_Sample.
- *   @return number of bytes decoded into sample->buffer. If it is less than
- *           sample->buffer_size, then you should check sample->flags to see
- *           what the current state of the sample is (EOF, error, read again).
+ *   @return number of bytes decoded into sample->buffer. You should check
+ *           sample->flags to see what the current state of the sample is
+ *           (EOF, error, read again).
  */
 extern DECLSPEC Uint32 Sound_DecodeAll(Sound_Sample *sample);
 
