@@ -236,6 +236,15 @@ typedef struct Sound_AudioCVT
 } Sound_AudioCVT;
 #endif
 
+extern SNDDECLSPEC int Sound_BuildAudioCVT(Sound_AudioCVT *cvt,
+                        Uint16 src_format, Uint8 src_channels, Uint32 src_rate,
+                        Uint16 dst_format, Uint8 dst_channels, Uint32 dst_rate,
+                        Uint32 dst_size);
+
+extern SNDDECLSPEC int Sound_ConvertAudio(Sound_AudioCVT *cvt);
+
+
+
 typedef struct __SOUND_SAMPLEINTERNAL__
 {
     Sound_Sample *next;

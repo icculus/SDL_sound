@@ -1011,8 +1011,8 @@ static void show_AudioCVT( Sound_AudioCVT *Data )
 
 
 int Sound_BuildAudioCVT(Sound_AudioCVT *Data,
-    Uint16 src_format, Uint8 src_channels, int src_rate,
-    Uint16 dst_format, Uint8 dst_channels, int dst_rate, Uint32 bufsize)
+    Uint16 src_format, Uint8 src_channels, Uint32 src_rate,
+    Uint16 dst_format, Uint8 dst_channels, Uint32 dst_rate, Uint32 bufsize)
 {
     SDL_AudioSpec src, dst;
     int ret;
