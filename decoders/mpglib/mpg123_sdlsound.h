@@ -185,7 +185,7 @@ extern void dct64(real *,real *,real *);
 extern void synth_ntom_set_step(long,long);
 
 extern unsigned char *conv16to8;
-extern long freqs[9];
+extern long mpglib_freqs[9];
 extern real muls[27][64];
 extern real decwin[512+32];
 extern real *pnts[5];
