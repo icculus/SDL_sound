@@ -1024,6 +1024,7 @@ int main(int argc, char **argv)
 
         SDL_PauseAudio(0);
 
+        done_flag = 0;  /* the audio callback will flip this flag. */
         while (!done_flag)
         {
             #if ENABLE_EVENTS
