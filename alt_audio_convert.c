@@ -139,6 +139,7 @@ static int ConvertAudio( Sound_AudioCVT *Data,
     for( i = 0; Data->adapter[i] != NULL; i++ )
 	length = (*Data->adapter[i])( Temp, length);
 
+    Data->len_cvt = length;
     return length;
 }
 
@@ -351,7 +352,7 @@ static int minus5dB( AdapterC Data, int length )
 /*-------------------------------------------------------------------------*/
 enum RateConverterType { varRate = 0, hlfRate = 1, dblRate = 2 };
 static void initRateConverterBuffer( RateConverterBuffer *rcb,
-    AdapterC* Data, int length, RateConverterType r, int rel_size )
+    AdapterC* Data, int length, enum RateConverterType r, int rel_size )
 {
     int size, dir;
     int den[] = { 0, 1, 2};
@@ -707,7 +708,7 @@ static void createFormatConverter16Bit(Sound_AudioCVT *Data, int* fip,
         if( IS_SYSENDIAN(dst) )
             Data->adapter[filter_index++] = changeSigned16BitSys;
         else
-            Data->adapter[filter_index++] = changeSigned16BitSys;
+            Data->adapter[filter_index++] = changeSigned16BitWrong;
     }
 
     if( src.channels == 1 && dst.channels == 2 )
@@ -839,6 +840,8 @@ int BuildAudioCVT( Sound_AudioCVT *Data,
 
     /* Set up the filter information */
 sucess_exit:
+    if( filter_index > 0 )
+        Data->needed = 1;
 /* !!! FIXME: Is it okay to assign NULL to a function pointer?
               Borland says no. -frank */
     Data->adapter[filter_index] = NULL;
