@@ -1,12 +1,4 @@
 Left todo for 0.1.5:
-- Implement rewind method in decoders missing it:
-    * mikmod.c
-    * ogg.c
-    * flac.c
-    * modplug.c
-    * midi.c
-    * mp3.c
-    * shn.c
 - SMPEG only works after calling SDL_OpenAudio(), but I don't think this
   is a universal truth (i.e. - OpenAL uses it without outputting through
   SDL...) Figure out if this can be fixed.
@@ -33,6 +25,7 @@ More immediate:
 - Verify thread safety. SDL_sound should be fully reentrant right now, with
   the exception of Sound_NewSample*()...starting two sounds at once can cause
   the internal linked list of currently-decoding samples to scramble.
+- Fix the crappy rewind implementation in shn.c's SHN_rewind().
 
 Decoders to implement:
 - .CDA (Does this need specific decoding? Or is a RWops needed?)
