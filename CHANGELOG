@@ -86,6 +86,8 @@
            for portability: changed an int64_t to ogg_int64_t.
 10082001 - Restructured decoders/wav.c to allow for multiple formats, and 
            put the start of a handler for the ADPCM format in place.
+10092001 - Patches to shn.c for Visual C compatibility. Visual C project files
+           available from the website.
 
 --ryan. (icculus@clutteredmind.org)
 
