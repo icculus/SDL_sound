@@ -2,6 +2,8 @@
  * CHANGELOG.
  */
 
+01042001 - Forgot to bump playsound's version to match SDL_sound's. Fixed.
+           Added some notes to the top of COPYING about other libraries, etc.
 01012001 - Happy New Year. Added some debug output to wav.c for future
            codecs (GSM comes to mind). Fixed the SMPEG decoder's URL to point
            to Loki's webpage.
