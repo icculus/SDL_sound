@@ -696,7 +696,7 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
     sample->actual.channels = (Uint8) fmt->wChannels;
     sample->actual.rate = fmt->dwSamplesPerSec;
     if ((fmt->wBitsPerSample == 4) /*|| (fmt->wBitsPerSample == 0) */ )
-        sample->actual.format = AUDIO_S16SYS;  /* !!! FIXME ? */
+        sample->actual.format = AUDIO_S16SYS;
     else if (fmt->wBitsPerSample == 8)
         sample->actual.format = AUDIO_U8;
     else if (fmt->wBitsPerSample == 16)

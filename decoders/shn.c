@@ -1327,7 +1327,7 @@ static int SHN_rewind(Sound_Sample *sample)
 
 static int SHN_seek(Sound_Sample *sample, Uint32 ms)
 {
-    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+    BAIL_MACRO("SHN: Seeking not implemented", 0);
 } /* SHN_seek */
 
 
