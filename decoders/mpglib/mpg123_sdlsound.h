@@ -3,7 +3,6 @@
 #include        <signal.h>
 
 #ifndef WIN32
-#include        <sys/signal.h>
 #include        <unistd.h>
 #endif
 
