@@ -67,6 +67,10 @@ extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_WAV;
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_AIFF;
 #endif
 
+#if (defined SOUND_SUPPORTS_AU)
+extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_AU;
+#endif
+
 #if (defined SOUND_SUPPORTS_OGG)
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_OGG;
 #endif
@@ -119,6 +123,10 @@ static decoder_element decoders[] =
 
 #if (defined SOUND_SUPPORTS_AIFF)
     { 0, &__Sound_DecoderFunctions_AIFF },
+#endif
+
+#if (defined SOUND_SUPPORTS_AU)
+    { 0, &__Sound_DecoderFunctions_AU },
 #endif
 
 #if (defined SOUND_SUPPORTS_OGG)
