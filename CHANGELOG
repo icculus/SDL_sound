@@ -79,6 +79,7 @@
            #ifdef SOUND_SUPPORTS_* in voc.c and shn.c, for consistency with
            the other decoders.
 10052001 - Removed #include "SDL_endian" from aiff.c.
+10062001 - Made a change to SDL_sound.c for compiling on non-GNU toolchains.
 
 --ryan. (icculus@clutteredmind.org)
 

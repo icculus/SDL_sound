@@ -6,6 +6,7 @@ General stuff TODO:
 - Port to MacOS Classic.
 - Port to MacOS X.
 - Allow a decoder to register multiple file extensions.
+- Man pages for the API.
 
 More immediate:
 - Write a decent README.
