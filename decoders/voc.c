@@ -231,6 +231,7 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
 
                     v->rate = uc;
                     sample->actual.rate = 1000000.0/(256 - v->rate);
+                    sample->actual.channels = 1;
                     v->channels = 1;
                 } /* if */
 
