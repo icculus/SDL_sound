@@ -64,6 +64,9 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_FMT =
 
 static int FMT_open(Sound_Sample *sample, const char *ext)
 {
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    SDL_RWops *rw = internal->rw;
+
     if (can NOT accept the data)
     {
         Sound_SetError("FMT: expected X, got Y.");
