@@ -32,6 +32,8 @@
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 
+#ifdef SOUND_SUPPORTS_OGG
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,10 +46,6 @@
 
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
-
-#if (!defined SOUND_SUPPORTS_OGG)
-#error SOUND_SUPPORTS_OGG must be defined.
-#endif
 
 static int OGG_init(void);
 static void OGG_quit(void);
@@ -90,23 +88,23 @@ static void OGG_quit(void)
      *  a RWops...
      */
 
-size_t RWops_ogg_read(void *ptr, size_t size, size_t nmemb, void *datasource)
+static size_t RWops_ogg_read(void *ptr, size_t size, size_t nmemb, void *datasource)
 {
     return((size_t) SDL_RWread((SDL_RWops *) datasource, ptr, size, nmemb));
 } /* RWops_ogg_read */
 
-int RWops_ogg_seek(void *datasource, int64_t offset, int whence)
+static int RWops_ogg_seek(void *datasource, int64_t offset, int whence)
 {
     return(SDL_RWseek((SDL_RWops *) datasource, offset, whence));
 } /* RWops_ogg_seek */
 
-int RWops_ogg_close(void *datasource)
+static int RWops_ogg_close(void *datasource)
 {
     /* do nothing; SDL_sound will delete the RWops at a higher level. */
     return(0);  /* this is success in fclose(), so I guess that's okay. */
 } /* RWops_ogg_close */
 
-long RWops_ogg_tell(void *datasource)
+static long RWops_ogg_tell(void *datasource)
 {
     return((long) SDL_RWtell((SDL_RWops *) datasource));
 } /* RWops_ogg_tell */
@@ -257,6 +255,9 @@ static Uint32 OGG_read(Sound_Sample *sample)
 
     return((Uint32) rc);
 } /* OGG_read */
+
+#endif /* SOUND_SUPPORTS_OGG */
+
 
 /* end of ogg.c ... */
 
