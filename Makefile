@@ -63,16 +63,26 @@ endif
 
 #-----------------------------------------------------------------------------#
 # Set this to true if you want to create a debug build.
+#  (for generating debugging symbols, disabling optimizations, etc.)
 #-----------------------------------------------------------------------------#
 #debugging := false
 debugging := true
+
+#-----------------------------------------------------------------------------#
+# Set this to true if you want debugging output. This does a LOT of
+#  chattering to stdout, and can be used with out without the (debugging)
+#  option above. You do NOT want this in a release build!
+#-----------------------------------------------------------------------------#
+#debugging_chatter := false
+debugging_chatter := true
 
 #-----------------------------------------------------------------------------#
 # Set the decoder types you'd like to support.
 #  Note that various decoders may need external libraries.
 #-----------------------------------------------------------------------------#
 use_decoder_raw := true
-use_decoder_voc := false
+use_decoder_mp3 := false
+use_decoder_voc := true
 
 #-----------------------------------------------------------------------------#
 # Set to "true" if you'd like to build a DLL. Set to "false" otherwise.
@@ -199,6 +209,10 @@ else
   LDFLAGS += -O2 -fomit-frame-pointer
 endif
 
+ifeq ($(strip $(debugging_chatter)),true)
+  CFLAGS += -DDEBUG_CHATTER
+endif
+
 ASMFLAGS := -f $(ASMOBJFMT) $(ASMDEFS)
 
 #-----------------------------------------------------------------------------#
@@ -218,14 +232,26 @@ TESTSRCS := test/test_sdlsound.c
 
 MAINSRCS := SDL_sound.c
 
+need_extra_rwops := false
 ifeq ($(strip $(use_decoder_raw)),true)
   MAINSRCS += decoders/raw.c
   CFLAGS += -DSOUND_SUPPORTS_RAW
 endif
 
+ifeq ($(strip $(use_decoder_mp3)),true)
+  MAINSRCS += decoders/mp3.c
+  need_extra_rwops := true
+  CFLAGS += -DSOUND_SUPPORTS_MP3 $(shell smpeg-config --cflags)
+  LDFLAGS += $(shell smpeg-config --libs)
+endif
+
 ifeq ($(strip $(use_decoder_voc)),true)
-  MAINSRCS += archivers/voc.c
+  MAINSRCS += decoders/voc.c
   CFLAGS += -DSOUND_SUPPORTS_VOC
+endif
+
+ifeq ($(strip $(need_extra_rwops)),true)
+  MAINSRCS += extra_rwops.c
 endif
 
 #ifeq ($(strip $(cygwin)),true)
@@ -324,11 +350,13 @@ showcfg:
 	@echo "Compiler              : $(CC)"
 	@echo "Using CygWin          : $(cygwin)"
 	@echo "Debugging             : $(debugging)"
+	@echo "Debugging chatter     : $(debugging_chatter)"
 	@echo "ASM flag              : $(use_asm)"
 	@echo "SDL_sound version     : $(VERFULL)"
 	@echo "Building DLLs         : $(build_dll)"
 	@echo "Install prefix        : $(install_prefix)"
 	@echo "Supports .RAW         : $(use_decoder_raw)"
+	@echo "Supports .MP3         : $(use_decoder_mp3)"
 	@echo "Supports .VOC         : $(use_decoder_voc)"
 
 showflags:
