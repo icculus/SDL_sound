@@ -2,6 +2,11 @@
  * CHANGELOG.
  */
 
+04292002 - Darrell Walisser updated the Mac Classic and OS X project 
+           files, fixed some portability issues, and added an
+           experimental decoder that uses Apple's QuickTime libraries 
+           (see decoders/quicktime.c). I've included the Mac project files 
+           in CVS, now. Removed all use of alloca() from playsound.
 04242002 - Added --seek option and bugfixes to playsound.c. Torbjörn comes
            through with seek support for the FLAC, MIDI, and ModPlug
            decoders (and some stub code for MikMod), and a bugfix for sample

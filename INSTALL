@@ -38,13 +38,13 @@ MacOS X command line tools:
 
 
 MacOS X Project Builder:
-If you prefer to use Project Builder, download this file:
-  http://icculus.org/SDL_sound/downloads/PBProjects.tar.gz
-...and unpack it in the root of the SDL_sound folder. This archive contains
-several external libraries you would have to download/install manually if you
-used the command line tools (these libraries are for extra decoders, and are
-NOT required for SDL_sound to function...however, without them, the number of
-sound formats you can decode is reduced.)
+ If you prefer to use Project Builder, use the project files included with
+ this source: PBProjects.tar.gz...unpack it in the root of the SDL_sound
+ folder. This archive contains several external libraries you would have 
+ to download/install manually if you used the command line tools (these
+ libraries are for extra decoders, and are NOT required for SDL_sound to
+ function...however, without them, the number of sound formats you can
+ decode is reduced.)
 
 
 BeOS:
@@ -52,7 +52,7 @@ BeOS:
 
 
 Win32 Visual C:
- For Visual C, download
+ For Visual C, use:
    http://icculus.org/SDL_sound/downloads/sdl_sound_visualc_srcs.zip
  ...and unzip it somewhere. This zipfile has a complete copy of the
  SDL_sound sources, Visual C project files, and several external libraries,
