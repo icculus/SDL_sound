@@ -163,6 +163,17 @@ if test x$enable_flac = xyes; then
   fi
 fi
 
+dnl Check if libFLAC is recent enough for a seekable decoder
+AC_ARG_ENABLE(seekable-flac,
+[  --enable-seekable-flac     enable the seekable decoder [default=yes]],
+              , enable_seekable_flac=yes)
+if test x$enable_seekable_flac = xyes; then
+  AC_CHECK_LIB(FLAC, FLAC__seekable_stream_decoder_new, have_seekable_flac_lib=yes)
+  if test x$have_flac_hdr = xyes -a x$have_seekable_flac_lib = xyes; then
+    AC_DEFINE(SOUND_SUPPORTS_SEEKABLE_FLAC)
+  fi
+fi
+
 dnl Check for SMPEG
 AC_ARG_ENABLE(smpeg,
 [  --enable-smpeg             enable MP3 decoding via smpeg [default=yes]],
