@@ -11,11 +11,9 @@ More immediate:
 - Handle compression and other chunks in WAV files.
 - Handle compression and other chunks in AIFF-C files.
 - Cleanup up VOC decoder (seems messy to me).
-- Change SMPEG's URL to point to lokigames.com.
 - Rename "test" directory to "playsound".
 - Have default make build playsound, and make install install it.
 - Make some of the SNDDBG() strings more uniform.
-- SMPEG only works after calling SDL_OpenAudio(). Why?
 - Shrink buffer in Sound_DecodeAll to fit exact size of sample after decoding.
 - Make Sound_SetError() and Sound_GetError() use their own buffers, so they
   don't piddle over SDL errors, and vice-versa.
