@@ -4,6 +4,8 @@
 
 02072002 - Committed a patch Torbjörn sent in awhile ago for preventing
            confusion with Timidity++-specific stuff in the timidity.cfg file.
+           Tyler Montbriand sent in an updated Visual C package.
+           Updated SDL_sound.h's comments a little. Upped version to 0.1.5.
 02052002 - Fixed a cleanup I broke last night. Added CWProject.sit to the
            EXTRA_DIST section of Makefile.am, and updated the README with
            MacOS (9/X) install instructions.
