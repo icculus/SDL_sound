@@ -582,8 +582,7 @@ static int QT_rewind(Sound_Sample *sample)
 
 static int QT_seek(Sound_Sample *sample, Uint32 ms)
 {
-    /* !!! FIXME: Implement this! */
-    return(0);
+    BAIL_MACRO("!!! FIXME: Not implemented", 0);
 } /* QT_seek */
 
 
