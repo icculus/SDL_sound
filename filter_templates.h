@@ -35,7 +35,7 @@
 /*-------------------------------------------------------------------------*/
 #define sum_d(v,dx) ((int) v[CH(dx)] + v[CH(1-dx)])
 static Sint16* Suffix(doubleRate)( Sint16 *outp, Sint16 *inp, int length,
-                                   VarFilter* filt, int* cpos  )
+                                   VarFilter* filt, RateAux* aux  )
 {
     int out;
     Sint16 *to;
@@ -68,6 +68,7 @@ static Sint16* Suffix(doubleRate)( Sint16 *outp, Sint16 *inp, int length,
         inp -= CH(1);
         outp -= CH(2);
     }
+
     return outp;
 }
 #undef sum_d
@@ -75,12 +76,13 @@ static Sint16* Suffix(doubleRate)( Sint16 *outp, Sint16 *inp, int length,
 /*-------------------------------------------------------------------------*/
 #define sum_h(v,dx) ((int) v[CH(dx)] + v[CH(-dx)])
 static Sint16* Suffix(halfRate)( Sint16 *outp, Sint16 *inp, int length,
-                                 VarFilter* filt, int* cpos  )
+                                 VarFilter* filt, RateAux* aux )
 {
     int out;
     Sint16* to;
 
     to = inp + length;
+    inp += aux->carry;
 
     while( inp < to )
     {
@@ -105,16 +107,18 @@ static Sint16* Suffix(halfRate)( Sint16 *outp, Sint16 *inp, int length,
 
         outp[0] = out >> 16;
 
-        inp+= CH(2);
+        inp += CH(2);
         outp += CH(1);
     }
+
+    aux->carry = inp < to + CH(1) ? 0 : CH(1);
     return outp;
 }
 #undef sum_h
 
 /*-------------------------------------------------------------------------*/
 static Sint16* Suffix(increaseRate)( Sint16 *outp, Sint16 *inp, int length,
-                                     VarFilter* filter, int* cpos )
+                                     VarFilter* filter, RateAux* aux )
 {
     const static int fsize = CH(2*_fsize);
     Sint16 *f;
@@ -124,7 +128,7 @@ static Sint16* Suffix(increaseRate)( Sint16 *outp, Sint16 *inp, int length,
 
     inp -= fsize;
     to = inp - length;
-    pos = *cpos;
+    pos = aux->pos;
 
     while( inp > to )
     {
@@ -146,13 +150,13 @@ static Sint16* Suffix(increaseRate)( Sint16 *outp, Sint16 *inp, int length,
         outp -= CH(1);
     }
 
-    *cpos = pos;
+    aux->pos = pos;
     return outp;
 }
 
 /*-------------------------------------------------------------------------*/
 static Sint16* Suffix(decreaseRate)( Sint16 *outp, Sint16 *inp, int length,
-                                     VarFilter* filter, int* cpos )
+                                     VarFilter* filter, RateAux* aux )
 {
     const static int fsize = CH(2*_fsize);
     Sint16 *f;
@@ -162,7 +166,8 @@ static Sint16* Suffix(decreaseRate)( Sint16 *outp, Sint16 *inp, int length,
 
     inp -= fsize;
     to = inp + length;
-    pos = *cpos;
+    pos = aux->pos;
+    inp += aux->carry;
 
     while( inp < to )
     {
@@ -183,7 +188,8 @@ static Sint16* Suffix(decreaseRate)( Sint16 *outp, Sint16 *inp, int length,
         pos = ( pos + 1 ) % filter->ratio.denominator;
     }
 
-    *cpos = pos;
+    aux->pos = pos;
+    aux->carry = inp < to + CH(1) ? 0 : CH(1);
     return outp;
 }
 
