@@ -510,11 +510,13 @@ int main(int argc, char **argv)
         } /* while */
         SDL_PauseAudio(1);
 
-	/* Sleep two buffers' worth of audio before closing, in order
-	   to allow the playback to finish. This isn't always enough;
-	   perhaps SDL needs a way to explicitly wait for device drain? */
-	delay = 2 * 1000 * sdl_desired.samples / sdl_desired.freq;
-	SDL_Delay(delay);
+            /*
+             * Sleep two buffers' worth of audio before closing, in order
+             *  to allow the playback to finish. This isn't always enough;
+             *   perhaps SDL needs a way to explicitly wait for device drain?
+             */
+        delay = 2 * 1000 * sdl_desired.samples / sdl_desired.freq;
+        SDL_Delay(delay);
 
         if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
         {
