@@ -1,3 +1,23 @@
+Please note that the included source from Timidity, the MIDI decoder, is also
+ licensed under the following terms (GNU LGPL), but can also be used
+ separately under the GNU GPL, or the Perl Artistic License. Those licensing
+ terms are not reprinted here, but can be found on the web easily.
+
+Other external libraries (such as Ogg Vorbis, SMPEG, etc) have their own
+ licenses which you should be aware of before including the related code
+ in your configuration. Most (if not all) are also under the LGPL, but are
+ external projects and we've got no control over them.
+
+If you want to use SDL_sound under a closed-source license, please contact
+ Ryan (icculus@clutteredmind.org), and we can discuss an alternate license for
+ money to be distributed between the contributors to this work, but I'd
+ encourage you to abide by the LGPL, since the usual concern is whether you
+ can use this library without releasing your own source code (you can).
+
+
+-------------------
+
+
 		  GNU LESSER GENERAL PUBLIC LICENSE
 		       Version 2.1, February 1999
 
