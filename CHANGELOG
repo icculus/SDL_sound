@@ -58,7 +58,9 @@
 09252001 - More autoconf work. Gave Max Horn write access to the CVS
            repository, so I don't drive him nuts tweaking this thing.  :)
            Fixed a const complaint and some other stuff needed for compilation
-           under Visual C++ 6.0 (no, it isn't ported yet).
+           under Visual C++ 6.0 (no, it isn't ported yet). Put the SHN source
+           in CVS, even though it isn't ready (and doesn't even compile). Do
+           NOT enable it in your build!
 
 --ryan. (icculus@clutteredmind.org)
 
