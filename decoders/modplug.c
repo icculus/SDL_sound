@@ -270,7 +270,7 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
     if (modplug_mutex != NULL)
         SDL_UnlockMutex(modplug_mutex);
 
-    sample->total_time = ModPlug_GetLength(module);
+    internal->total_time = ModPlug_GetLength(module);
     SNDDBG(("MODPLUG: [%d ms] %s\n",
             ModPlug_GetLength(module), ModPlug_GetName(module)));
 

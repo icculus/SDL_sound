@@ -233,6 +233,8 @@ static void metadata_callback(
     void *client_data)
 {
     flac_t *f = (flac_t *) client_data;
+    Sound_Sample *sample = f->sample;
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
 
     SNDDBG(("FLAC: Metadata callback.\n"));
 
@@ -244,24 +246,27 @@ static void metadata_callback(
         SNDDBG(("FLAC: Metadata is streaminfo.\n"));
 
         f->is_flac = 1;
-        f->sample->actual.channels = metadata->data.stream_info.channels;
-        f->sample->actual.rate = metadata->data.stream_info.sample_rate;
+        sample->actual.channels = metadata->data.stream_info.channels;
+        sample->actual.rate = metadata->data.stream_info.sample_rate;
 
-	if (metadata->data.stream_info.sample_rate == 0 ||
+        if (metadata->data.stream_info.sample_rate == 0 ||
             metadata->data.stream_info.total_samples == 0)
-	  f->sample->total_time = -1;
-	else {
-	    f->sample->total_time = (metadata->data.stream_info.total_samples)
+        {
+            internal->total_time = -1;
+        } /* if */
+        else
+        {
+            internal->total_time = (metadata->data.stream_info.total_samples)
                 / metadata->data.stream_info.sample_rate * 1000;
-	    f->sample->total_time += (metadata->data.stream_info.total_samples
+            internal->total_time += (metadata->data.stream_info.total_samples
                 % metadata->data.stream_info.sample_rate) * 1000
                 / metadata->data.stream_info.sample_rate;
-	}
+        } /* else */
 
         if (metadata->data.stream_info.bits_per_sample > 8)
-            f->sample->actual.format = AUDIO_S16MSB;
+            sample->actual.format = AUDIO_S16MSB;
         else
-            f->sample->actual.format = AUDIO_S8;
+            sample->actual.format = AUDIO_S8;
     } /* if */
 } /* metadata_callback */
 

@@ -2,7 +2,9 @@
  * CHANGELOG.
  */
 
-
+05112004 - Added Sound_GetDuration() and moved total_time out of Sound_Sample
+           struct and into it's opaque data...this fixes binary compatibility
+           with apps written for SDL_sound 1.0.
 05082004 - Started 1.1.0 development branch with code to determine the total
            length of a sample (thanks to Wesley, Eric, Wang, and Ahilan!)...
            this patch was originally committed to CVS on 10252003, but it is

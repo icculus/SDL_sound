@@ -580,8 +580,8 @@ static __inline__ int parse_riff_header(shn_t *shn, Sound_Sample *sample)
     BAIL_IF_MACRO(!verb_ReadLE32(shn, rw, &u32), NULL, 0); /* 'data' header */
     BAIL_IF_MACRO(u32 != dataID,  "SHN: No 'data' header.", 0);
     BAIL_IF_MACRO(!verb_ReadLE32(shn, rw, &u32), NULL, 0); /* chunksize */
-    sample->total_time = u32 / bytes_per_second * 1000;
-    sample->total_time += (u32 % bytes_per_second) * 1000 / bytes_per_second;
+    internal->total_time = u32 / bytes_per_second * 1000;
+    internal->total_time += (u32 % bytes_per_second) * 1000 / bytes_per_second;
     return(1);
 } /* parse_riff_header */
 

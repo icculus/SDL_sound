@@ -212,9 +212,9 @@ static int OGG_open(Sound_Sample *sample, const char *ext)
     sample->actual.channels = (Uint8) info->channels;
     total_time = ov_time_total(vf, -1);
     if (OV_EINVAL == total_time)
-      sample->total_time = -1;
+      internal->total_time = -1;
     else
-      sample->total_time = (Sint32)(total_time * 1000.0 + 0.5);
+      internal->total_time = (Sint32)(total_time * 1000.0 + 0.5);
 
 
     /*

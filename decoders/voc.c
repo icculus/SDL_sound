@@ -245,9 +245,9 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
 
                 bytes_per_second = sample->actual.rate
                     * sample->actual.channels;
-                sample->total_time += ( v->rest ) / bytes_per_second * 1000;
-		sample->total_time += (v->rest % bytes_per_second) * 1000
-		    / bytes_per_second;
+                internal->total_time += ( v->rest ) / bytes_per_second * 1000;
+                internal->total_time += (v->rest % bytes_per_second) * 1000
+                                            / bytes_per_second;
                 return 1;
 
             case VOC_DATA_16:
@@ -281,11 +281,11 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
                     return 0;
                 v->rest = sblen - 12;
 
-		bytes_per_second = ((v->size == ST_SIZE_WORD) ? (2) : (1)) *
-		    sample->actual.rate * v->channels;
-                sample->total_time += v->rest / bytes_per_second * 1000;
-                sample->total_time += ( v->rest % bytes_per_second ) * 1000
-		    / bytes_per_second;
+                bytes_per_second = ((v->size == ST_SIZE_WORD) ? (2) : (1)) *
+                                    sample->actual.rate * v->channels;
+                internal->total_time += v->rest / bytes_per_second * 1000;
+                internal->total_time += ( v->rest % bytes_per_second ) * 1000
+                                            / bytes_per_second;
                 return 1;
 
             case VOC_CONT:
@@ -315,8 +315,8 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
                 v->rest = period;
                 v->silent = 1;
 
-		sample->total_time += (period) / (v->rate) * 1000;
-		sample->total_time += (period % v->rate) * 1000 / v->rate; 
+                internal->total_time += (period) / (v->rate) * 1000;
+                internal->total_time += (period % v->rate) * 1000 / v->rate;
                 return 1;
 
             case VOC_LOOP:

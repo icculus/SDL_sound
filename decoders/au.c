@@ -246,10 +246,10 @@ static int AU_open(Sound_Sample *sample, const char *ext)
 
     bytes_per_second = ( ( dec->encoding == AU_ENC_LINEAR_16 ) ? 2 : 1 )
         * sample->actual.rate * sample->actual.channels ;
-    sample->total_time = ((dec->remaining == -1) ? (-1) :
-			  ( ( dec->remaining / bytes_per_second ) * 1000 ) +
-			  ( ( dec->remaining % bytes_per_second ) * 1000 /
-                          bytes_per_second ) );
+    internal->total_time = ((dec->remaining == -1) ? (-1) :
+                            ( ( dec->remaining / bytes_per_second ) * 1000 ) +
+                            ( ( dec->remaining % bytes_per_second ) * 1000 /
+                              bytes_per_second ) );
 
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
     dec->total = dec->remaining;

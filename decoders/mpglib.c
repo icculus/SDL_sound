@@ -197,8 +197,8 @@ static int MPGLIB_open(Sound_Sample *sample, const char *ext)
         if (SDL_RWseek(internal->rw, pos, SEEK_SET) != pos) {
             BAIL_MACRO("MPGLIB: Cannot go back to save spot in file.", 0);
 	}
-        sample->total_time = total_byte_size / mpg->mp.fr.bitrate * 8.0;
-        sample->total_time += (total_byte_size % mpg->mp.fr.bitrate) * 8.0
+        internal->total_time = total_byte_size / mpg->mp.fr.bitrate * 8.0;
+        internal->total_time += (total_byte_size % mpg->mp.fr.bitrate) * 8.0
             / mpg->mp.fr.bitrate;
     }
 

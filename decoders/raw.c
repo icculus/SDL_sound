@@ -135,8 +135,8 @@ static int RAW_open(Sound_Sample *sample, const char *ext)
 
     sample_rate =  (sample->actual.rate * sample->actual.channels
       * ( (sample->actual.format & 0x0018) >> 3) );
-    sample->total_time = ( pos ) / sample_rate * 1000;
-    sample->total_time += (pos % sample_rate) * 1000 / sample_rate;
+    internal->total_time = ( pos ) / sample_rate * 1000;
+    internal->total_time += (pos % sample_rate) * 1000 / sample_rate;
 
     return(1); /* we'll handle this data. */
 } /* RAW_open */

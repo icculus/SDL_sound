@@ -901,5 +901,12 @@ int Sound_Seek(Sound_Sample *sample, Uint32 ms)
 } /* Sound_Rewind */
 
 
+Sint32 Sound_GetDuration(Sound_Sample *sample)
+{
+    BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, -1);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    return(internal->total_time);
+} /* Sound_GetDuration */
+
 /* end of SDL_sound.c ... */
 
