@@ -158,6 +158,7 @@ static int MPGLIB_open(Sound_Sample *sample, const char *ext)
 
     SNDDBG(("MPGLIB: Accepting data stream.\n"));
 
+    /* !!! FIXME: Determine what format mpglib is spitting out... */
     internal->decoder_private = mpg;
     sample->actual.rate = 44100;
     sample->actual.channels = 2;
