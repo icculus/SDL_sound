@@ -19,7 +19,7 @@ FreeBSD testing:
     Tsuyoshi Iguchi
 
 Code cleanups,
-MP3 fixes,
+SMPEG fixes,
 AIFF driver,
 MikMod driver,
 MIDI driver,
