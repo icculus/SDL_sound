@@ -81,7 +81,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MIKMOD =
         extensions_mikmod,
         "Play modules through MikMod",
         "Torbjörn Andersson <d91tan@Update.UU.SE>",
-        "http://www.mikmod.org/"
+        "http://mikmod.raphnet.net/"
     },
 
     MIKMOD_init,       /*   init() method */
