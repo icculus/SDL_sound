@@ -2,8 +2,17 @@
  * CHANGELOG.
  */
 
+12272001 - Added --audiobuf and --decodebuf options to playsound to make
+           tracking down a bug in the ADPCM decoder easier (plus, it could
+           help for benchmarking, etc later on...). Found a printf() bug in
+           playsound (extra comma in there...). ADPCM decoder appears to be
+           functional now. Tried to add ElectricFence support to
+           configure.in, and failed. All this libtool/autoconf stuff makes my
+           head hurt.
 12262001 - Changed remaining references to the "LICENSE" file into "COPYING".
-           Work progresses on the ADPCM-compressed .wav decoder.
+           Work progresses on the ADPCM-compressed .wav decoder. Updates to
+           the documentation in SDL_sound.h. Hhmm...find_chunk() in wav.c was
+           badly broken. Fixed.
 12162001 - FLAC decoder now checks for the magic number unless the file
            extension is recognized. This was changed back because searching
            for metadata, while probably more effective, is VERY expensive (and
