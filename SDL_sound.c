@@ -52,6 +52,10 @@ extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MP3;
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_WAV;
 #endif
 
+#if (defined SOUND_SUPPORTS_OGG)
+extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_OGG;
+#endif
+
 #if (defined SOUND_SUPPORTS_VOC)
 extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_VOC;
 #endif
@@ -68,6 +72,10 @@ static const Sound_DecoderFunctions *decoderFuncs[] =
 
 #if (defined SOUND_SUPPORTS_WAV)
     &__Sound_DecoderFunctions_WAV,
+#endif
+
+#if (defined SOUND_SUPPORTS_OGG)
+    &__Sound_DecoderFunctions_OGG,
 #endif
 
 #if (defined SOUND_SUPPORTS_VOC)
@@ -114,13 +122,14 @@ int Sound_Init(void)
     for (i = 0; decoderFuncs[i] != NULL; i++)
         ; /* do nothing. */
 
-    i++;
     available_decoders = (const Sound_DecoderInfo **)
-                            malloc(i * sizeof (Sound_DecoderInfo *));
+                            malloc((i + 1) * sizeof (Sound_DecoderInfo *));
     BAIL_IF_MACRO(available_decoders == NULL, ERR_OUT_OF_MEMORY, 0);
 
     for (i = 0; decoderFuncs[i] != NULL; i++)
         available_decoders[i] = &decoderFuncs[i]->info;
+
+    available_decoders[i] = NULL;
 
     initialized = 1;
     return(1);
