@@ -62,6 +62,8 @@
            in CVS, even though it isn't ready (and doesn't even compile). Do
            NOT enable it in your build!
 10012001 - Fixed a memory leak that Torbjörn found in the MOD decoder.
+10022001 - Changed a comment in mod.c to not refer to "the mikmod 
+           directory" anymore.
 
 --ryan. (icculus@clutteredmind.org)
 
