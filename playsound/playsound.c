@@ -841,6 +841,7 @@ int main(int argc, char **argv)
             global_state.bytes_before_next_seek = -1;
             audio_buffersize = DEFAULT_AUDIOBUF;
             decode_buffersize = DEFAULT_DECODEBUF;
+            new_sample = 0;
         } /* if */
 
         if (strcmp(argv[i], "--rate") == 0 && argc > i + 1)
