@@ -279,7 +279,6 @@ static int read_ssnd_chunk(SDL_RWops *rw, ssnd_t *ssnd)
     ssnd->blockSize = SDL_SwapBE32(ssnd->blockSize);
 
     /* Leave the SDL_RWops position indicator at the start of the samples */
-    /* !!! FIXME: Int? Really? */
     if (SDL_RWseek(rw, (int) ssnd->offset, SEEK_CUR) == -1)
         return(0);
 

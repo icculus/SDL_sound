@@ -954,8 +954,11 @@ static int III_dequantize_sample(real xr[SBLIMIT][SSLIMIT],int *scf,
   if(part2remain > 0)
     getbits(part2remain);
   else if(part2remain < 0) {
-    /* !!! FIXME: Need formatting: by %d bits!\n",-part2remain);*/
-    BAIL_MACRO("MPGLIB: Can't rewind stream!", 1); /* -> error */
+    char err[128];
+    snprintf(err, sizeof (err),
+                "MPGLIB: Can't rewind stream by %d bits!",
+                -part2remain);
+    BAIL_MACRO(err, 1); /* -> error */
   }
   return 0;
 }
@@ -1365,8 +1368,11 @@ static int III_dequantize_sample_ms(real xr[2][SBLIMIT][SSLIMIT],int *scf,
   if(part2remain > 0 )
     getbits(part2remain);
   else if(part2remain < 0) {
-    /* !!! FIXME: Need formatting: by %d bits!\n",-part2remain);*/
-    BAIL_MACRO("MPGLIB: Can't rewind stream!", 1); /* -> error */
+    char err[128];
+    snprintf(err, sizeof (err),
+                "MPGLIB: Can't rewind stream by %d bits!",
+                -part2remain);
+    BAIL_MACRO(err, 1); /* -> error */
   }
   return 0;
 }

@@ -226,8 +226,9 @@ int set_pointer(long backstep, struct mpstr *mp)
 {
   unsigned char *bsbufold;
   if(mp->fsizeold < 0 && backstep > 0) {
-    /* FIXME: need formatting: %ld!\n",backstep); */
-    BAIL_MACRO("MPGLIB: Can't step back!", MP3_ERR);
+    char err[128];
+    snprintf(err, sizeof (err), "MPGLIB: Can't step back! %ld!", backstep);
+    BAIL_MACRO(err, MP3_ERR);
   }
   bsbufold = mp->bsspace[mp->bsnum] + 512;
   wordpointer -= backstep;
