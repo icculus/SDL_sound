@@ -61,9 +61,15 @@
 extern "C" {
 #endif
 
+#ifdef SDL_SOUND_DLL_EXPORTS
+#  undef DECLSPEC
+#  define DECLSPEC __declspec(dllexport)
+#endif
+
+
 #define SOUND_VER_MAJOR 0
 #define SOUND_VER_MINOR 1
-#define SOUND_VER_PATCH 2
+#define SOUND_VER_PATCH 3
 
 
 /*
