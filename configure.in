@@ -265,15 +265,6 @@ if test x$enable_physfs = xyes; then
   fi
 fi
 
-dnl Check for PhysicsFS http://icculus.org/physfs/
-AC_ARG_ENABLE(altcvt,
-[  --enable-altcvt            enable EXPERIMENTAL audio converter [default=no]],
-              , enable_altcvt=no)
-if test x$enable_altcvt = xyes; then
-  AC_DEFINE(SOUND_USE_ALTCVT)
-fi
-
-
 dnl Check for efence (!!! FIXME : This doesn't work.)
 dnl AC_ARG_ENABLE(efence,
 dnl [  --enable-efence            enable ElectricFence usage [default=no]],
