@@ -1,4 +1,4 @@
-check_PROGRAMS = playsound
+bin_PROGRAMS = playsound
 
 INCLUDES = -I$(top_srcdir)
 
