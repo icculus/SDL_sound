@@ -895,17 +895,9 @@ int main(int argc, char **argv)
              */
         if (use_specific_audiofmt)
         {
-            /* Pick sensible default for any value not explicitly specified. */
-            if (sound_desired.rate == 0)
-                sound_desired.rate = 44100;
-            if (sound_desired.format == 0)
-                sound_desired.format = AUDIO_S16SYS;
-            if (sound_desired.channels == 0)
-                sound_desired.channels = 2;
-
-            sdl_desired.freq = sound_desired.rate;
-            sdl_desired.format = sound_desired.format;
-            sdl_desired.channels = sound_desired.channels;
+            sdl_desired.freq = sample->desired.rate;
+            sdl_desired.format = sample->desired.format;
+            sdl_desired.channels = sample->desired.channels;
         } /* if */
         else
         {
