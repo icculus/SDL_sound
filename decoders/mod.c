@@ -23,8 +23,7 @@
  * This driver handles anything our subset of MikMod handles. It is based on
  *  SDL_mixer's MikMod music player.
  *
- * Please see the file LICENSE in the source's root directory, and the file
- *  COPYING.LESSER in the mikmod subdirectory.
+ * Please see the file LICENSE in the source's root directory.
  *
  *  This file written by Torbjörn Andersson (d91tan@Update.UU.SE)
  */
