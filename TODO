@@ -13,6 +13,9 @@ More immediate:
 - Handle compression and other chunks in WAV files.
 - Handle compression and other chunks in AIFF-C files.
 - Cleanup up VOC decoder (seems messy to me).
+- Change SMPEG's URL to point to lokigames.com.
+- Rename "test" directory to "playsound".
+- Have default make build playsound, and make install install it.
 
 Decoders to implement:
 - .MID
