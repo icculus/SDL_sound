@@ -2,6 +2,9 @@
  * CHANGELOG.
  */
 
+08222002 - Borland project files in CVS, thanks to Dominique Louis. There are
+           project files for C++ Builder 6 (Windows), C++ Builder for Linux
+           (aka Kylix 3) and Borland's C++ Command line compiler.
 08172002 - Timidity memory leak cleanup by Torbjörn.
 07292002 - Valgrind cleanups; memory leak patches, etc.
 07212002 - done_flag was not being reset between files in playsound, so the
