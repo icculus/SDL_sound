@@ -79,7 +79,7 @@ typedef struct vocstuff {
     Uint32	blockseek;		/* start of current output block */
     Uint32	samples;		/* number of samples output */
     Uint32	size;           /* word length of data */
-    int 	channels;       /* number of sound channels */
+    Uint8 	channels;       /* number of sound channels */
     int     extended;       /* Has an extended block been read? */
     Uint32  bufpos;         /* byte position in internal->buffer. */
 } vs_t;
