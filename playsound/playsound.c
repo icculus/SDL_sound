@@ -87,57 +87,42 @@ static void output_decoders(void)
 
 static volatile int done_flag = 0;
 
+static Uint8 *decoded_ptr = NULL;
+static Uint32 decoded_bytes = 0;
+
 static void audio_callback(void *userdata, Uint8 *stream, int len)
 {
-    static Uint8 overflow[16384]; /* this is a hack. */
-    static Uint8 *overflow_ptr;
-    static int overflowBytes = 0;
     Sound_Sample *sample = (Sound_Sample *) userdata;
     int bw = 0; /* bytes written to stream*/
-    Uint32 rc;  /* return code */
+    int cpysize;
 
-    if (overflowBytes > 0)
+    while (bw < len)
     {
-        bw = (overflowBytes < len) ? overflowBytes : len;
-        memcpy(stream, overflow_ptr, bw);
-        overflow_ptr += bw;
-        overflowBytes -= bw;
-    } /* if */
-
-    while ((bw < len) && (!done_flag))
-    {
-        rc = Sound_Decode(sample);
-        if (rc > 0)
+        if (!decoded_bytes)
         {
-            if ((bw + (int) rc) > len)
+            if (sample->flags & (SOUND_SAMPLEFLAG_ERROR|SOUND_SAMPLEFLAG_EOF))
             {
-                overflowBytes = (bw + rc) - len;
-                memcpy(overflow,
-                       ((Uint8 *) sample->buffer) + (rc - overflowBytes),
-                       overflowBytes);
-                overflow_ptr = overflow;
-                rc -= overflowBytes;
+                memset(stream + bw, '\0', len - bw);
+                done_flag = 1;
+                return;
             } /* if */
 
-            memcpy(stream + bw, sample->buffer, rc);
-            bw += rc;
+            decoded_bytes = Sound_Decode(sample);
+            decoded_ptr = sample->buffer;
         } /* if */
 
-        if (sample->flags & SOUND_SAMPLEFLAG_EOF)
-            done_flag = 1;
+        cpysize = len - bw;
+        if (cpysize > decoded_bytes)
+            cpysize = decoded_bytes;
 
-        else if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
+        if (cpysize > 0)
         {
-            fprintf(stderr, "Error condition in decoding!\n"
-                            "  problem: [%s].\n", Sound_GetError());
-            done_flag = 1;
-        } /* else if */
+            memcpy(stream + bw, decoded_ptr, cpysize);
+            bw += cpysize;
+            decoded_ptr += bw;
+            decoded_bytes -= bw;
+        } /* if */
     } /* while */
-
-    assert(bw <= len);
-
-    if (bw < len)
-        memset(stream + bw, '\0', len - bw);
 } /* audio_callback */
 
 
@@ -362,10 +347,18 @@ int main(int argc, char **argv)
         done_flag = 0;
         SDL_PauseAudio(0);
         while (!done_flag)
+        {
             SDL_Delay(10);
+        } /* while */
         SDL_PauseAudio(1);
-        SDL_CloseAudio();  /* reopen with next sample's format if possible */
 
+        if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
+        {
+            fprintf(stderr, "Error in decoding sound file!\n"
+                            "  reason: [%s].\n", Sound_GetError());
+        } /* if */
+
+        SDL_CloseAudio();  /* reopen with next sample's format if possible */
         Sound_FreeSample(sample);
     } /* for */
 
