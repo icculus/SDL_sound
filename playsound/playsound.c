@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <signal.h>
 #include "SDL.h"
 #include "SDL_sound.h"
 
@@ -48,12 +49,11 @@ static void output_versions(const char *argv0)
     SDL_VERSION(&sdl_compiled);
     sdl_linked = SDL_Linked_Version();
 
-    fprintf(stderr,
-            "%s version %d.%d.%d.\n"
-            " Compiled against SDL_sound version %d.%d.%d,\n"
-            " and linked against %d.%d.%d.\n"
-            " Compiled against SDL version %d.%d.%d,\n"
-            " and linked against %d.%d.%d.\n\n",
+    printf("%s version %d.%d.%d.\n"
+           " Compiled against SDL_sound version %d.%d.%d,\n"
+           " and linked against %d.%d.%d.\n"
+           " Compiled against SDL version %d.%d.%d,\n"
+           " and linked against %d.%d.%d.\n\n",
              argv0,
              PLAYSOUND_VER_MAJOR, PLAYSOUND_VER_MINOR, PLAYSOUND_VER_PATCH,
              compiled.major, compiled.minor, compiled.patch,
@@ -67,25 +67,52 @@ static void output_decoders(void)
 {
     const Sound_DecoderInfo **rc = Sound_AvailableDecoders();
     const Sound_DecoderInfo **i;
+    const char **ext;
 
-    fprintf(stderr, "Supported sound formats:\n");
+    printf("Supported sound formats:\n");
     if (rc == NULL)
-        fprintf(stderr, " * Apparently, NONE!\n");
+        printf(" * Apparently, NONE!\n");
     else
     {
         for (i = rc; *i != NULL; i++)
         {
-            fprintf(stderr, " * %s: %s\n    Written by %s.\n    %s\n",
-                    (*i)->extension, (*i)->description,
-                    (*i)->author, (*i)->url);
+            printf(" * %s\n", (*i)->description);
+            for (ext = (*i)->extensions; *ext != NULL; ext++)
+                printf("   Extension \"%s\"\n", *ext);
+            printf("   Written by %s.\n   %s\n\n", (*i)->author, (*i)->url);
         } /* for */
     } /* else */
 
-    fprintf(stderr, "\n");
+    printf("\n");
 } /* output_decoders */
 
 
 static volatile int done_flag = 0;
+
+
+void sigint_catcher(int signum)
+{
+    static Uint32 last_sigint = 0;
+    Uint32 ticks = SDL_GetTicks();
+
+    assert(signum == SIGINT);
+
+    if ((last_sigint != 0) && (ticks - last_sigint < 500))
+    {
+        SDL_PauseAudio(1);
+        SDL_CloseAudio();
+        Sound_Quit();
+        SDL_Quit();
+        exit(1);
+    } /* if */
+
+    else
+    {
+        last_sigint = ticks;
+        done_flag = 1;
+    } /* else */
+} /* sigint_catcher */
+
 
 static Uint8 *decoded_ptr = NULL;
 static Uint32 decoded_bytes = 0;
@@ -287,6 +314,8 @@ int main(int argc, char **argv)
         SDL_Quit();
         return(42);
     } /* if */
+
+    signal(SIGINT, sigint_catcher);
 
     for (i = 1; i < argc; i++)
     {
