@@ -40,7 +40,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "SDL_sound.h"
 
@@ -109,30 +108,42 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MODPLUG =
 };
 
 
+static ModPlug_Settings settings;
+static Sound_AudioInfo current_audioinfo;
+static unsigned int total_mods_decoding = 0;
+
 static int MODPLUG_init(void)
 {
-    ModPlug_Settings settings;
-
-        /* The settings will require some experimenting. I've borrowed some
-         * of them from the XMMS ModPlug plugin.
+        /*
+         * The settings will require some experimenting. I've borrowed some
+         *  of them from the XMMS ModPlug plugin.
          */
-    settings.mFlags =
-          MODPLUG_ENABLE_OVERSAMPLING
-        | MODPLUG_ENABLE_NOISE_REDUCTION
-        | MODPLUG_ENABLE_REVERB
-        | MODPLUG_ENABLE_MEGABASS
-        | MODPLUG_ENABLE_SURROUND;
-    settings.mChannels = 2;
-    settings.mBits = 16;
-    settings.mFrequency = 44100;
-    settings.mResamplingMode = MODPLUG_RESAMPLE_FIR;
+    settings.mFlags = MODPLUG_ENABLE_OVERSAMPLING;
+
+#ifndef _WIN32_WCE
+    settings.mFlags |= MODPLUG_ENABLE_NOISE_REDUCTION |
+                       MODPLUG_ENABLE_REVERB |
+                       MODPLUG_ENABLE_MEGABASS |
+                       MODPLUG_ENABLE_SURROUND;
+
     settings.mReverbDepth = 30;
     settings.mReverbDelay = 100;
     settings.mBassAmount = 40;
     settings.mBassRange = 30;
     settings.mSurroundDepth = 20;
     settings.mSurroundDelay = 20;
+#endif
+
+    settings.mChannels = 2;
+    settings.mBits = 16;
+    settings.mFrequency = 44100;
+    settings.mResamplingMode = MODPLUG_RESAMPLE_FIR;
     settings.mLoopCount = 0;
+
+    current_audioinfo.channels = 2;
+    current_audioinfo.rate = 44100;
+    current_audioinfo.format = AUDIO_S16SYS;
+    total_mods_decoding = 0;
 
     ModPlug_SetSettings(&settings);
     return(1);  /* success. */
@@ -141,6 +152,7 @@ static int MODPLUG_init(void)
 
 static void MODPLUG_quit(void)
 {
+    assert(total_mods_decoding == 0);
     /* it's a no-op. */
 } /* MODPLUG_quit */
 
@@ -181,8 +193,9 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
         return(0);
     } /* if */
     
-        /* ModPlug needs the entire stream in one big chunk. I don't like it,
-         * but I don't think there's any way around it.
+        /*
+         * ModPlug needs the entire stream in one big chunk. I don't like it,
+         *  but I don't think there's any way around it.
          */
     data = (Uint8 *) malloc(CHUNK_SIZE);
     BAIL_IF_MACRO(data == NULL, ERR_OUT_OF_MEMORY, 0);
@@ -199,8 +212,36 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
         } /* if */
     } while (retval > 0);
 
-        /* The buffer may be a bit too large, but that doesn't matter. I think
-         * it's safe to free it as soon as ModPlug_Load() is finished anyway.
+        /*
+         * It's only safe to change these settings when there're
+         *  no other mods being decoded...
+         */
+    if (total_mods_decoding > 0)  /* !!! FIXME: Should we mutex this? */
+    {
+        /* other mods decoding: use the same settings they are. */
+        memcpy(&sample->actual, &current_audioinfo, sizeof (Sound_AudioInfo));
+    } /* if */
+    else
+    {
+        /* no other mods decoding: define the new ModPlug output settings. */
+        memcpy(&sample->actual, &sample->desired, sizeof (Sound_AudioInfo));
+        if (sample->actual.rate == 0)
+            sample->actual.rate = 44100;
+        if (sample->actual.channels == 0)
+            sample->actual.channels = 2;
+        if (sample->actual.format == 0)
+            sample->actual.format = AUDIO_S16SYS;
+
+        memcpy(&current_audioinfo, &sample->actual, sizeof (Sound_AudioInfo));
+        settings.mChannels=sample->actual.channels;
+        settings.mFrequency=sample->actual.rate;
+        settings.mBits = sample->actual.format & 0xFF;
+        ModPlug_SetSettings(&settings);
+    } /* else */
+
+        /*
+         * The buffer may be a bit too large, but that doesn't matter. I think
+         *  it's safe to free it as soon as ModPlug_Load() is finished anyway.
          */
     module = ModPlug_Load((void *) data, size);
     free(data);
@@ -209,12 +250,10 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
     SNDDBG(("MODPLUG: [%d ms] %s\n",
             ModPlug_GetLength(module), ModPlug_GetName(module)));
 
-    sample->actual.channels = 2;
-    sample->actual.rate = 44100;
-    sample->actual.format = AUDIO_S16SYS;
-
     internal->decoder_private = (void *) module;
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
+
+    total_mods_decoding++; /* !!! FIXME: Should we mutex this? */
 
     SNDDBG(("MODPLUG: Accepting data stream\n"));
     return(1); /* we'll handle this data. */
@@ -225,6 +264,7 @@ static void MODPLUG_close(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     ModPlugFile *module = (ModPlugFile *) internal->decoder_private;
+    total_mods_decoding--;
 
     ModPlug_Unload(module);
 } /* MODPLUG_close */
