@@ -306,10 +306,7 @@ static int read_config_file(char *name)
       }
       if (bank->tone[i].name)
 	free(bank->tone[i].name);
-{
-printf("alloc name\n");
       strcpy((bank->tone[i].name=safe_malloc(strlen(w[1])+1)),w[1]);
-}
       bank->tone[i].note=bank->tone[i].amp=bank->tone[i].pan=
       bank->tone[i].strip_loop=bank->tone[i].strip_envelope=
       bank->tone[i].strip_tail=-1;
@@ -574,7 +571,16 @@ void Timidity_Exit(void)
     }
     if (master_drumset[i])
     {
-      free(master_drumset[i]->tone);
+      ToneBankElement *e = master_drumset[i]->tone;
+      if (e != NULL)
+      {
+        for (j = 0; j < 128; j++)
+        {
+          if (e[j].name != NULL)
+            free(e[j].name);
+        }
+        free(e);
+      }
       free(master_drumset[i]);
     }
   }
