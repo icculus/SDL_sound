@@ -61,6 +61,24 @@ SDL_RWops *RWops_RWRefCounter_new(SDL_RWops *rw);
 /* Increment a reference counting RWops's refcount by one. */
 void RWops_RWRefCounter_addRef(SDL_RWops *rw);
 
+
+/*
+ * RWops pooling. This is to reduce malloc() pressure for audio that is
+ *  placed into Sound_Samples over and over again.
+ */
+
+/* Call this first. */
+int RWops_pooled_init(void);
+
+/* Call this last. */
+int RWops_pooled_deinit(void);
+
+/* Get a new RWops, allocating if needed. */
+SDL_RWops *RWops_pooled_alloc(void);
+
+/* Return a RWops to the pool for reuse. */
+void RWops_pooled_free(SDL_RWops *rw)
+
 #ifdef __cplusplus
 }
 #endif

@@ -15,6 +15,8 @@ General stuff TODO:
 - Hack on the experimental audio conversion routines.
 - Handle compression and other chunks in WAV files.
 - Handle compression and other chunks in AIFF-C files.
+- Reduce malloc() pressure.
+- Maybe allow an external allocator?
 
 Quicktime stuff that'd be cool, but isn't crucial:
 - Integrate decoders/quicktime.c with build system (for OS X)?

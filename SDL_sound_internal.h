@@ -65,6 +65,14 @@
 #endif
 
 
+/*
+ * SDL itself only supports mono and stereo output, but hopefully we can
+ *  raise this value someday...there's probably a lot of assumptions in
+ *  SDL_sound that rely on it, though.
+ */
+#define MAX_CHANNELS 2
+
+
 typedef struct __SOUND_DECODERFUNCTIONS__
 {
         /* This is a block of info about your decoder. See SDL_sound.h. */
@@ -240,6 +248,7 @@ extern SNDDECLSPEC int Sound_BuildAudioCVT(Sound_AudioCVT *cvt,
 extern SNDDECLSPEC int Sound_ConvertAudio(Sound_AudioCVT *cvt);
 
 
+typedef void (*MixFunc)(float *dst, void *src, Uint32 frames, float *gains);
 
 typedef struct __SOUND_SAMPLEINTERNAL__
 {
@@ -252,6 +261,8 @@ typedef struct __SOUND_SAMPLEINTERNAL__
     Uint32 buffer_size;
     void *decoder_private;
     Sint32 total_time;
+    Uint32 mix_position;
+    MixFunc mix;
 } Sound_SampleInternal;
 
 
