@@ -2,6 +2,10 @@
  * CHANGELOG.
  */
 
+09302002 - libFLAC broke their API (again!) for version 1.0.4. That was the
+           last straw. I ripped the version detection and obsolete FLAC
+           support out, so you need libFLAC 1.0.4 for that decoder now (and
+           they'll probably break the API again for 1.0.5. Argh).
 09262002 - Happy September. Fixed SDLCALL issues in SDL_sound.h, so it should
            work with Win32/WinCE builds again. I hope. Merged latest altcvt
            from Frank into CVS.
