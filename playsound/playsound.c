@@ -341,7 +341,7 @@ int main(int argc, char **argv)
             sdl_desired.channels = sample->actual.channels;
         } /* else */
 
-        sdl_desired.samples = 4096 * 2;
+        sdl_desired.samples = 4096;
         sdl_desired.callback = audio_callback;
         sdl_desired.userdata = sample;
 
