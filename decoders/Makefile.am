@@ -2,7 +2,7 @@ noinst_LTLIBRARIES = libdecoders.la
 
 SUBDIRS = timidity
 
-INCLUDES = -I$(top_srcdir) -Itimidity
+INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/decoders/timidity
 
 libdecoders_la_SOURCES =	\
 	aiff.c		\
