@@ -56,6 +56,7 @@ static void MP3_quit(void);
 static int MP3_open(Sound_Sample *sample, const char *ext);
 static void MP3_close(Sound_Sample *sample);
 static Uint32 MP3_read(Sound_Sample *sample);
+static int MP3_rewind(Sound_Sample *sample);
 
 static const char *extensions_smpeg[] = { "MP3", "MPEG", "MPG", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_MP3 =
@@ -67,11 +68,12 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MP3 =
         "http://www.lokigames.com/development/smpeg.php3"
     },
 
-    MP3_init,       /*  init() method */
-    MP3_quit,       /*  quit() method */
-    MP3_open,       /*  open() method */
-    MP3_close,      /* close() method */
-    MP3_read        /*  read() method */
+    MP3_init,       /*   init() method */
+    MP3_quit,       /*   quit() method */
+    MP3_open,       /*   open() method */
+    MP3_close,      /*  close() method */
+    MP3_read,       /*   read() method */
+    MP3_rewind      /* rewind() method */
 };
 
 
@@ -253,6 +255,15 @@ static Uint32 MP3_read(Sound_Sample *sample)
 
     return(retval);
 } /* MP3_read */
+
+
+static int MP3_rewind(Sound_Sample *sample)
+{
+    /* !!! FIXME. */
+    SNDDBG(("MP3_rewind(): Write me!\n"));
+    assert(0);
+    return(0);
+} /* MP3_rewind */
 
 #endif /* SOUND_SUPPORTS_MP3 */
 

@@ -58,6 +58,7 @@ static void OGG_quit(void);
 static int OGG_open(Sound_Sample *sample, const char *ext);
 static void OGG_close(Sound_Sample *sample);
 static Uint32 OGG_read(Sound_Sample *sample);
+static int OGG_rewind(Sound_Sample *sample);
 
 static const char *extensions_ogg[] = { "OGG", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_OGG =
@@ -69,11 +70,12 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_OGG =
         "http://www.icculus.org/SDL_sound/"
     },
 
-    OGG_init,       /*  init() method */
-    OGG_quit,       /*  quit() method */
-    OGG_open,       /*  open() method */
-    OGG_close,      /* close() method */
-    OGG_read        /*  read() method */
+    OGG_init,       /*   init() method */
+    OGG_quit,       /*   quit() method */
+    OGG_open,       /*   open() method */
+    OGG_close,      /*  close() method */
+    OGG_read,       /*   read() method */
+    OGG_rewind      /* rewind() method */
 };
 
 
@@ -262,6 +264,15 @@ static Uint32 OGG_read(Sound_Sample *sample)
 
     return((Uint32) rc);
 } /* OGG_read */
+
+
+static int OGG_rewind(Sound_Sample *sample)
+{
+    /* !!! FIXME. */
+    SNDDBG(("OGG_rewind(): Write me!\n"));
+    assert(0);
+    return(0);
+} /* OGG_rewind */
 
 #endif /* SOUND_SUPPORTS_OGG */
 

@@ -49,6 +49,7 @@ static void MODPLUG_quit(void);
 static int MODPLUG_open(Sound_Sample *sample, const char *ext);
 static void MODPLUG_close(Sound_Sample *sample);
 static Uint32 MODPLUG_read(Sound_Sample *sample);
+static int MODPLUG_rewind(Sound_Sample *sample);
 
 static const char *extensions_modplug[] =
 {
@@ -91,11 +92,12 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MODPLUG =
         "http://modplug-xmms.sourceforge.net/"
     },
 
-    MODPLUG_init,       /*  init() method */
-    MODPLUG_quit,       /*  quit() method */
-    MODPLUG_open,       /*  open() method */
-    MODPLUG_close,      /* close() method */
-    MODPLUG_read        /*  read() method */
+    MODPLUG_init,       /*   init() method */
+    MODPLUG_quit,       /*   quit() method */
+    MODPLUG_open,       /*   open() method */
+    MODPLUG_close,      /*  close() method */
+    MODPLUG_read,       /*   read() method */
+    MODPLUG_rewind      /* rewind() method */
 };
 
 
@@ -135,7 +137,8 @@ static void MODPLUG_quit(void)
 } /* MODPLUG_quit */
 
 
-/* Most MOD files I've seen have tended to be a few hundred KB, even if some
+/*
+ * Most MOD files I've seen have tended to be a few hundred KB, even if some
  * of them were much smaller than that.
  */
 #define CHUNK_SIZE 65536
@@ -150,23 +153,25 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
     int has_extension = 0;
     int i;
 
-    /* Apparently ModPlug's loaders are too forgiving. They gladly accept
-     * streams that they shouldn't. For now, rely on file extension instead.
+    /*
+     * Apparently ModPlug's loaders are too forgiving. They gladly accept
+     *  streams that they shouldn't. For now, rely on file extension instead.
      */
     for (i = 0; extensions_modplug[i] != NULL; i++)
     {
-	if (__Sound_strcasecmp(ext, extensions_modplug[i]) == 0)
-	{
-	    has_extension = 1;
-	    break;
-	} /* if */
+        if (__Sound_strcasecmp(ext, extensions_modplug[i]) == 0)
+        {
+            has_extension = 1;
+            break;
+        } /* if */
     } /* for */
 
     if (!has_extension)
     {
-	SNDDBG(("MODPLUG: Unrecognized file type: %s\n", ext));
-	return(0);
-    }
+        SNDDBG(("MODPLUG: Unrecognized file type: %s\n", ext));
+        Sound_SetError("MODPLUG: Not a module file.");
+        return(0);
+    } /* if */
     
         /* ModPlug needs the entire stream in one big chunk. I don't like it,
          * but I don't think there's any way around it.
@@ -228,6 +233,15 @@ static Uint32 MODPLUG_read(Sound_Sample *sample)
         sample->flags |= SOUND_SAMPLEFLAG_EOF;
     return(retval);
 } /* MODPLUG_read */
+
+
+static int MODPLUG_rewind(Sound_Sample *sample)
+{
+    /* !!! FIXME. */
+    SNDDBG(("MODPLUG_rewind(): Write me!\n"));
+    assert(0);
+    return(0);
+} /* MODPLUG_rewind */
 
 #endif /* SOUND_SUPPORTS_MODPLUG */
 

@@ -59,6 +59,7 @@ static void RAW_quit(void);
 static int RAW_open(Sound_Sample *sample, const char *ext);
 static void RAW_close(Sound_Sample *sample);
 static Uint32 RAW_read(Sound_Sample *sample);
+static int RAW_rewind(Sound_Sample *sample);
 
 static const char *extensions_raw[] = { "RAW", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW =
@@ -70,11 +71,12 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW =
         "http://www.icculus.org/SDL_sound/"
     },
 
-    RAW_init,       /*  init() method */
-    RAW_quit,       /*  quit() method */
-    RAW_open,       /*  open() method */
-    RAW_close,      /* close() method */
-    RAW_read        /*  read() method */
+    RAW_init,       /*   init() method */
+    RAW_quit,       /*   quit() method */
+    RAW_open,       /*   open() method */
+    RAW_close,      /*  close() method */
+    RAW_read,       /*   read() method */
+    RAW_rewind      /* rewind() method */
 };
 
 
@@ -158,6 +160,15 @@ static Uint32 RAW_read(Sound_Sample *sample)
 
     return(retval);
 } /* RAW_read */
+
+
+static int RAW_rewind(Sound_Sample *sample)
+{
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    BAIL_IF_MACRO(SDL_RWseek(internal->rw, 0, SEEK_SET) != 0, ERR_IO_ERROR, 0);
+    return(1);
+} /* RAW_rewind */
+
 
 #endif /* SOUND_SUPPORTS_RAW */
 

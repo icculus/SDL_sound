@@ -24,6 +24,9 @@
  *  have done a search and replace on "fmt" and "FMT" and changed this
  *  comment. This is the default comment in the skeleton decoder file...
  *
+ * None of this code, even the parts that LOOK right, have been compiled,
+ *  so you cut-and-paste at your own risk.
+ *
  * Please see the file COPYING in the source's root directory.
  *
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
@@ -55,6 +58,7 @@ static void FMT_quit(void);
 static int FMT_open(Sound_Sample *sample, const char *ext);
 static void FMT_close(Sound_Sample *sample);
 static Uint32 FMT_read(Sound_Sample *sample);
+static int FMT_rewind(Sound_Sample *sample);
 
 static const char *extensions_fmt[] = { "FMT", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_FMT =
@@ -66,11 +70,12 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_FMT =
         "http://www.icculus.org/SDL_sound/"
     },
 
-    FMT_init,       /* init() method       */
-    FMT_quit,       /* quit() method       */
-    FMT_open,       /* open() method       */
-    FMT_close,      /* close() method       */
-    FMT_read        /* read() method       */
+    FMT_init,       /*   init() method */
+    FMT_quit,       /*   quit() method */
+    FMT_open,       /*   open() method */
+    FMT_close,      /*  close() method */
+    FMT_read,       /*   read() method */
+    FMT_rewind      /* rewind() method */
 };
 
 
@@ -142,6 +147,19 @@ static Uint32 FMT_read(Sound_Sample *sample)
 
     return(retval);
 } /* FMT_read */
+
+
+static int FMT_rewind(Sound_Sample *sample)
+{
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+
+        /* seek to the appropriate place... */
+    BAIL_IF_MACRO(SDL_RWseek(internal->rw, 0, SEEK_SET) != 0, ERR_IO_ERROR, 0);
+
+    (reset state as necessary.)
+
+    return(1);  /* success. */
+} /* FMT_rewind */
 
 #endif /* SOUND_SUPPORTS_FMT */
 

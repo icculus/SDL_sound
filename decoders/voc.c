@@ -58,6 +58,7 @@ static void VOC_quit(void);
 static int VOC_open(Sound_Sample *sample, const char *ext);
 static void VOC_close(Sound_Sample *sample);
 static Uint32 VOC_read(Sound_Sample *sample);
+static int VOC_rewind(Sound_Sample *sample);
 
 static const char *extensions_voc[] = { "VOC", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_VOC =
@@ -69,11 +70,12 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_VOC =
         "http://www.icculus.org/SDL_sound/"
     },
 
-    VOC_init,       /*  init() method */
-    VOC_quit,       /*  quit() method */
-    VOC_open,       /*  open() method */
-    VOC_close,      /* close() method */
-    VOC_read        /*  read() method */
+    VOC_init,       /*   init() method */
+    VOC_quit,       /*   quit() method */
+    VOC_open,       /*   open() method */
+    VOC_close,      /*  close() method */
+    VOC_read,       /*   read() method */
+    VOC_rewind      /* rewind() method */
 };
 
 
@@ -486,6 +488,15 @@ static Uint32 VOC_read(Sound_Sample *sample)
 
     return(v->bufpos);
 } /* VOC_read */
+
+
+static int VOC_rewind(Sound_Sample *sample)
+{
+    /* !!! FIXME. */
+    SNDDBG(("VOC_rewind(): Write me!\n"));
+    assert(0);
+    return(0);
+} /* VOC_rewind */
 
 #endif /* SOUND_SUPPORTS_VOC */
 
