@@ -135,11 +135,19 @@ typedef struct __SOUND_DECODERFUNCTIONS__
 } Sound_DecoderFunctions;
 
 
+/* (for now. --ryan.) */
+#define MULTIPLE_STREAMS_PER_RWOPS 1
+
+
+
 typedef struct __SOUND_SAMPLEINTERNAL__
 {
     Sound_Sample *next;
     Sound_Sample *prev;
     SDL_RWops *rw;
+#if (defined MULTIPLE_STREAMS_PER_RWOPS)
+    int pos; /* !!! FIXME: Int? Really? */
+#endif
     const Sound_DecoderFunctions *funcs;
     SDL_AudioCVT sdlcvt;
     void *buffer;
