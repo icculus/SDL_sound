@@ -86,23 +86,51 @@ static volatile int done_flag = 0;
 
 void test_callback(void *userdata, Uint8 *stream, int len)
 {
+    static Uint8 overflow[16384]; /* this is a hack. */
+    static Uint32 overflowBytes = 0;
     Sound_Sample *sample = (Sound_Sample *) userdata;
-    Uint32 rc = Sound_Decode(sample);
+    Uint32 bw = 0; /* bytes written to stream*/
+    Uint32 rc;  /* return code */
 
-    if (sample->flags & SOUND_SAMPLEFLAG_EOF)
-        done_flag = 1;
-
-    else if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
+    if (overflowBytes > 0)
     {
-        printf("Error condition in decoding!\n");
-        done_flag = 1;
-    } /* else if */
+        memcpy(stream, overflow, overflowBytes);
+        bw = overflowBytes;
+        overflowBytes = 0;
+    } /* if */
 
-    assert(rc <= len);
+    while ((bw < len) && (!done_flag))
+    {
+        rc = Sound_Decode(sample);
+        if (rc > 0)
+        {
+            if (bw + rc > len)
+            {
+                overflowBytes = (bw + rc) - len;
+                memcpy(overflow,
+                       ((Uint8 *) sample->buffer) + (rc - overflowBytes),
+                       overflowBytes);
+                rc -= overflowBytes;
+            } /* if */
 
-    memcpy(stream, sample->buffer, rc);
-    if (rc < len)
-        memset(stream + rc, '\0', len - rc);  /* (*shrug*) */
+            memcpy(stream + bw, sample->buffer, rc);
+            bw += rc;
+        } /* if */
+
+        if (sample->flags & SOUND_SAMPLEFLAG_EOF)
+            done_flag = 1;
+
+        else if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
+        {
+            printf("Error condition in decoding!\n");
+            done_flag = 1;
+        } /* else if */
+    } /* while */
+
+    assert(bw <= len);
+
+    if (bw < len)
+        memset(stream + bw, '\0', len - bw);
 } /* test_callback */
 
 
