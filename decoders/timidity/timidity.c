@@ -438,7 +438,6 @@ int Timidity_Init()
 MidiSong *Timidity_LoadDLSSong(SDL_RWops *rw, DLS_Patches *patches, SDL_AudioSpec *audio)
 {
   MidiSong *song;
-  Sint32 events;
   int i;
 
   if (rw == NULL)
@@ -514,7 +513,8 @@ MidiSong *Timidity_LoadDLSSong(SDL_RWops *rw, DLS_Patches *patches, SDL_AudioSpe
   song->lost_notes = 0;
   song->cut_notes = 0;
 
-  song->events = read_midi_file(song, &events, &song->samples);
+  song->events = read_midi_file(song, &(song->groomed_event_count),
+      &song->samples);
 
   /* The RWops can safely be closed at this point, but let's make that the
    * responsibility of the caller.

@@ -153,6 +153,7 @@ typedef struct {
     Sint32 current_sample;
     Sint32 event_count;
     Sint32 at;
+    Sint32 groomed_event_count;
 } MidiSong;
 
 /* Some of these are not defined in timidity.c but are here for convenience */
@@ -167,6 +168,7 @@ extern MidiSong *Timidity_LoadDLSSong(SDL_RWops *rw, DLS_Patches *patches, SDL_A
 extern MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio);
 extern void Timidity_Start(MidiSong *song);
 extern void Timidity_Seek(MidiSong *song, Uint32 ms);
+extern Uint32 Timidity_GetSongLength(MidiSong *song); /* returns millseconds */
 extern void Timidity_FreeSong(MidiSong *song);
 extern void Timidity_Exit(void);
 

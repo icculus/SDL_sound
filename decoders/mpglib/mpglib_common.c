@@ -146,6 +146,8 @@ int decode_header(struct frame *fr,unsigned long newhead)
       default:
         BAIL_MACRO("MPGLIB: Unknown layer type.", 0);
     }
+
+    fr->bitrate = (int) tabsel_123[fr->lsf][(fr->lay - 1)][fr->bitrate_index];
     return 1;
 }
 

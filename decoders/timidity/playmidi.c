@@ -662,6 +662,15 @@ void Timidity_Seek(MidiSong *song, Uint32 ms)
     skip_to(song, (ms * song->rate) / 1000);
 }
 
+Uint32 Timidity_GetSongLength(MidiSong *song)
+{
+  MidiEvent *last_event = &song->events[song->groomed_event_count - 1];
+  /* We want last_event->time * 1000 / song->rate */
+  Uint32 retvalue = (last_event->time / song->rate) * 1000;
+  retvalue       += (last_event->time % song->rate) * 1000 / song->rate;
+  return retvalue;
+}
+
 int Timidity_PlaySome(MidiSong *song, void *stream, Sint32 len)
 {
   Sint32 start_sample, end_sample, samples;

@@ -722,8 +722,11 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
     fmt->data_starting_offset = SDL_RWtell(rw);
     fmt->sample_frame_size = ( ((sample->actual.format & 0xFF) / 8) *
                                sample->actual.channels );
-
     internal->decoder_private = (void *) w;
+
+    sample->total_time = (fmt->total_bytes / fmt->dwAvgBytesPerSec) * 1000;
+    sample->total_time += (fmt->total_bytes % fmt->dwAvgBytesPerSec)
+                       *  1000 / fmt->dwAvgBytesPerSec;
 
     sample->flags = SOUND_SAMPLEFLAG_NONE;
     if (fmt->seek_sample != NULL)

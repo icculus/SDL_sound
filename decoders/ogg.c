@@ -171,6 +171,7 @@ static __inline__ void output_ogg_comments(OggVorbis_File *vf)
 static int OGG_open(Sound_Sample *sample, const char *ext)
 {
     int rc;
+    double total_time;
     OggVorbis_File *vf;
     vorbis_info *info;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
@@ -209,6 +210,12 @@ static int OGG_open(Sound_Sample *sample, const char *ext)
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
     sample->actual.rate = (Uint32) info->rate;
     sample->actual.channels = (Uint8) info->channels;
+    total_time = ov_time_total(vf, -1);
+    if (OV_EINVAL == total_time)
+      sample->total_time = -1;
+    else
+      sample->total_time = (Sint32)(total_time * 1000.0 + 0.5);
+
 
     /*
      * Since we might have more than one logical bitstream in the OGG file,

@@ -247,6 +247,17 @@ static void metadata_callback(
         f->sample->actual.channels = metadata->data.stream_info.channels;
         f->sample->actual.rate = metadata->data.stream_info.sample_rate;
 
+	if (metadata->data.stream_info.sample_rate == 0 ||
+            metadata->data.stream_info.total_samples == 0)
+	  f->sample->total_time = -1;
+	else {
+	    f->sample->total_time = (metadata->data.stream_info.total_samples)
+                / metadata->data.stream_info.sample_rate * 1000;
+	    f->sample->total_time += (metadata->data.stream_info.total_samples
+                % metadata->data.stream_info.sample_rate) * 1000
+                / metadata->data.stream_info.sample_rate;
+	}
+
         if (metadata->data.stream_info.bits_per_sample > 8)
             f->sample->actual.format = AUDIO_S16MSB;
         else
