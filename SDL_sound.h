@@ -452,6 +452,39 @@ SNDDECLSPEC Sound_Sample * SDLCALL Sound_NewSample(SDL_RWops *rw,
                                                    Uint32 bufferSize);
 
 /**
+ * \fn Sound_Sample *Sound_NewSampleFromMem(const Uint8 *data, Sound_AudioInfo *desired, Uint32 bufferSize)
+ * \brief Start decoding a new sound sample from a file on disk.
+ *
+ * This is identical to Sound_NewSample(), but it creates an SDL_RWops for you
+ *  from the (size) bytes of memory referenced by (data).
+ *
+ * This can pool RWops structures, so it may fragment the heap less over time
+ *  than using SDL_RWFromMem().
+ *
+ *    \param filename file containing sound data.
+ *    \param desired Format to convert sound data into. Can usually be NULL,
+ *                   if you don't need conversion.
+ *    \param bufferSize size, in bytes, of initial read buffer.
+ *   \return Sound_Sample pointer, which is used as a handle to several other
+ *           SDL_sound APIs. NULL on error. If error, use
+ *           Sound_GetError() to see what went wrong.
+ *
+ * \sa Sound_NewSample
+ * \sa Sound_SetBufferSize
+ * \sa Sound_Decode
+ * \sa Sound_DecodeAll
+ * \sa Sound_Seek
+ * \sa Sound_Rewind
+ * \sa Sound_FreeSample
+ */
+SNDDECLSPEC Sound_Sample * SDLCALL Sound_NewSampleFromMem(const Uint8 *data,
+                                                      Uint32 size,
+                                                      const char *ext,
+                                                      Sound_AudioInfo *desired,
+                                                      Uint32 bufferSize);
+
+
+/**
  * \fn Sound_Sample *Sound_NewSampleFromFile(const char *filename, Sound_AudioInfo *desired, Uint32 bufferSize)
  * \brief Start decoding a new sound sample from a file on disk.
  *
@@ -461,6 +494,9 @@ SNDDECLSPEC Sound_Sample * SDLCALL Sound_NewSample(SDL_RWops *rw,
  *  "/home/icculus/music/mysong.mp3" or whatever on Unix, etc.)
  * Sound_NewSample()'s "ext" parameter is gleaned from the contents of
  *  (filename).
+ *
+ * This can pool RWops structures, so it may fragment the heap less over time
+ *  than using SDL_RWFromFile().
  *
  *    \param filename file containing sound data.
  *    \param desired Format to convert sound data into. Can usually be NULL,

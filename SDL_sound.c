@@ -450,6 +450,10 @@ int __Sound_strcasecmp(const char *x, const char *y)
 static Sound_Sample *alloc_sample(SDL_RWops *rw, Sound_AudioInfo *desired,
                                     Uint32 bufferSize)
 {
+    /*
+     * !!! FIXME: We're going to need to pool samples, since the mixer
+     * !!! FIXME:  might be allocating tons of these on a regular basis.
+     */
     Sound_Sample *retval = malloc(sizeof (Sound_Sample));
     Sound_SampleInternal *internal = malloc(sizeof (Sound_SampleInternal));
     if ((retval == NULL) || (internal == NULL))
@@ -693,6 +697,7 @@ Sound_Sample *Sound_NewSampleFromFile(const char *filename,
 
     ext = strrchr(filename, '.');
     rw = SDL_RWFromFile(filename, "rb");
+    /* !!! FIXME: rw = RWops_FromFile(filename, "rb");*/
     BAIL_IF_MACRO(rw == NULL, SDL_GetError(), NULL);
 
     if (ext != NULL)
@@ -700,6 +705,26 @@ Sound_Sample *Sound_NewSampleFromFile(const char *filename,
 
     return(Sound_NewSample(rw, ext, desired, bufferSize));
 } /* Sound_NewSampleFromFile */
+
+
+Sound_Sample *Sound_NewSampleFromMem(const Uint8 *data,
+                                     Uint32 size,
+                                     const char *ext,
+                                     Sound_AudioInfo *desired,
+                                     Uint32 bufferSize);
+{
+    SDL_RWops *rw;
+
+    BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, NULL);
+    BAIL_IF_MACRO(data == NULL, ERR_INVALID_ARGUMENT, NULL);
+    BAIL_IF_MACRO(size == 0, ERR_INVALID_ARGUMENT, NULL);
+
+    rw = SDL_RWFromMem(data, size);
+    /* !!! FIXME: rw = RWops_FromMem(data, size);*/
+    BAIL_IF_MACRO(rw == NULL, SDL_GetError(), NULL);
+
+    return(Sound_NewSample(rw, ext, desired, bufferSize));
+} /* Sound_NewSampleFromMem */
 
 
 void Sound_FreeSample(Sound_Sample *sample)
