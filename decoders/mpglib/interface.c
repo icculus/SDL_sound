@@ -57,7 +57,7 @@ static struct buf *addbuf(struct mpstr *mp,char *buf,int size)
 
 	nbuf = malloc( sizeof(struct buf) );
 	if(!nbuf) {
-		fprintf(stderr,"Out of memory!\n");
+		Sound_SetError("MPGLIB: Out of memory!");
 		return NULL;
 	}
 	nbuf->pnt = malloc(size);
@@ -161,7 +161,7 @@ int decodeMP3(struct mpstr *mp,char *in,int isize,char *out,
 	gmp = mp;
 
 	if(osize < 4608) {
-		fprintf(stderr,"To less out space\n");
+		Sound_SetError("MPGLIB: Not enough output space for decoding!");
 		return MP3_ERR;
 	}
 
@@ -237,7 +237,7 @@ int set_pointer(long backstep)
 {
   unsigned char *bsbufold;
   if(gmp->fsizeold < 0 && backstep > 0) {
-    fprintf(stderr,"Can't step back %ld!\n",backstep);
+    Sound_SetError("MPGLIB: Can't step back!"); /* FIXME: need formatting: %ld!\n",backstep); */
     return MP3_ERR;
   }
   bsbufold = gmp->bsspace[gmp->bsnum] + 512;
