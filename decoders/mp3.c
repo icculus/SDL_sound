@@ -24,6 +24,8 @@
  *  Napster.  :)  It depends on the SMPEG library for decoding, which can
  *  be grabbed from: http://www.lokigames.com/development/smpeg.php3
  *
+ * This should also be able to extract the audio stream from an MPEG movie.
+ *
  * Please see the file COPYING in the source's root directory.
  *
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
@@ -62,7 +64,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MP3 =
         extensions_smpeg,
         "MPEG-1 Layer 3 audio through SMPEG",
         "Ryan C. Gordon <icculus@clutteredmind.org>",
-        "http://www.icculus.org/SDL_sound/"
+        "http://www.lokigames.com/development/smpeg.php3"
     },
 
     MP3_init,       /*  init() method */
