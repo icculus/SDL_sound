@@ -48,8 +48,8 @@
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
 
-#include "vorbis/codec.h"
-#include "vorbis/vorbisfile.h"
+#include <vorbis/codec.h>
+#include <vorbis/vorbisfile.h>
 
 
 static int OGG_init(void);

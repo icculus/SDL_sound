@@ -44,7 +44,7 @@
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
 
-#include "FLAC/seekable_stream_decoder.h"
+#include <FLAC/seekable_stream_decoder.h>
 
 #define D_END_OF_STREAM               FLAC__SEEKABLE_STREAM_DECODER_END_OF_STREAM
 
