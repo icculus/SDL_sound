@@ -81,7 +81,7 @@ debugging_chatter := true
 #  Note that various decoders may need external libraries.
 #-----------------------------------------------------------------------------#
 use_decoder_raw  := true
-use_decoder_mp3  := false 
+use_decoder_mp3  := true
 use_decoder_mod  := true
 use_decoder_voc  := true
 use_decoder_wav  := true
