@@ -238,14 +238,24 @@ static void OGG_close(Sound_Sample *sample)
     free(vf);
 } /* OGG_close */
 
-
+/* Note: According to the Vorbis documentation:
+ * "ov_read() will  decode at most one vorbis packet per invocation, 
+ * so the value returned will generally be less than length."
+ * Due to this, for buffer sizes like 16384, SDL_Sound was always getting
+ * an underfilled buffer and always setting the EAGAIN flag.
+ * Since the SDL_Sound API implies that the entire buffer
+ * should be filled unless EOF, additional code has been added
+ * to this function to call ov_read() until the buffer is filled.
+ * However, there may still be some corner cases where the buffer
+ * cannot be entirely filled. So be aware.
+ */
 static Uint32 OGG_read(Sound_Sample *sample)
 {
     int rc;
     int bitstream;
-    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+	Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     OggVorbis_File *vf = (OggVorbis_File *) internal->decoder_private;
-
+    
     rc = ov_read(vf, internal->buffer, internal->buffer_size,
             ((sample->actual.format & 0x1000) ? 1 : 0), /* bigendian? */
             ((sample->actual.format & 0xFF) / 8), /* bytes per sample point */
@@ -255,13 +265,85 @@ static Uint32 OGG_read(Sound_Sample *sample)
         /* Make sure the read went smoothly... */
     if (rc == 0)
         sample->flags |= SOUND_SAMPLEFLAG_EOF;
-
+        
     else if (rc < 0)
         sample->flags |= SOUND_SAMPLEFLAG_ERROR;
 
-        /* (next call this EAGAIN may turn into an EOF or error.) */
+    /* If the buffer isn't filled, keep trying to fill it
+     * until no more data can be grabbed */
     else if ((Uint32) rc < internal->buffer_size)
-        sample->flags |= SOUND_SAMPLEFLAG_EAGAIN;
+	{
+        /* Creating a pointer to the buffer that denotes where to start
+         * writing new data. */
+        Uint8* buffer_start_point = NULL;
+        int total_bytes_read = rc;
+        int bytes_remaining = internal->buffer_size - rc;
+
+        /* Keep grabbing data until something prevents
+         * us from getting more. (Could be EOF,
+         * packets are too large to fit in remaining
+         * space, or an error.)
+         */
+        while( (rc > 0) && (bytes_remaining > 0) )
+        {
+        /* Set buffer pointer to end of last write */
+        /* All the messiness is to get rid of the warning for
+         * dereferencing a void*
+         */
+            buffer_start_point = &(((Uint8*)internal->buffer)[total_bytes_read]);
+            rc = ov_read(vf, buffer_start_point, bytes_remaining,
+                ((sample->actual.format & 0x1000) ? 1 : 0), /* bigendian? */
+                ((sample->actual.format & 0xFF) / 8), /* bytes per sample point */
+                ((sample->actual.format & 0x8000) ? 1 : 0), /* signed data? */
+                &bitstream);
+            /* Make sure rc > 0 because we don't accidently want
+             * to change the counters if there was an error
+             */
+            if(rc > 0)
+            {
+                total_bytes_read += rc;
+                bytes_remaining = bytes_remaining - rc;
+            }
+	    }
+        /* I think the minimum read size is 2, though I'm
+         * not sure about this. (I've hit cases where I
+         * couldn't read less than 4.) What I don't want to do is
+         * accidently claim we hit EOF when the reason rc == 0
+         * is because the requested amount of data was smaller
+         * than the minimum packet size.
+         * For now, I will be conservative
+         * and not set the EOF flag, and let the next call to 
+         * this function figure it out.
+         * I think the ERROR flag is safe to set because 
+         * it looks like OGG simply returns 0 if the 
+         * read size is too small. 
+         * And in most cases for sensible buffer sizes, 
+         * this fix will fill the buffer,
+         * so we can set the EAGAIN flag without worrying
+         * that it will always be set.
+         */
+        if(rc < 0)
+	    {
+            sample->flags |= SOUND_SAMPLEFLAG_ERROR;
+        }
+        else if(rc == 0)
+        {
+            /* Do nothing for now until there is a better solution */
+            /* sample->flags |= SOUND_SAMPLEFLAG_EOF; */
+        }
+
+        /* Test for a buffer underrun. It should occur less frequently
+         * now, but it still may happen and not necessarily mean
+         * anything useful. */
+        if ((Uint32) total_bytes_read < internal->buffer_size)
+        {
+            sample->flags |= SOUND_SAMPLEFLAG_EAGAIN;
+        }
+        /* change rc to the total bytes read so function
+         * can return the correct value.
+         */
+        rc = total_bytes_read;
+    }
 
     return((Uint32) rc);
 } /* OGG_read */
