@@ -111,8 +111,11 @@ void add_to_pathlist(char *s)
 
   plp->path = safe_malloc(strlen(s) + 1);
   if (plp->path == NULL)
+  {
+      free(plp);
       return;
-  
+  }
+
   strcpy(plp->path, s);
   plp->next = pathlist;
   pathlist = plp;
@@ -126,6 +129,7 @@ void free_pathlist(void)
     while (plp)
     {
 	next = plp->next;
+	free(plp->path);
 	free(plp);
 	plp = next;
     }
