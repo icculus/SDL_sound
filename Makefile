@@ -373,6 +373,7 @@ showcfg:
 	@echo "Supports .RAW         : $(use_decoder_raw)"
 	@echo "Supports .MP3         : $(use_decoder_mp3)"
 	@echo "Supports .VOC         : $(use_decoder_voc)"
+	@echo "Supports .OGG         : $(use_decoder_ogg)"
 
 showflags:
 	@echo 'CFLAGS  : $(CFLAGS)'
