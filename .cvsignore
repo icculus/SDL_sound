@@ -11,3 +11,14 @@ Makefile.in
 missing
 mkinstalldirs
 stamp-h.in
+.deps
+.libs
+Makefile
+config.h
+compile
+config.status
+libtool
+libSDL_sound.la
+config.log
+stamp-h
+stamp-h1
