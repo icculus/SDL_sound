@@ -83,6 +83,7 @@ debugging_chatter := true
 use_decoder_raw := true
 use_decoder_mp3 := false
 use_decoder_voc := true
+use_decoder_wav := true
 
 #-----------------------------------------------------------------------------#
 # Set to "true" if you'd like to build a DLL. Set to "false" otherwise.
@@ -196,7 +197,8 @@ VERFULL := $(VERMAJOR).$(VERMINOR).$(VERPATCH)
 BINDIR := bin
 SRCDIR := .
 
-CFLAGS += $(use_asm) -I$(SRCDIR) -D_REENTRANT -fsigned-char -DPLATFORM_UNIX
+CFLAGS := -I$(SRCDIR) $(CFLAGS)
+CFLAGS += $(use_asm) -D_REENTRANT -fsigned-char -DPLATFORM_UNIX
 CFLAGS += -Wall -Werror -fno-exceptions -fno-rtti -ansi -pedantic
 
 LDFLAGS += -lm
@@ -248,6 +250,11 @@ endif
 ifeq ($(strip $(use_decoder_voc)),true)
   MAINSRCS += decoders/voc.c
   CFLAGS += -DSOUND_SUPPORTS_VOC
+endif
+
+ifeq ($(strip $(use_decoder_wav)),true)
+  MAINSRCS += decoders/wav.c
+  CFLAGS += -DSOUND_SUPPORTS_WAV
 endif
 
 ifeq ($(strip $(need_extra_rwops)),true)
@@ -355,6 +362,7 @@ showcfg:
 	@echo "SDL_sound version     : $(VERFULL)"
 	@echo "Building DLLs         : $(build_dll)"
 	@echo "Install prefix        : $(install_prefix)"
+	@echo "Supports .WAV         : $(use_decoder_wav)"
 	@echo "Supports .RAW         : $(use_decoder_raw)"
 	@echo "Supports .MP3         : $(use_decoder_mp3)"
 	@echo "Supports .VOC         : $(use_decoder_voc)"
