@@ -67,10 +67,11 @@ static int SHN_open(Sound_Sample *sample, const char *ext);
 static void SHN_close(Sound_Sample *sample);
 static Uint32 SHN_read(Sound_Sample *sample);
 
+static const char *extensions_shn[] = { "SHN", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_SHN =
 {
     {
-        "SHN",
+        extensions_shn,
         "Shorten-compressed audio data",
         "Ryan C. Gordon <icculus@clutteredmind.org>",
         "http://www.icculus.org/SDL_sound/"

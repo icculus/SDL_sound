@@ -56,10 +56,11 @@ static int FMT_open(Sound_Sample *sample, const char *ext);
 static void FMT_close(Sound_Sample *sample);
 static Uint32 FMT_read(Sound_Sample *sample);
 
+static const char *extensions_fmt[] = { "FMT", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_FMT =
 {
     {
-        "FMT",
+        extensions_fmt,
         "FMT audio format description",
         "Ryan C. Gordon <icculus@clutteredmind.org>",
         "http://www.icculus.org/SDL_sound/"

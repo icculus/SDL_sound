@@ -53,10 +53,17 @@ static int MOD_open(Sound_Sample *sample, const char *ext);
 static void MOD_close(Sound_Sample *sample);
 static Uint32 MOD_read(Sound_Sample *sample);
 
+static const char *extensions_mikmod[] =
+{
+    "MOD", "IT",  "XM",  "S3M", "MTM", "669", "STM", "ULT",
+    "FAR", "MED", "AMF", "DSM", "IMF", "GDM", "STX", "OKT",
+    NULL
+};
+
 const Sound_DecoderFunctions __Sound_DecoderFunctions_MOD =
 {
     {
-        "MOD",
+        extensions_mikmod,
         "Play modules through MikMod",
         "Torbjörn Andersson <d91tan@Update.UU.SE>",
         "http://www.mikmod.org/"

@@ -444,8 +444,8 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
 Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
                               Sound_AudioInfo *desired, Uint32 bSize)
 {
-    size_t i;
     Sound_Sample *retval;
+    decoder_element *decoder;
 
     /* sanity checks. */
     BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, NULL);
@@ -457,26 +457,30 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
 
     if (ext != NULL)
     {
-        for (i = 0; decoders[i].funcs != NULL; i++)
+        for (decoder = &decoders[0]; decoder->funcs != NULL; decoder++)
         {
-            if (decoders[i].available)
+            if (decoder->available)
             {
-                const char *decoderExt = decoders[i].funcs->info.extension;
-                if (__Sound_strcasecmp(decoderExt, ext) == 0)
+                const char **decoderExt = decoder->funcs->info.extensions;
+                while (*decoderExt)
                 {
-                    if (init_sample(decoders[i].funcs, retval, ext, desired))
-                        return(retval);
-                } /* if */
+                    if (__Sound_strcasecmp(*decoderExt, ext) == 0)
+                    {
+                        if (init_sample(decoder->funcs, retval, ext, desired))
+                            return(retval);
+                    } /* if */
+                    decoderExt++;
+                } /* while */
             } /* if */
         } /* for */
     } /* if */
 
     /* no direct extension match? Try everything we've got... */
-    for (i = 0; decoders[i].funcs != NULL; i++)
+    for (decoder = &decoders[0]; decoder->funcs != NULL; decoder++)
     {
-        if (decoders[i].available)
+        if (decoder->available)
         {
-            if (init_sample(decoders[i].funcs, retval, ext, desired))
+            if (init_sample(decoder->funcs, retval, ext, desired))
                 return(retval);
         } /* if */
     } /* for */

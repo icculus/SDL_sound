@@ -60,10 +60,11 @@ static int RAW_open(Sound_Sample *sample, const char *ext);
 static void RAW_close(Sound_Sample *sample);
 static Uint32 RAW_read(Sound_Sample *sample);
 
+static const char *extensions_raw[] = { "RAW", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW =
 {
     {
-        "RAW",
+        extensions_raw,
         "Raw audio",
         "Ryan C. Gordon <icculus@clutteredmind.org>",
         "http://www.icculus.org/SDL_sound/"

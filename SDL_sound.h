@@ -112,10 +112,10 @@ typedef struct __SOUND_AUDIOINFO__
  */
 typedef struct __SOUND_DECODERINFO__
 {
-    const char *extension;      /* standard file extension. "MP3", "WAV"... */
-    const char *description;    /* Human readable description of decoder.   */
-    const char *author;         /* "Name Of Author <email@emailhost.dom>"   */
-    const char *url;            /* URL specific to this decoder.            */
+    const char **extensions;    /* File extensions, list ends with NULL.  */
+    const char *description;    /* Human readable description of decoder. */
+    const char *author;         /* "Name Of Author <email@emailhost.dom>" */
+    const char *url;            /* URL specific to this decoder.          */
 } Sound_DecoderInfo;
 
 

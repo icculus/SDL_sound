@@ -50,10 +50,11 @@ static int WAV_open(Sound_Sample *sample, const char *ext);
 static void WAV_close(Sound_Sample *sample);
 static Uint32 WAV_read(Sound_Sample *sample);
 
+static const char *extensions_wav[] = { "WAV", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV =
 {
     {
-        "WAV",
+        extensions_wav,
         "Microsoft WAVE audio format",
         "Ryan C. Gordon <icculus@clutteredmind.org>",
         "http://www.icculus.org/SDL_sound/"
