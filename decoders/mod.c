@@ -174,7 +174,7 @@ static void _mm_delete_rwops_reader(MREADER *reader)
 
 static int MOD_init(void)
 {
-    MikMod_RegisterAllDrivers();
+    MikMod_RegisterDriver(&drv_nos);
     MikMod_RegisterAllLoaders();
 
         /*
@@ -184,7 +184,8 @@ static int MOD_init(void)
          * sound quality.
          */
     md_mode |= (DMODE_SOFT_MUSIC | DMODE_16BITS);
-#if 1
+
+#if 0 
         /*
          * SDL_mixer used to set these, but I don't know... is there
          * something wrong with the defaults? Actually, the only difference
