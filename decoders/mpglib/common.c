@@ -25,9 +25,9 @@ int tabsel_123[2][3][16] = {
      {0,8,16,24,32,40,48,56,64,80,96,112,128,144,160,} }
 };
 
-long freqs[9] = { 44100, 48000, 32000,
-                  22050, 24000, 16000 ,
-                  11025 , 12000 , 8000 };
+long mpglib_freqs[9] = { 44100, 48000, 32000,
+                         22050, 24000, 16000 ,
+                         11025 , 12000 , 8000 };
 
 int bitindex;
 unsigned char *wordpointer;
@@ -109,7 +109,7 @@ int decode_header(struct frame *fr,unsigned long newhead)
                          (fr->mode_ext<<2)+4 : 32;
 #endif
         fr->framesize  = (long) tabsel_123[fr->lsf][0][fr->bitrate_index] * 12000;
-        fr->framesize /= freqs[fr->sampling_frequency];
+        fr->framesize /= mpglib_freqs[fr->sampling_frequency];
         fr->framesize  = ((fr->framesize+fr->padding)<<2)-4;
 #else
         Sound_SetError("MPGLIB: Not supported!");
@@ -122,7 +122,7 @@ int decode_header(struct frame *fr,unsigned long newhead)
                          (fr->mode_ext<<2)+4 : fr->II_sblimit;
 #endif
         fr->framesize = (long) tabsel_123[fr->lsf][1][fr->bitrate_index] * 144000;
-        fr->framesize /= freqs[fr->sampling_frequency];
+        fr->framesize /= mpglib_freqs[fr->sampling_frequency];
         fr->framesize += fr->padding - 4;
 #else
         Sound_SetError("MPGLIB: Not supported!");
@@ -142,7 +142,7 @@ int decode_header(struct frame *fr,unsigned long newhead)
           ssize += 2;
 #endif
           fr->framesize  = (long) tabsel_123[fr->lsf][2][fr->bitrate_index] * 144000;
-          fr->framesize /= freqs[fr->sampling_frequency]<<(fr->lsf);
+          fr->framesize /= mpglib_freqs[fr->sampling_frequency]<<(fr->lsf);
           fr->framesize = fr->framesize + fr->padding - 4;
         break; 
       default:
@@ -160,7 +160,7 @@ void print_header(struct frame *fr)
 
 	fprintf(stderr,"MPEG %s, Layer: %s, Freq: %ld, mode: %s, modext: %d, BPF : %d\n", 
 		fr->mpeg25 ? "2.5" : (fr->lsf ? "2.0" : "1.0"),
-		layers[fr->lay],freqs[fr->sampling_frequency],
+		layers[fr->lay],mpglib_freqs[fr->sampling_frequency],
 		modes[fr->mode],fr->mode_ext,fr->framesize+4);
 	fprintf(stderr,"Channels: %d, copyright: %s, original: %s, CRC: %s, emphasis: %d.\n",
 		fr->stereo,fr->copyright?"Yes":"No",
@@ -179,7 +179,7 @@ void print_header_compact(struct frame *fr)
 		fr->mpeg25 ? "2.5" : (fr->lsf ? "2.0" : "1.0"),
 		layers[fr->lay],
 		tabsel_123[fr->lsf][fr->lay-1][fr->bitrate_index],
-		freqs[fr->sampling_frequency], modes[fr->mode]);
+		mpglib_freqs[fr->sampling_frequency], modes[fr->mode]);
 }
 
 #endif
