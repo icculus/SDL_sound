@@ -2,6 +2,9 @@
  * CHANGELOG.
  */
 
+01012001 - Happy New Year. Added some debug output to wav.c for future
+           codecs (GSM comes to mind). Fixed the SMPEG decoder's URL to point
+           to Loki's webpage.
 12302001 - Upped version to 0.1.4.
 12272001 - Added --audiobuf and --decodebuf options to playsound to make
            tracking down a bug in the ADPCM decoder easier (plus, it could
