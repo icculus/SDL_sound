@@ -24,7 +24,7 @@
  *  your choice. This gives you a nice abstraction for getting sound into your
  *  game or application; just feed it to SDL_sound, and it will handle
  *  decoding and converting, so you can just pass it to your SDL audio
- *  callback (or whatever). Since it gets data from a SDL_RWops, you can get
+ *  callback (or whatever). Since it gets data from an SDL_RWops, you can get
  *  the initial sound data from any number of sources: file, memory buffer,
  *  network connection, etc.
  *
@@ -33,14 +33,14 @@
  *  be found at http://www.libsdl.org/
  *
  * Support is in place or planned for the following sound formats:
- *   - .WAV     (Microsoft WAVfile RIFF data, internal.)
- *   - .VOC     (Creative Labs' Voice format, internal.)
- *   - .MP3     (MPEG-1 layer 3 support, via the SMPEG library.)
- *   - .MID     (MIDI music converted to Waveform data, via Timidity.)
- *   - .MOD     (MOD files, via MikMod.)
- *   - .OGG     (Ogg files, via Ogg Vorbis libraries.)
- *   - .RAWDATA (Raw sound data in any format, internal.)
- *   - .CDA     (CD audio read into a sound buffer, internal.)
+ *   - .WAV  (Microsoft WAVfile RIFF data, internal.)
+ *   - .VOC  (Creative Labs' Voice format, internal.)
+ *   - .MP3  (MPEG-1 layer 3 support, via the SMPEG library.)
+ *   - .MID  (MIDI music converted to Waveform data, via Timidity.)
+ *   - .MOD  (MOD files, via MikMod.)
+ *   - .OGG  (Ogg files, via Ogg Vorbis libraries.)
+ *   - .RAW  (Raw sound data in any format, internal.)
+ *   - .CDA  (CD audio read into a sound buffer, internal.)
  *   - .AU
  *   - .AIFF
  *
@@ -64,7 +64,7 @@ extern "C" {
  * These are flags that are used in a Sound_Sample (below) to show various
  *  states.
  *
- *   To use: "if (sample->flags & SOUND_SAMPLEFLAGS_ERROR) { dosomething(); }"
+ *   To use: "if (sample->flags & SOUND_SAMPLEFLAG_ERROR) { dosomething(); }"
  */
 typedef enum __SOUND_SAMPLEFLAGS__
 {
@@ -72,13 +72,40 @@ typedef enum __SOUND_SAMPLEFLAGS__
 
         /* these are set at sample creation time... */
     SOUND_SAMPLEFLAG_NEEDSEEK  = 1,       /* SDL_RWops must be able to seek. */
-    SOUND_SAMPLEFLAG_STREAMING = 1 << 1,  /* source is streaming (no EOF).   */
 
         /* these are set during decoding... */
     SOUND_SAMPLEFLAG_EOF       = 1 << 29, /* end of input stream.            */
     SOUND_SAMPLEFLAG_ERROR     = 1 << 30, /* unrecoverable error.            */
-    SOUND_SAMPLEFLAG_AGAIN     = 1 << 31  /* couldn't read without blocking. */
+    SOUND_SAMPLEFLAG_EAGAIN    = 1 << 31  /* would block, or temp error.     */
 } Sound_SampleFlags;
+
+
+/*
+ * Basics of a decoded sample's data structure: data format (see AUDIO_U8 and
+ *  friends in SDL_audio.h), number of channels, and sample rate. If you need
+ *  more explanation than that, you should stop developing sound code right
+ *  now.
+ */
+typedef struct __SOUND_AUDIOINFO__
+{
+    Uint16 format;
+    Uint8 channels;
+    Uint32 rate;
+} Sound_AudioInfo;
+
+
+/*
+ * Each decoder sets up one of these structs, which can be retrieved via
+ *  the Sound_AvailableDecoders() function. EVERY FIELD IN THIS IS READ-ONLY.
+ */
+typedef struct __SOUND_DECODERINFO__
+{
+    const char *extension;      /* standard file extension. "MP3", "WAV"... */
+    const char *description;    /* Human readable description of decoder.   */
+    const char *author;         /* "Name Of Author <email@emailhost.dom>"   */
+    const char *url;            /* URL specific to this decoder.            */
+} Sound_DecoderInfo;
+
 
 
 /*
@@ -90,26 +117,13 @@ typedef enum __SOUND_SAMPLEFLAGS__
 typedef struct __SOUND_SAMPLE__
 {
     void *opaque;                /* Internal use only.                   */
-    Sound_DecoderInfo *decoder;  /* Decoder used for this sample.        */
-    SDL_AudioSpec desired;       /* Desired audio format for conversion. */
-    SDL_AudioSpec actual;        /* Actual audio format of sample.       */
+    const Sound_DecoderInfo *decoder;  /* Decoder used for this sample.  */
+    Sound_AudioInfo desired;     /* Desired audio format for conversion. */
+    Sound_AudioInfo actual;      /* Actual audio format of sample.       */
     void *buffer;                /* Decoded sound data lands in here.    */
     Uint32 buffer_size;          /* Current size of (buffer), in bytes.  */
     Sound_SampleFlags flags;     /* Flags relating to this sample.       */
 } Sound_Sample;
-
-
-/*
- * Each decoder sets up one of these structs, which can be retrieved via
- *  the Sound_AvailableDecoders() function.
- */
-typedef struct __PHYSFS_ARCHIVEINFO__
-{
-    const char *extension;      /* Case sensitive standard file extension. */
-    const char *description;    /* Human readable description of decoder.  */
-    const char *author;         /* "Name Of Author (email@emailhost.dom)"  */
-    const char *url;            /* URL specific to this decoder.           */
-} PHYSFS_ArchiveInfo;
 
 
 /*
@@ -179,7 +193,7 @@ extern DECLSPEC int Sound_Init(void);
  * All Sound_Sample pointers you had prior to this call are INVALIDATED.
  *
  * Once successfully deinitialized, Sound_Init() can be called again to
- *  restart the subsystem. All defaults API states are restored at this
+ *  restart the subsystem. All default API states are restored at this
  *  point.
  *
  * You should call this BEFORE SDL_Quit(). This will NOT call SDL_Quit()
@@ -232,7 +246,14 @@ extern DECLSPEC const Sound_DecoderInfo **Sound_AvailableDecoders(void);
  *
  *   @return READ ONLY string of last error message.
  */
-extern DECLSPEC const char *Sound_GetLastError(void);
+extern DECLSPEC const char *Sound_GetError(void);
+
+
+/**
+ * Clear the current error message, so the next call to Sound_GetError() will
+ *  return NULL.
+ */
+extern DECLSPEC void Sound_ClearError(void);
 
 
 /**
@@ -241,10 +262,11 @@ extern DECLSPEC const char *Sound_GetLastError(void);
  *  coming from memory, disk, network stream, etc. The (ext) parameter is
  *  merely a hint to determining the correct decoder; if you specify, for
  *  example, "mp3" for an extension, and one of the decoders lists that
- *  (case sensitive) as a handled extension, then that decoder is given
- *  first shot at trying to claim the data for decoding. If none of the
- *  extensions match (or the extension is NULL), then every decoder examines
- *  the data to determine if it can handle it, until one accepts it.
+ *  as a handled extension, then that decoder is given first shot at trying
+ *  to claim the data for decoding. If none of the extensions match (or the
+ *  extension is NULL), then every decoder examines the data to determine if
+ *  it can handle it, until one accepts it. In such a case your SDL_RWops will
+ *  need to be capable of rewinding to the start of the stream.
  * If no decoders can handle the data, a NULL value is returned, and a human
  *  readable error message can be fetched from Sound_GetLastError().
  * Optionally, a desired audio format can be specified. If the incoming data
@@ -256,17 +278,27 @@ extern DECLSPEC const char *Sound_GetLastError(void);
  *  format. The incoming format of the data, preconversion, can be found
  *  in the Sound_Sample structure.
  * Note that the raw sound data "decoder" needs you to specify both the
- *  extension "RAWDATA" and a "desired" format, or it will refuse to handle
- *  the data.
+ *  extension "RAW" and a "desired" format, or it will refuse to handle
+ *  the data. This is to prevent it from catching all formats unsupported
+ *  by the other decoders.
  * Finally, specify an initial buffer size; this is the number of bytes that
  *  will be allocated to store each read from the sound buffer. The more you
  *  can safely allocate, the more decoding can be done in one block, but the
  *  more resources you have to use up, and the longer each decoding call will
  *  take. Note that different data formats require more or less space to
  *  store. This buffer can be resized via Sound_SetBufferSize() ...
- *
+ * The buffer size specified must be a multiple of the size of a single
+ *  sample (not to be confused with a single Sound_Sample). So, if you want
+ *  16-bit, stereo samples, then your sample size is (2 channels * 16 bits),
+ *  or 32 bits per sample, which is four bytes. In such a case, you could
+ *  specify 128 or 132 bytes for a buffer, but not 129, 130, or 131, although
+ *  in reality, you'll want to specify a MUCH larger buffer.
  * When you are done with this Sound_Sample pointer, you can dispose of it
  *  via Sound_FreeSample().
+ * You do not have to keep a reference to (rw) around. If this function
+ *  suceeds, it stores (rw) internally (and disposes of it during the call
+ *  to Sound_FreeSample()). If this function fails, it will dispose of the
+ *  SDL_RWops for you.
  *
  *    @param rw SDL_RWops with sound data.
  *    @param ext File extension normally associated with a data format.
@@ -278,8 +310,28 @@ extern DECLSPEC const char *Sound_GetLastError(void);
  *            Sound_GetLastError() to see what went wrong.
  */
 extern DECLSPEC Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
-                                              SDL_AudioInfo *desired,
+                                              Sound_AudioInfo *desired,
                                               Uint32 bufferSize);
+
+/**
+ * This is identical to Sound_NewSample(), but it creates an SDL_RWops for you
+ *  from the file located in (filename). Note that (filename) is specified in
+ *  platform-dependent notation. ("C:\\music\\mysong.mp3" on windows, and
+ *  "/home/icculus/music/mysong.mp3" or whatever on Unix, etc.)
+ * Sound_NewSample()'s "ext" parameter is gleaned from the contents of
+ *  (filename).
+ *
+ *    @param filename file containing sound data.
+ *    @param desired Format to convert sound data into. Can usually be NULL,
+ *                   if you don't need conversion.
+ *    @param bufferSize size, in bytes, of initial read buffer.
+ *   @return Sound_Sample pointer, which is used as a handle to several other
+ *            SDL_sound APIs. NULL on error. If error, use
+ *            Sound_GetLastError() to see what went wrong.
+ */
+extern DECLSPEC Sound_Sample *Sound_NewSampleFromFile(const char *filename,
+                                                      Sound_AudioInfo *desired,
+                                                      Uint32 bufferSize);
 
 /**
  * Dispose of a Sound_Sample pointer that was returned from Sound_NewSample().
@@ -291,6 +343,29 @@ extern DECLSPEC Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
  *    @param sample The Sound_Sample to delete.
  */
 extern DECLSPEC void Sound_FreeSample(Sound_Sample *sample);
+
+
+/**
+ * Change the current buffer size for a sample. If the buffer size could
+ *  be changed, then the sample->buffer and sample->buffer_size fields will
+ *  reflect that. If they could not be changed, then your original sample
+ *  state is preserved. If the buffer is shrinking, the data at the end of
+ *  buffer is truncated. If the buffer is growing, the contents of the new
+ *  space at the end is undefined until you decode more into it or initialize
+ *  it yourself.
+ *
+ * The buffer size specified must be a multiple of the size of a single
+ *  sample (not to be confused with a single Sound_Sample). So, if you want
+ *  16-bit, stereo samples, then your sample size is (2 channels * 16 bits),
+ *  or 32 bits per sample, which is four bytes. In such a case, you could
+ *  specify 128 or 132 bytes for a buffer, but not 129, 130, or 131, although
+ *  in reality, you'll want to specify a MUCH larger buffer.
+ *
+ *    @param sample The Sound_Sample whose buffer to modify.
+ *    @param new_size The desired size, in bytes, of the new buffer.
+ *   @return non-zero if buffer size changed, zero on failure.
+ */
+extern DECLSPEC int Sound_SetBufferSize(Sound_Sample *sample, Uint32 new_size);
 
 
 /**
