@@ -2,6 +2,13 @@
  * CHANGELOG.
  */
 
+11252001 - (With thanks to Andreas Umbach for pointing it out) Fixed some
+           problems with Sound_DecodeAll(). For local testing of this bug,
+           added a --predecode command line to playsound. Minor fixes to
+           theoretical bugs in Sound_FreeSample(). playsound no longer
+           buffers stdout and stderr. Updated Sound_DecodeAll()'s comments in
+           SDL_sound.h ...
+11192001 - FLAC decoder cleanups from Torbjörn.
 11092001 - Torbjörn fixes playsound's audio callback after I broke it, again.
            A bug in configure.in was preventing SMPEG from being used unless
            --enable-debug was set; fixed. Changed this file to list latest
