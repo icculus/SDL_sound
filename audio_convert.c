@@ -31,8 +31,6 @@
 #  include <config.h>
 #endif
 
-#if !SOUND_USE_ALTCVT
-
 #include "SDL.h"
 #include "SDL_sound.h"
 
@@ -732,8 +730,6 @@ int Sound_BuildAudioCVT(Sound_AudioCVT *cvt,
 
     return(cvt->needed);
 } /* Sound_BuildAudioCVT */
-
-#endif  /* !SOUND_USE_ALTCVT */
 
 /* end of audio_convert.c ... */
 
