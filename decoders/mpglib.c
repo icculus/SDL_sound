@@ -109,6 +109,7 @@ static int MPGLIB_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     mpglib_t *mpg = NULL;
+    int rc;
 
        /*
         * If I understand things correctly, MP3 files don't really have any
@@ -136,16 +137,10 @@ static int MPGLIB_open(Sound_Sample *sample, const char *ext)
         Uint8 mp3_magic[2];
 
         if (SDL_RWread(internal->rw, mp3_magic, sizeof (mp3_magic), 1) != 1)
-        {
-            Sound_SetError("MP3: Could not read MP3 magic.");
-            return(0);
-        } /*if */
+            BAIL_MACRO("MP3: Could not read MP3 magic.", 0);
 
         if (mp3_magic[0] != 0xFF || (mp3_magic[1] & 0xF0) != 0xF0)
-        {
-            Sound_SetError("MP3: Not an MP3 stream.");
-            return(0);
-        } /* if */
+            BAIL_MACRO("MP3: Not an MP3 stream.", 0);
 
             /* !!! FIXME: If the seek fails, we'll probably miss a frame */
         SDL_RWseek(internal->rw, -sizeof (mp3_magic), SEEK_CUR);
@@ -153,16 +148,31 @@ static int MPGLIB_open(Sound_Sample *sample, const char *ext)
 
     mpg = (mpglib_t *) malloc(sizeof (mpglib_t));
     BAIL_IF_MACRO(mpg == NULL, ERR_OUT_OF_MEMORY, 0);
-    mpg->outpos = mpg->outleft = 0;
+    memset(mpg, '\0', sizeof (mpglib_t));
     InitMP3(&mpg->mp);
+
+    rc = SDL_RWread(internal->rw, mpg->inbuf, 1, sizeof (mpg->inbuf));
+    if (rc <= 0)
+    {
+        free(mpg);
+        BAIL_MACRO("MPGLIB: Failed to read any data at all", 0);
+    } /* if */
+
+    if (decodeMP3(&mpg->mp, mpg->inbuf, rc,
+                    mpg->outbuf, sizeof (mpg->outbuf),
+                    &mpg->outleft) == MP3_ERR)
+    {
+        free(mpg);
+        BAIL_MACRO("MPGLIB: Not an MP3 stream?", 0);
+    } /* if */
 
     SNDDBG(("MPGLIB: Accepting data stream.\n"));
 
     /* !!! FIXME: Determine what format mpglib is spitting out... */
     internal->decoder_private = mpg;
-    sample->actual.rate = 44100;
-    sample->actual.channels = 2;
-    sample->actual.format = AUDIO_S16LSB;
+    sample->actual.rate = mpglib_freqs[mpg->mp.fr.sampling_frequency];
+    sample->actual.channels = mpg->mp.fr.stereo;
+    sample->actual.format = AUDIO_S16LSB; /* !!! FIXME: Is this right? */
     sample->flags = SOUND_SAMPLEFLAG_NONE;
 
     return(1); /* we'll handle this data. */
