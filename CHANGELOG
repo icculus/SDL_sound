@@ -64,8 +64,14 @@
 10012001 - Fixed a memory leak that Torbjörn found in the MOD decoder.
 10022001 - Changed a comment in mod.c to not refer to "the mikmod 
            directory" anymore. Committed Torbjörn's patch for MP3 detection.
-	   (better late than never). __Sound_strcasecmp() now handles NULL 
+           (better late than never). __Sound_strcasecmp() now handles NULL
            strings gracefully, fixing the crash with "playsound bootstrap".
+           More work on the SHN decoder.
+10032001 - After hours of tracking down a bogus pointer, the SHN decoder works!
+           I can die happy. :)  Max placated me with an --enable-debug option
+           so I could stop my whining. Other autoconf goodies (such as
+           reenabling -Werror for debug builds, etc). Torbjörn brings in a
+           MIDI decoder, which reads from a Timidity process through a pipe.
 
 --ryan. (icculus@clutteredmind.org)
 
