@@ -35,6 +35,10 @@
 
 #include "SDL.h"
 
+#if ((defined _MSC_VER) && (!defined inline))
+#	define inline __inline__
+#endif
+
 #if (defined DEBUG_CHATTER)
 #define SNDDBG(x) printf x
 #else

@@ -139,7 +139,7 @@ static void VOC_quit(void)
 } /* VOC_quit */
 
 
-static __inline__ int voc_check_header(SDL_RWops *src)
+static inline int voc_check_header(SDL_RWops *src)
 {
     /* VOC magic header */
     Uint8  signature[20];  /* "Creative Voice File\032" */
