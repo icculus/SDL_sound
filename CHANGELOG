@@ -2,6 +2,10 @@
  * CHANGELOG.
  */
 
+11302001 - Torbjörn and I make Sound_DecodeAll() more robust: checks for
+           previous decoding failures and sets an appropriate error, handles
+           decoders that change their buffers on the fly (such as the FLAC
+           decoder), and deals with out-of-memory conditions more gracefully.
 11252001 - (With thanks to Andreas Umbach for pointing it out) Fixed some
            problems with Sound_DecodeAll(). For local testing of this bug,
            added a --predecode command line to playsound. Minor fixes to
