@@ -4,12 +4,17 @@ Check here, until I get to write more of this README:
 
    http://icculus.org/SDL_sound/
 
+Unix, BeOS, MacOS X, BSD users:
+   If you pulled from CVS, run "./bootstrap" first.
+   Then, run ./configure with your favorite options, "make", "make install".
 
 Win32 users:
    Download http://icculus.org/SDL_sound/downloads/SDL_sound_win32.zip and
    unzip it in the root of the source tree (the directory with SDL_sound.c,
    etc). This will give you Visual C++ project files and some other needed
    code.
+
+There will be a shared library and a binary called "playsound".
 
 --ryan. (icculus@clutteredmind.org)
 
