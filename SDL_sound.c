@@ -200,12 +200,12 @@ int Sound_Init(void)
     samplesList = NULL;
     errorMessages = NULL;
 
-    SDL_Init(SDL_INIT_AUDIO);
-    errorlist_mutex = SDL_CreateMutex();
-
     available_decoders = (const Sound_DecoderInfo **)
                             malloc((total) * sizeof (Sound_DecoderInfo *));
     BAIL_IF_MACRO(available_decoders == NULL, ERR_OUT_OF_MEMORY, 0);
+
+    SDL_Init(SDL_INIT_AUDIO);
+    errorlist_mutex = SDL_CreateMutex();
 
     for (i = 0; decoders[i].funcs != NULL; i++)
     {
@@ -257,12 +257,12 @@ int Sound_Quit(void)
         nexterr = err->next;
         free(err);
     } /* for */
+    errorMessages = NULL;
+    initialized = 0;
     SDL_UnlockMutex(errorlist_mutex);
     SDL_DestroyMutex(errorlist_mutex);
-    errorMessages = NULL;
     errorlist_mutex = NULL;
 
-    initialized = 0;
     return(1);
 } /* Sound_Quit */
 
@@ -301,7 +301,12 @@ static ErrMsg *findErrorForCurrentThread(void)
 const char *Sound_GetError(void)
 {
     const char *retval = NULL;
-    ErrMsg *err = findErrorForCurrentThread();
+    ErrMsg *err;
+
+    if (!initialized)
+        return(ERR_NOT_INITIALIZED);
+
+    err = findErrorForCurrentThread();
     if ((err != NULL) && (err->errorAvailable))
     {
         retval = err->errorString;
@@ -314,7 +319,12 @@ const char *Sound_GetError(void)
 
 void Sound_ClearError(void)
 {
-    ErrMsg *err = findErrorForCurrentThread();
+    ErrMsg *err;
+
+    if (!initialized)
+        return;
+
+    err = findErrorForCurrentThread();
     if (err != NULL)
         err->errorAvailable = 0;
 } /* Sound_ClearError */
@@ -330,7 +340,11 @@ void Sound_SetError(const char *str)
     if (str == NULL)
         return;
 
-    SNDDBG(("Sound_SetError(\"%s\");\n", str));
+    SNDDBG(("Sound_SetError(\"%s\");%s\n", str,
+              (initialized) ? "" : " [NOT INITIALIZED!]"));
+
+    if (!initialized)
+        return;
 
     err = findErrorForCurrentThread();
     if (err == NULL)
