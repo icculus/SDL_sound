@@ -226,6 +226,19 @@ if test x$enable_ogg = xyes; then
   fi
 fi
 
+dnl Check for PhysicsFS http://icculus.org/physfs/
+AC_ARG_ENABLE(physfs,
+[  --enable-physfs            enable PhysicsFS in playsound [default=yes]],
+              , enable_physfs=yes)
+if test x$enable_physfs = xyes; then
+  AC_CHECK_HEADER(physfs.h, have_physfs_hdr=yes)
+  AC_CHECK_LIB(physfs, PHYSFS_init, have_physfs_lib=yes)
+  if test x$have_physfs_hdr = xyes -a x$have_physfs_lib = xyes; then
+    use_physicsfs="yes"
+  fi
+fi
+
+
 dnl Check for efence (!!! FIXME : This doesn't work.)
 dnl AC_ARG_ENABLE(efence,
 dnl [  --enable-efence            enable ElectricFence usage [default=no]],
@@ -253,6 +266,7 @@ AC_CHECK_FUNCS([memset strrchr])
 dnl Add Makefile conditionals
 AM_CONDITIONAL(USE_TIMIDITY, test x$enable_midi = xyes)
 AM_CONDITIONAL(USE_MPGLIB, test x$enable_mpglib = xyes)
+AM_CONDITIONAL(USE_PHYSICSFS, test x$use_physicsfs = xyes)
 
 AC_OUTPUT([
 Makefile

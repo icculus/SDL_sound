@@ -33,7 +33,6 @@
 #include "SDL.h"
 #include "SDL_sound.h"
 
-#define SUPPORT_PHYSFS 0
 #if SUPPORT_PHYSFS
 #include <alloca.h>
 #include "physfs.h"
