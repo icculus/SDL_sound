@@ -24,6 +24,10 @@ MikMod driver:
 autoconf:
     Max Horn
 
+win32 support,
+other fixes:
+    Corona688
+
 Other stuff:
     Your name here! Patches go to icculus@clutteredmind.org ...
 
