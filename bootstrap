@@ -3,7 +3,15 @@
 set -e
 echo "Initial preparation...this can take awhile, so sit tight..."
 aclocal
-libtoolize --automake --copy --force
+
+# MacOS X renames GNU libtool to "glibtool", since they have something
+#  else called "libtool" already...
+if [ -x /usr/bin/glibtoolize ]; then
+  glibtoolize --automake --copy --force
+else
+  libtoolize --automake --copy --force
+fi
+
 autoheader
 automake --foreign --add-missing --copy
 autoconf
