@@ -166,6 +166,7 @@ static void output_usage(const char *argv0)
             "     --channels n  Playback on n channels (1 or 2).\n"
             "     --version     Display version information and exit.\n"
             "     --decoders    List supported sound formats and exit.\n"
+            "     --predecode   Decode entire sample before playback.\n"
             "     --help        Display this information and exit.\n"
             "\n"
             "   Valid arguments to the --format option are:\n"
@@ -204,8 +205,12 @@ int main(int argc, char **argv)
     SDL_AudioSpec sdl_desired;
     SDL_AudioSpec sdl_actual;
     Sound_Sample *sample;
+    int predecode = 0;
     int use_specific_audiofmt = 0;
     int i;
+
+    setbuf(stdout, NULL);
+    setbuf(stderr, NULL);
 
         /* !!! FIXME: Move this to a parse_cmdline() function... */
     if (argc < 2)
@@ -282,6 +287,11 @@ int main(int argc, char **argv)
             output_decoders();
             Sound_Quit();
             return(0);
+        } /* else if */
+
+        else if (strcmp(argv[i], "--predecode") == 0)
+        {
+            predecode = 1;
         } /* else if */
 
         else
@@ -374,6 +384,25 @@ int main(int argc, char **argv)
         } /* if */
 
         printf("Now playing [%s]...\n", argv[i]);
+
+        if (predecode)
+        {
+            printf("  predecoding...", argv[i]);
+            decoded_bytes = Sound_DecodeAll(sample);
+            decoded_ptr = sample->buffer;
+            if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
+            {
+                fprintf(stderr,
+                        "Couldn't fully decode \"%s\"!\n"
+                        "  reason: [%s].\n",
+                        "  (playing first %lu bytes of decoded data...)\n",
+                        argv[i], Sound_GetError(), decoded_bytes);
+            } /* if */
+            else
+            {
+                printf("done.\n");
+            } /* else */
+        } /* if */
 
         done_flag = 0;
         SDL_PauseAudio(0);
