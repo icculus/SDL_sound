@@ -81,7 +81,7 @@ debugging_chatter := true
 #  Note that various decoders may need external libraries.
 #-----------------------------------------------------------------------------#
 use_decoder_raw  := true
-use_decoder_mp3  := false
+use_decoder_mp3  := false 
 use_decoder_mod  := true
 use_decoder_voc  := true
 use_decoder_wav  := true
@@ -222,7 +222,7 @@ SRCDIR := .
 
 CFLAGS := -I$(SRCDIR) $(CFLAGS)
 CFLAGS += $(use_asm) -D_REENTRANT -fsigned-char -DPLATFORM_UNIX
-CFLAGS += -Wall -fno-exceptions -fno-rtti -ansi -pedantic
+CFLAGS += -Wall -Werror -fno-exceptions -fno-rtti -ansi -pedantic
 
 LDFLAGS += -lm
 
@@ -272,7 +272,7 @@ endif
 
 ifeq ($(strip $(use_decoder_mod)),true)
   MAINSRCS += decoders/mod.c
-  CFLAGS += -DSOUND_SUPPORTS_MOD -DUSE_RWOPS
+  CFLAGS += -DSOUND_SUPPORTS_MOD
   LDFLAGS += -lmikmod
 endif
 
