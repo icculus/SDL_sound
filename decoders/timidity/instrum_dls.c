@@ -66,7 +66,7 @@ static RIFF_Chunk *AllocRIFFChunk()
 {
     RIFF_Chunk *chunk = (RIFF_Chunk *)malloc(sizeof(*chunk));
     if ( !chunk ) {
-        SDL_Error(SDL_ENOMEM);
+        __Sound_SetError(ERR_OUT_OF_MEMORY);
         return NULL;
     }
     memset(chunk, 0, sizeof(*chunk));
@@ -179,18 +179,18 @@ RIFF_Chunk *LoadRIFF(SDL_RWops *src)
     chunk->magic    = SDL_ReadLE32(src);
     chunk->length    = SDL_ReadLE32(src);
     if ( chunk->magic != RIFF ) {
-        SDL_SetError("Not a RIFF file");
+        __Sound_SetError("Not a RIFF file");
         FreeRIFFChunk(chunk);
         return NULL;
     }
     chunk->data = (Uint8 *)malloc(chunk->length);
     if ( chunk->data == NULL ) {
-        SDL_Error(SDL_ENOMEM);
+        __Sound_SetError(ERR_OUT_OF_MEMORY);
         FreeRIFFChunk(chunk);
         return NULL;
     }
     if ( SDL_RWread(src, chunk->data, chunk->length, 1) != 1 ) {
-        SDL_Error(SDL_EFREAD);
+        __Sound_SetError(ERR_IO_ERROR);
         FreeRIFF(chunk);
         return NULL;
     }
@@ -738,7 +738,7 @@ DLS_Data *LoadDLS(SDL_RWops *src)
     RIFF_Chunk *chunk;
     DLS_Data *data = (DLS_Data *)malloc(sizeof(*data));
     if ( !data ) {
-        SDL_Error(SDL_ENOMEM);
+        __Sound_SetError(ERR_OUT_OF_MEMORY);
         return NULL;
     }
     memset(data, 0, sizeof(*data));
