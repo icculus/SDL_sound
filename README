@@ -3,30 +3,35 @@ SDL_sound. An abstract soundfile decoder.
 Check here, until I get to write more of this README:
    http://icculus.org/SDL_sound/
 
+SDL_sound _REQUIRES_ Simple Directmedia Layer (SDL) to function, and cannot
+ be built without it. You can get SDL from http://www.libsdl.org/. SDL_sound
+ has only been tried with the SDL 1.2 series, but may work on older versions.
+ Reports of success or failure are welcome.
+
 Some optional external libraries that SDL_sound can use and where to find them:
-  SMPEG (used to decode MP3s): http://www.lokigames.com/development/smpeg.php3
-  libvorbis (used to decode OGGs): http://www.xiph.org/ogg/vorbis/
-  libFLAC (used to decode FLACs): http://flac.sourceforge.net/
-  libModPlug (used to decode MODs, etc): http://modplug-xmms.sourceforge.net/
-  libMikMod (used to decode MODs, etc, too): http://www.mikmod.org/
+ SMPEG (used to decode MP3s): http://www.lokigames.com/development/smpeg.php3
+ libvorbis (used to decode OGGs): http://www.xiph.org/ogg/vorbis/
+ libFLAC (used to decode FLACs): http://flac.sourceforge.net/
+ libModPlug (used to decode MODs, etc): http://modplug-xmms.sourceforge.net/
+ libMikMod (used to decode MODs, etc, too): http://www.mikmod.org/
 
 These external libraries are OPTIONAL. SDL_sound will build and function
  without them, but various sound file formats are not supported unless these
  libraries are available. Unless explicitly disabled during initial build
- configuration, SDL_sound always supports these file formats:
+ configuration, SDL_sound always supports these file formats internally:
 
-   Microsoft .WAV files (uncompressed and MS-ADPCM encoded).
-   Creative Labs .VOC files
-   Shorten (.SHN) files
-   Audio Interchange format (AIFF) files
-   Sun Audio (.AU) files
-   MIDI files
-   Raw waveform data
+ - Microsoft .WAV files (uncompressed and MS-ADPCM encoded).
+ - Creative Labs .VOC files
+ - Shorten (.SHN) files
+ - Audio Interchange format (AIFF) files
+ - Sun Audio (.AU) files
+ - MIDI files
+ - Raw waveform data
 
 
 Building/Installing:
 
-Unix, BeOS, MacOS X, BSD users:
+Linux, Unix, BeOS, MacOS X, BSD users:
    If you pulled from CVS, run "./bootstrap" first.
    Then, run ./configure with your favorite options, "make", "make install".
 
