@@ -149,6 +149,7 @@ typedef struct S_WAV_FMT_T
     void (*free)(struct S_WAV_FMT_T *fmt);
     Uint32 (*read_sample)(Sound_Sample *sample);
     int (*rewind_sample)(Sound_Sample *sample);
+    int (*seek_sample)(Sound_Sample *sample, Uint32 ms);
 
     union
     {
@@ -275,6 +276,20 @@ static Uint32 read_sample_fmt_normal(Sound_Sample *sample)
 } /* read_sample_fmt_normal */
 
 
+static int seek_sample_fmt_normal(Sound_Sample *sample, Uint32 ms)
+{
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    wav_t *w = (wav_t *) internal->decoder_private;
+    fmt_t *fmt = w->fmt;
+    int offset = __Sound_convertMsToBytePos(&sample->actual, ms);
+    int pos = (int) (fmt->data_starting_offset + offset);
+    int rc = SDL_RWseek(internal->rw, pos, SEEK_SET);
+    BAIL_IF_MACRO(rc != pos, ERR_IO_ERROR, 0);
+    w->bytesLeft = fmt->total_bytes - offset;
+    return(1);  /* success. */
+} /* seek_sample_fmt_normal */
+
+
 static int rewind_sample_fmt_normal(Sound_Sample *sample)
 {
     /* no-op. */
@@ -288,6 +303,7 @@ static int read_fmt_normal(SDL_RWops *rw, fmt_t *fmt)
     fmt->free = NULL;
     fmt->read_sample = read_sample_fmt_normal;
     fmt->rewind_sample = rewind_sample_fmt_normal;
+    fmt->seek_sample = seek_sample_fmt_normal;
     return(1);
 } /* read_fmt_normal */
 
@@ -509,8 +525,14 @@ static int rewind_sample_fmt_adpcm(Sound_Sample *sample)
 } /* rewind_sample_fmt_adpcm */
 
 
+static int seek_sample_fmt_adpcm(Sound_Sample *sample, Uint32 ms)
+{
+    return(0); /* !!! FIXME: Can we reasonably implement this? */
+} /* seek_sample_fmt_adpcm */
+
+
 /*
- * Read in a the adpcm-specific info from disk. This makes this process 
+ * Read in the adpcm-specific info from disk. This makes this process
  *  safe regardless of the processor's byte order or how the fmt_t 
  *  structure is packed.
  */
@@ -663,6 +685,8 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
     internal->decoder_private = (void *) w;
 
     sample->flags = SOUND_SAMPLEFLAG_NONE;
+    if (fmt->wFormatTag == FMT_NORMAL)
+        sample->flags |= SOUND_SAMPLEFLAG_CANSEEK;
 
     SNDDBG(("WAV: Accepting data stream.\n"));
     return(1); /* we'll handle this data. */
@@ -724,7 +748,9 @@ static int WAV_rewind(Sound_Sample *sample)
 
 static int WAV_seek(Sound_Sample *sample, Uint32 ms)
 {
-    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    wav_t *w = (wav_t *) internal->decoder_private;
+    return(w->fmt->seek_sample(sample, ms));
 } /* WAV_seek */
 
 #endif /* SOUND_SUPPORTS_WAV */
