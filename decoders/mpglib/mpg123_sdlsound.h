@@ -1,8 +1,7 @@
 #include        <stdio.h>
 #include        <string.h>
-#include        <signal.h>
 
-#if !defined(WIN32) && !defined(macintosh)
+#if !defined(WIN32) && !defined(macintosh) && !defined(_WIN32_WCE)
 #include        <unistd.h>
 #endif
 
@@ -13,7 +12,7 @@
 # define WIN32
 #endif
 
-#if defined(WIN32) || defined(macintosh)
+#if defined(WIN32) || defined(macintosh) || defined(_WIN32_WCE)
 
 # define M_PI       3.14159265358979323846
 # define M_SQRT2	1.41421356237309504880

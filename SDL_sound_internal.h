@@ -45,6 +45,25 @@
 #define SNDDBG(x)
 #endif
 
+#if HAVE_ASSERT_H
+#  include <assert.h>
+#endif
+
+#ifdef _WIN32_WCE
+    extern char *strrchr(const char *s, int c);
+#   ifdef NDEBUG
+#       define assert(x)
+#   else
+#       define assert(x) if(!x) { fprintf(stderr,"Assertion failed in %s, line %s.\n",__FILE__,__LINE__); fclose(stderr); fclose(stdout); exit(1); }
+#   endif
+#endif
+ 
+
+#if (!defined assert)  /* if all else fails. */
+#  define assert(x)
+#endif
+
+
 typedef struct __SOUND_DECODERFUNCTIONS__
 {
         /* This is a block of info about your decoder. See SDL_sound.h. */

@@ -25,11 +25,24 @@
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-#include <signal.h>
+
+#if HAVE_ASSERT_H
+#  include <assert.h>
+#elif (!defined assert)
+#  define assert(x)
+#endif
+
+#if HAVE_SIGNAL_H
+#  include <signal.h>
+#endif
+
 #include "SDL.h"
 #include "SDL_sound.h"
 
@@ -57,7 +70,8 @@ static void output_versions(const char *argv0)
     SDL_VERSION(&sdl_compiled);
     sdl_linked = SDL_Linked_Version();
 
-    printf("%s version %d.%d.%d\n"
+    fprintf(stdout,
+           "%s version %d.%d.%d\n"
            "Copyright 2001 Ryan C. Gordon\n"
            "This program is free software, covered by the GNU Lesser General\n"
            "Public License, and you are welcome to change it and/or\n"
@@ -83,21 +97,24 @@ static void output_decoders(void)
     const Sound_DecoderInfo **i;
     const char **ext;
 
-    printf("Supported sound formats:\n");
+    fprintf(stdout, "Supported sound formats:\n");
     if (rc == NULL)
-        printf(" * Apparently, NONE!\n");
+        fprintf(stdout, " * Apparently, NONE!\n");
     else
     {
         for (i = rc; *i != NULL; i++)
         {
-            printf(" * %s\n", (*i)->description);
+            fprintf(stdout, " * %s\n", (*i)->description);
+
             for (ext = (*i)->extensions; *ext != NULL; ext++)
-                printf("   File extension \"%s\"\n", *ext);
-            printf("   Written by %s.\n   %s\n\n", (*i)->author, (*i)->url);
+                fprintf(stdout, "   File extension \"%s\"\n", *ext);
+
+            fprintf(stdout, "   Written by %s.\n   %s\n\n",
+                    (*i)->author, (*i)->url);
         } /* for */
     } /* else */
 
-    printf("\n");
+    fprintf(stdout, "\n");
 } /* output_decoders */
 
 
@@ -147,7 +164,8 @@ static void output_usage(const char *argv0)
 
 static void output_credits(void)
 {
-    printf("playsound version %d.%d.%d\n"
+    fprintf(stdout,
+           "playsound version %d.%d.%d\n"
            "Copyright 2001 Ryan C. Gordon\n"
            "playsound is free software, covered by the GNU Lesser General\n"
            "Public License, and you are welcome to change it and/or\n"
@@ -269,7 +287,7 @@ static void deinit_archive(void)
 
 static volatile int done_flag = 0;
 
-
+#if HAVE_SIGNAL_H
 void sigint_catcher(int signum)
 {
     static Uint32 last_sigint = 0;
@@ -293,6 +311,7 @@ void sigint_catcher(int signum)
         done_flag = 1;
     } /* else */
 } /* sigint_catcher */
+#endif
 
 
 /* global decoding state. */
@@ -324,7 +343,7 @@ static Uint32 cvtMsToBytePos(Sound_AudioInfo *info, Uint32 ms)
 
 static void do_seek(Sound_Sample *sample)
 {
-    printf("Seeking to %.2d:%.2d:%.4d...\n",
+    fprintf(stdout, "Seeking to %.2d:%.2d:%.4d...\n",
             (int) ((seek_list[seek_index] / 1000) / 60),
             (int) ((seek_list[seek_index] / 1000) % 60),
             (int) ((seek_list[seek_index] % 1000)));
@@ -652,8 +671,10 @@ int main(int argc, char **argv)
     int delay;
     int new_sample = 1;
 
-    setbuf(stdout, NULL);
-    setbuf(stderr, NULL);
+    #ifdef HAVE_SETBUF
+        setbuf(stdout, NULL);
+        setbuf(stderr, NULL);
+    #endif
 
     if (argc < 2)
     {
@@ -728,7 +749,9 @@ int main(int argc, char **argv)
         return(42);
     } /* if */
 
-    signal(SIGINT, sigint_catcher);
+    #if HAVE_SIGNAL_H
+        signal(SIGINT, sigint_catcher);
+    #endif
 
     for (i = 1; i < argc; i++)
     {
@@ -919,11 +942,11 @@ int main(int argc, char **argv)
             return(42);
         } /* if */
 
-        printf("Now playing [%s]...\n", filename);
+        fprintf(stdout, "Now playing [%s]...\n", filename);
 
         if (predecode)
         {
-            printf("  predecoding...");
+            fprintf(stdout, "  predecoding...");
             decoded_bytes = Sound_DecodeAll(sample);
             decoded_ptr = sample->buffer;
             if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
@@ -936,7 +959,7 @@ int main(int argc, char **argv)
             } /* if */
             else
             {
-                printf("done.\n");
+                fprintf(stdout, "done.\n");
             } /* else */
         } /* if */
 
