@@ -3,7 +3,9 @@
  */
 
 03172002 - Removed an unneeded #include in mpglib that broke build on BeOS.
-           mpglib seems to work find on BeOS.
+           mpglib seems to work find on BeOS. Reworked some of mpglib.c so we
+           can determine the audio format when accepting the data stream. Some
+           other minor cleanups here and there.
 03162002 - Tied the PhysicsFS code into the build system (code disabled if
            physfs not found or --disable-physfs passed to ./configure.)
 03152002 - Added PhysicsFS support to playsound, so you can play sound files
