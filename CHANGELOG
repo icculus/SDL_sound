@@ -2,6 +2,8 @@
  * CHANGELOG.
  */
 
+07052002 - Cleaned up some stuff in playsound.c, removing some FIXMEs.
+           Commandline validation is improved, too.
 07022002 - Added WinCE support pack to website, updated INSTALL with CE info.
            More altcvt fixes from Frank Ranostaj.
 07012002 - Fixed configure.in to work around bug in older autoconfs. Started
