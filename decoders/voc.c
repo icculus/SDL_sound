@@ -91,6 +91,7 @@ typedef struct vocstuff {
     Uint8 	channels;       /* number of sound channels */
     int     extended;       /* Has an extended block been read? */
     Uint32  bufpos;         /* byte position in internal->buffer. */
+    Uint32  start_pos;      /* offset to seek to in stream when rewinding. */
 } vs_t;
 
 /* Size field */ 
@@ -435,6 +436,7 @@ static int VOC_open(Sound_Sample *sample, const char *ext)
     memset(v, '\0', sizeof (vs_t));
     internal->decoder_private = v;
 
+    v->start_pos = SDL_RWtell(internal->rw);
     v->rate = -1;
     if (!voc_get_block(sample))
     {
@@ -492,10 +494,12 @@ static Uint32 VOC_read(Sound_Sample *sample)
 
 static int VOC_rewind(Sound_Sample *sample)
 {
-    /* !!! FIXME. */
-    SNDDBG(("VOC_rewind(): Write me!\n"));
-    assert(0);
-    return(0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    vs_t *v = (vs_t *) internal->decoder_private;
+    int rc = SDL_RWseek(internal->rw, v->start_pos, SEEK_SET);
+    BAIL_IF_MACRO(rc != v->start_pos, ERR_IO_ERROR, 0);
+    v->rest = 0;
+    return(1);
 } /* VOC_rewind */
 
 #endif /* SOUND_SUPPORTS_VOC */
