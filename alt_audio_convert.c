@@ -157,7 +157,7 @@ static int convertStereoToMono( AdapterC Data, int length )
 static int convertMonoToStereo( AdapterC Data, int length )
 {
    int i;
-   short* buffer = Data.buffer-2;
+   short* buffer = Data.buffer-1;
    length *= 2;
 
     /*
@@ -165,8 +165,8 @@ static int convertMonoToStereo( AdapterC Data, int length )
      * !!! FIXME:  a second index variable?  --ryan.
      */
    for( i = length; i;  i-=2 )
-        buffer[i] = buffer [i+1] = buffer[i/2];
-   return length*2;
+        buffer[i] = buffer [i-1] = buffer[i/2];
+   return length;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -351,10 +351,15 @@ static int createRateConverter( Sound_AudioCVT *Data, int filter_index,
    if( Ratio > 1.0)
        VarPos = filter_index++;
    else
+   {
+       fprintf (stderr, "Filter: minus5dB\n");
        Data->adapter[filter_index++] = minus5dB;
+   }
 
    while( Ratio > 64.0/31.0)
    {
+       fprintf (stderr, "Filter: %s\n",
+                Mono ? "doubleRateMono" : "doubleRateStereo");
        Data->adapter[filter_index++] =
            Mono ? doubleRateMono : doubleRateStereo;
        Ratio /= 2;
@@ -365,6 +370,8 @@ static int createRateConverter( Sound_AudioCVT *Data, int filter_index,
 
    while( Ratio < 31.0/64.0 )
    {
+       fprintf (stderr, "Filter: %s\n",
+                Mono ? "halfRateMono" : "halfRateStereo");
        Data->adapter[filter_index++] =
            Mono ? halfRateMono : halfRateStereo;
        Ratio *= 2;
@@ -372,6 +379,8 @@ static int createRateConverter( Sound_AudioCVT *Data, int filter_index,
 
    if( Ratio > 1.0 )
    {
+       fprintf (stderr, "Filter: %s\n",
+                Mono ? "varRateMono" : "varRateStereo");
        setupVarFilter( &Data->filter, Ratio, Up );
        Data->adapter[VarPos] =
            Mono ? varRateMono : varRateStereo;
@@ -381,11 +390,13 @@ static int createRateConverter( Sound_AudioCVT *Data, int filter_index,
    }
    else
    {
+       fprintf (stderr, "Filter: %s\n",
+                Mono ? "varRateMono" : "varRateStereo");
        setupVarFilter( &Data->filter, Ratio, Down );
        Data->adapter[filter_index++] =
            Mono ? varRateMono : varRateStereo;
    }
-   return 0;
+   return filter_index;
 }
 
 static int BuildAudioCVT(Sound_AudioCVT *Data,
@@ -606,6 +617,20 @@ int Sound_BuildAudioCVT(Sound_AudioCVT *Data,
                 src_format |= ( AUDIO_16WRONG | AUDIO_SIGN );
                 dst_format |= AUDIO_16WRONG;
             } /* if */
+
+            if ( src_rate != dst_rate )
+            {
+                    /*
+                     * !!! FIXME !!!
+                     *
+                     * The audio conversion filter probably only works if the
+                     * data is in system byte order. So we need to convert to
+                     * system byte order, and then back to original byte
+                     * order. This is not an optimal solution.
+                     */
+                src_format |= AUDIO_16WRONG;
+                dst_format |= AUDIO_16WRONG;
+            }
         } /* else if */
         else if ( SIGNED(src_in_format) != SIGNED(dst_in_format) )
         {
