@@ -2,6 +2,8 @@
  * CHANGELOG.
  */
 
+01112002 - Committed the rest of Torbjörn's MOD patches, to clean up file
+           extension handling.
 01092002 - Torbjörn comes through with a ModPlug-based decoder, which should
            work nicely for decoding multiple .MODs at once. Now we need to
            figure out what to do with two decoders that can decode the same
