@@ -45,6 +45,12 @@
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
 
+/*
+ * libFLAC 1.0.1 added a seekable stream decoder, but if I understand the
+ * documentation correctly it's still much easier for us to handle the rewind
+ * method ourselves.
+ */
+
 #include "FLAC/stream_decoder.h"
 
 
@@ -80,6 +86,7 @@ typedef struct
     FLAC__StreamDecoder *decoder;
     SDL_RWops *rw;
     Sound_Sample *sample;
+    Uint32 data_starting_offset;
     Uint32 frame_size;
     Uint8 is_flac;
 } flac_t;
@@ -302,6 +309,13 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     FLAC__stream_decoder_init(decoder);
 
         /*
+         * Annoyingly, the rewind method will put the FLAC decoder in a state
+         * where it expects to read metadata, so we have to set this marker
+         * before the metadata block.
+         */
+    f->data_starting_offset = SDL_RWtell(f->rw);
+    
+        /*
          * If we are not sure this is a FLAC stream, check for the STREAMINFO
          * metadata block. If not, we'd have to peek at the first audio frame
          * and get the sound format from there, but that is not yet
@@ -342,12 +356,6 @@ static Uint32 FLAC_read(Sound_Sample *sample)
     flac_t *f = (flac_t *) internal->decoder_private;
     Uint32 len;
 
-    if (FLAC__stream_decoder_get_state(f->decoder) == FLAC__STREAM_DECODER_END_OF_STREAM)
-    {
-        sample->flags |= SOUND_SAMPLEFLAG_EOF;
-        return(0);
-    } /* if */
-
     if (!FLAC__stream_decoder_process_one_frame(f->decoder))
     {
         Sound_SetError("FLAC: Couldn't decode frame.");
@@ -355,20 +363,31 @@ static Uint32 FLAC_read(Sound_Sample *sample)
         return(0);
     } /* if */
 
+    if (FLAC__stream_decoder_get_state(f->decoder) == FLAC__STREAM_DECODER_END_OF_STREAM)
+    {
+        sample->flags |= SOUND_SAMPLEFLAG_EOF;
+        return(0);
+    } /* if */
+
         /* An error may have been signalled through the error callback. */    
     if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
         return(0);
-    
+
     return(f->frame_size);
 } /* FLAC_read */
 
 
 static int FLAC_rewind(Sound_Sample *sample)
 {
-    /* !!! FIXME. */
-    SNDDBG(("FLAC_rewind(): Write me!\n"));
-    assert(0);
-    return(0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    flac_t *f = (flac_t *) internal->decoder_private;
+    int rc = SDL_RWseek(f->rw, f->data_starting_offset, SEEK_SET);
+    
+    BAIL_IF_MACRO(rc != f->data_starting_offset, ERR_IO_ERROR, 0);
+    BAIL_IF_MACRO(!FLAC__stream_decoder_reset(f->decoder),
+                  "FLAC: could not reset decoder", 0);
+    FLAC__stream_decoder_process_metadata(f->decoder);
+    return(1);
 } /* FLAC_rewind */
 
 #endif /* SOUND_SUPPORTS_FLAC */

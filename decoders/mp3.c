@@ -239,7 +239,7 @@ static Uint32 MP3_read(Sound_Sample *sample)
          * We have to clear the buffer because apparently SMPEG_playAudio()
          * will mix the decoded audio with whatever's already in it. Nasty.
          */
-    memset(internal->buffer, 0, internal->buffer_size);
+    memset(internal->buffer, '\0', internal->buffer_size);
     retval = SMPEG_playAudio(smpeg, internal->buffer, internal->buffer_size);
     if (retval < internal->buffer_size)
     {
@@ -259,10 +259,19 @@ static Uint32 MP3_read(Sound_Sample *sample)
 
 static int MP3_rewind(Sound_Sample *sample)
 {
-    /* !!! FIXME. */
-    SNDDBG(("MP3_rewind(): Write me!\n"));
-    assert(0);
-    return(0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    SMPEG *smpeg = (SMPEG *) internal->decoder_private;
+    SMPEGstatus status;
+
+        /*
+         * SMPEG_rewind() really means "stop and rewind", so we may have to
+         * restart it afterwards.
+         */
+    status = SMPEG_status(smpeg);
+    SMPEG_rewind(smpeg);
+    if (status == SMPEG_PLAYING)
+        SMPEG_play(smpeg);
+    return(1);
 } /* MP3_rewind */
 
 #endif /* SOUND_SUPPORTS_MP3 */
