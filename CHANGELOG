@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+06252002 - More altcvt fixes from Frank Ranostaj.
 06132002 - Patch from Torbjörn to fix stereo AIFF files.
 06212002 - More altcvt fixes from Frank Ranostaj.
 06132002 - Patch from Torbjörn to make the WAV decoder more tolerant.
