@@ -73,6 +73,7 @@ static int QT_open(Sound_Sample *sample, const char *ext);
 static void QT_close(Sound_Sample *sample);
 static Uint32 QT_read(Sound_Sample *sample);
 static int QT_rewind(Sound_Sample *sample);
+static int QT_seek(Sound_Sample *sample, Uint32 ms);
 
 #define QT_MAX_INPUT_BUFFER (32*1024) /* Maximum size of internal buffer (internal->buffer_size) */
 
@@ -86,12 +87,13 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_QuickTime =
       "http://www.icculus.org/SDL_sound/"
     },
     
-    QT_init,       /*   init() method */
-    QT_quit,       /*   quit() method */
-    QT_open,       /*   open() method */
-    QT_close,      /*   close() method */
-    QT_read,       /*   read() method */
-    QT_rewind      /*   rewind() method */
+    QT_init,       /* init() method   */
+    QT_quit,       /* quit() method   */
+    QT_open,       /* open() method   */
+    QT_close,      /* close() method  */
+    QT_read,       /* read() method   */
+    QT_rewind,     /* rewind() method */
+    QT_seek        /* seek() method   */
   };
 
 typedef struct {
@@ -576,6 +578,14 @@ static int QT_rewind(Sound_Sample *sample)
   return(QT_rewind_internal(sample));
     
 } /* QT_rewind */
+
+
+static int QT_seek(Sound_Sample *sample, Uint32 ms)
+{
+    /* !!! FIXME: Implement this! */
+    return(0);
+} /* QT_seek */
+
 
 #endif /* SOUND_SUPPORTS_QUICKTIME */
 
