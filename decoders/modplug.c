@@ -20,6 +20,12 @@
 /*
  * Module player for SDL_sound. This driver handles anything that ModPlug does.
  *
+ * ModPlug can be found at http://sourceforge.net/projects/modplug-xmms
+ *
+ * An unofficial version of modplug with all C++ dependencies removed is also
+ *  available:  http://freecraft.net/snapshots/
+ *  (Look for something like "libmodplug-johns-*.tar.gz")
+ *
  * Please see the file COPYING in the source's root directory.
  *
  *  This file written by Torbjörn Andersson (d91tan@Update.UU.SE)
