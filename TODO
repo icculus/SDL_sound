@@ -20,7 +20,6 @@ More immediate:
 - Run through ElectricFence, dmalloc, etc...
 
 Decoders to implement:
-- .MID
 - .CDA (Does this need specific decoding? Or is a RWops needed?)
 - .AU
 - An mpglib MP3 decoder? (or backend mpglib into SMPEG?)
