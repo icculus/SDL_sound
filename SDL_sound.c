@@ -244,8 +244,11 @@ void Sound_ClearError(void)
  */
 void Sound_SetError(const char *err)
 {
-    SNDDBG(("Sound_SetError(\"%s\");\n", err));
-    SDL_SetError(err);
+    if (err != NULL)
+    {
+        SNDDBG(("Sound_SetError(\"%s\");\n", err));
+        SDL_SetError(err);
+    } /* if */
 } /* Sound_SetError */
 
 
