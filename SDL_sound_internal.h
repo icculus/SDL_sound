@@ -33,10 +33,6 @@
 #error Do not include this header from your applications.
 #endif
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 #include "SDL.h"
 
 #if (defined DEBUG_CHATTER)
