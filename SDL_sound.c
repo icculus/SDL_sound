@@ -381,13 +381,13 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
     memcpy(&desired, (_desired != NULL) ? _desired : &sample->actual,
             sizeof (Sound_AudioInfo));
 
-    if (SDL_BuildAudioCVT(&internal->sdlcvt,
-                          sample->actual.format,
-                          sample->actual.channels,
-                          (int) sample->actual.rate,   /* !!! FIXME: Int? Really? */
-                          desired.format,
-                          desired.channels,
-                          (int) desired.rate) == -1) /* !!! FIXME: Int? Really? */
+    if (Sound_BuildAudioCVT(&internal->sdlcvt,
+                            sample->actual.format,
+                            sample->actual.channels,
+                            sample->actual.rate,
+                            desired.format,
+                            desired.channels,
+                            desired.rate) == -1)
     {
         Sound_SetError(SDL_GetError());
         funcs->close(sample);
@@ -398,7 +398,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
     if (internal->sdlcvt.len_mult > 1)
     {
         void *rc = realloc(sample->buffer,
-                            sample->buffer_size * internal->sdlcvt.len_mult);
+                           sample->buffer_size * internal->sdlcvt.len_mult);
         if (rc == NULL)
         {
             funcs->close(sample);
@@ -611,8 +611,8 @@ Uint32 Sound_Decode(Sound_Sample *sample)
     if (internal->sdlcvt.needed)
     {
         internal->sdlcvt.len = retval;
-        SDL_ConvertAudio(&internal->sdlcvt);
-        retval *= internal->sdlcvt.len_mult;
+        Sound_ConvertAudio(&internal->sdlcvt);
+        retval = internal->sdlcvt.len_cvt;
     } /* if */
 
     return(retval);

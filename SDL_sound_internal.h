@@ -94,7 +94,7 @@ typedef struct __SOUND_DECODERFUNCTIONS__
          *    Sound_Sample *prev;  (offlimits)
          *    SDL_RWops *rw;       (can use, but do NOT close it)
          *    const Sound_DecoderFunctions *funcs; (that's this structure)
-         *    SDL_AudioCVT sdlcvt; (offlimits)
+         *    Sound_AudioCVT sdlcvt; (offlimits)
          *    void *buffer;        (offlimits until read() method)
          *    Uint32 buffer_size;  (offlimits until read() method)
          *    void *decoder_private; (read and write access)
@@ -158,18 +158,35 @@ typedef struct __SOUND_DECODERFUNCTIONS__
 } Sound_DecoderFunctions;
 
 
+/* A structure to hold a set of audio conversion filters and buffers */
+
+typedef struct Sound_AudioCVT
+{
+    int    needed;                  /* Set to 1 if conversion possible */
+    Uint16 src_format;              /* Source audio format */
+    Uint16 dst_format;              /* Target audio format */
+    double rate_incr;               /* Rate conversion increment */
+    Uint8  *buf;                    /* Buffer to hold entire audio data */
+    int    len;                     /* Length of original audio buffer */
+    int    len_cvt;                 /* Length of converted audio buffer */
+    int    len_mult;                /* buffer must be len*len_mult big */
+    double len_ratio;       /* Given len, final size is len*len_ratio */
+    void   (*filters[20])(struct Sound_AudioCVT *cvt, Uint16 *format);
+    int    filter_index;            /* Current audio conversion function */
+} Sound_AudioCVT;
+
+
 typedef struct __SOUND_SAMPLEINTERNAL__
 {
     Sound_Sample *next;
     Sound_Sample *prev;
     SDL_RWops *rw;
     const Sound_DecoderFunctions *funcs;
-    SDL_AudioCVT sdlcvt;
+    Sound_AudioCVT sdlcvt;
     void *buffer;
     Uint32 buffer_size;
     void *decoder_private;
 } Sound_SampleInternal;
-
 
 
 /* error messages... */
