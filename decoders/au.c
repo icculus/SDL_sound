@@ -126,31 +126,66 @@ struct audec
 };
 
 
+/*
+ * Read in the AU header from disk. This makes this process safe
+ *  regardless of the processor's byte order or how the au_file_hdr
+ *  structure is packed.
+ */
+static int read_au_header(SDL_RWops *rw, struct au_file_hdr *hdr)
+{
+    if (SDL_RWread(rw, &hdr->magic, sizeof (hdr->magic), 1) != 1)
+        return(0);
+    hdr->magic = SDL_SwapBE32(hdr->magic);
+
+    if (SDL_RWread(rw, &hdr->hdr_size, sizeof (hdr->hdr_size), 1) != 1)
+        return(0);
+    hdr->hdr_size = SDL_SwapBE32(hdr->hdr_size);
+
+    if (SDL_RWread(rw, &hdr->data_size, sizeof (hdr->data_size), 1) != 1)
+        return(0);
+    hdr->data_size = SDL_SwapBE32(hdr->data_size);
+
+    if (SDL_RWread(rw, &hdr->encoding, sizeof (hdr->encoding), 1) != 1)
+        return(0);
+    hdr->encoding = SDL_SwapBE32(hdr->encoding);
+
+    if (SDL_RWread(rw, &hdr->sample_rate, sizeof (hdr->sample_rate), 1) != 1)
+        return(0);
+    hdr->sample_rate = SDL_SwapBE32(hdr->sample_rate);
+
+    if (SDL_RWread(rw, &hdr->channels, sizeof (hdr->channels), 1) != 1)
+        return(0);
+    hdr->channels = SDL_SwapBE32(hdr->channels);
+
+    return(1);
+} /* read_au_header */
+
+
 #define AU_MAGIC 0x2E736E64  /* ".snd", in ASCII (bigendian number) */
 
 static int AU_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = sample->opaque;
     SDL_RWops *rw = internal->rw;
-    int r, skip, hsize, i;
+    int skip, hsize, i;
     struct au_file_hdr hdr;
+    struct audec *dec;
     char c;
-    struct audec *dec = malloc(sizeof *dec);
-    BAIL_IF_MACRO(dec == NULL, ERR_OUT_OF_MEMORY, 0);
-    internal->decoder_private = dec;
 
-    r = SDL_RWread(rw, &hdr, 1, HDR_SIZE);
-    if (r < HDR_SIZE)
+    if (!read_au_header(rw, &hdr)) /* does byte order swapping. */
     {
         Sound_SetError("AU: Not an .au file (bad header)");
-        free(dec);
         return(0);
     } /* if */
 
-    if (SDL_SwapBE32(hdr.magic) == AU_MAGIC)
+    dec = malloc(sizeof *dec);
+    BAIL_IF_MACRO(dec == NULL, ERR_OUT_OF_MEMORY, 0);
+    internal->decoder_private = dec;
+
+    if (hdr.magic == AU_MAGIC)
     {
         /* valid magic */
-        dec->encoding = SDL_SwapBE32(hdr.encoding);
+        dec->encoding = hdr.encoding;
         switch(dec->encoding)
         {
             case AU_ENC_ULAW_8:
@@ -174,14 +209,20 @@ static int AU_open(Sound_Sample *sample, const char *ext)
                 return 0;
         } /* switch */
 
-        sample->actual.rate = SDL_SwapBE32(hdr.sample_rate);
-        sample->actual.channels = SDL_SwapBE32(hdr.channels);
-        dec->remaining = SDL_SwapBE32(hdr.data_size);
-        hsize = SDL_SwapBE32(hdr.hdr_size);
+        sample->actual.rate = hdr.sample_rate;
+        sample->actual.channels = hdr.channels;
+        dec->remaining = hdr.data_size;
+        hsize = hdr.hdr_size;
 
         /* skip remaining part of header (input may be unseekable) */
         for (i = HDR_SIZE; i < hsize; i++)
-            SDL_RWread(rw, &c, 1, 1);
+        {
+            if (SDL_RWread(rw, &c, 1, 1) != 1)
+            {
+                free(dec);
+                BAIL_MACRO(ERR_IO_ERROR, 0);
+            } /* if */
+        } /* for */
     } /* if */
 
     else if (__Sound_strcasecmp(ext, "au") == 0)
@@ -209,7 +250,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
         return(0);
     } /* else */
 
-    sample->flags = SOUND_SAMPLEFLAG_NONE;
+    sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
     dec->total = dec->remaining;
     dec->start_offset = SDL_RWtell(rw);
 
@@ -321,7 +362,45 @@ static int AU_rewind(Sound_Sample *sample)
 
 static int AU_seek(Sound_Sample *sample, Uint32 ms)
 {
-    BAIL_MACRO("!!! FIXME: Not implemented", 0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    struct audec *dec = (struct audec *) internal->decoder_private;
+    int offset = dec->start_offset;
+    int frames = (int) (((float) sample->actual.rate / 1000.0) * ((float) ms));
+    int points = (int) (frames * sample->actual.channels);
+    int rc;
+
+SNDDBG(("WARNING: AU_seek() may be buggy.\n")); /* !!! FIXME : remove this. */
+
+    switch (dec->encoding)
+    {
+        case AU_ENC_ULAW_8:  /* halve the byte offset for compression. */
+SNDDBG(("uLaw8 encoding\n")); /* !!! FIXME : remove this. */
+            offset += ((sizeof (Uint8) * points) >> 1);
+            break;
+
+        case AU_ENC_LINEAR_8:
+SNDDBG(("linear8 encoding\n")); /* !!! FIXME : remove this. */
+            offset += (sizeof (Uint8) * points);
+            break;
+
+        case AU_ENC_LINEAR_16:
+SNDDBG(("linear16 encoding\n")); /* !!! FIXME : remove this. */
+            offset += (sizeof (Uint16) * points);
+            break;
+
+        default:
+            BAIL_MACRO("Unexpected format. Something is very wrong.", 0);
+            break;
+    } /* switch */
+
+SNDDBG(("Seek to %d (edge is %d).\n", (int) offset, (int) dec->total));
+
+    BAIL_IF_MACRO(offset >= dec->total, ERR_IO_ERROR, 0); /* seek past end? */
+
+    rc = SDL_RWseek(internal->rw, offset, SEEK_SET);
+    BAIL_IF_MACRO(rc != offset, ERR_IO_ERROR, 0);
+    dec->remaining = dec->total - (offset - 2);
+    return(1);
 } /* AU_seek */
 
 #endif /* SOUND_SUPPORTS_AU */
