@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+06132002 - Patch from Torbjörn to make the WAV decoder more tolerant.
 06122002 - Committed some altcvt enhancements from Frank Ranostaj.
 06112002 - Fixed some debug messages in smpeg.c and mpglib.c.
 06072002 - Manpages! Finally installed Doxygen and scratched together a
