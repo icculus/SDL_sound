@@ -31,6 +31,9 @@
 
 #ifdef SOUND_SUPPORTS_MP3
 
+#define __SDL_SOUND_INTERNAL__
+#include "SDL_sound_internal.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,9 +42,6 @@
 #include "smpeg.h"
 #include "SDL_sound.h"
 #include "extra_rwops.h"
-
-#define __SDL_SOUND_INTERNAL__
-#include "SDL_sound_internal.h"
 
 
 static int MP3_init(void);

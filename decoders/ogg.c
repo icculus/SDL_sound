@@ -34,6 +34,9 @@
 
 #ifdef SOUND_SUPPORTS_OGG
 
+#define __SDL_SOUND_INTERNAL__
+#include "SDL_sound_internal.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,11 +44,8 @@
 #include <assert.h>
 #include "vorbis/codec.h"
 #include "vorbis/vorbisfile.h"
-
 #include "SDL_sound.h"
 
-#define __SDL_SOUND_INTERNAL__
-#include "SDL_sound_internal.h"
 
 static int OGG_init(void);
 static void OGG_quit(void);

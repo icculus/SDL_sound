@@ -2,10 +2,7 @@
 
 aclocal
 libtoolize --automake --copy --force
-
-# rcg09252001 (I ain't got a --force option...?)
-#automake --foreign --add-missing --copy --force
-
+autoheader
 automake --foreign --add-missing --copy
 autoconf
 
