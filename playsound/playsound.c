@@ -26,6 +26,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <signal.h>
@@ -106,6 +107,7 @@ static void output_usage(const char *argv0)
         "     --channels n   Playback on n channels (1 or 2).\n"
         "     --decodebuf n  Buffer n decoded bytes at a time (default %d).\n"
         "     --audiobuf n   Buffer n samples to audio device (default %d).\n"
+        "     --volume n     Playback volume multiplier (default 1.0).\n"
         "     --version      Display version information and exit.\n"
         "     --decoders     List supported data formats and exit.\n"
         "     --predecode    Decode entire sample before playback.\n"
@@ -175,6 +177,8 @@ static Uint8 *decoded_ptr = NULL;
 static Uint32 decoded_bytes = 0;
 static int predecode = 0;
 static int looping = 0;
+static int wants_volume_change = 0;
+static float volume = 1.0;
 
 /*
  * This updates (decoded_bytes) and (decoder_ptr) with more audio data,
@@ -219,6 +223,76 @@ static int read_more_data(Sound_Sample *sample)
 } /* read_more_data */
 
 
+static void memcpy_with_volume(Sound_Sample *sample,
+                               Uint8 *dst, Uint8 *src, int len)
+{
+    int i;
+    Uint16 *u16src = NULL;
+    Uint16 *u16dst = NULL;
+    Sint16 *s16src = NULL;
+    Sint16 *s16dst = NULL;
+
+    if (!wants_volume_change)
+    {
+        memcpy(dst, src, len);
+        return;
+    }
+
+    /* !!! FIXME: This would be more efficient with a lookup table. */
+    switch (sample->desired.format)
+    {
+        case AUDIO_U8:
+            for (i = 0; i < len; i++, src++, dst++)
+                *dst = (Uint8) (((float) (*src)) * volume);
+            break;
+
+        case AUDIO_S8:
+            for (i = 0; i < len; i++, src++, dst++)
+                *dst = (Sint8) (((float) (*src)) * volume);
+            break;
+
+        case AUDIO_U16LSB:
+            u16src = (Uint16 *) src;
+            u16dst = (Uint16 *) dst;
+            for (i = 0; i < len; i += sizeof (Uint16), u16src++, u16dst++)
+            {
+                *u16dst = (Uint16) (((float) (SDL_SwapLE16(*u16src))) * volume);
+                *u16dst = SDL_SwapLE16(*u16dst);
+            }
+            break;
+
+        case AUDIO_S16LSB:
+            s16src = (Sint16 *) src;
+            s16dst = (Sint16 *) dst;
+            for (i = 0; i < len; i += sizeof (Sint16), s16src++, s16dst++)
+            {
+                *s16dst = (Sint16) (((float) (SDL_SwapLE16(*s16src))) * volume);
+                *s16dst = SDL_SwapLE16(*s16dst);
+            }
+            break;
+
+        case AUDIO_U16MSB:
+            u16src = (Uint16 *) src;
+            u16dst = (Uint16 *) dst;
+            for (i = 0; i < len; i += sizeof (Uint16), u16src++, u16dst++)
+            {
+                *u16dst = (Uint16) (((float) (SDL_SwapBE16(*u16src))) * volume);
+                *u16dst = SDL_SwapBE16(*u16dst);
+            }
+            break;
+
+        case AUDIO_S16MSB:
+            s16src = (Sint16 *) src;
+            s16dst = (Sint16 *) dst;
+            for (i = 0; i < len; i += sizeof (Sint16), s16src++, s16dst++)
+            {
+                *s16dst = (Sint16) (((float) (SDL_SwapBE16(*s16src))) * volume);
+                *s16dst = SDL_SwapBE16(*s16dst);
+            }
+            break;
+    }
+}
+
 static void audio_callback(void *userdata, Uint8 *stream, int len)
 {
     Sound_Sample *sample = (Sound_Sample *) userdata;
@@ -244,7 +318,7 @@ static void audio_callback(void *userdata, Uint8 *stream, int len)
 
         if (cpysize > 0)
         {
-            memcpy(stream + bw, decoded_ptr, cpysize);
+            memcpy_with_volume(sample, stream + bw, decoded_ptr, cpysize);
             bw += cpysize;
             decoded_ptr += cpysize;
             decoded_bytes -= cpysize;
@@ -364,6 +438,13 @@ int main(int argc, char **argv)
             decode_buffersize = atoi(argv[++i]);
         } /* else if */
 
+        else if (strcmp(argv[i], "--volume") == 0 && argc > i + 1)
+        {
+            volume = atof(argv[++i]);
+            if (volume != 1.0)
+                wants_volume_change = 1;
+        } /* else if */
+
         else if (strcmp(argv[i], "--decoders") == 0)
         {
             if (!Sound_Init())
@@ -431,7 +512,8 @@ int main(int argc, char **argv)
              (strcmp(argv[i], "--format") == 0) ||
              (strcmp(argv[i], "--channels") == 0) ||
              (strcmp(argv[i], "--audiobuf") == 0) ||
-             (strcmp(argv[i], "--decodebuf") == 0) )
+             (strcmp(argv[i], "--decodebuf") == 0) ||
+             (strcmp(argv[i], "--volume") == 0) )
         {
             i++;
             continue;
