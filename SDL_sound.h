@@ -70,11 +70,16 @@
 extern "C" {
 #endif
 
-/* !!! FIXME: Use SDLCALL instead. */
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
+
+#ifndef SDLCALL  /* may not be defined with older SDL releases. */
+#define SDLCALL
+#endif
+
 #ifdef SDL_SOUND_DLL_EXPORTS
-#  undef DECLSPEC
-#  define DECLSPEC __declspec(dllexport)
+#  define SNDDECLSPEC __declspec(dllexport) SDLCALL
+#else
+#  define SNDDECLSPEC SDLCALL
 #endif
 
 #define SOUND_VER_MAJOR 0
@@ -258,7 +263,7 @@ typedef struct
  * \sa Sound_Version
  * \sa SOUND_VERSION
  */
-DECLSPEC void Sound_GetLinkedVersion(Sound_Version *ver);
+SNDDECLSPEC void Sound_GetLinkedVersion(Sound_Version *ver);
 
 
 /**
@@ -276,7 +281,7 @@ DECLSPEC void Sound_GetLinkedVersion(Sound_Version *ver);
  *
  * \sa Sound_Quit
  */
-DECLSPEC int Sound_Init(void);
+SNDDECLSPEC int Sound_Init(void);
 
 
 /**
@@ -301,7 +306,7 @@ DECLSPEC int Sound_Init(void);
  *
  * \sa Sound_Init
  */
-DECLSPEC int Sound_Quit(void);
+SNDDECLSPEC int Sound_Quit(void);
 
 
 /**
@@ -336,7 +341,7 @@ DECLSPEC int Sound_Quit(void);
  *
  * \sa Sound_DecoderInfo
  */
-DECLSPEC const Sound_DecoderInfo **Sound_AvailableDecoders(void);
+SNDDECLSPEC const Sound_DecoderInfo **Sound_AvailableDecoders(void);
 
 
 /**
@@ -354,7 +359,7 @@ DECLSPEC const Sound_DecoderInfo **Sound_AvailableDecoders(void);
  *
  * \sa Sound_ClearError
  */
-DECLSPEC const char *Sound_GetError(void);
+SNDDECLSPEC const char *Sound_GetError(void);
 
 
 /**
@@ -365,7 +370,7 @@ DECLSPEC const char *Sound_GetError(void);
  *
  * \sa Sound_GetError
  */
-DECLSPEC void Sound_ClearError(void);
+SNDDECLSPEC void Sound_ClearError(void);
 
 
 /**
@@ -440,7 +445,7 @@ DECLSPEC void Sound_ClearError(void);
  * \sa Sound_Rewind
  * \sa Sound_FreeSample
  */
-DECLSPEC Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
+SNDDECLSPEC Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
                                               Sound_AudioInfo *desired,
                                               Uint32 bufferSize);
 
@@ -471,7 +476,7 @@ DECLSPEC Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
  * \sa Sound_Rewind
  * \sa Sound_FreeSample
  */
-DECLSPEC Sound_Sample *Sound_NewSampleFromFile(const char *filename,
+SNDDECLSPEC Sound_Sample *Sound_NewSampleFromFile(const char *filename,
                                                       Sound_AudioInfo *desired,
                                                       Uint32 bufferSize);
 
@@ -489,7 +494,7 @@ DECLSPEC Sound_Sample *Sound_NewSampleFromFile(const char *filename,
  * \sa Sound_NewSample
  * \sa Sound_NewSampleFromFile
  */
-DECLSPEC void Sound_FreeSample(Sound_Sample *sample);
+SNDDECLSPEC void Sound_FreeSample(Sound_Sample *sample);
 
 
 /**
@@ -517,7 +522,7 @@ DECLSPEC void Sound_FreeSample(Sound_Sample *sample);
  * \sa Sound_Decode
  * \sa Sound_DecodeAll
  */
-DECLSPEC int Sound_SetBufferSize(Sound_Sample *sample, Uint32 new_size);
+SNDDECLSPEC int Sound_SetBufferSize(Sound_Sample *sample, Uint32 new_size);
 
 
 /**
@@ -539,7 +544,7 @@ DECLSPEC int Sound_SetBufferSize(Sound_Sample *sample, Uint32 new_size);
  * \sa Sound_Seek
  * \sa Sound_Rewind
  */
-DECLSPEC Uint32 Sound_Decode(Sound_Sample *sample);
+SNDDECLSPEC Uint32 Sound_Decode(Sound_Sample *sample);
 
 
 /**
@@ -575,7 +580,7 @@ DECLSPEC Uint32 Sound_Decode(Sound_Sample *sample);
  * \sa Sound_Decode
  * \sa Sound_SetBufferSize
  */
-DECLSPEC Uint32 Sound_DecodeAll(Sound_Sample *sample);
+SNDDECLSPEC Uint32 Sound_DecodeAll(Sound_Sample *sample);
 
 
 /**
@@ -609,7 +614,7 @@ DECLSPEC Uint32 Sound_DecodeAll(Sound_Sample *sample);
  *
  * \sa Sound_Seek
  */
-DECLSPEC int Sound_Rewind(Sound_Sample *sample);
+SNDDECLSPEC int Sound_Rewind(Sound_Sample *sample);
 
 
 /**
@@ -654,7 +659,7 @@ DECLSPEC int Sound_Rewind(Sound_Sample *sample);
  *
  * \sa Sound_Rewind
  */
-DECLSPEC int Sound_Seek(Sound_Sample *sample, Uint32 ms);
+SNDDECLSPEC int Sound_Seek(Sound_Sample *sample, Uint32 ms);
 
 
 #ifdef __cplusplus
