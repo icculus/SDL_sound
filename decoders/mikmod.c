@@ -212,8 +212,17 @@ static void _mm_delete_rwops_reader(MREADER *reader)
 static int MIKMOD_init(void)
 {
     MikMod_RegisterDriver(&drv_nos);
-    MikMod_RegisterAllLoaders();
-
+    
+    /* Quick and dirty hack to prevent an infinite loop problem
+     * found when using SDL_mixer and SDL_sound together and 
+     * both have MikMod compiled in. So, check to see if
+     * MikMod has already been registered first before calling
+     * RegisterAllLoaders()
+     */
+    if(MikMod_InfoLoader() == NULL)
+    {
+        MikMod_RegisterAllLoaders();
+    }  
         /*
          * Both DMODE_SOFT_MUSIC and DMODE_16BITS should be set by default,
          * so this is just for clarity. I haven't experimented with any of
