@@ -556,7 +556,7 @@ static int read_fmt(SDL_RWops *rw, fmt_t *fmt)
         /* add other types here. */
 
         default:
-            SNDDBG(("WAV: Format %lu is unknown.\n",
+            SNDDBG(("WAV: Format 0x%X is unknown.\n",
                     (unsigned int) fmt->wFormatTag));
             Sound_SetError("WAV: Unsupported format");
             return(0);  /* not supported whatsoever. */
@@ -610,14 +610,17 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
 
     sample->actual.channels = (Uint8) fmt->wChannels;
     sample->actual.rate = fmt->dwSamplesPerSec;
-    if (fmt->wBitsPerSample == 4)
+    if ((fmt->wBitsPerSample == 4) /*|| (fmt->wBitsPerSample == 0) */ )
         sample->actual.format = AUDIO_S16SYS;  /* !!! FIXME ? */
     else if (fmt->wBitsPerSample == 8)
         sample->actual.format = AUDIO_U8;
     else if (fmt->wBitsPerSample == 16)
         sample->actual.format = AUDIO_S16LSB;
     else
+    {
+        SNDDBG(("WAV: %d bits per sample!?\n", (int) fmt->wBitsPerSample));
         BAIL_MACRO("WAV: Unsupported sample size.", 0);
+    } /* else */
 
     BAIL_IF_MACRO(!read_fmt(rw, fmt), NULL, 0);
     BAIL_IF_MACRO(!find_chunk(rw, dataID), "WAV: No data chunk.", 0);
