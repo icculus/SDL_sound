@@ -3,6 +3,7 @@
  */
 
 07022002 - Added WinCE support pack to website, updated INSTALL with CE info.
+           More altcvt fixes from Frank Ranostaj.
 07012002 - Fixed configure.in to work around bug in older autoconfs. Started
            merging Tyler's WinCE (PocketPC) port. Added checks for assert.h
            and signal.h to configure.in/config.h.in, and #if HAVE_*_H checks
@@ -12,7 +13,7 @@
            "md_reverb = 1;" to MIKMOD_init(). Modplug got some WinCE-specific
            setting tweaks, and some settings maintanance code. configure.in
            checks if setbuf() is available.
-06292002 - More altcvt fixes from Frank Ranostaj...mostly working now.
+06292002 - More altcvt fixes from Frank Ranostaj...mostly working now?
 06252002 - More altcvt fixes from Frank Ranostaj.
 06132002 - Patch from Torbjörn to fix stereo AIFF files.
 06212002 - More altcvt fixes from Frank Ranostaj.
