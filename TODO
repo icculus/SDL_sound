@@ -16,6 +16,7 @@ More immediate:
 - Change SMPEG's URL to point to lokigames.com.
 - Rename "test" directory to "playsound".
 - Have default make build playsound, and make install install it.
+- Make some of the SNDDBG() strings more uniform.
 
 Decoders to implement:
 - .MID
