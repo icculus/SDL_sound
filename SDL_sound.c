@@ -222,6 +222,7 @@ int Sound_Init(void)
     SDL_InitSubSystem(SDL_INIT_AUDIO);
 
     errorlist_mutex = SDL_CreateMutex();
+    samplelist_mutex = SDL_CreateMutex();
 
     for (i = 0; decoders[i].funcs != NULL; i++)
     {
