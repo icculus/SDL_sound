@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+07132002 - More altcvt fixes from Frank Ranostaj.
 07122002 - Changed inline keyword to compile universally.
 07102002 - Fixed a bug in command line handling in playsound.c. Fixes from
            Torbjörn and myself to get flac.c friendly between versions of
