@@ -217,14 +217,38 @@ static Uint32 MPGLIB_read(Sound_Sample *sample)
                 sample->flags |= SOUND_SAMPLEFLAG_ERROR;
                 return(bw);
             } /* if */
+
             else if (rc == 0)
             {
                 sample->flags |= SOUND_SAMPLEFLAG_EOF;
                 return(bw);
             } /* else if */
 
+            /* make sure there isn't an ID3 tag. */
+            /*
+             * !!! FIXME: This can fail under the following circumstances:
+             * First, if there's the sequence "TAG" 128 bytes from the end
+             *  of a read that isn't the EOF. This is unlikely.
+             * Second, if the TAG sequence is split between two reads (ie,
+             *  the last byte of a read is 'T', and the next read is the
+             *  final 127 bytes of the stream, being the rest of the ID3 tag).
+             *  While this is more likely, it's still not very likely at all.
+             * Still, something SHOULD be done about this.
+             * ID3v2 tags are more complex, too, not to mention LYRICS tags,
+             *  etc, which aren't handled, either. Hey, this IS meant to be
+             *  a lightweight decoder. Use SMPEG if you need an all-purpose
+             *  decoder. mpglib really assumes you control all your assets.
+             */
+            if (rc >= 128)
+            {
+                Uint8 *ptr = &mpg->inbuf[rc - 128];
+                if ((ptr[0] == 'T') && (ptr[1] == 'A') && (ptr[2] == 'G'))
+                    rc -= 128;  /* disregard it. */
+            } /* if */
+
             rc = decodeMP3(&mpg->mp, mpg->inbuf, rc,
-                           mpg->outbuf, sizeof (mpg->outbuf), &mpg->outleft);
+                            mpg->outbuf, sizeof (mpg->outbuf),
+                            &mpg->outleft);
             if (rc == MP3_ERR)
             {
                 sample->flags |= SOUND_SAMPLEFLAG_ERROR;
