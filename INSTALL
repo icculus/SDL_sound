@@ -13,22 +13,33 @@ functions.
 
 UNIX:
 
-Edit "Makefile", and follow the instructions. The defaults are probably okay
-for general purposes, but give it a once over to make sure.
+(If you pulled the source from CVS), run ./bootstrap
 
-run "make"
+run ./configure --help, and see if there's any options you need. Rerun 
+configure with those options. If this is confusing to you, just run 
+./configure with no options: the defaults are generally decent, and 
+configure is usually smart enough to figure out what's best..
 
-That's it. The library will be sitting in a new directory called "bin".
+If configuration succeeded, run "make".
 
-Run "make install" to install the library for use on your system.
+Run "make install" as root to install the library for use on your system.
 
+This should work for most Unix-style systems, including Linux, *BSD, and 
+MacOS X. Reports of success and failure are welcome.
+
+
+WIN32:
+Download http://icculus.org/SDL_sound/downloads/SDL_sound_win32.zip ...
+Unzip that file in the root of the source directory. That will give you 
+some needed external libraries, and Visual C++ project files. Use the 
+project files to compile.
 
 
 OTHER PLATFORMS:
 
-Send me patches, and instructions, and I'll list them here.
-
-
+Send me patches, and instructions, and I'll list them here. Consider 
+joining the SDL_sound mailing list. Details are at:
+   http://icculus.org/SDL_sound/
 
 --ryan. (icculus@clutteredmind.org)
 
