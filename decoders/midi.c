@@ -38,7 +38,7 @@
  *  external decoder" thing so this version should either be scrapped or
  *  cannibalized for ideas. :-)
  *
- * Please see the file LICENSE in the source's root directory.
+ * Please see the file COPYING in the source's root directory.
  *
  *  This file written by Torbjörn Andersson. (d91tan@Update.UU.SE)
  */

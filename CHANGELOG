@@ -2,6 +2,8 @@
  * CHANGELOG.
  */
 
+12262001 - Changed remaining references to the "LICENSE" file into "COPYING".
+           Work progresses on the ADPCM-compressed .wav decoder.
 12162001 - FLAC decoder now checks for the magic number unless the file
            extension is recognized. This was changed back because searching
            for metadata, while probably more effective, is VERY expensive (and

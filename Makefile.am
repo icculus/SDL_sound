@@ -21,6 +21,6 @@ libSDL_sound_la_LIBADD = decoders/libdecoders.la
 
 EXTRA_DIST =	\
 	CREDITS \
-	LICENSE \
+	COPYING \
 	CHANGELOG
         

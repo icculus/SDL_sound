@@ -3,7 +3,7 @@ Building is very easy.
 
 ALL PLATFORMS:
 
-Please understand your rights and mine: read the text file LICENSE in the root
+Please understand your rights and mine: read the text file COPYING in the root
 of the source tree. If you can't abide by it, delete this source tree now.
 
 The best documentation for the SDL_sound API is SDL_sound.h. It is VERY

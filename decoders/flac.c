@@ -24,7 +24,7 @@
  *  Codec. It depends on libFLAC for decoding, which can be grabbed from:
  *  http://flac.sourceforge.net
  *
- * Please see the file LICENSE in the source's root directory.
+ * Please see the file COPYING in the source's root directory.
  *
  *  This file written by Torbjörn Andersson. (d91tan@Update.UU.SE)
  */

@@ -18,6 +18,8 @@
  */
 
 /**
+ * @overview
+ *
  * The basic gist of SDL_sound is that you use an SDL_RWops to get sound data
  *  into this library, and SDL_sound will take that data, in one of several
  *  popular formats, and decode it into raw waveform data in the format of
@@ -46,7 +48,7 @@
  *
  *   (...and more to come...)
  *
- * Please see the file LICENSE in the source's root directory.
+ * Please see the file COPYING in the source's root directory.
  *
  *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
  */
@@ -72,31 +74,41 @@ extern "C" {
 #define SOUND_VER_PATCH 3
 
 
-/*
- * These are flags that are used in a Sound_Sample (below) to show various
- *  states.
+/**
+ * These are flags that are used in a Sound_Sample to show various states.
  *
  *   To use: "if (sample->flags & SOUND_SAMPLEFLAG_ERROR) { dosomething(); }"
+ *
+ *  @param SOUND_SAMPLEFLAG_NONE     null flag.
+ *  @param SOUND_SAMPLEFLAG_NEEDSEEK SDL_RWops must be able to seek.
+ *  @param SOUND_SAMPLEFLAG_EOF      end of input stream.
+ *  @param SOUND_SAMPLEFLAG_ERROR    unrecoverable error.
+ *  @param SOUND_SAMPLEFLAG_EAGAIN   function would block, or temp error.
  */
 typedef enum __SOUND_SAMPLEFLAGS__
 {
-    SOUND_SAMPLEFLAG_NONE      = 0,       /* Null flag.                      */
+    SOUND_SAMPLEFLAG_NONE      = 0,
 
         /* these are set at sample creation time... */
-    SOUND_SAMPLEFLAG_NEEDSEEK  = 1,       /* SDL_RWops must be able to seek. */
+    SOUND_SAMPLEFLAG_NEEDSEEK  = 1,
 
         /* these are set during decoding... */
-    SOUND_SAMPLEFLAG_EOF       = 1 << 29, /* end of input stream.            */
-    SOUND_SAMPLEFLAG_ERROR     = 1 << 30, /* unrecoverable error.            */
-    SOUND_SAMPLEFLAG_EAGAIN    = 1 << 31  /* would block, or temp error.     */
+    SOUND_SAMPLEFLAG_EOF       = 1 << 29,
+    SOUND_SAMPLEFLAG_ERROR     = 1 << 30,
+    SOUND_SAMPLEFLAG_EAGAIN    = 1 << 31
 } Sound_SampleFlags;
 
 
-/*
- * Basics of a decoded sample's data structure: data format (see AUDIO_U8 and
- *  friends in SDL_audio.h), number of channels, and sample rate. If you need
- *  more explanation than that, you should stop developing sound code right
- *  now.
+/**
+ * These are the basics of a decoded sample's data structure: data format
+ *  (see AUDIO_U8 and friends in SDL_audio.h), number of channels, and sample
+ *  rate. If you need more explanation than that, you should stop developing
+ *  sound code right now.
+ *
+ *   @param format Equivalent of SDL_AudioSpec.format.
+ *   @param channels Number of sound channels. 1 == mono, 2 == stereo.
+ *   @param rate Sample rate; frequency of sample points per second (44100,
+ *                22050, 8000, etc.)
  */
 typedef struct __SOUND_AUDIOINFO__
 {
@@ -106,40 +118,60 @@ typedef struct __SOUND_AUDIOINFO__
 } Sound_AudioInfo;
 
 
-/*
+/**
  * Each decoder sets up one of these structs, which can be retrieved via
  *  the Sound_AvailableDecoders() function. EVERY FIELD IN THIS IS READ-ONLY.
+ *
+ *   @param extensions File extensions, list ends with NULL. Read it like this:
+ *           const char **ext;
+ *           for (ext = info->extensions; *ext != NULL; ext++)
+ *                printf("   File extension \"%s\"\n", *ext);
+ *   @param description Human readable description of decoder.
+ *   @param author "Name Of Author <email@emailhost.dom>"
+ *   @param url URL specific to this decoder.
  */
 typedef struct __SOUND_DECODERINFO__
 {
-    const char **extensions;    /* File extensions, list ends with NULL.  */
-    const char *description;    /* Human readable description of decoder. */
-    const char *author;         /* "Name Of Author <email@emailhost.dom>" */
-    const char *url;            /* URL specific to this decoder.          */
+    const char **extensions;
+    const char *description;    
+    const char *author;
+    const char *url;
 } Sound_DecoderInfo;
 
 
 
-/*
+/**
  * The Sound_Sample structure is the heart of SDL_sound. This holds
  *  information about a source of sound data as it is being decoded.
  *  EVERY FIELD IN THIS IS READ-ONLY. Please use the API functions to
  *  change them.
+ *
+ *  @param opaque Internal use only. Don't touch.
+ *  @param decoder Decoder used for this sample.
+ *  @param desired Desired audio format for conversion.
+ *  @param actual Actual audio format of sample.
+ *  @param buffer Decoded sound data lands in here.
+ *  @param buffer_size Current size of (buffer), in bytes (Uint8).
+ *  @param flags Flags relating to this sample.
  */
 typedef struct __SOUND_SAMPLE__
 {
-    void *opaque;                /* Internal use only.                   */
-    const Sound_DecoderInfo *decoder;  /* Decoder used for this sample.  */
-    Sound_AudioInfo desired;     /* Desired audio format for conversion. */
-    Sound_AudioInfo actual;      /* Actual audio format of sample.       */
-    void *buffer;                /* Decoded sound data lands in here.    */
-    Uint32 buffer_size;          /* Current size of (buffer), in bytes.  */
-    Sound_SampleFlags flags;     /* Flags relating to this sample.       */
+    void *opaque;
+    const Sound_DecoderInfo *decoder;
+    Sound_AudioInfo desired;
+    Sound_AudioInfo actual;
+    void *buffer;
+    Uint32 buffer_size;
+    Sound_SampleFlags flags;
 } Sound_Sample;
 
 
-/*
- * Just what it says: a x.y.z style version number...
+/**
+ * Just what it says: a major.minor.patch style version number...
+ *
+ *   @param major The major version number.
+ *   @param minor The minor version number.
+ *   @param patch The patchlevel version number.
  */
 typedef struct __SOUND_VERSION__
 {
@@ -177,6 +209,8 @@ typedef struct __SOUND_VERSION__
  *           linked.major, linked.minor, linked.patch);
  *
  * This function may be called safely at any time, even before Sound_Init().
+ *
+ * @param ver Sound_Version structure to fill with shared library's version.
  */
 extern DECLSPEC void Sound_GetLinkedVersion(Sound_Version *ver);
 
@@ -188,8 +222,8 @@ extern DECLSPEC void Sound_GetLinkedVersion(Sound_Version *ver);
  *  SDL_Init(SDL_INIT_AUDIO), just in case. This is a safe behaviour, but it
  *  may not configure SDL to your liking by itself.
  *
- *  @return nonzero on success, zero on error. Specifics of the error can be
- *          gleaned from Sound_GetLastError().
+ *  @returns nonzero on success, zero on error. Specifics of the
+ *           error can be gleaned from Sound_GetLastError().
  */
 extern DECLSPEC int Sound_Init(void);
 
@@ -207,9 +241,9 @@ extern DECLSPEC int Sound_Init(void);
  * You should call this BEFORE SDL_Quit(). This will NOT call SDL_Quit()
  *  for you!
  *
- *  @return nonzero on success, zero on error. Specifics of the error can be
- *          gleaned from Sound_GetLastError(). If failure, state of SDL_sound
- *          is undefined, and probably badly screwed up.
+ *  @returns nonzero on success, zero on error. Specifics of the error
+ *           can be gleaned from Sound_GetLastError(). If failure, state of
+ *           SDL_sound is undefined, and probably badly screwed up.
  */
 extern DECLSPEC int Sound_Quit(void);
 
@@ -238,7 +272,7 @@ extern DECLSPEC int Sound_Quit(void);
  * The return values are pointers to static internal memory, and should
  *  be considered READ ONLY, and never freed.
  *
- *   @return READ ONLY Null-terminated array of READ ONLY structures.
+ *  @returns READ ONLY Null-terminated array of READ ONLY structures.
  */
 extern DECLSPEC const Sound_DecoderInfo **Sound_AvailableDecoders(void);
 
@@ -252,7 +286,7 @@ extern DECLSPEC const Sound_DecoderInfo **Sound_AvailableDecoders(void);
  *  with that thread. It is safe to call this function at anytime, even
  *  before Sound_Init().
  *
- *   @return READ ONLY string of last error message.
+ *  @returns READ ONLY string of last error message.
  */
 extern DECLSPEC const char *Sound_GetError(void);
 
@@ -313,7 +347,7 @@ extern DECLSPEC void Sound_ClearError(void);
  *               Can usually be NULL.
  *    @param desired Format to convert sound data into. Can usually be NULL,
  *                   if you don't need conversion.
- *   @return Sound_Sample pointer, which is used as a handle to several other
+ *   @returns Sound_Sample pointer, which is used as a handle to several other
  *            SDL_sound APIs. NULL on error. If error, use
  *            Sound_GetLastError() to see what went wrong.
  */
@@ -333,7 +367,7 @@ extern DECLSPEC Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
  *    @param desired Format to convert sound data into. Can usually be NULL,
  *                   if you don't need conversion.
  *    @param bufferSize size, in bytes, of initial read buffer.
- *   @return Sound_Sample pointer, which is used as a handle to several other
+ *   @returns Sound_Sample pointer, which is used as a handle to several other
  *            SDL_sound APIs. NULL on error. If error, use
  *            Sound_GetLastError() to see what went wrong.
  */
@@ -371,7 +405,7 @@ extern DECLSPEC void Sound_FreeSample(Sound_Sample *sample);
  *
  *    @param sample The Sound_Sample whose buffer to modify.
  *    @param new_size The desired size, in bytes, of the new buffer.
- *   @return non-zero if buffer size changed, zero on failure.
+ *  @returns non-zero if buffer size changed, zero on failure.
  */
 extern DECLSPEC int Sound_SetBufferSize(Sound_Sample *sample, Uint32 new_size);
 
@@ -384,7 +418,7 @@ extern DECLSPEC int Sound_SetBufferSize(Sound_Sample *sample, Uint32 new_size);
  *  sample->flags to determine if this was an End-of-stream or error condition.
  *
  *    @param sample Do more decoding to this Sound_Sample.
- *   @return number of bytes decoded into sample->buffer. If it is less than
+ *   @returns number of bytes decoded into sample->buffer. If it is less than
  *           sample->buffer_size, then you should check sample->flags to see
  *           what the current state of the sample is (EOF, error, read again).
  */
@@ -415,7 +449,7 @@ extern DECLSPEC Uint32 Sound_Decode(Sound_Sample *sample);
  *  the sample isn't specific and small.
  *
  *    @param sample Do all decoding for this Sound_Sample.
- *   @return number of bytes decoded into sample->buffer. You should check
+ *   @returns number of bytes decoded into sample->buffer. You should check
  *           sample->flags to see what the current state of the sample is
  *           (EOF, error, read again).
  */
