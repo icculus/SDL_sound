@@ -33,7 +33,7 @@
 
 #define PLAYSOUND_VER_MAJOR  0
 #define PLAYSOUND_VER_MINOR  1
-#define PLAYSOUND_VER_PATCH  2
+#define PLAYSOUND_VER_PATCH  3
 
 
 static void output_versions(const char *argv0)
@@ -141,9 +141,44 @@ static void audio_callback(void *userdata, Uint8 *stream, int len)
 static void output_usage(const char *argv0)
 {
     fprintf(stderr,
-            "USAGE: %s [--decoders] [soundFile1] ... [soundFileN]\n",
+            "USAGE: %s [...options...] [soundFile1] ... [soundFileN]\n"	
+            "\n"
+            "   Options:\n"
+            "     --rate x      Playback at sample rate of x HZ.\n"
+            "     --format fmt  Playback in fmt format (see below).\n"
+            "     --channels n  Playback on n channels (1 or 2).\n"
+            "     --version     Display version information and exit.\n"
+            "     --decoders    List supported sound formats and exit.\n"
+            "     --help        Display this information and exit.\n"
+            "\n"
+            "   Valid arguments to the --format option are:\n"
+            "     U8      Unsigned 8-bit.\n"
+            "     S8      Signed 8-bit.\n"
+            "     U16LSB  Unsigned 16-bit (least significant byte first).\n"
+            "     U16MSB  Unsigned 16-bit (most significant byte first).\n"
+            "     S16LSB  Signed 16-bit (least significant byte first).\n"
+            "     S16MSB  Signed 16-bit (most significant byte first).\n"
+            "\n",
             argv0);
 } /* output_usage */
+
+
+static int str_to_fmt(char *str)
+{
+    if (strcmp(str, "U8") == 0)
+        return AUDIO_U8;
+    if (strcmp(str, "S8") == 0)
+        return AUDIO_S8;
+    if (strcmp(str, "U16LSB") == 0)
+        return AUDIO_U16LSB;
+    if (strcmp(str, "S16LSB") == 0)
+        return AUDIO_S16LSB;
+    if (strcmp(str, "U16MSB") == 0)
+        return AUDIO_U16MSB;
+    if (strcmp(str, "S16MSB") == 0)
+        return AUDIO_S16MSB;
+    return 0;
+} /* str_to_fmt */
 
 
 int main(int argc, char **argv)
@@ -152,6 +187,7 @@ int main(int argc, char **argv)
     SDL_AudioSpec sdl_desired;
     SDL_AudioSpec sdl_actual;
     Sound_Sample *sample;
+    int use_specific_audiofmt = 0;
     int i;
 
         /* !!! FIXME: Move this to a parse_cmdline() function... */
@@ -161,17 +197,60 @@ int main(int argc, char **argv)
         return(42);
     } /* if */
 
+    memset(&sound_desired, '\0', sizeof (sound_desired));
+
     for (i = 0; i < argc; i++)
     {
         if (strncmp(argv[i], "--", 2) != 0)
             continue;
 
-        if ( (strcmp(argv[i], "--version") == 0) ||
-             (strcmp(argv[i], "--help") == 0 ) )
+        if (strcmp(argv[i], "--version") == 0)
         {
             output_versions(argv[0]);
-            output_usage(argv[0]);
+            return(42);
         } /* if */
+
+        else if (strcmp(argv[i], "--help") == 0)
+        {
+            output_usage(argv[0]);
+            return(42);
+        } /* if */
+ 
+        else if (strcmp(argv[i], "--rate") == 0 && argc > i + 1)
+        {
+            use_specific_audiofmt = 1;
+            sound_desired.rate = atoi(argv[++i]);
+            if (sound_desired.rate <= 0)
+            {
+                fprintf(stderr, "Bad argument to --rate!\n");
+                return(42);
+            }
+        } /* else if */
+
+        else if (strcmp(argv[i], "--format") == 0 && argc > i + 1)
+        {
+            use_specific_audiofmt = 1;
+            sound_desired.format = str_to_fmt(argv[++i]);
+            if (sound_desired.format == 0)
+            {
+                fprintf(stderr, "Bad argument to --format! Try one of:\n"
+                                "U8, S8, U16LSB, S16LSB, U16MSB, S16MSB\n");
+                return(42);
+            }
+        } /* else if */
+
+        else if (strcmp(argv[i], "--channels") == 0 && argc > i + 1)
+        {
+            use_specific_audiofmt = 1;
+            sound_desired.channels = atoi(argv[++i]);
+            if (sound_desired.channels < 1 || sound_desired.channels > 2)
+            {
+                fprintf(stderr,
+                        "Bad argument to --channels! Try 1 (mono) or 2 "
+                        "(stereo).\n");
+                return(42);
+            }
+        } /* else if */
 
         else if (strcmp(argv[i], "--decoders") == 0)
         {
@@ -195,6 +274,17 @@ int main(int argc, char **argv)
         } /* else */
     } /* for */
 
+        /* Pick sensible defaults for any value not explicitly specified. */
+    if (use_specific_audiofmt)
+    {
+        if (sound_desired.rate == 0)
+            sound_desired.rate = 44100;
+        if (sound_desired.format == 0)
+            sound_desired.format = AUDIO_S16SYS;
+        if (sound_desired.channels == 0)
+            sound_desired.channels = 2;
+    } /* if */
+
     if (SDL_Init(SDL_INIT_AUDIO) == -1)
     {
         fprintf(stderr, "SDL_Init(SDL_INIT_AUDIO) failed!\n"
@@ -212,10 +302,21 @@ int main(int argc, char **argv)
 
     for (i = 1; i < argc; i++)
     {
+            /* !!! FIXME: This is ugly! */
+        if ( (strcmp(argv[i], "--rate") == 0) ||
+             (strcmp(argv[i], "--format") == 0) ||
+             (strcmp(argv[i], "--channels") == 0) )
+        {
+            i++;
+            continue;
+        } /* if */
+
         if (strncmp(argv[i], "--", 2) == 0)
             continue;
 
-        sample = Sound_NewSampleFromFile(argv[i], NULL, 4096 * 4);
+        sample = Sound_NewSampleFromFile(argv[i],
+                     use_specific_audiofmt ? &sound_desired : NULL, 4096 * 4);
+
         if (!sample)
         {
             fprintf(stderr, "Couldn't load \"%s\"!\n"
@@ -223,10 +324,24 @@ int main(int argc, char **argv)
             continue;
         } /* if */
 
-        sdl_desired.freq = sample->actual.rate;
-        sdl_desired.format = sample->actual.format;
-        sdl_desired.channels = sample->actual.channels;
-        sdl_desired.samples = 4096;
+            /*
+             * Unless explicitly specified, pick the format from the sound
+             * to be played.
+             */
+        if (use_specific_audiofmt)
+        {
+            sdl_desired.freq = sound_desired.rate;
+            sdl_desired.format = sound_desired.format;
+            sdl_desired.channels = sound_desired.channels;
+        } /* if */
+        else
+        {
+            sdl_desired.freq = sample->actual.rate;
+            sdl_desired.format = sample->actual.format;
+            sdl_desired.channels = sample->actual.channels;
+        } /* else */
+
+        sdl_desired.samples = 4096 * 2;
         sdl_desired.callback = audio_callback;
         sdl_desired.userdata = sample;
 
