@@ -2,6 +2,8 @@
  * CHANGELOG.
  */
 
+05072004 - Backed out some commits, converted repository to Subversion, and
+           branched off to a 1.1.0 development tree.
 10252003 - VOC decoder was broken. Now it isn't.
 10142003 - Build system fix: acinclude.m4 had some word wrapping badness.
 10122003 - Fixed "make dist" behaviour to not packaged generated docs, and
