@@ -8,5 +8,6 @@ libdecoders_la_SOURCES =	\
 	mp3.c		\
 	ogg.c		\
 	raw.c		\
+    shn.c		\
 	voc.c		\
 	wav.c
