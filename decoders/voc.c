@@ -82,18 +82,20 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_VOC =
 
 /* Private data for VOC file */
 typedef struct vocstuff {
-    Uint32	rest;           /* bytes remaining in current block */
-    Uint32	rate;           /* rate code (byte) of this chunk */
-    int 	silent;         /* sound or silence? */
-    Uint32	srate;			/* rate code (byte) of silence */
-    Uint32	blockseek;		/* start of current output block */
-    Uint32	samples;		/* number of samples output */
-    Uint32	size;           /* word length of data */
-    Uint8 	channels;       /* number of sound channels */
+    Uint32  rest;           /* bytes remaining in current block */
+    Uint32  rate;           /* rate code (byte) of this chunk */
+    int     silent;         /* sound or silence? */
+    Uint32  srate;          /* rate code (byte) of silence */
+    Uint32  blockseek;	    /* start of current output block */
+    Uint32  samples;	    /* number of samples output */
+    Uint32  size;           /* word length of data */
+    Uint8   channels;       /* number of sound channels */
     int     extended;       /* Has an extended block been read? */
     Uint32  bufpos;         /* byte position in internal->buffer. */
     Uint32  start_pos;      /* offset to seek to in stream when rewinding. */
+    int     error;          /* error condition (as opposed to EOF). */
 } vs_t;
+
 
 /* Size field */ 
 /* SJB: note that the 1st 3 are sometimes used as sizeof(type) */
@@ -140,33 +142,50 @@ static void VOC_quit(void)
 } /* VOC_quit */
 
 
+static inline int voc_readbytes(SDL_RWops *src, vs_t *v, void *p, int size)
+{
+    if (SDL_RWread(src, p, size, 1) != 1)
+    {
+        Sound_SetError("VOC: i/o error");
+        v->error = 1;
+        return 0;
+    } /* if */
+
+    return(1);
+} /* voc_readbytes */
+
+
 static inline int voc_check_header(SDL_RWops *src)
 {
     /* VOC magic header */
     Uint8  signature[20];  /* "Creative Voice File\032" */
     Uint16 datablockofs;
+    vs_t v; /* dummy struct for voc_readbytes */
 
-    if (SDL_RWread(src, signature, sizeof (signature), 1) != 1)
+    if (!voc_readbytes(src, &v, signature, sizeof (signature)))
         return(0);
 
-    if (memcmp(signature, "Creative Voice File\032", sizeof (signature)) != 0) {
-        Sound_SetError("Unrecognized file type (not VOC)");
+    if (memcmp(signature, "Creative Voice File\032", sizeof (signature)) != 0)
+    {
+        Sound_SetError("VOC: Wrong signature; not a VOC file.");
         return(0);
-    }
+    } /* if */
 
         /* get the offset where the first datablock is located */
-    if (SDL_RWread(src, &datablockofs, sizeof (Uint16), 1) != 1)
+    if (!voc_readbytes(src, &v, &datablockofs, sizeof (Uint16)))
         return(0);
 
     datablockofs = SDL_SwapLE16(datablockofs);
 
     if (SDL_RWseek(src, datablockofs, SEEK_SET) != datablockofs)
+    {
+        Sound_SetError("VOC: Failed to seek to data block.");
         return(0);
+    } /* if */
 
     return(1);  /* success! */
 } /* voc_check_header */
 
-/* !!! FIXME : Add a flag to vs_t that distinguishes EOF and Error conditions. */
 
 /* Read next block header, save info, leave position at start of data */
 static int voc_get_block(Sound_Sample *sample)
@@ -201,7 +220,7 @@ static int voc_get_block(Sound_Sample *sample)
         switch(block)
         {
             case VOC_DATA:
-                if (SDL_RWread(src, &uc, sizeof (uc), 1) != 1)
+                if (!voc_readbytes(src, v, &uc, sizeof (uc)))
                     return 0;
 
                 /* When DATA block preceeded by an EXTENDED     */
@@ -212,27 +231,27 @@ static int voc_get_block(Sound_Sample *sample)
                     {
                         Sound_SetError("VOC Sample rate is zero?");
                         return 0;
-                    }
+                    } /* if */
 
                     if ((v->rate != -1) && (uc != v->rate))
                     {
                         Sound_SetError("VOC sample rate codes differ");
                         return 0;
-                    }
+                    } /* if */
 
                     v->rate = uc;
                     sample->actual.rate = 1000000.0/(256 - v->rate);
                     v->channels = 1;
-                }
+                } /* if */
 
-                if (SDL_RWread(src, &uc, sizeof (uc), 1) != 1)
+                if (!voc_readbytes(src, v, &uc, sizeof (uc)))
                     return 0;
 
                 if (uc != 0)
                 {
                     Sound_SetError("VOC decoder only interprets 8-bit data");
                     return 0;
-                }
+                } /* if */
 
                 v->extended = 0;
                 v->rest = sblen - 2;
@@ -240,23 +259,24 @@ static int voc_get_block(Sound_Sample *sample)
                 return 1;
 
             case VOC_DATA_16:
-                if (SDL_RWread(src, &new_rate_long, sizeof (new_rate_long), 1) != 1)
+                if (!voc_readbytes(src, v, &new_rate_long, sizeof (Uint32)))
                     return 0;
+
                 new_rate_long = SDL_SwapLE32(new_rate_long);
                 if (new_rate_long == 0)
                 {
                     Sound_SetError("VOC Sample rate is zero?");
                     return 0;
-                }
+                } /* if */
                 if ((v->rate != -1) && (new_rate_long != v->rate))
                 {
                     Sound_SetError("VOC sample rate codes differ");
                     return 0;
-                }
+                } /* if */
                 v->rate = new_rate_long;
                 sample->actual.rate = new_rate_long;
 
-                if (SDL_RWread(src, &uc, sizeof (uc), 1) != 1)
+                if (!voc_readbytes(src, v, &uc, sizeof (uc)))
                     return 0;
 
                 switch (uc)
@@ -266,12 +286,12 @@ static int voc_get_block(Sound_Sample *sample)
                     default:
                         Sound_SetError("VOC with unknown data size");
                         return 0;
-                }
+                } /* switch */
 
-                if (SDL_RWread(src, &v->channels, sizeof (Uint8), 1) != 1)
+                if (!voc_readbytes(src, v, &v->channels, sizeof (Uint8)))
                     return 0;
 
-                if (SDL_RWread(src, trash, sizeof (Uint8), 6) != 6)
+                if (!voc_readbytes(src, v, trash, sizeof (Uint8) * 6))
                     return 0;
 
                 v->rest = sblen - 12;
@@ -282,17 +302,19 @@ static int voc_get_block(Sound_Sample *sample)
                 return 1;
 
             case VOC_SILENCE:
-                if (SDL_RWread(src, &period, sizeof (period), 1) != 1)
+                if (!voc_readbytes(src, v, &period, sizeof (period)))
                     return 0;
+
                 period = SDL_SwapLE16(period);
 
-                if (SDL_RWread(src, &uc, sizeof (uc), 1) != 1)
+                if (!voc_readbytes(src, v, &uc, sizeof (uc)))
                     return 0;
+
                 if (uc == 0)
                 {
                     Sound_SetError("VOC silence sample rate is zero");
                     return 0;
-                }
+                } /* if */
 
                 /*
                  * Some silence-packed files have gratuitously
@@ -311,9 +333,9 @@ static int voc_get_block(Sound_Sample *sample)
             case VOC_LOOPEND:
                 for(i = 0; i < sblen; i++)   /* skip repeat loops. */
                 {
-                    if (SDL_RWread(src, trash, sizeof (Uint8), 1) != 1)
+                    if (!voc_readbytes(src, v, trash, sizeof (Uint8)))
                         return 0;
-                }
+                } /* for */
                 break;
 
             case VOC_EXTENDED:
@@ -322,35 +344,37 @@ static int voc_get_block(Sound_Sample *sample)
                 /* value from the extended block and not the     */
                 /* data block.                     */
                 v->extended = 1;
-                if (SDL_RWread(src, &new_rate_short, sizeof (new_rate_short), 1) != 1)
+                if (!voc_readbytes(src, v, &new_rate_short, sizeof (Uint16)))
                     return 0;
+
                 new_rate_short = SDL_SwapLE16(new_rate_short);
                 if (new_rate_short == 0)
                 {
                    Sound_SetError("VOC sample rate is zero");
                    return 0;
-                }
+                } /* if */
                 if ((v->rate != -1) && (new_rate_short != v->rate))
                 {
                    Sound_SetError("VOC sample rate codes differ");
                    return 0;
-                }
+                } /* if */
                 v->rate = new_rate_short;
 
-                if (SDL_RWread(src, &uc, sizeof (uc), 1) != 1)
+                if (!voc_readbytes(src, v, &uc, sizeof (uc)))
                     return 0;
 
                 if (uc != 0)
                 {
                     Sound_SetError("VOC decoder only interprets 8-bit data");
                     return 0;
-                }
+                } /* if */
 
-                if (SDL_RWread(src, &uc, sizeof (uc), 1) != 1)
+                if (!voc_readbytes(src, v, &uc, sizeof (uc)))
                     return 0;
 
                 if (uc)
                     sample->actual.channels = 2;  /* Stereo */
+
                 /* Needed number of channels before finishing
                    compute for rate */
                 sample->actual.rate =
@@ -361,22 +385,19 @@ static int voc_get_block(Sound_Sample *sample)
                 continue;
 
             case VOC_MARKER:
-                if (SDL_RWread(src, trash, sizeof (Uint8), 2) != 2)
+                if (!voc_readbytes(src, v, trash, sizeof (Uint8) * 2))
                     return 0;
 
                 /* Falling! Falling! */
 
             default:  /* text block or other krapola. */
-                for(i = 0; i < sblen; i++)
-                {
-                    if (SDL_RWread(src, &trash, sizeof (Uint8), 1) != 1)
-                        return 0;
-                }
+                if (!voc_readbytes(src, v, &trash, sizeof (Uint8) * sblen))
+                    return 0;
 
                 if (block == VOC_TEXT)
                     continue;    /* get next block */
-        }
-    }
+        } /* switch */
+    } /* while */
 
     return 1;
 } /* voc_get_block */
@@ -418,7 +439,15 @@ static int voc_read_waveform(Sound_Sample *sample, int fill_buf, Uint32 max)
     else
     {
         if (fill_buf)
+        {
             done = SDL_RWread(src, buf + v->bufpos, 1, max);
+            if (done < max)
+            {
+                Sound_SetError("VOC: i/o error");
+                sample->flags |= SOUND_SAMPLEFLAG_ERROR;
+            } /* if */
+        } /* if */
+
         else
         {
             int cur, rc;
@@ -428,6 +457,11 @@ static int voc_read_waveform(Sound_Sample *sample, int fill_buf, Uint32 max)
                 rc = SDL_RWseek(src, max, SEEK_CUR);
                 if (rc >= 0)
                     done = rc - cur;
+                else
+                {
+                    Sound_SetError("VOC: seek error");
+                    sample->flags |= SOUND_SAMPLEFLAG_ERROR;
+                } /* else */
             } /* if */
         } /* else */
 
@@ -435,7 +469,7 @@ static int voc_read_waveform(Sound_Sample *sample, int fill_buf, Uint32 max)
         v->bufpos += done;
     } /* else */
 
-    return done;
+    return(done);
 } /* voc_read_waveform */
 
 
@@ -491,15 +525,19 @@ static Uint32 VOC_read(Sound_Sample *sample)
     while (v->bufpos < internal->buffer_size)
     {
         Uint32 rc = voc_read_waveform(sample, 1, internal->buffer_size);
-        if (rc == 0)  /* !!! FIXME: Could be an error... */
+        if (rc == 0)
         {
-            sample->flags |= SOUND_SAMPLEFLAG_EOF;
+            sample->flags |= (v->error) ? 
+                                 SOUND_SAMPLEFLAG_ERROR :
+                                 SOUND_SAMPLEFLAG_EOF;
             break;
         } /* if */
 
         if (!voc_get_block(sample))
         {
-            sample->flags |= SOUND_SAMPLEFLAG_ERROR;
+            sample->flags |= (v->error) ? 
+                                 SOUND_SAMPLEFLAG_ERROR :
+                                 SOUND_SAMPLEFLAG_EOF;
             break;
         } /* if */
     } /* while */
