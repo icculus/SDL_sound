@@ -166,6 +166,7 @@ static MREADER *_mm_new_rwops_reader(Sound_Sample *sample)
     MRWOPSREADER *reader = (MRWOPSREADER *) malloc(sizeof (MRWOPSREADER));
     if (reader != NULL)
     {
+        int failed_seek = 1;
         int here;
         reader->core.Eof  = _mm_RWopsReader_eof;
         reader->core.Read = _mm_RWopsReader_read;
@@ -177,9 +178,22 @@ static MREADER *_mm_new_rwops_reader(Sound_Sample *sample)
         /* RWops does not explicitly support an eof check, so we shall find
            the end manually - this requires seek support for the RWop */
         here = SDL_RWtell(internal->rw);
-        reader->end = SDL_RWseek(internal->rw, 0, SEEK_END);
-        SDL_RWseek(internal->rw, here, SEEK_SET);   /* Move back */
-        /* !!! FIXME: What happens if the seek fails? */
+        if (here != -1)
+        {
+            reader->end = SDL_RWseek(internal->rw, 0, SEEK_END);
+            if (reader->end != -1)
+            {
+                /* Move back */
+                if (SDL_RWseek(internal->rw, here, SEEK_SET) != -1)
+                    failed_seek = 0;
+            } /* if */
+        } /* if */
+
+        if (failed_seek)
+        {
+            free(reader);
+            reader = NULL;
+        } /* if */
     } /* if */
 
     return((MREADER *) reader);
