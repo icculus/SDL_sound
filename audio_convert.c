@@ -45,7 +45,7 @@
  * audio data.
  */
 
-void Sound_ConvertEndian(Sound_AudioCVT *cvt, Uint16 *format)
+static void Sound_ConvertEndian(Sound_AudioCVT *cvt, Uint16 *format)
 {
     int i;
     Uint8 *data, tmp;
@@ -71,7 +71,7 @@ void Sound_ConvertEndian(Sound_AudioCVT *cvt, Uint16 *format)
  * significant bit of each sample.
  */
 
-void Sound_ConvertSign(Sound_AudioCVT *cvt, Uint16 *format)
+static void Sound_ConvertSign(Sound_AudioCVT *cvt, Uint16 *format)
 {
     int i;
     Uint8 *data;
@@ -108,7 +108,7 @@ void Sound_ConvertSign(Sound_AudioCVT *cvt, Uint16 *format)
  * of each 16-bit sample.
  */
 
-void Sound_Convert8(Sound_AudioCVT *cvt, Uint16 *format)
+static void Sound_Convert8(Sound_AudioCVT *cvt, Uint16 *format)
 {
     int i;
     Uint8 *src, *dst;
@@ -136,7 +136,7 @@ void Sound_Convert8(Sound_AudioCVT *cvt, Uint16 *format)
 
 /* Convert 8-bit to 16-bit - LSB */
 
-void Sound_Convert16LSB(Sound_AudioCVT *cvt, Uint16 *format)
+static void Sound_Convert16LSB(Sound_AudioCVT *cvt, Uint16 *format)
 {
     int i;
     Uint8 *src, *dst;
@@ -161,7 +161,7 @@ void Sound_Convert16LSB(Sound_AudioCVT *cvt, Uint16 *format)
 
 /* Convert 8-bit to 16-bit - MSB */
 
-void Sound_Convert16MSB(Sound_AudioCVT *cvt, Uint16 *format)
+static void Sound_Convert16MSB(Sound_AudioCVT *cvt, Uint16 *format)
 {
     int i;
     Uint8 *src, *dst;
@@ -186,7 +186,7 @@ void Sound_Convert16MSB(Sound_AudioCVT *cvt, Uint16 *format)
 
 /* Duplicate a mono channel to both stereo channels */
 
-void Sound_ConvertStereo(Sound_AudioCVT *cvt, Uint16 *format)
+static void Sound_ConvertStereo(Sound_AudioCVT *cvt, Uint16 *format)
 {
     int i;
 
@@ -230,7 +230,7 @@ void Sound_ConvertStereo(Sound_AudioCVT *cvt, Uint16 *format)
 
 /* Effectively mix right and left channels into a single channel */
 
-void Sound_ConvertMono(Sound_AudioCVT *cvt, Uint16 *format)
+static void Sound_ConvertMono(Sound_AudioCVT *cvt, Uint16 *format)
 {
     int i;
     Sint32 sample;
@@ -386,7 +386,7 @@ void Sound_ConvertMono(Sound_AudioCVT *cvt, Uint16 *format)
 
 /* Convert rate up by multiple of 2 */
 
-void Sound_RateMUL2(Sound_AudioCVT *cvt, Uint16 *format)
+static void Sound_RateMUL2(Sound_AudioCVT *cvt, Uint16 *format)
 {
     int i;
     Uint8 *src, *dst;
@@ -428,7 +428,7 @@ void Sound_RateMUL2(Sound_AudioCVT *cvt, Uint16 *format)
 
 /* Convert rate down by multiple of 2 */
 
-void Sound_RateDIV2(Sound_AudioCVT *cvt, Uint16 *format)
+static void Sound_RateDIV2(Sound_AudioCVT *cvt, Uint16 *format)
 {
     int i;
     Uint8 *src, *dst;
@@ -467,7 +467,7 @@ void Sound_RateDIV2(Sound_AudioCVT *cvt, Uint16 *format)
 
 /* Very slow rate conversion routine */
 
-void Sound_RateSLOW(Sound_AudioCVT *cvt, Uint16 *format)
+static void Sound_RateSLOW(Sound_AudioCVT *cvt, Uint16 *format)
 {
     double ipos;
     int i, clen;
