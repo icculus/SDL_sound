@@ -711,7 +711,7 @@ Sound_Sample *Sound_NewSampleFromMem(const Uint8 *data,
                                      Uint32 size,
                                      const char *ext,
                                      Sound_AudioInfo *desired,
-                                     Uint32 bufferSize);
+                                     Uint32 bufferSize)
 {
     SDL_RWops *rw;
 
