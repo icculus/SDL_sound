@@ -9,8 +9,6 @@ libSDL_soundinclude_HEADERS =	\
 libSDL_sound_la_SOURCES =	\
 	SDL_sound.c	\
 	SDL_sound_internal.h	\
-    alt_audio_convert.c   \
-    alt_audio_convert.h  \
     audio_convert.c   \
 	extra_rwops.c	\
 	extra_rwops.h

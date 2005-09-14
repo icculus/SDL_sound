@@ -77,7 +77,7 @@ int RWops_pooled_deinit(void);
 SDL_RWops *RWops_pooled_alloc(void);
 
 /* Return a RWops to the pool for reuse. */
-void RWops_pooled_free(SDL_RWops *rw)
+void RWops_pooled_free(SDL_RWops *rw);
 
 #ifdef __cplusplus
 }

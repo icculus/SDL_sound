@@ -148,7 +148,7 @@ int RWops_pooled_init(void)
         return(0);
 
     for (i = 0; i < preallocate; i++)
-        free_pooled_rwops(alloc_pooled_rwops());
+        RWops_pooled_free(RWops_pooled_alloc());
 
     return(1);
 } /* RWops_pooled_init */
