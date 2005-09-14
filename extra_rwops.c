@@ -138,6 +138,40 @@ SDL_RWops *RWops_RWRefCounter_new(SDL_RWops *rw)
 static SDL_RWops *rwops_pool = NULL;
 static SDL_mutex *rwops_pool_mutex = NULL;
 
+SDL_RWops *RWops_pooled_alloc(void)
+{
+    SDL_RWops *rw;
+    if (rwops_pool_mutex == NULL)
+        return(NULL);  /* never initialized. */
+
+    SDL_LockMutex(rwops_pool_mutex);
+    rw = rwops_pool;
+    if (rw)
+        rwops_pool = (SDL_RWops *) (rw->hidden.unknown.data1);
+    SDL_UnlockMutex(rwops_pool_mutex);
+
+    if (!rw)
+        rw = (SDL_RWops *) malloc(sizeof (SDL_RWops));
+
+    return(rw);
+} /* RWops_pooled_alloc */
+
+
+void RWops_pooled_free(SDL_RWops *rw)
+{
+    if (rwops_pool_mutex == NULL)
+        return;  /* never initialized...why are we here? */
+
+    if (rw == NULL)
+        return;
+
+    SDL_LockMutex(rwops_pool_mutex);
+    rw->hidden.unknown.data1 = rwops_pool;
+    rwops_pool = rw;
+    SDL_UnlockMutex(rwops_pool_mutex);
+} /* RWops_pooled_free */
+
+
 int RWops_pooled_init(void)
 {
     const int preallocate = 50;
@@ -177,40 +211,6 @@ void RWops_pooled_deinit(void)
         cur = next;
     } /* while */
 } /* RWops_pooled_deinit */
-
-
-SDL_RWops *RWops_pooled_alloc(void)
-{
-    SDL_RWops *rw;
-    if (rwops_pool_mutex == NULL)
-        return(NULL);  /* never initialized. */
-
-    SDL_LockMutex(rwops_pool_mutex);
-    rw = rwops_pool;
-    if (rw)
-        rwops_pool = (SDL_RWops *) (rw->hidden.unknown.data1);
-    SDL_UnlockMutex(rwops_pool_mutex);
-
-    if (!rw)
-        rw = (SDL_RWops *) malloc(sizeof (SDL_RWops));
-
-    return(rw);
-} /* RWops_pooled_alloc */
-
-
-void RWops_pooled_free(SDL_RWops *rw)
-{
-    if (rwops_pool_mutex == NULL)
-        return;  /* never initialized...why are we here? */
-
-    if (rw == NULL)
-        return;
-
-    SDL_LockMutex(rwops_pool_mutex);
-    rw->hidden.unknown.data1 = rwops_pool;
-    rwops_pool = rw;
-    SDL_UnlockMutex(rwops_pool_mutex);
-} /* RWops_pooled_free */
 
 /* end of extra_rwops.c ... */
 
