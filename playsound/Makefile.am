@@ -1,4 +1,4 @@
-bin_PROGRAMS = playsound
+bin_PROGRAMS = playsound playsound_simple
 
 INCLUDES = -I$(top_srcdir)
 
@@ -14,3 +14,7 @@ endif
 playsound_CFLAGS = $(PHYSFS_CFLG)
 playsound_LDADD = ../libSDL_sound.la $(PHYSFS_LIBS)
 playsound_SOURCES = playsound.c physfsrwops.c physfsrwops.h
+
+playsound_simple_LDADD = ../libSDL_sound.la
+playsound_simple_SOURCES = playsound_simple.c
+
