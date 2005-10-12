@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+10122005 - Check for libmodplug headers in two possible places (thanks, Tyler!)
 10012005 - Added playsound_simple.c.
 09142005 - Happy September. Patched smpeg.c and some other things to compile.
 01062005 - Fixed Project Builder project files (Thanks, Martin!)

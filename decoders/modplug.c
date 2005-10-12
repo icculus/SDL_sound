@@ -46,8 +46,11 @@
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
 
+#if SOUND_MODPLUG_IN_OWN_PATH
+#include "libmodplug/modplug.h"
+#else
 #include "modplug.h"
-
+#endif
 
 static int MODPLUG_init(void);
 static void MODPLUG_quit(void);
