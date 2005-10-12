@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+10122005 - Check for libmodplug headers in two possible places (thanks, Tyler!)
 10012005 - Added playsound_simple.c.
 05302005 - Backport from devtree: Fixed automake nonsense.
 11122004 - Backport from devtree: fix .voc decoder crash on file open.
