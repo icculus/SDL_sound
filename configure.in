@@ -214,7 +214,16 @@ AC_ARG_ENABLE(modplug,
 [  --enable-modplug           enable MOD decoding via modplug [default=yes]],
               , enable_modplug=yes)
 if test x$enable_modplug = xyes; then
+  have_modplug_hdr=no
   AC_CHECK_HEADER(modplug.h, have_modplug_hdr=yes)
+  if test x$have_modplug_hdr = xno; then
+    AC_CHECK_HEADER(libmodplug/modplug.h, have_modplug_hdr=yes)
+    if test x$have_modplug_hdr = xyes; then
+      have_modplug_hdr=yes
+      AC_DEFINE(SOUND_MODPLUG_IN_OWN_PATH)
+    fi
+  fi
+
   AC_CHECK_LIB(modplug, ModPlug_Load, have_modplug_lib=yes)
   if test x$have_modplug_hdr = xyes -a x$have_modplug_lib = xyes; then
     LIBS="$LIBS -lmodplug"
