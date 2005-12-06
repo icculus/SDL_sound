@@ -1,8 +1,9 @@
+if USE_TIMIDITY
 noinst_LTLIBRARIES = libtimidity.la
+endif
 
 INCLUDES = -I$(top_srcdir)
 
-if USE_TIMIDITY
 libtimidity_la_SOURCES =	\
 	common.c		\
 	common.h		\
@@ -27,8 +28,6 @@ libtimidity_la_SOURCES =	\
 	tables.h		\
 	timidity.c		\
 	timidity.h
-else
-libtimidity_la_SOURCES =
-endif
 
-EXTRA_DIST = FAQ README CHANGES TODO
+EXTRA_DIST = CHANGES COPYING FAQ README TODO Makefile.testmidi testmidi.c
+
