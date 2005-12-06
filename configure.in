@@ -71,10 +71,10 @@ if test x$enable_debug = xyes; then
     CFLAGS="-O0"
   fi
   CFLAGS="$CFLAGS -Werror"
-  AC_DEFINE(DEBUG)
-  AC_DEFINE(DEBUG_CHATTER)
+  AC_DEFINE(DEBUG, 1, [Define for debug builds.])
+  AC_DEFINE(DEBUG_CHATTER, 1, [Define for debug build chattering.])
 else
-  AC_DEFINE(NDEBUG)
+  AC_DEFINE(NDEBUG, 1, [Define to disable debugging.])
 fi
 
 
@@ -91,12 +91,13 @@ AM_PATH_SDL($SDL_VERSION,
 CFLAGS="$CFLAGS $SDL_CFLAGS"
 LIBS="$LIBS $SDL_LIBS"
 
+
 dnl Check for voc decoder inclusion...
 AC_ARG_ENABLE(voc,
 [  --enable-voc               enable VOC decoding [default=yes]],
               , enable_voc=yes)
 if test x$enable_voc = xyes; then
-    AC_DEFINE(SOUND_SUPPORTS_VOC)
+    AC_DEFINE(SOUND_SUPPORTS_VOC, 1, [Define if VOC support is desired.])
 fi
 
 
@@ -105,7 +106,7 @@ AC_ARG_ENABLE(wav,
 [  --enable-wav               enable WAV decoding [default=yes]],
               , enable_wav=yes)
 if test x$enable_wav = xyes; then
-    AC_DEFINE(SOUND_SUPPORTS_WAV)
+    AC_DEFINE(SOUND_SUPPORTS_WAV, 1, [Define if WAV support is desired.])
 fi
 
 
@@ -114,7 +115,7 @@ AC_ARG_ENABLE(raw,
 [  --enable-raw               enable raw audio "decoding" [default=yes]],
               , enable_raw=yes)
 if test x$enable_raw = xyes; then
-    AC_DEFINE(SOUND_SUPPORTS_RAW)
+    AC_DEFINE(SOUND_SUPPORTS_RAW, 1, [Define if RAW support is desired.])
 fi
 
 
@@ -123,7 +124,7 @@ AC_ARG_ENABLE(aiff,
 [  --enable-aiff              enable AIFF decoding [default=yes]],
               , enable_aiff=yes)
 if test x$enable_aiff = xyes; then
-    AC_DEFINE(SOUND_SUPPORTS_AIFF)
+    AC_DEFINE(SOUND_SUPPORTS_AIFF, 1, [Define if AIFF support is desired.])
 fi
 
 dnl Check for au decoder inclusion
@@ -131,7 +132,7 @@ AC_ARG_ENABLE(au,
 [  --enable-au                enable AU decoding [default=yes]],
               , enable_au=yes)
 if test x$enable_au = xyes; then
-    AC_DEFINE(SOUND_SUPPORTS_AU)
+    AC_DEFINE(SOUND_SUPPORTS_AU, 1, [Define if AU support is desired.])
 fi
 
 dnl Check for shn decoder inclusion...
@@ -139,7 +140,7 @@ AC_ARG_ENABLE(shn,
 [  --enable-shn               enable SHN decoding [default=yes]],
               , enable_shn=yes)
 if test x$enable_shn = xyes; then
-    AC_DEFINE(SOUND_SUPPORTS_SHN)
+    AC_DEFINE(SOUND_SUPPORTS_SHN, 1, [Define if SHN support is desired.])
 fi
 
 dnl Check for the MIDI decoder...
@@ -147,7 +148,7 @@ AC_ARG_ENABLE(midi,
 [  --enable-midi              enable software MIDI music [default=yes]],
               , enable_midi=yes)
 if test x$enable_midi = xyes; then
-  AC_DEFINE(SOUND_SUPPORTS_MIDI)
+  AC_DEFINE(SOUND_SUPPORTS_MIDI, 1, [Define if MIDI support is desired.])
 fi
 
 
@@ -168,7 +169,7 @@ if test x$enable_flac = xyes; then
   AC_CHECK_LIB(FLAC, $flcsym, have_flac_lib=yes)
   if test x$have_flac_hdr = xyes -a x$have_flac_lib = xyes; then
     LIBS="$LIBS -lFLAC"
-    AC_DEFINE(SOUND_SUPPORTS_FLAC)
+    AC_DEFINE(SOUND_SUPPORTS_FLAC, 1, [Define if FLAC support is desired.])
   fi
 fi
 
@@ -177,12 +178,11 @@ AC_ARG_ENABLE(smpeg,
 [  --enable-smpeg             enable MP3 decoding via smpeg [default=yes]],
               , enable_smpeg=yes)
 if test x$enable_smpeg = xyes; then
-  SMPEG_VERSION=0.4.3
-  AM_PATH_SMPEG($SMPEG_VERSION, , no_smpeg=yes)
-  if test "x$no_smpeg" = "x" ; then
-    CFLAGS="$CFLAGS $SMPEG_CFLAGS"
-    LIBS="$LIBS $SMPEG_LIBS"
-    AC_DEFINE(SOUND_SUPPORTS_SMPEG)
+  AC_CHECK_HEADER(smpeg.h, have_smpeg_hdr=yes)
+  AC_CHECK_LIB(smpeg, SMPEG_new, have_smpeg_lib=yes)
+  if test x$have_smpeg_hdr = xyes -a x$have_smpeg_lib = xyes; then
+    LIBS="$LIBS -lsmpeg"
+    AC_DEFINE(SOUND_SUPPORTS_SMPEG, 1, [Define if SMPEG support is desired.])
   fi
 fi
 
@@ -191,7 +191,7 @@ AC_ARG_ENABLE(mpglib,
 [  --enable-mpglib            enable MP3 decoding internally [default=yes]],
               , enable_mpglib=yes)
 if test x$enable_mpglib = xyes; then
-  AC_DEFINE(SOUND_SUPPORTS_MPGLIB)
+  AC_DEFINE(SOUND_SUPPORTS_MPGLIB, 1, [Define if MPGLIB support is desired.])
 fi
 
 
@@ -200,12 +200,11 @@ AC_ARG_ENABLE(mikmod,
 [  --enable-mikmod            enable MOD decoding via mikmod [default=yes]],
               , enable_mikmod=yes)
 if test x$enable_mikmod = xyes; then
-  AM_PATH_LIBMIKMOD
-  if test "x$no_libmikmod" = "x" ; then
-    CFLAGS="$CFLAGS $LIBMIKMOD_CFLAGS"
-    LIBS="$LIBS $LIBMIKMOD_LIBS"
-    LDADD="$LDADD $LIBMIKMOD_LDADD"
-    AC_DEFINE(SOUND_SUPPORTS_MIKMOD)
+  AC_CHECK_HEADER(mikmod.h, have_mikmod_hdr=yes)
+  AC_CHECK_LIB(mikmod, MikMod_RegisterDriver, have_mikmod_lib=yes)
+  if test x$have_mikmod_hdr = xyes -a x$have_mikmod_lib = xyes; then
+    LIBS="$LIBS -lmikmod"
+    AC_DEFINE(SOUND_SUPPORTS_MIKMOD, 1, [Define if MIKMOD support is desired.])
   fi
 fi
 
@@ -220,14 +219,14 @@ if test x$enable_modplug = xyes; then
     AC_CHECK_HEADER(libmodplug/modplug.h, have_modplug_hdr=yes)
     if test x$have_modplug_hdr = xyes; then
       have_modplug_hdr=yes
-      AC_DEFINE(SOUND_MODPLUG_IN_OWN_PATH)
+      AC_DEFINE(SOUND_MODPLUG_IN_OWN_PATH, 1, [Define if modplug header is in own directory.])
     fi
   fi
 
   AC_CHECK_LIB(modplug, ModPlug_Load, have_modplug_lib=yes)
   if test x$have_modplug_hdr = xyes -a x$have_modplug_lib = xyes; then
     LIBS="$LIBS -lmodplug"
-    AC_DEFINE(SOUND_SUPPORTS_MODPLUG)
+    AC_DEFINE(SOUND_SUPPORTS_MODPLUG, 1, [Define if MODPLUG support is desired.])
   fi
 fi
 
@@ -236,11 +235,26 @@ AC_ARG_ENABLE(ogg,
 [  --enable-ogg               enable OGG decoding via libvorbis [default=yes]],
               , enable_ogg=yes)
 if test x$enable_ogg = xyes; then
-  AM_PATH_VORBIS
-  if test "x$no_vorbis" = "x" ; then
-    CFLAGS="$CFLAGS $VORBIS_CFLAGS"
-    LIBS="$LIBS $VORBIS_LIBS $VORBISFILE_LIBS $VORBISENC_LIBS"
-    AC_DEFINE(SOUND_SUPPORTS_OGG)
+  AC_CHECK_HEADER(ogg.h, have_ogg_hdr=yes)
+  AC_CHECK_LIB(ogg, ogg_sync_init, have_ogg_lib=yes)
+  AC_CHECK_HEADER(vorbis/codec.h, have_vorbis_hdr=yes)
+  AC_CHECK_LIB(vorbis, vorbis_info_init, have_vorbis_lib=yes)
+  AC_CHECK_HEADER(vorbis/vorbisfile.h, have_vorbisfile_hdr=yes)
+  AC_CHECK_LIB(vorbisfile, ov_open_callbacks, have_vorbisfile_lib=yes)
+
+  have_vorbis=no
+  if test x$have_ogg_hdr = xyes -a x$have_ogg_lib = xyes; then
+    if test x$have_vorbis_hdr = xyes -a x$have_vorbis_lib = xyes; then
+      if test x$have_vorbisfile_hdr = xyes -a x$have_vorbisfile_lib = xyes; then
+        have_vorbis=yes
+      fi
+    fi
+  fi
+
+  if test x$have_vorbis = xyes; then
+    CFLAGS="$CFLAGS"
+    LIBS="$LIBS -logg -lvorbis -lvorbisfile"
+    AC_DEFINE(SOUND_SUPPORTS_OGG, 1, [Define if OGG support is desired.])
   fi
 fi
 
@@ -255,7 +269,7 @@ if test x$enable_speex = xyes; then
   AC_CHECK_LIB(speex, speex_bits_init, have_speex_lib=yes)
   if test "x$have_ogg_hdr" = "xyes" -a "x$have_ogg_lib" = "xyes" -a "x$have_speex_hdr" = "xyes" -a "x$have_speex_lib" = "xyes"; then
     LIBS="$LIBS -logg -lspeex"
-    AC_DEFINE(SOUND_SUPPORTS_SPEEX)
+    AC_DEFINE(SOUND_SUPPORTS_SPEEX, 1, [Define if SPEEX support is desired.])
   fi
 fi
 
