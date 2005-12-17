@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+12172005 - Fixed gcc4 whining in playsound_simple.c.
 12062005 - Trimmed a bunch of junk out of the build system, and now it works
            on Mac OS X again.
 10122005 - Check for libmodplug headers in two possible places (thanks, Tyler!)
