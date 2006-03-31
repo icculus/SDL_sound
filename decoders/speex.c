@@ -419,7 +419,16 @@ speex_read_failed:
 
 static int SPEEX_rewind(Sound_Sample *sample)
 {
-    /* !!! FIXME */ return(0);
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    /*
+     * !!! FIXME: This is really unacceptable; state should be reset and
+     * !!! FIXME:  the RWops should be pointed to the start of the data
+     * !!! FIXME:  to decode. The below kludge adds unneeded overhead and
+     * !!! FIXME:  risk of failure.
+     */
+    BAIL_IF_MACRO(SDL_RWseek(internal->rw, 0, SEEK_SET) != 0, ERR_IO_ERROR, 0);
+    SPEEX_close(sample);
+    return(SPEEX_open(sample, "SPX"));
 } /* SPEEX_rewind */
 
 
