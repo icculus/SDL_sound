@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+05122005 - Patched to get mpglib compiling again (thanks, Sam!).
 03312005 - Wedged in a temporary hack for Speex rewinding.
 12172005 - Fixed gcc4 whining in playsound_simple.c.
 12062005 - Trimmed a bunch of junk out of the build system, and now it works
