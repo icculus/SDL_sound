@@ -199,7 +199,7 @@ static Uint32 MPGLIB_read(Sound_Sample *sample)
     {
         if (mpg->outleft > 0)
         {
-            Uint16 cpysize = internal->buffer_size - bw;
+            size_t cpysize = internal->buffer_size - bw;
             if (cpysize > mpg->outleft)
                 cpysize = mpg->outleft;
             memcpy(((Uint8 *) internal->buffer) + bw,
