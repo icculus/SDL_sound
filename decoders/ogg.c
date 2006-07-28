@@ -232,7 +232,7 @@ static int OGG_open(Sound_Sample *sample, const char *ext)
      *  OGG files are apparently commonly encoded in.
      */
     sample->actual.format = (sample->desired.format == 0) ?
-                             AUDIO_S16LSB : sample->desired.format;
+                             AUDIO_S16SYS : sample->desired.format;
     return(1);
 } /* OGG_open */
 
