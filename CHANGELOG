@@ -2,8 +2,9 @@
  * CHANGELOG.
  */
 
-05122005 - Patched to get mpglib compiling again (thanks, Sam!).
-03312005 - Wedged in a temporary hack for Speex rewinding.
+07282006 - Ogg Vorbis decoding defaults to system byte order now.
+05122006 - Patched to get mpglib compiling again (thanks, Sam!).
+03312006 - Wedged in a temporary hack for Speex rewinding.
 12172005 - Fixed gcc4 whining in playsound_simple.c.
 12062005 - Trimmed a bunch of junk out of the build system, and now it works
            on Mac OS X again.
