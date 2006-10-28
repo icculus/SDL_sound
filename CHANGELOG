@@ -2,7 +2,9 @@
  * CHANGELOG.
  */
 
-05122005 - Patched to get mpglib compiling again (thanks, Sam!).
+10272006 - FLAC 1.1.3 breaks their API _again_, so we try to do the right
+           thing at build time. (Thanks, Josh!).
+05122006 - Patched to get mpglib compiling again (thanks, Sam!).
 12172005 - Fixed gcc4 whining in playsound_simple.c.
 12062005 - Trimmed a bunch of junk out of the build system, and now it works
            on Mac OS X again.
