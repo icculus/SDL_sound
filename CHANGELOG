@@ -2,6 +2,8 @@
  * CHANGELOG.
  */
 
+10272006 - FLAC 1.1.3 breaks their API _again_, so we try to do the right
+           thing at build time. (Thanks, Josh!).
 07282006 - Ogg Vorbis decoding defaults to system byte order now.
 05122006 - Patched to get mpglib compiling again (thanks, Sam!).
 03312006 - Wedged in a temporary hack for Speex rewinding.
