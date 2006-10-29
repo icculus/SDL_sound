@@ -116,6 +116,7 @@ static int _SMPEG_open(Sound_Sample *sample, const char *ext)
     SDL_AudioSpec spec;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SDL_RWops *refCounter;
+    const char *err = NULL;
 
     output_version();
 
@@ -171,10 +172,12 @@ static int _SMPEG_open(Sound_Sample *sample, const char *ext)
     RWops_RWRefCounter_addRef(refCounter);
     smpeg = SMPEG_new_rwops(refCounter, &smpeg_info, 0);
 
-    if (SMPEG_error(smpeg))
+    err = SMPEG_error(smpeg);
+    if (err != NULL)
     {
+        __Sound_SetError(err);  /* make a copy before SMPEG_delete()... */
         SMPEG_delete(smpeg);
-        BAIL_MACRO(SMPEG_error(smpeg), 0);
+        return(0);
     } /* if */
 
     if (!smpeg_info.has_audio)

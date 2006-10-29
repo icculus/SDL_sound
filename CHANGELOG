@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+10292006 - Fixed bogus memory deference when SMPEG fails init (thanks, Chris!)
 10272006 - FLAC 1.1.3 breaks their API _again_, so we try to do the right
            thing at build time. (Thanks, Josh!).
 05122006 - Patched to get mpglib compiling again (thanks, Sam!).
