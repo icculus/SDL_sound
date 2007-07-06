@@ -1922,6 +1922,7 @@ int do_layer3(struct frame *fr,unsigned char *pcm_sample,
   {
     real hybridIn[2][SBLIMIT][SSLIMIT];
     real hybridOut[2][SSLIMIT][SBLIMIT];
+    memset(hybridIn, '\0', sizeof (hybridIn));
 
     {
       struct gr_info_s *gr_info = &(sideinfo.ch[0].gr[gr]);
