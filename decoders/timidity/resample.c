@@ -584,7 +584,7 @@ void pre_resample(MidiSong *song, Sample *sp)
            * good thing to do when vptr <= src. (TiMidity++ has a similar
            * safe-guard here.)
            */
-      v1 = (vptr > src) ? *(vptr - 1) : 0;
+      v1 = (vptr == src) ? *vptr : *(vptr - 1);
       v2 = *vptr;
       v3 = *(vptr + 1);
       v4 = *(vptr + 2);
