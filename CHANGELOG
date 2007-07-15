@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+07152007 - Minor correction in Timidity resampling code (Thanks, Sam!).
 07062007 - Fixed uninitialized buffer in mpglib. (Thanks, Phil!).
 10292006 - Fixed bogus memory deference when SMPEG fails init (thanks, Chris!)
 10272006 - FLAC 1.1.3 breaks their API _again_, so we try to do the right
