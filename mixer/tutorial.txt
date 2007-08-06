@@ -538,7 +538,14 @@ characters to speak again (it's strange when one actor is speaking two
 overlapping lines of dialogue, for example).
 
 
-Hardcore #6: Your suggestion here!
+Hardcore #6: Procedural samples.
+!!! WRITEME: Hook up a RAW Sound_Sample to a RWOPS that generates sound on
+!!! WRITEME:  read, so you can mix in a procedural sample instead of just
+!!! WRITEME:  pre/post mixing.
+
+
+
+Hardcore #7: Your suggestion here!
 
 The goal is to try and make audio work fairly painless for the game developer,
 which means that if there is a good way to generalize functionality into the
