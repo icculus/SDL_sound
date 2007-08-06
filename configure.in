@@ -66,15 +66,36 @@ AC_ARG_ENABLE(debug,
               , enable_debug=no)
 if test x$enable_debug = xyes; then
   if test x$ac_cv_prog_cc_g = xyes; then
-    CFLAGS="-g -O0"
+    SDLSOUNDCFLAGS="$SDLSOUNDCFLAGS -g -O0"
   else
-    CFLAGS="-O0"
+    SDLSOUNDCFLAGS="$SDLSOUNDCFLAGS -O0"
   fi
-  CFLAGS="$CFLAGS -Werror"
+  SDLSOUNDCFLAGS="$SDLSOUNDCFLAGS -Werror"
   AC_DEFINE(DEBUG, 1, [Define for debug builds.])
   AC_DEFINE(DEBUG_CHATTER, 1, [Define for debug build chattering.])
 else
   AC_DEFINE(NDEBUG, 1, [Define to disable debugging.])
+fi
+
+dnl ---------------------------------------------------------------------
+dnl Have GCC's -fvisibility option?
+dnl ---------------------------------------------------------------------
+AC_MSG_CHECKING(for GCC -fvisibility=hidden option)
+have_gcc_fvisibility=no
+visibility_CFLAGS="-fvisibility=hidden"
+save_CFLAGS="$CFLAGS"
+CFLAGS="$save_CFLAGS $visibility_CFLAGS"
+AC_TRY_COMPILE([
+int placeholder = 1;
+],[
+],[
+have_gcc_fvisibility=yes
+])
+AC_MSG_RESULT($have_gcc_fvisibility)
+CFLAGS="$save_CFLAGS"
+
+if test x$have_gcc_fvisibility = xyes; then
+    SDLSOUNDCFLAGS="$SDLSOUNDCFLAGS $visibility_CFLAGS"
 fi
 
 
@@ -88,7 +109,7 @@ AM_PATH_SDL($SDL_VERSION,
             :,
  	     AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!])
 )
-CFLAGS="$CFLAGS $SDL_CFLAGS"
+SDLSOUNDCFLAGS="$SDLSOUNDCFLAGS $SDL_CFLAGS"
 LIBS="$LIBS $SDL_LIBS"
 
 
@@ -235,7 +256,6 @@ if test x$enable_ogg = xyes; then
   fi
 
   if test x$have_vorbis = xyes; then
-    CFLAGS="$CFLAGS"
     LIBS="$LIBS -logg -lvorbis -lvorbisfile"
     AC_DEFINE(SOUND_SUPPORTS_OGG, 1, [Define if OGG support is desired.])
   fi
@@ -323,6 +343,8 @@ AC_TYPE_SIZE_T
 
 AC_FUNC_MEMCMP
 AC_CHECK_FUNCS([memset strrchr setbuf])
+
+CFLAGS="$SDLSOUNDCFLAGS $CFLAGS -D_REENTRANT -D_THREAD_SAFE"
 
 dnl Add Makefile conditionals
 AM_CONDITIONAL(USE_TIMIDITY, test x$enable_midi = xyes)
