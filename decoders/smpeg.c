@@ -32,7 +32,7 @@
  *
  * Please see the file COPYING in the source's root directory.
  *
- *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *  This file written by Ryan C. Gordon. (icculus@icculus.org)
  */
 
 #if HAVE_CONFIG_H
@@ -68,7 +68,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_SMPEG =
     {
         extensions_smpeg,
         "MPEG-1 Layer 3 audio through SMPEG",
-        "Ryan C. Gordon <icculus@clutteredmind.org>",
+        "Ryan C. Gordon <icculus@icculus.org>",
         "http://icculus.org/smpeg/"
     },
 

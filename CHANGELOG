@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+08062007 - Updated my email address. Added -fvisibility=hidden support.
 07152007 - Minor correction in Timidity resampling code (Thanks, Sam!).
 07062007 - Fixed uninitialized buffer in mpglib. (Thanks, Phil!).
 10292006 - Fixed bogus memory deference when SMPEG fails init (thanks, Chris!)
@@ -373,7 +374,7 @@
 09142001 - Changed name to SDL_sound, added Sound_DecodeAll() to spec.
 09132001 - Initial spec proposed on SDL mailing list, under name "SDL_voice".
 
---ryan. (icculus@clutteredmind.org)
+--ryan. (icculus@icculus.org)
 
 /* end of CHANGELOG ... */
 
