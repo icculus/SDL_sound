@@ -57,7 +57,7 @@
  *
  * Please see the file COPYING in the source's root directory.
  *
- * \author Ryan C. Gordon (icculus@clutteredmind.org)
+ * \author Ryan C. Gordon (icculus@icculus.org)
  * \author many others, please see CREDITS in the source's root directory.
  */
 

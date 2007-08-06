@@ -34,7 +34,7 @@
  *
  * Please see the file COPYING in the source's root directory.
  *
- *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *  This file written by Ryan C. Gordon. (icculus@icculus.org)
  */
 
 #if HAVE_CONFIG_H
@@ -66,7 +66,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_VOC =
     {
         extensions_voc,
         "Creative Labs Voice format",
-        "Ryan C. Gordon <icculus@clutteredmind.org>",
+        "Ryan C. Gordon <icculus@icculus.org>",
         "http://www.icculus.org/SDL_sound/"
     },
 
