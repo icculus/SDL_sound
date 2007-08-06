@@ -23,7 +23,7 @@
  *
  * Please see the file COPYING in the source's root directory.
  *
- *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *  This file written by Ryan C. Gordon. (icculus@icculus.org)
  */
 
 #ifndef _INCLUDE_SDL_SOUND_INTERNAL_H_

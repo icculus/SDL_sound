@@ -4,7 +4,7 @@ Please note that the included source from Timidity, the MIDI decoder, is also
  terms are not reprinted here, but can be found on the web easily.
 
 If you want to use SDL_sound under a closed-source license, please contact
- Ryan (icculus@clutteredmind.org), and we can discuss an alternate license for
+ Ryan (icculus@icculus.org), and we can discuss an alternate license for
  money to be distributed between the contributors to this work, but I'd
  encourage you to abide by the LGPL, since the usual concern is whether you
  can use this library without releasing your own source code (you can).
