@@ -34,7 +34,7 @@
  *  source code for mpglib falls under the LGPL, which is the same license as
  *  SDL_sound (so you can consider it a single work).
  *
- *  This file written by Ryan C. Gordon. (icculus@clutteredmind.org)
+ *  This file written by Ryan C. Gordon. (icculus@icculus.org)
  */
 
 #if HAVE_CONFIG_H
@@ -68,7 +68,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MPGLIB =
     {
         extensions_mpglib,
         "MP3 decoding via internal mpglib",
-        "Ryan C. Gordon <icculus@clutteredmind.org>",
+        "Ryan C. Gordon <icculus@icculus.org>",
         "http://www.icculus.org/SDL_sound/"
     },
 
