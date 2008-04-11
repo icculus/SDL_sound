@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+04112008 - Check if Speex header has bogus data (CVE-2008-1686).
 08062007 - Updated my email address. Added -fvisibility=hidden support.
 07152007 - Minor correction in Timidity resampling code (Thanks, Sam!).
 07062007 - Fixed uninitialized buffer in mpglib. (Thanks, Phil!).
