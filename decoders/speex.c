@@ -136,6 +136,7 @@ static int process_header(speex_t *speex, Sound_Sample *sample)
     free(hptr);  /* lame that this forces you to malloc... */
 
     BAIL_IF_MACRO(header.mode >= SPEEX_NB_MODES, "SPEEX: Unknown mode", 0);
+    BAIL_IF_MACRO(header.mode < 0, "SPEEX: Unknown mode", 0);
     mode = speex_mode_list[header.mode];
     BAIL_IF_MACRO(header.speex_version_id > 1, "SPEEX: Unknown version", 0);
     BAIL_IF_MACRO(mode->bitstream_version < header.mode_bitstream_version,
