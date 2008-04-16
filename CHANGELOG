@@ -6,7 +6,7 @@
 08062007 - Updated my email address. Added -fvisibility=hidden support.
 07152007 - Minor correction in Timidity resampling code (Thanks, Sam!).
 07062007 - Fixed uninitialized buffer in mpglib. (Thanks, Phil!).
-10292006 - Fixed bogus memory deference when SMPEG fails init (thanks, Chris!)
+10292006 - Fixed bogus memory dereference when SMPEG fails init (thanks, Chris!)
 10272006 - FLAC 1.1.3 breaks their API _again_, so we try to do the right
            thing at build time. (Thanks, Josh!).
 07282006 - Ogg Vorbis decoding defaults to system byte order now.
