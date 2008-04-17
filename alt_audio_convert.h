@@ -2,7 +2,7 @@
  *  Extended Audio Converter for SDL (Simple DirectMedia Layer)
  *  Copyright (C) 2002  Frank Ranostaj
  *                      Institute of Applied Physik
- *                      Johann Wolfgang Goethe-Universit‰t
+ *                      Johann Wolfgang Goethe-Universit√§t
  *                      Frankfurt am Main, Germany
  *
  *   This library is free software; you can redistribute it and/or
