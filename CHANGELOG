@@ -4,7 +4,7 @@
 
 04172008 - Look for Speex includes in new directory. Converted all text
            encoding from ISO-8859-1 to UTF-8. Fixed "make dist" script for
-           dealing with Subversion instead of CVS.
+           dealing with Subversion instead of CVS. Added Speex to the README.
 04112008 - Check if Speex header has bogus data (CVE-2008-1686).
 08062007 - Updated my email address. Added -fvisibility=hidden support.
 07152007 - Minor correction in Timidity resampling code (Thanks, Sam!).
