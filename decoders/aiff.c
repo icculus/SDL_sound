@@ -38,7 +38,7 @@
  *
  * Please see the file COPYING in the source's root directory.
  *
- *  This file was written by Torbjörn Andersson. (d91tan@Update.UU.SE)
+ *  This file was written by TorbjÃ¶rn Andersson. (d91tan@Update.UU.SE)
  */
 
 #if HAVE_CONFIG_H
@@ -73,7 +73,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_AIFF =
     {
         extensions_aiff,
         "Audio Interchange File Format",
-        "Torbjörn Andersson <d91tan@Update.UU.SE>",
+        "TorbjÃ¶rn Andersson <d91tan@Update.UU.SE>",
         "http://www.icculus.org/SDL_sound/"
     },
 

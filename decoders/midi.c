@@ -25,7 +25,7 @@
  *
  * Please see the file COPYING in the source's root directory.
  *
- *  This file written by Torbjörn Andersson. (d91tan@Update.UU.SE)
+ *  This file written by TorbjÃ¶rn Andersson. (d91tan@Update.UU.SE)
  */
 
 #if HAVE_CONFIG_H
@@ -60,7 +60,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MIDI =
     {
         extensions_midi,
         "MIDI decoder, using a subset of TiMidity",
-        "Torbjörn Andersson <d91tan@Update.UU.SE>",
+        "TorbjÃ¶rn Andersson <d91tan@Update.UU.SE>",
         "http://www.icculus.org/SDL_sound/"
     },
 

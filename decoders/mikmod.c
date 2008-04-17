@@ -23,7 +23,7 @@
  *
  * Please see the file COPYING in the source's root directory.
  *
- *  This file written by Torbjörn Andersson (d91tan@Update.UU.SE)
+ *  This file written by TorbjÃ¶rn Andersson (d91tan@Update.UU.SE)
  */
 
 #if HAVE_CONFIG_H
@@ -80,7 +80,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MIKMOD =
     {
         extensions_mikmod,
         "Play modules through MikMod",
-        "Torbjörn Andersson <d91tan@Update.UU.SE>",
+        "TorbjÃ¶rn Andersson <d91tan@Update.UU.SE>",
         "http://mikmod.raphnet.net/"
     },
 

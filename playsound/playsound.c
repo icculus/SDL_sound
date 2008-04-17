@@ -190,7 +190,7 @@ static void output_credits(void)
            "distribute copies of it under certain conditions. There is\n"
            "absolutely NO WARRANTY for playsound.\n"
            "\n"
-           "    Written by Ryan C. Gordon, Torbjörn Andersson, Max Horn,\n"
+           "    Written by Ryan C. Gordon, TorbjÃ¶rn Andersson, Max Horn,\n"
            "     Tsuyoshi Iguchi, Tyler Montbriand, Darrell Walisser,\n"
            "     and a cast of thousands.\n"
            "\n"
