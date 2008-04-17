@@ -28,7 +28,7 @@
  *
  * Please see the file COPYING in the source's root directory.
  *
- *  This file written by Torbjörn Andersson (d91tan@Update.UU.SE)
+ *  This file written by TorbjÃ¶rn Andersson (d91tan@Update.UU.SE)
  */
 
 #if HAVE_CONFIG_H
@@ -97,7 +97,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MODPLUG =
     {
         extensions_modplug,
         "Play modules through ModPlug",
-        "Torbjörn Andersson <d91tan@Update.UU.SE>",
+        "TorbjÃ¶rn Andersson <d91tan@Update.UU.SE>",
         "http://modplug-xmms.sourceforge.net/"
     },
 

@@ -2,7 +2,8 @@
  * CHANGELOG.
  */
 
-04172008 - Look for Speex includes in new directory.
+04172008 - Look for Speex includes in new directory. Converted all text
+           encoding from ISO-8859-1 to UTF-8.
 04112008 - Check if Speex header has bogus data (CVE-2008-1686).
 08062007 - Updated my email address. Added -fvisibility=hidden support.
 07152007 - Minor correction in Timidity resampling code (Thanks, Sam!).
@@ -67,7 +68,7 @@
 08222002 - Borland project files in CVS, thanks to Dominique Louis. There are
            project files for C++ Builder 6 (Windows), C++ Builder for Linux
            (aka Kylix 3) and Borland's C++ Command line compiler.
-08172002 - Timidity memory leak cleanup by Torbjörn.
+08172002 - Timidity memory leak cleanup by TorbjÃ¶rn.
 07292002 - Valgrind cleanups; memory leak patches, etc.
 07212002 - done_flag was not being reset between files in playsound, so the
            first file would playback, and then any following tracks in a given
@@ -75,7 +76,7 @@
 07132002 - More altcvt fixes from Frank Ranostaj.
 07122002 - Changed inline keyword to compile universally.
 07102002 - Fixed a bug in command line handling in playsound.c. Fixes from
-           Torbjörn and myself to get flac.c friendly between versions of
+           TorbjÃ¶rn and myself to get flac.c friendly between versions of
            libFLAC. Mutex'd a potential race condition in decoders/modplug.c.
            FIXME cleanups here and there.
 07092002 - Fixed typo in documentation (SDL_sound.h).
@@ -98,9 +99,9 @@
            checks if setbuf() is available.
 06292002 - More altcvt fixes from Frank Ranostaj...mostly working now?
 06252002 - More altcvt fixes from Frank Ranostaj.
-06132002 - Patch from Torbjörn to fix stereo AIFF files.
+06132002 - Patch from TorbjÃ¶rn to fix stereo AIFF files.
 06212002 - More altcvt fixes from Frank Ranostaj.
-06132002 - Patch from Torbjörn to make the WAV decoder more tolerant.
+06132002 - Patch from TorbjÃ¶rn to make the WAV decoder more tolerant.
 06122002 - Committed some altcvt enhancements from Frank Ranostaj.
 06112002 - Fixed some debug messages in smpeg.c and mpglib.c.
 06072002 - Manpages! Finally installed Doxygen and scratched together a
@@ -108,9 +109,9 @@
            nice API reference.
 06062002 - Added URLs for official and unofficial versions of ModPlug in
            decoders/modplug.c. Cleaned up some FIXMEs.
-05222002 - Torbjörn sent in some more fixes for altcvt: mono to stereo
+05222002 - TorbjÃ¶rn sent in some more fixes for altcvt: mono to stereo
            conversion works, now.
-05222002 - Torbjörn sent in some initial cleanups and fixes for altcvt, and
+05222002 - TorbjÃ¶rn sent in some initial cleanups and fixes for altcvt, and
            fixed a bug in playsound when not all three of --rate, --channels
            and --format are specified.
 05202002 - Some .cvsignores from Max and me. Added a seek implementations for
@@ -127,7 +128,7 @@
            experimental decoder that uses Apple's QuickTime libraries
            (see decoders/quicktime.c). I've included the Mac project files
            in CVS, now. Removed all use of alloca() from playsound.
-04242002 - Added --seek option and bugfixes to playsound.c. Torbjörn comes
+04242002 - Added --seek option and bugfixes to playsound.c. TorbjÃ¶rn comes
            through with seek support for the FLAC, MIDI, and ModPlug
            decoders (and some stub code for MikMod), and a bugfix for sample
            flag manipulation in the base library (and his own --seek code for
@@ -176,12 +177,12 @@
 02212002 - Changed SMPEG's URL to point to the icculus.org site. Added an
            mpglib decoder (internal to SDL_sound; relies on no external libs)
            and changes mp3.c to smpeg.c (and other associated things).
-02112002 - Committed a patch from Torbjörn to fix incorrect memory accesses
+02112002 - Committed a patch from TorbjÃ¶rn to fix incorrect memory accesses
            in the Timidity code. Changed the magic number in the AU decoder
            to be bigendian (seems appropriate). Updated README for
            completeness, and TODO for accuracy. Darrell sent in updated
            MacOS X Project Builder files (on the website).
-02072002 - Committed a patch Torbjörn sent in awhile ago for preventing
+02072002 - Committed a patch TorbjÃ¶rn sent in awhile ago for preventing
            confusion with Timidity++-specific stuff in the timidity.cfg file.
            Tyler Montbriand sent in an updated Visual C package.
            Updated SDL_sound.h's comments a little. Upped version to 0.1.5.
@@ -192,7 +193,7 @@
            files for MacOS 9. Sweet!
 01232002 - Max fixed decoders/Makefile.am to work with seperate build
            directories, and corrected some dates in this file.
-01192002 - Torbjörn sent in patches implementing the rewind method for the
+01192002 - TorbjÃ¶rn sent in patches implementing the rewind method for the
            rest of the decoders except shn.c, for which I added a kludged
            implementation. Added more info to the README. Hunted down the
            reason why SMPEG can't decode before calling SDL_OpenAudio(), and
@@ -210,15 +211,15 @@
            point. I implemented the WAV, VOC, AU, AIFF, and RAW ones, for now.
            (...and skeleton.c, for what that's worth.) A few tweaks in the
            core API implementation to fix unlikely but possible leaks.
-01112002 - Mattias Engdegård sent in an .AU decoder. Nice! He also tweaked
+01112002 - Mattias EngdegÃ¥rd sent in an .AU decoder. Nice! He also tweaked
            playsound to try and wait until SDL has completed playing a given
            sound before closing the audio device. Changed a macro in
            decoders/shn.c to be more uniform with the other decoders.
            SDL_sound error messages are now maintained on a per-thread basis,
            and do not interfere with SDL_[GS]etError() anymore.
-01112002 - Committed the rest of Torbjörn's MOD patches, to clean up file
+01112002 - Committed the rest of TorbjÃ¶rn's MOD patches, to clean up file
            extension handling.
-01092002 - Torbjörn comes through with a ModPlug-based decoder, which should
+01092002 - TorbjÃ¶rn comes through with a ModPlug-based decoder, which should
            work nicely for decoding multiple .MODs at once. Now we need to
            figure out what to do with two decoders that can decode the same
            file. For now, if you explicitly want either MikMod or ModPlug, you
@@ -230,7 +231,7 @@
            Added some notes to the top of COPYING about other libraries, etc.
            A real MIDI decoder (using a hacked version of the hacked version
            of Timidity from SDL_mixer) is now in place and working well,
-           thanks to Torbjörn.
+           thanks to TorbjÃ¶rn.
 01012002 - Happy New Year. Added some debug output to wav.c for future
            codecs (GSM comes to mind). Fixed the SMPEG decoder's URL to point
            to Loki's webpage.
@@ -256,7 +257,7 @@
            end Max's torment.  :)  ) Tweaks to wav.c, and work on aiff.c to
            make it easier to support multiple audio formats (for compression
            handling later down the road).
-11302001 - Torbjörn and I make Sound_DecodeAll() more robust: checks for
+11302001 - TorbjÃ¶rn and I make Sound_DecodeAll() more robust: checks for
            previous decoding failures and sets an appropriate error, handles
            decoders that change their buffers on the fly (such as the FLAC
            decoder), and deals with out-of-memory conditions more gracefully.
@@ -266,11 +267,11 @@
            theoretical bugs in Sound_FreeSample(). playsound no longer
            buffers stdout and stderr. Updated Sound_DecodeAll()'s comments in
            SDL_sound.h ...
-11192001 - FLAC decoder cleanups from Torbjörn.
-11092001 - Torbjörn fixes playsound's audio callback after I broke it, again.
+11192001 - FLAC decoder cleanups from TorbjÃ¶rn.
+11092001 - TorbjÃ¶rn fixes playsound's audio callback after I broke it, again.
            A bug in configure.in was preventing SMPEG from being used unless
            --enable-debug was set; fixed. Changed this file to list latest
-           changes first. Torbjörn submitted a FLAC decoder that utilizes
+           changes first. TorbjÃ¶rn submitted a FLAC decoder that utilizes
            libFLAC (http://flac.sf.net/). Cool.
 11012001 - API COMPATIBILITY BREAKAGE: Decoders can now list multiple file
            extensions each. Playsound has been updated to handle this.
@@ -279,14 +280,14 @@
 10232001 - Rewrote playsound.c's audio_callback() to no longer need the
            overflow buffer hack, which streamlines it a little and trims the
            memory requirements for playsound by about 16 kilobytes.
-10172001 - Torbjörn catches a problem with the overflow buffer in playsound's
+10172001 - TorbjÃ¶rn catches a problem with the overflow buffer in playsound's
            audio callback.
-10152001 - Torbjörn sends in a default sample format for the MIDI decoder,
+10152001 - TorbjÃ¶rn sends in a default sample format for the MIDI decoder,
            and the starts of the audio conversion funcitonality (ripped
            from SDL). Officially released 0.1.3. Added LICENSE and
-           CHANGELOG to the distribution. (Again, from Torbjörn) added in
+           CHANGELOG to the distribution. (Again, from TorbjÃ¶rn) added in
            the start of a tweaked audio converter.
-10122001 - Torbjörn Andersson submitted command line enhancements to
+10122001 - TorbjÃ¶rn Andersson submitted command line enhancements to
            playsound, and I cleaned up the --help output.
 10092001 - Patches to shn.c for Visual C compatibility. Visual C project files
            available from the website. Changed Corona688 to Tyler Montbriand
@@ -305,24 +306,24 @@
 10032001 - After hours of tracking down a bogus pointer, the SHN decoder works!
            I can die happy. :)  Max placated me with an --enable-debug option
            so I could stop my whining. Other autoconf goodies (such as
-           reenabling -Werror for debug builds, etc). Torbjörn brings in a
+           reenabling -Werror for debug builds, etc). TorbjÃ¶rn brings in a
            MIDI decoder, which reads from a Timidity process through a pipe.
            Changed playsound to open the audio device to match the properties
            of each sound file, which results in less conversion (and therefore,
            more chance of correct playback).
 10022001 - Changed a comment in mod.c to not refer to "the mikmod
-           directory" anymore. Committed Torbjörn's patch for MP3 detection.
+           directory" anymore. Committed TorbjÃ¶rn's patch for MP3 detection.
            (better late than never). __Sound_strcasecmp() now handles NULL
            strings gracefully, fixing the crash with "playsound bootstrap".
            More work on the SHN decoder.
-10012001 - Fixed a memory leak that Torbjörn found in the MOD decoder.
+10012001 - Fixed a memory leak that TorbjÃ¶rn found in the MOD decoder.
 09252001 - More autoconf work. Gave Max Horn write access to the CVS
            repository, so I don't drive him nuts tweaking this thing.  :)
            Fixed a const complaint and some other stuff needed for compilation
            under Visual C++ 6.0 (no, it isn't ported yet). Put the SHN source
            in CVS, even though it isn't ready (and doesn't even compile). Do
            NOT enable it in your build!
-09242001 - Thank goodness, Torbjörn came through with the MP3 fix. Apparently
+09242001 - Thank goodness, TorbjÃ¶rn came through with the MP3 fix. Apparently
            SMPEG mixes each chunk of decoded data with whatever is already
            in the buffer you give it. I hate that. I'm going to patch SMPEG
            to let the programmer enable and disable that behaviour in a given
@@ -333,7 +334,7 @@
            robust in general: fixed potential overflow in audio_callback,
            made it chatter less, made it take multiple files and some other
            command lines. Initial autoconf support, thanks to Max Horn.
-09222001 - Torbjörn Andersson strikes again, with a collection of patches.
+09222001 - TorbjÃ¶rn Andersson strikes again, with a collection of patches.
            First, some cosmetic tweaks for decoders/aiff.c. Next, a MOD player
            based on MikMod. This inspired me to add two more methods to
            Sound_DecoderFunctions: init() and quit(). Third, a fix to
@@ -344,7 +345,7 @@
            as unavailable at runtime, and SDL_sound now handles this.
            Added [LIB|INC]PATH_[OGG|MOD]. Bigendian fixes; now works on
            PowerPC Linux. MikMod tweaks. Changed version to 0.1.2.
-09202001 - Torbjörn Andersson submitted several patches: fixed a comment in
+09202001 - TorbjÃ¶rn Andersson submitted several patches: fixed a comment in
            the .WAV decoder (whoops...screwed up my own search-and-replace.
            Hah.), made an attempt at putting multiple sound streams behind
            one RWops (gotta think on that one first), and, most importantly,
