@@ -3,6 +3,8 @@ More immediate:
 - Finish implementing seek() method in decoders, see below.
 - Add a sdlsound-config script?
 - Make sure we can build shared libs on Cygwin, BeOS, Mac OS X...
+- Move to CMake
+- Up default optimizations to -O3?
 
 Decoders still needing seek() method:
   (If decoder can't seek, clean up the stub and report an error.)
