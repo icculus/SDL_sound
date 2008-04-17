@@ -276,7 +276,7 @@ AC_ARG_ENABLE(speex,
 if test x$enable_speex = xyes; then
   AC_CHECK_HEADER(ogg/ogg.h, have_ogg_hdr=yes)
   AC_CHECK_LIB(ogg, ogg_sync_init, have_ogg_lib=yes)
-  AC_CHECK_HEADER(speex.h, have_speex_hdr=yes)
+  AC_CHECK_HEADER(speex/speex.h, have_speex_hdr=yes)
   AC_CHECK_LIB(speex, speex_bits_init, have_speex_lib=yes)
   if test "x$have_ogg_hdr" = "xyes" -a "x$have_ogg_lib" = "xyes" -a "x$have_speex_hdr" = "xyes" -a "x$have_speex_lib" = "xyes"; then
     LIBS="$LIBS -logg -lspeex"
