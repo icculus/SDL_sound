@@ -22,6 +22,7 @@ SDL_sound _REQUIRES_ Simple Directmedia Layer (SDL) to function, and cannot
 Some optional external libraries that SDL_sound can use and where to find them:
  SMPEG (used to decode MP3s): http://icculus.org/smpeg/
  libvorbisfile (used to decode OGGs): http://www.xiph.org/ogg/vorbis/
+ libSpeex (used to decode SPXs): http://speex.org/
  libFLAC (used to decode FLACs): http://flac.sourceforge.net/
  libModPlug (used to decode MODs, etc): http://modplug-xmms.sourceforge.net/
  libMikMod (used to decode MODs, etc, too): http://www.mikmod.org/
