@@ -51,8 +51,8 @@
 #include <assert.h>
 
 #include <ogg/ogg.h>
-#include <speex.h>
-#include <speex_header.h>
+#include <speex/speex.h>
+#include <speex/speex_header.h>
 
 #include "SDL_sound.h"
 
