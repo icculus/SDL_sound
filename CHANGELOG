@@ -2,6 +2,7 @@
  * CHANGELOG.
  */
 
+04182008 - Include <math.h> in shn.c.
 04172008 - Look for Speex includes in new directory. Converted all text
            encoding from ISO-8859-1 to UTF-8. Fixed "make dist" script for
            dealing with Subversion instead of CVS. Added Speex to the README.
