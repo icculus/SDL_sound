@@ -2,6 +2,8 @@
  * CHANGELOG.
  */
 
+04192008 - Apparently MICRO_VERSION in configure.in doesn't do what I think;
+           reset for binary compatibility (thanks, Hans!).
 04182008 - Include <math.h> in shn.c.
 04172008 - Look for Speex includes in new directory. Converted all text
            encoding from ISO-8859-1 to UTF-8. Fixed "make dist" script for
