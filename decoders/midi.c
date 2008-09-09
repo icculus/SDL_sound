@@ -23,7 +23,7 @@
  * This driver handles MIDI data through a stripped-down version of TiMidity.
  *  See the documentation in the timidity subdirectory.
  *
- * Please see the file COPYING in the source's root directory.
+ * Please see the file LICENSE.txt in the source's root directory.
  *
  *  This file written by Torbjörn Andersson. (d91tan@Update.UU.SE)
  */

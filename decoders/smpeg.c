@@ -30,7 +30,7 @@
  *  doesn't depend on external libraries (the decoder itself is part of
  *  SDL_sound), and may be more efficient, but less flexible than SMPEG. YMMV.
  *
- * Please see the file COPYING in the source's root directory.
+ * Please see the file LICENSE.txt in the source's root directory.
  *
  *  This file written by Ryan C. Gordon. (icculus@icculus.org)
  */

@@ -36,7 +36,7 @@
  * standard; basically the parts of it that I can easily understand and test.
  * It's a start, though.
  *
- * Please see the file COPYING in the source's root directory.
+ * Please see the file LICENSE.txt in the source's root directory.
  *
  *  This file was written by Torbjörn Andersson. (d91tan@Update.UU.SE)
  */

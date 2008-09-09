@@ -32,7 +32,7 @@
  *    SDL_mixer: http://www.libsdl.org/projects/SDL_mixer/
  *    sox: http://www.freshmeat.net/projects/sox/
  *
- * Please see the file COPYING in the source's root directory.
+ * Please see the file LICENSE.txt in the source's root directory.
  *
  *  This file written by Ryan C. Gordon. (icculus@icculus.org)
  */

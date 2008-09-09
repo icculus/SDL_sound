@@ -22,7 +22,7 @@
  * Formats supported: 8 and 16 bit linear PCM, 8 bit µ-law.
  * Files without valid header are assumed to be 8 bit µ-law, 8kHz, mono.
  *
- * Please see the file COPYING in the source's root directory.
+ * Please see the file LICENSE.txt in the source's root directory.
  *
  *  This file written by Mattias Engdegård. (f91-men@nada.kth.se)
  */
