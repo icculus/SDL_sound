@@ -21,7 +21,7 @@
  * Module player for SDL_sound. This driver handles anything MikMod does, and
  *  is based on SDL_mixer.
  *
- * Please see the file COPYING in the source's root directory.
+ * Please see the file LICENSE.txt in the source's root directory.
  *
  *  This file written by Torbjörn Andersson (d91tan@Update.UU.SE)
  */

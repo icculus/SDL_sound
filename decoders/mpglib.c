@@ -30,7 +30,7 @@
  * mpglib is an LGPL'd portion of mpg123, which can be found in its original
  *  form at: http://www.mpg123.de/
  *
- * Please see the file COPYING in the source's root directory. The included
+ * Please see the file LICENSE.txt in the source's root directory. The included
  *  source code for mpglib falls under the LGPL, which is the same license as
  *  SDL_sound (so you can consider it a single work).
  *

@@ -26,7 +26,7 @@
  *  available:  http://freecraft.net/snapshots/
  *  (Look for something like "libmodplug-johns-*.tar.gz")
  *
- * Please see the file COPYING in the source's root directory.
+ * Please see the file LICENSE.txt in the source's root directory.
  *
  *  This file written by Torbjörn Andersson (d91tan@Update.UU.SE)
  */

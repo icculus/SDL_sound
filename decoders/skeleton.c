@@ -27,7 +27,7 @@
  * None of this code, even the parts that LOOK right, have been compiled,
  *  so you cut-and-paste at your own risk.
  *
- * Please see the file COPYING in the source's root directory.
+ * Please see the file LICENSE.txt in the source's root directory.
  *
  *  This file written by Ryan C. Gordon. (icculus@icculus.org)
  */
