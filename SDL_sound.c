@@ -928,8 +928,9 @@ int Sound_Seek(Sound_Sample *sample, Uint32 ms)
 
 Sint32 Sound_GetDuration(Sound_Sample *sample)
 {
+    Sound_SampleInternal *internal;
     BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, -1);
-    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    internal = (Sound_SampleInternal *) sample->opaque;
     return(internal->total_time);
 } /* Sound_GetDuration */
 
