@@ -47,65 +47,22 @@
 
 /* The various decoder drivers... */
 
-#if (defined SOUND_SUPPORTS_SMPEG)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_SMPEG;
-#endif
-
-#if (defined SOUND_SUPPORTS_MPGLIB)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MPGLIB;
-#endif
-
-#if (defined SOUND_SUPPORTS_MIKMOD)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MIKMOD;
-#endif
-
-#if (defined SOUND_SUPPORTS_MODPLUG)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MODPLUG;
-#endif
-
-#if (defined SOUND_SUPPORTS_WAV)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_WAV;
-#endif
-
-#if (defined SOUND_SUPPORTS_AIFF)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_AIFF;
-#endif
-
-#if (defined SOUND_SUPPORTS_AU)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_AU;
-#endif
-
-#if (defined SOUND_SUPPORTS_OGG)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_OGG;
-#endif
-
-#if (defined SOUND_SUPPORTS_VOC)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_VOC;
-#endif
-
-#if (defined SOUND_SUPPORTS_RAW)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_RAW;
-#endif
-
-#if (defined SOUND_SUPPORTS_SHN)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_SHN;
-#endif
-
-#if (defined SOUND_SUPPORTS_MIDI)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_MIDI;
-#endif
-
-#if (defined SOUND_SUPPORTS_FLAC)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_FLAC;
-#endif
-
-#if (defined SOUND_SUPPORTS_QUICKTIME)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_QuickTime;
-#endif
-
-#if (defined SOUND_SUPPORTS_SPEEX)
-extern const Sound_DecoderFunctions  __Sound_DecoderFunctions_SPEEX;
-#endif
+/* All these externs may be missing; we check SOUND_SUPPORTS_xxx before use. */
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_SMPEG;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MPGLIB;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MIKMOD;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MODPLUG;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_AIFF;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_AU;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_OGG;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_VOC;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_SHN;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MIDI;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_FLAC;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_QuickTime;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_SPEEX;
 
 typedef struct
 {
