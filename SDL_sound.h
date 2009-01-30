@@ -42,7 +42,7 @@
  * Support is in place or planned for the following sound formats:
  *   - .WAV  (Microsoft WAVfile RIFF data, internal.)
  *   - .VOC  (Creative Labs' Voice format, internal.)
- *   - .MP3  (MPEG-1 Layer 3 support, via the SMPEG and mpglib libraries.)
+ *   - .MP3  (MPEG-1 Layer 3 support, via libmpg123.)
  *   - .MID  (MIDI music converted to Waveform data, internal.)
  *   - .MOD  (MOD files, via MikMod and ModPlug.)
  *   - .OGG  (Ogg files, via Ogg Vorbis libraries.)

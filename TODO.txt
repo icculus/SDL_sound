@@ -10,7 +10,6 @@ Decoders still needing seek() method:
   (If decoder can't seek, clean up the stub and report an error.)
 - mikmod.c
 - shn.c
-- mpglib.c
 - quicktime.c
 
 General stuff TODO:
