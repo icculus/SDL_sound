@@ -54,9 +54,9 @@
 #define DEFAULT_DECODEBUF 16384
 #define DEFAULT_AUDIOBUF  4096
 
-#define PLAYSOUND_VER_MAJOR  0
-#define PLAYSOUND_VER_MINOR  1
-#define PLAYSOUND_VER_PATCH  5
+#define PLAYSOUND_VER_MAJOR  1
+#define PLAYSOUND_VER_MINOR  0
+#define PLAYSOUND_VER_PATCH  0
 
 
 static const char *option_list[] =
