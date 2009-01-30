@@ -98,6 +98,7 @@ static void print_decoders(const char *kind, char **decoders)
             SNDDBG((" %s", *decoders));
         } while (*(++decoders));
     } /* else */
+    SNDDBG(("\n"));
 } /* print_decoders */
 
 
