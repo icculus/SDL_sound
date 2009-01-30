@@ -3,7 +3,11 @@ Please note that the included source from Timidity, the MIDI decoder, is also
  separately under the GNU GPL, or the Perl Artistic License. Those licensing
  terms are not reprinted here, but can be found on the web easily.
 
-Other external libraries (such as Ogg Vorbis, SMPEG, etc) have their own
+The included source for libmpg123, the MP3 decoder, is also licensed under the
+ following terms (GNU LGPL). We make no promises about patents you might
+ violate or royalty payments you might have to pay with this or any decoder.
+
+Other external libraries (such as Ogg Vorbis, mikmod, etc) have their own
  licenses which you should be aware of before including the related code
  in your configuration. Most (if not all) are also under the LGPL, but are
  external projects and we've got no control over them.

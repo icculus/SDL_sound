@@ -5,8 +5,7 @@
 Initial API interface and implementation,
 RAW driver,
 VOC driver,
-SMPEG driver,
-MPGLIB driver,
+MPG123 driver,
 WAV driver,
 OGG driver,
 SHN driver,
@@ -18,8 +17,7 @@ Bug fixes,
 FreeBSD testing:
     Tsuyoshi Iguchi
 
-Code cleanups,
-SMPEG fixes,
+Code cleanups and fixes,
 AIFF driver,
 MikMod driver,
 MIDI driver,
@@ -56,7 +54,7 @@ Bugfixes and stuff:
 FLAC 1.1.3 updates:
     Josh Coalson
 
-SMPEG fixes:
+Fixes:
     Chris Nelson
 
 Other stuff:

@@ -48,8 +48,7 @@
 /* The various decoder drivers... */
 
 /* All these externs may be missing; we check SOUND_SUPPORTS_xxx before use. */
-extern const Sound_DecoderFunctions __Sound_DecoderFunctions_SMPEG;
-extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MPGLIB;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MPG123;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MIKMOD;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MODPLUG;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV;
@@ -72,12 +71,8 @@ typedef struct
 
 static decoder_element decoders[] =
 {
-#if (defined SOUND_SUPPORTS_SMPEG)
-    { 0, &__Sound_DecoderFunctions_SMPEG },
-#endif
-
-#if (defined SOUND_SUPPORTS_MPGLIB)
-    { 0, &__Sound_DecoderFunctions_MPGLIB },
+#if (defined SOUND_SUPPORTS_MPG123)
+    { 0, &__Sound_DecoderFunctions_MPG123 },
 #endif
 
 #if (defined SOUND_SUPPORTS_MODPLUG)

@@ -19,10 +19,10 @@ else
 TIMIDITY_LIB =
 endif
 
-if USE_MPGLIB
-MPGLIB_LIB = decoders/mpglib/libmpglib.la
+if USE_LIBMPG123
+MPG123_LIB = decoders/libmpg123/libmpg123.la
 else
-MPGLIB_LIB =
+MPG123_LIB =
 endif
 
 libSDL_sound_la_LDFLAGS = 		\
@@ -30,7 +30,7 @@ libSDL_sound_la_LDFLAGS = 		\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 libSDL_sound_la_LIBADD =	\
 	decoders/libdecoders.la	\
-	$(TIMIDITY_LIB) $(MPGLIB_LIB)
+	$(TIMIDITY_LIB) $(MPG123_LIB)
 
 EXTRA_DIST =	\
 	CREDITS \

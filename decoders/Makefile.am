@@ -1,6 +1,6 @@
 noinst_LTLIBRARIES = libdecoders.la
 
-SUBDIRS = timidity mpglib
+SUBDIRS = timidity libmpg123
 
 INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/decoders/timidity
 
@@ -9,8 +9,7 @@ libdecoders_la_SOURCES =	\
 	au.c		\
 	mikmod.c	\
 	modplug.c	\
-	mpglib.c	\
-	smpeg.c		\
+	mpg123.c	\
 	ogg.c		\
 	raw.c		\
 	shn.c		\
