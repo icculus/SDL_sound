@@ -291,7 +291,7 @@ fi
 
 dnl Check for speex
 AC_ARG_ENABLE(speex,
-[  --enable-speex               enable SPX decoding via libspeex [default=yes]],
+[  --enable-speex             enable SPX decoding via libspeex [default=yes]],
               , enable_speex=yes)
 if test x$enable_speex = xyes; then
   AC_CHECK_HEADER(ogg/ogg.h, have_ogg_hdr=yes)
