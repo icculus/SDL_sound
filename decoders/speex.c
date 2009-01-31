@@ -67,7 +67,7 @@ static Uint32 SPEEX_read(Sound_Sample *sample);
 static int SPEEX_rewind(Sound_Sample *sample);
 static int SPEEX_seek(Sound_Sample *sample, Uint32 ms);
 
-static const char *extensions_speex[] = { "spx", NULL };
+static const char *extensions_speex[] = { "SPX", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_SPEEX =
 {
     {
