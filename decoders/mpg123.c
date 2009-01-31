@@ -249,8 +249,6 @@ static int MPG123_open(Sound_Sample *sample, const char *ext)
         seekable = 1;
     } /* if */
 
-    SNDDBG(("MPG123: Accepting data stream.\n"));
-
     internal->decoder_private = mp;
     sample->actual.rate = rate;
     sample->actual.channels = channels;
@@ -272,6 +270,8 @@ static int MPG123_open(Sound_Sample *sample, const char *ext)
     */
     else
         goto mpg123_open_failed;
+
+    SNDDBG(("MPG123: Accepting data stream.\n"));
 
     sample->flags = SOUND_SAMPLEFLAG_NONE;
     internal->total_time = -1;
