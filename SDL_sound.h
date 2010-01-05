@@ -79,6 +79,8 @@ extern "C" {
 
 #ifdef SDL_SOUND_DLL_EXPORTS
 #  define SNDDECLSPEC __declspec(dllexport)
+#elif (__GNUC__ >= 3)
+#  define SNDDECLSPEC __attribute__((visibility("default")))
 #else
 #  define SNDDECLSPEC
 #endif

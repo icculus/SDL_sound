@@ -58,6 +58,30 @@ AM_PROG_LIBTOOL
 
 
 dnl ---------------------------------------------------------------------
+dnl Have GCC's -fvisibility option?
+dnl ---------------------------------------------------------------------
+AC_MSG_CHECKING(for GCC -fvisibility=hidden option)
+have_gcc_fvisibility=no
+visibility_CFLAGS="-fvisibility=hidden"
+save_CFLAGS="$CFLAGS"
+CFLAGS="$save_CFLAGS $visibility_CFLAGS"
+AC_TRY_COMPILE([
+#if !defined(__GNUC__) || __GNUC__ < 4
+#error SDL only uses visibility attributes in GCC 4 or newer
+#endif
+],[
+],[
+have_gcc_fvisibility=yes
+])
+AC_MSG_RESULT($have_gcc_fvisibility)
+CFLAGS="$save_CFLAGS"
+
+if test x$have_gcc_fvisibility = xyes; then
+    CFLAGS="$CFLAGS $visibility_CFLAGS"
+fi
+
+
+dnl ---------------------------------------------------------------------
 dnl Debug mode?
 dnl ---------------------------------------------------------------------
 
