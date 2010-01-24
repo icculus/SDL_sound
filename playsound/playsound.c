@@ -1014,7 +1014,8 @@ int main(int argc, char **argv)
                         "Couldn't fully decode \"%s\"!\n"
                         "  reason: [%s].\n"
                         "  (playing first %lu bytes of decoded data...)\n",
-                        filename, Sound_GetError(), global_state.decoded_bytes);
+                        filename, Sound_GetError(),
+                        (unsigned long) global_state.decoded_bytes);
             } /* if */
             else
             {
