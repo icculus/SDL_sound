@@ -719,6 +719,40 @@ static int valid_cmdline(int argc, char **argv)
 } /* valid_cmdline */
 
 
+static void report_filename(const char *filename)
+{
+    const char *icon = "playsound";
+    size_t len = 0;
+    char *buf = NULL;
+    char *ptr = NULL;
+
+    fprintf(stdout, "%s: Now playing [%s]...\n", icon, filename);
+
+    /*
+     * Bleeding edge versions of SDL 1.2 can use this to set the
+     *  PulseAudio application name. It's a harmless no-op elsewhere,
+     *  and 1.3 will probably have a formal API for this.
+     */
+    ptr = strrchr(filename, '/');
+    if (ptr != NULL)
+        filename = ptr + 1;
+    ptr = strrchr(filename, '\\');
+    if (ptr != NULL)
+        filename = ptr + 1;
+
+    len = strlen(filename) + strlen(icon) + 3;
+    buf = (char *) malloc(len);
+    if (buf == NULL)
+        SDL_WM_SetCaption(icon, icon);
+    else
+    {
+        snprintf(buf, len, "%s: %s", icon, filename);
+        SDL_WM_SetCaption(buf, icon);
+        free(buf);
+    } /* else */
+} /* report_filename */
+
+
 int main(int argc, char **argv)
 {
     Sound_AudioInfo sound_desired;
@@ -981,6 +1015,21 @@ int main(int argc, char **argv)
         sdl_desired.callback = audio_callback;
         sdl_desired.userdata = sample;
 
+        /* grr, SDL_CloseAudio() calls SDL_QuitSubSystem internally. */
+        if (!SDL_WasInit(SDL_INIT_AUDIO))
+        {
+            if (SDL_Init(SDL_INIT_AUDIO) == -1)
+            {
+                fprintf(stderr, "SDL_Init() failed!\n"
+                                "  reason: [%s].\n", SDL_GetError());
+                Sound_Quit();
+                SDL_Quit();
+                return(42);
+            } /* if */
+        } /* if */
+
+        report_filename(filename);
+
         if (SDL_OpenAudio(&sdl_desired, NULL) < 0)
         {
             fprintf(stderr, "Couldn't open audio device!\n"
@@ -989,8 +1038,6 @@ int main(int argc, char **argv)
             SDL_Quit();
             return(42);
         } /* if */
-
-        fprintf(stdout, "Now playing [%s]...\n", filename);
 
         if (global_state.predecode)
         {
