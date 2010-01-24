@@ -312,22 +312,11 @@ void sigint_catcher(int signum)
     Uint32 ticks = SDL_GetTicks();
 
     assert(signum == SIGINT);
+    if (done_flag < 0)
+        return;  /* mashing CTRL-C, we get it already. */
 
-    if ((last_sigint != 0) && (ticks - last_sigint < 500))
-    {
-        SDL_PauseAudio(1);
-        SDL_CloseAudio();
-        Sound_Quit();
-        SDL_Quit();
-        deinit_archive();
-        exit(1);
-    } /* if */
-
-    else
-    {
-        last_sigint = ticks;
-        done_flag = 1;
-    } /* else */
+    done_flag = ((last_sigint != 0) && (ticks - last_sigint < 500)) ? -1 : 1;
+    last_sigint = ticks;
 } /* sigint_catcher */
 #endif
 
@@ -1051,12 +1040,15 @@ int main(int argc, char **argv)
         Sound_FreeSample(sample);
 
         close_archive(filename);
+
+        if (done_flag < 0)
+            break;
     } /* for */
 
     Sound_Quit();
     SDL_Quit();
     deinit_archive();
-    return(0);
+    return((done_flag < 0) ? 1 : 0);
 } /* main */
 
 /* end of playsound.c ... */
