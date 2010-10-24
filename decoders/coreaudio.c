@@ -1,6 +1,6 @@
 /*
  * SDL_sound Core Audio backend
- * Copyright (C) 2010 Eric Wing
+ * Copyright (C) 2010 Eric Wing <ewing . public @ playcontrol.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -40,8 +40,6 @@ typedef struct CoreAudioFileContainer
 	AudioStreamBasicDescription* outputFormat;
 } CoreAudioFileContainer;
 
-//http://developer.apple.com/library/ios/#documentation/MusicAudio/Reference/AudioFileConvertRef/Reference/reference.html
-
 static int CoreAudio_init(void);
 static void CoreAudio_quit(void);
 static int CoreAudio_open(Sound_Sample *sample, const char *ext);
@@ -63,6 +61,7 @@ static const char *extensions_coreaudio[] =
 	"aac",
 	"caf",
 	"Sd2f",
+	"Sd2",
 	"au",
 	"next",
 	"mp2",
@@ -71,6 +70,9 @@ static const char *extensions_coreaudio[] =
 	"3gpp",
 	"3gp2",
 	"amrf",
+	"amr",
+	"ima4",
+	"ima",
 	NULL 
 };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_CoreAudio =
@@ -78,7 +80,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_CoreAudio =
     {
         extensions_coreaudio,
         "Decode audio through Core Audio through",
-        "Eric Wing <ewing.public@playcontrol.net>",
+        "Eric Wing <ewing . public @ playcontrol.net>",
         "http://playcontrol.net"
     },
 	
@@ -103,7 +105,25 @@ static void CoreAudio_quit(void)
     /* it's a no-op. */
 } /* CoreAudio_quit */
 
-
+/*
+   http://developer.apple.com/library/ios/#documentation/MusicAudio/Reference/AudioFileConvertRef/Reference/reference.html
+   kAudioFileAIFFType = 'AIFF',
+   kAudioFileAIFCType            = 'AIFC',
+   kAudioFileWAVEType            = 'WAVE',
+   kAudioFileSoundDesigner2Type  = 'Sd2f',
+   kAudioFileNextType            = 'NeXT',
+   kAudioFileMP3Type             = 'MPG3',
+   kAudioFileMP2Type             = 'MPG2',
+   kAudioFileMP1Type             = 'MPG1',
+   kAudioFileAC3Type             = 'ac-3',
+   kAudioFileAAC_ADTSType        = 'adts',
+   kAudioFileMPEG4Type           = 'mp4f',
+   kAudioFileM4AType             = 'm4af',
+   kAudioFileCAFType             = 'caff',
+   kAudioFile3GPType             = '3gpp',
+   kAudioFile3GP2Type            = '3gp2',
+   kAudioFileAMRType             = 'amrf'
+*/
 static AudioFileTypeID CoreAudio_GetAudioTypeForExtension(const char* file_extension)
 {
 	if( (__Sound_strcasecmp(file_extension, "aif") == 0)
@@ -151,6 +171,7 @@ static AudioFileTypeID CoreAudio_GetAudioTypeForExtension(const char* file_exten
 		return kAudioFileCAFType;
 	}
 	else if( (__Sound_strcasecmp(file_extension, "Sd2f") == 0)
+		|| (__Sound_strcasecmp(file_extension, "sd2") == 0)
 	)
 	{
 		return kAudioFileSoundDesigner2Type;
@@ -187,33 +208,23 @@ static AudioFileTypeID CoreAudio_GetAudioTypeForExtension(const char* file_exten
 		return kAudioFile3GP2Type;
 	}
 	else if( (__Sound_strcasecmp(file_extension, "amrf") == 0)
+		|| (__Sound_strcasecmp(file_extension, "amr") == 0)
 	)
 	{
 		return kAudioFileAMRType;
+	}
+	else if( (__Sound_strcasecmp(file_extension, "ima4") == 0)
+		|| (__Sound_strcasecmp(file_extension, "ima") == 0)
+	)
+	{
+		/* not sure about this one */
+		return kAudioFileCAFType;
 	}
 	else
 	{
 		return 0;
 	}
-  /*
-   kAudioFilhttp://developer.apple.com/library/ios/#documentation/MusicAudio/Reference/AudioFileConvertRef/Reference/reference.htmleAIFFType            = 'AIFF',
-   kAudioFileAIFCType            = 'AIFC',
-   kAudioFileWAVEType            = 'WAVE',
-   kAudioFileSoundDesigner2Type  = 'Sd2f',
-   kAudioFileNextType            = 'NeXT',
-   kAudioFileMP3Type             = 'MPG3',
-   kAudioFileMP2Type             = 'MPG2',
-   kAudioFileMP1Type             = 'MPG1',
-   kAudioFileAC3Type             = 'ac-3',
-   kAudioFileAAC_ADTSType        = 'adts',
-   kAudioFileMPEG4Type           = 'mp4f',
-   kAudioFileM4AType             = 'm4af',
-   kAudioFileCAFType             = 'caff',
-   kAudioFile3GPType             = '3gpp',
-   kAudioFile3GP2Type            = '3gp2',
-   kAudioFileAMRType             = 'amrf'
-   
-   */
+
 }
 
 static const char* CoreAudio_FourCCToString(int32_t error_code)
@@ -329,7 +340,7 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 		AudioFileClose(*audio_file_id);
 		free(audio_file_id);
 		free(core_audio_file_container);
-		SNDDBG(("Core Audio: AudioFileGetProperty failed. reason: [%s].\n", CoreAudio_FourCCToString(error_result)));
+		SNDDBG(("Core Audio: AudioFileGetProperty failed. reason: [%s]", CoreAudio_FourCCToString(error_result)));
 		BAIL_MACRO("Core Audio: Not valid audio data.", 0);
 	} /* if */
 
@@ -355,9 +366,9 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 	internal->decoder_private = core_audio_file_container;
 	
 	sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
-	sample->actual.rate = (Uint32) actual_format.mSampleRate;
-	sample->actual.channels = (Uint8)actual_format.mChannelsPerFrame;
-	internal->total_time = (Sint32)(estimated_duration * 1000.0 + 0.5);
+	sample->actual.rate = (UInt32) actual_format.mSampleRate;
+	sample->actual.channels = (UInt8)actual_format.mChannelsPerFrame;
+	internal->total_time = (SInt32)(estimated_duration * 1000.0 + 0.5);
 
 #if 0
 	/* FIXME: Both Core Audio and SDL 1.3 support float and 32-bit formats */
@@ -474,13 +485,13 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 	if(sample->desired.format == 0)
 	{
 		// do AUDIO_S16SYS
-		output_format.mFormatFlags = kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked;
+		output_format.mFormatFlags = kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked; // I seem to read failures problems without kAudioFormatFlagIsPacked. From a mailing list post, this seems to be a Core Audio bug.
 		output_format.mBitsPerChannel = 16; // We know we want 16-bit
 	}
 	else
 	{
 		output_format.mFormatFlags = 0; // clear flags
-		output_format.mFormatFlags |= kAudioFormatFlagIsPacked; // I seem to read failures problems without this
+		output_format.mFormatFlags |= kAudioFormatFlagIsPacked; // I seem to read failures problems without kAudioFormatFlagIsPacked. From a mailing list post, this seems to be a Core Audio bug.
 		// Mask against bitsize
 		if(0xFF & sample->desired.format)
 		{
@@ -512,7 +523,6 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 		}
 	}
 
-	output_format.mBitsPerChannel = 16; // We know we want 16-bit
 	output_format.mBytesPerPacket = output_format.mBitsPerChannel/8 * output_format.mChannelsPerFrame; // e.g. 16-bits/8 * channels => so 2-bytes per channel per frame
 	output_format.mBytesPerFrame = output_format.mBitsPerChannel/8 * output_format.mChannelsPerFrame; // For PCM, since 1 frame is 1 packet, it is the same as mBytesPerPacket
 
@@ -583,15 +593,19 @@ static void CoreAudio_close(Sound_Sample *sample)
 static Uint32 CoreAudio_read(Sound_Sample *sample)
 {
 	OSStatus error_result = noErr;	
-	SInt64 buffer_size_in_frames = 0;
-	SInt64 buffer_size_in_frames_remaining = 0;
-	SInt64 total_frames_read = 0;
-	Uint32 data_buffer_size = 0;
-	Uint32 bytes_remaining = 0;
-	Uint32 total_bytes_read = 0;
+	/* Documentation/example shows SInt64, but is problematic for big endian
+	 * on 32-bit cast for ExtAudioFileRead() because it takes the upper
+	 * bits which turn to 0.
+	 */
+	UInt32 buffer_size_in_frames = 0;
+	UInt32 buffer_size_in_frames_remaining = 0;
+	UInt32 total_frames_read = 0;
+	UInt32 data_buffer_size = 0;
+	UInt32 bytes_remaining = 0;
+	size_t total_bytes_read = 0;
 	Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
 	CoreAudioFileContainer* core_audio_file_container = (CoreAudioFileContainer *) internal->decoder_private;
-	Uint32 max_buffer_size = internal->buffer_size;
+	UInt32 max_buffer_size = internal->buffer_size;
 
 //	printf("internal->buffer_size=%d, internal->buffer=0x%x, sample->buffer_size=%d\n", internal->buffer_size, internal->buffer, sample->buffer_size); 
 //	printf("internal->max_buffer_size=%d\n", max_buffer_size); 
@@ -614,13 +628,17 @@ static Uint32 CoreAudio_read(Sound_Sample *sample)
 	bytes_remaining = max_buffer_size;
 	buffer_size_in_frames_remaining = buffer_size_in_frames;
 	
-	// oops. Due to a bug in how I opened the file, I was misled to believe that Core Audio
-	// was not always filling my entire requested buffer. So this while-loop might be unnecessary.
-	// However, I have not exhaustively tested all formats, so maybe it is possible this loop is useful.
+	// oops. Due to the kAudioFormatFlagIsPacked bug, 
+	// I was misled to believe that Core Audio
+	// was not always filling my entire requested buffer. 
+	// So this while-loop might be unnecessary.
+	// However, I have not exhaustively tested all formats, 
+	// so maybe it is possible this loop is useful.
+	// It might also handle the not-evenly disvisible case above.
 	while(buffer_size_in_frames_remaining > 0 && !(sample->flags & SOUND_SAMPLEFLAG_EOF))
 	{
 		
-		data_buffer_size = (Uint32)(buffer_size_in_frames * core_audio_file_container->outputFormat->mBytesPerFrame);
+		data_buffer_size = (UInt32)(buffer_size_in_frames * core_audio_file_container->outputFormat->mBytesPerFrame);
 //		printf("data_buffer_size=%d\n", data_buffer_size); 
 
 		buffer_size_in_frames = buffer_size_in_frames_remaining;
@@ -629,11 +647,11 @@ static Uint32 CoreAudio_read(Sound_Sample *sample)
 
 
 		audio_buffer_list.mBuffers[0].mDataByteSize = bytes_remaining;
-		audio_buffer_list.mBuffers[0].mData = &(((Uint8*)internal->buffer)[total_bytes_read]);
+		audio_buffer_list.mBuffers[0].mData = &(((UInt8*)internal->buffer)[total_bytes_read]);
 
 		
 		/* Read the data into an AudioBufferList */
-		error_result = ExtAudioFileRead(core_audio_file_container->extAudioFileRef, (UInt32*)&buffer_size_in_frames, &audio_buffer_list);
+		error_result = ExtAudioFileRead(core_audio_file_container->extAudioFileRef, &buffer_size_in_frames, &audio_buffer_list);
 		if(error_result == noErr)
 		{
 		
@@ -643,10 +661,10 @@ static Uint32 CoreAudio_read(Sound_Sample *sample)
 			total_frames_read += buffer_size_in_frames;
 			buffer_size_in_frames_remaining = buffer_size_in_frames_remaining - buffer_size_in_frames;
 			
-			printf("read buffer_size_in_frames=%"PRId64", buffer_size_in_frames_remaining=%"PRId64"\n", buffer_size_in_frames, buffer_size_in_frames_remaining); 
+//			printf("read buffer_size_in_frames=%"PRId64", buffer_size_in_frames_remaining=%"PRId64"\n", buffer_size_in_frames, buffer_size_in_frames_remaining); 
 
 			/* ExtAudioFileRead returns the number of frames actually read. Need to convert back to bytes. */
-			data_buffer_size = (Uint32)(buffer_size_in_frames * core_audio_file_container->outputFormat->mBytesPerFrame);
+			data_buffer_size = (UInt32)(buffer_size_in_frames * core_audio_file_container->outputFormat->mBytesPerFrame);
 //			printf("data_buffer_size=%d\n", data_buffer_size); 
 
 			total_bytes_read += data_buffer_size;
@@ -673,7 +691,7 @@ static Uint32 CoreAudio_read(Sound_Sample *sample)
 	{
 		SNDDBG(("Core Audio: ExtAudioFileReadfailed SOUND_SAMPLEFLAG_EAGAIN, reason: [total_bytes_read < max_buffer_size], %d, %d.\n", total_bytes_read , max_buffer_size));
 		
-		// Don't know what to do here.
+		/* Don't know what to do here. */
 		sample->flags |= SOUND_SAMPLEFLAG_EAGAIN;
 	}
 	return total_bytes_read;
@@ -732,5 +750,5 @@ static int CoreAudio_seek(Sound_Sample *sample, Uint32 ms)
 #endif /* SOUND_SUPPORTS_COREAUDIO */
 
 
-/* end of ogg.c ... */
+/* end of coreaudio.c ... */
 
