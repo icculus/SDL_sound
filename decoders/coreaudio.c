@@ -582,6 +582,7 @@ static void CoreAudio_close(Sound_Sample *sample)
 	Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
 	CoreAudioFileContainer* core_audio_file_container = (CoreAudioFileContainer *) internal->decoder_private;
 
+	free(core_audio_file_container->outputFormat);
 	ExtAudioFileDispose(core_audio_file_container->extAudioFileRef);
 	AudioFileClose(*core_audio_file_container->audioFileID);
 	free(core_audio_file_container->audioFileID);
