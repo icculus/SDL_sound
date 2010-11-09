@@ -17,5 +17,5 @@ libdecoders_la_SOURCES =	\
 	midi.c		\
 	flac.c		\
 	speex.c		\
-	quicktime.c \
+	coreaudio.c \
 	wav.c
