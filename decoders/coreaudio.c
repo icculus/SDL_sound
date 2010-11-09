@@ -713,7 +713,11 @@ static int CoreAudio_rewind(Sound_Sample *sample)
 	return(1);
 } /* CoreAudio_rewind */
 
-
+/* Note: I found this tech note:
+ http://developer.apple.com/library/mac/#qa/qa2009/qa1678.html
+ I don't know if this applies to us. So far, I haven't noticed the problem,
+ so I haven't applied any of the techniques.
+ */
 static int CoreAudio_seek(Sound_Sample *sample, Uint32 ms)
 {
 	OSStatus error_result = noErr;	
@@ -723,6 +727,16 @@ static int CoreAudio_seek(Sound_Sample *sample, Uint32 ms)
 	AudioStreamBasicDescription	actual_format;
 	UInt32 format_size;
 
+	
+	/* I'm confused. The Apple documentation says this:
+	"Seek position is specified in the sample rate and frame count of the file’s audio data format
+	— not your application’s audio data format."
+	My interpretation is that I want to get the "actual format of the file and compute the frame offset.
+	But when I try that, seeking goes to the wrong place.
+	When I use outputFormat, things seem to work correctly.
+	I must be misinterpreting the documentation or doing something wrong.
+	*/
+#if 0 /* not working */
     format_size = sizeof(AudioStreamBasicDescription);
     error_result = AudioFileGetProperty(
 		*core_audio_file_container->audioFileID,
@@ -737,7 +751,12 @@ static int CoreAudio_seek(Sound_Sample *sample, Uint32 ms)
 	} /* if */
 
 	// packetIndex = (pos * sampleRate) / framesPerPacket
-	frame_offset = (SInt64)((ms/1000.0 * actual_format.mSampleRate) / actual_format.mFramesPerPacket);
+	//	frame_offset = (SInt64)((ms/1000.0 * actual_format.mSampleRate) / actual_format.mFramesPerPacket);
+#else /* seems to work, but I'm confused */
+	// packetIndex = (pos * sampleRate) / framesPerPacket
+	frame_offset = (SInt64)((ms/1000.0 * core_audio_file_container->outputFormat->mSampleRate) / core_audio_file_container->outputFormat->mFramesPerPacket);	
+#endif
+
 	// computed against actual format and not the client format
 	error_result = ExtAudioFileSeek(core_audio_file_container->extAudioFileRef, frame_offset);
 	if(error_result != noErr)
