@@ -128,7 +128,6 @@ static int MODPLUG_init(void)
 
 #ifndef _WIN32_WCE
     settings.mFlags |= MODPLUG_ENABLE_NOISE_REDUCTION |
-                       MODPLUG_ENABLE_REVERB |
                        MODPLUG_ENABLE_MEGABASS |
                        MODPLUG_ENABLE_SURROUND;
 
