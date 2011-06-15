@@ -594,6 +594,7 @@ void Timidity_Exit(void)
         free(e);
       }
       free(master_tonebank[i]);
+      master_tonebank[i] = NULL;
     }
     if (master_drumset[i])
     {
@@ -608,6 +609,7 @@ void Timidity_Exit(void)
         free(e);
       }
       free(master_drumset[i]);
+      master_drumset[i] = NULL;
     }
   }
 
