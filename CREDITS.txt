@@ -57,6 +57,9 @@ FLAC 1.1.3 updates:
 Fixes:
     Chris Nelson
 
+Fixes:
+    Ozkan Sezer
+
 Other stuff:
     Your name here! Patches go to icculus@icculus.org ...
 
