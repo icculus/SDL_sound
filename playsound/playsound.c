@@ -84,12 +84,18 @@ static void output_versions(const char *argv0)
     Sound_Version compiled;
     Sound_Version linked;
     SDL_version sdl_compiled;
-    const SDL_version *sdl_linked;
+    SDL_version sdl_linked_ver;
+    const SDL_version *sdl_linked = &sdl_linked_ver;
 
     SOUND_VERSION(&compiled);
     Sound_GetLinkedVersion(&linked);
     SDL_VERSION(&sdl_compiled);
+
+    #if SDL_MAJOR_VERSION >= 2
+    SDL_GetVersion(&sdl_linked_ver);
+    #else
     sdl_linked = SDL_Linked_Version();
+    #endif
 
     fprintf(stdout,
            "%s version %d.%d.%d\n"
@@ -728,10 +734,11 @@ static void report_filename(const char *filename)
 
     fprintf(stdout, "%s: Now playing [%s]...\n", icon, filename);
 
+#if SDL_MAJOR_VERSION < 2
     /*
      * Bleeding edge versions of SDL 1.2 can use this to set the
      *  PulseAudio application name. It's a harmless no-op elsewhere,
-     *  and 1.3 will probably have a formal API for this.
+     *  and 2.0 will probably have a formal API for this.
      */
     ptr = strrchr(filename, '/');
     if (ptr != NULL)
@@ -750,6 +757,7 @@ static void report_filename(const char *filename)
         SDL_WM_SetCaption(buf, icon);
         free(buf);
     } /* else */
+#endif
 } /* report_filename */
 
 
