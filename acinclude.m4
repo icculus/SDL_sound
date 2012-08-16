@@ -27,7 +27,15 @@ AC_ARG_ENABLE(sdltest, [  --disable-sdltest       Do not try to compile and run 
 
   AC_REQUIRE([AC_CANONICAL_TARGET])
   PATH="$prefix/bin:$prefix/usr/bin:$PATH"
-  AC_PATH_PROG(SDL_CONFIG, sdl-config, no, [$PATH])
+  AC_PATH_PROG(SDL1_CONFIG, sdl-config, no, [$PATH])
+  AC_PATH_PROG(SDL2_CONFIG, sdl2-config, no, [$PATH])
+
+  if test "$SDL2_CONFIG" != "no" ; then
+    SDL_CONFIG=$SDL2_CONFIG
+  else
+    SDL_CONFIG=$SDL1_CONFIG
+  fi
+
   min_sdl_version=ifelse([$1], ,0.11.0,$1)
   AC_MSG_CHECKING(for SDL - version >= $min_sdl_version)
   no_sdl=""
