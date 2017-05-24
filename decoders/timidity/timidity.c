@@ -54,28 +54,30 @@ static char def_instr_name[256] = "";
 static char *RWgets(SDL_RWops *rw, char *s, int size)
 {
     int num_read = 0;
-    int newline = 0;
+    char *p = s;
 
-    while (num_read < size && !newline)
+    --size;/* so that we nul terminate properly */
+
+    for (; num_read < size; ++p)
     {
-	if (SDL_RWread(rw, &s[num_read], 1, 1) != 1)
+	if (SDL_RWread(rw, p, 1, 1) != 1)
 	    break;
+
+	num_read++;
 
 	/* Unlike fgets(), don't store newline. Under Windows/DOS we'll
 	 * probably get an extra blank line for every line that's being
 	 * read, but that should be ok.
 	 */
-	if (s[num_read] == '\n' || s[num_read] == '\r')
+	if (*p == '\n' || *p == '\r')
 	{
-	    s[num_read] = '\0';
-	    newline = 1;
+	    *p = '\0';
+	    return s;
 	}
-	
-	num_read++;
     }
 
-    s[num_read] = '\0';
-    
+    *p = '\0';
+
     return (num_read != 0) ? s : NULL;
 }
 
