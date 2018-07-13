@@ -95,10 +95,6 @@ static decoder_element decoders[] =
     { 0, &__Sound_DecoderFunctions_FLAC },
 #endif
 
-#if (defined SOUND_SUPPORTS_QUICKTIME)
-    { 0, &__Sound_DecoderFunctions_QuickTime },
-#endif
-
 #if (defined SOUND_SUPPORTS_SPEEX)
     { 0, &__Sound_DecoderFunctions_SPEEX },
 #endif
