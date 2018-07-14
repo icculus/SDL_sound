@@ -24,25 +24,14 @@
  * This code is based on speexdec.c (see the Speex website).
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
+#define __SDL_SOUND_INTERNAL__
+#include "SDL_sound_internal.h"
 
-#ifdef SOUND_SUPPORTS_SPEEX
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
+#if SOUND_SUPPORTS_SPEEX
 
 #include <ogg/ogg.h>
 #include <speex/speex.h>
 #include <speex/speex_header.h>
-
-#include "SDL_sound.h"
-
-#define __SDL_SOUND_INTERNAL__
-#include "SDL_sound_internal.h"
 
 static int SPEEX_init(void);
 static void SPEEX_quit(void);

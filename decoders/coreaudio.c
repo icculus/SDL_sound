@@ -6,21 +6,14 @@
  *  This file written by Eric Wing.
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#ifdef SOUND_SUPPORTS_COREAUDIO
-
-#include <stddef.h> /* NULL */
-#include <stdio.h> /* printf */
-#include <arpa/inet.h> /* htonl */
-#include <AudioToolbox/AudioToolbox.h>
-
-#include "SDL_sound.h"
-
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
+
+#if SOUND_SUPPORTS_COREAUDIO
+
+#include <stddef.h> /* NULL */
+#include <arpa/inet.h> /* htonl */
+#include <AudioToolbox/AudioToolbox.h>
 
 typedef struct CoreAudioFileContainer
 {

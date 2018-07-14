@@ -55,51 +55,40 @@ typedef struct
 
 static decoder_element decoders[] =
 {
-#if (defined SOUND_SUPPORTS_MODPLUG)
+#if SOUND_SUPPORTS_MODPLUG
     { 0, &__Sound_DecoderFunctions_MODPLUG },
 #endif
-
-#if (defined SOUND_SUPPORTS_MIKMOD)
+#if SOUND_SUPPORTS_MIKMOD
     { 0, &__Sound_DecoderFunctions_MIKMOD },
 #endif
-
-#if (defined SOUND_SUPPORTS_WAV)
+#if SOUND_SUPPORTS_WAV
     { 0, &__Sound_DecoderFunctions_WAV },
 #endif
-
-#if (defined SOUND_SUPPORTS_AIFF)
+#if SOUND_SUPPORTS_AIFF
     { 0, &__Sound_DecoderFunctions_AIFF },
 #endif
-
-#if (defined SOUND_SUPPORTS_AU)
+#if SOUND_SUPPORTS_AU
     { 0, &__Sound_DecoderFunctions_AU },
 #endif
-
-#if (defined SOUND_SUPPORTS_OGG)
+#if SOUND_SUPPORTS_OGG
     { 0, &__Sound_DecoderFunctions_OGG },
 #endif
-
-#if (defined SOUND_SUPPORTS_VOC)
+#if SOUND_SUPPORTS_VOC
     { 0, &__Sound_DecoderFunctions_VOC },
 #endif
-
-#if (defined SOUND_SUPPORTS_RAW)
+#if SOUND_SUPPORTS_RAW
     { 0, &__Sound_DecoderFunctions_RAW },
 #endif
-
-#if (defined SOUND_SUPPORTS_SHN)
+#if SOUND_SUPPORTS_SHN
     { 0, &__Sound_DecoderFunctions_SHN },
 #endif
-
-#if (defined SOUND_SUPPORTS_FLAC)
+#if SOUND_SUPPORTS_FLAC
     { 0, &__Sound_DecoderFunctions_FLAC },
 #endif
-
-#if (defined SOUND_SUPPORTS_SPEEX)
+#if SOUND_SUPPORTS_SPEEX
     { 0, &__Sound_DecoderFunctions_SPEEX },
 #endif
-
-#if (defined SOUND_SUPPORTS_COREAUDIO)
+#if SOUND_SUPPORTS_COREAUDIO
     { 0, &__Sound_DecoderFunctions_CoreAudio },
 #endif
 

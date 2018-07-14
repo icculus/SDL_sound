@@ -14,20 +14,10 @@
  *  http://flac.sourceforge.net
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#ifdef SOUND_SUPPORTS_FLAC
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "SDL_sound.h"
-
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
+
+#if SOUND_SUPPORTS_FLAC
 
 #include <FLAC/export.h>
 
