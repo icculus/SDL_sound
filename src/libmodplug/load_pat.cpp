@@ -163,13 +163,6 @@ typedef struct _PATHANDLE
 	int samples;
 } PATHANDLE;
 
-#ifndef HAVE_SINF
-static inline float sinf(float x) {
-/* default to double version */
-	return((float)sin((double)x));
-}
-#endif
-
 // local prototypes
 static int pat_getopt(const char *s, const char *o, int dflt);
 
@@ -258,13 +251,13 @@ int pat_gm_drumnote(int n)
 
 static float pat_sinus(int i)
 {
-	float res = sinf(OMEGA * (float)i);
+	float res = SDL_sinf(OMEGA * (float)i);
 	return res;
 }
 
 static float pat_square(int i)
 {
-	float res = 30.0f * sinf(OMEGA * (float)i);
+	float res = 30.0f * SDL_sinf(OMEGA * (float)i);
 	if( res > 0.99f ) return 0.99f;
 	if( res < -0.99f ) return -0.99f;
 	return res;
