@@ -456,14 +456,13 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
     if (desired.rate == 0)
         desired.rate = sample->actual.rate;
 
-    if (Sound_BuildAudioCVT(&internal->sdlcvt,
+    if (SDL_BuildAudioCVT(&internal->sdlcvt,
                             sample->actual.format,
                             sample->actual.channels,
                             sample->actual.rate,
                             desired.format,
                             desired.channels,
-                            desired.rate,
-                            sample->buffer_size) == -1)
+                            desired.rate) == -1)
     {
         __Sound_SetError(SDL_GetError());
         funcs->close(sample);
@@ -736,7 +735,7 @@ Uint32 Sound_Decode(Sound_Sample *sample)
     if (retval > 0 && internal->sdlcvt.needed)
     {
         internal->sdlcvt.len = retval;
-        Sound_ConvertAudio(&internal->sdlcvt);
+        SDL_ConvertAudio(&internal->sdlcvt);
         retval = internal->sdlcvt.len_cvt;
     } /* if */
 
