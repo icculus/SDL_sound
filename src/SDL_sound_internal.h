@@ -100,6 +100,7 @@
  * SDL itself only supports mono and stereo output, but hopefully we can
  *  raise this value someday...there's probably a lot of assumptions in
  *  SDL_sound that rely on it, though.
+ * !!! FIXME: SDL2 supports more channels.
  */
 #define MAX_CHANNELS 2
 
