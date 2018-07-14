@@ -11,12 +11,12 @@
  *  do that). I welcome enhancements and corrections to this file, but I do
  *  not require you to send me patches if you make changes.
  *
- * Unless otherwise stated, the rest of PhysicsFS falls under the GNU Lesser
- *  General Public License: http://www.gnu.org/licenses/lgpl.txt
+ * Unless otherwise stated, the rest of PhysicsFS falls under the zlib
+ *  license.
  *
- * SDL falls under the LGPL, too. You can get SDL at http://www.libsdl.org/
+ * SDL2 falls under zlib, too. You can get SDL2 at http://www.libsdl.org/
  *
- *  This file was written by Ryan C. Gordon. (icculus@icculus.org).
+ *  This file was written by Ryan C. Gordon.
  */
 
 #if SUPPORT_PHYSFS

@@ -1,20 +1,9 @@
-/*
- * SDL_sound -- An abstract sound format decoding API.
- * Copyright (C) 2001  Ryan C. Gordon.
+/**
+ * SDL_sound; An abstract sound format decoding API.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Please see the file LICENSE.txt in the source's root directory.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  This file written by Ryan C. Gordon.
  */
 
 /**
@@ -22,10 +11,6 @@
  *   The real meat of SDL_sound is in the decoders directory.
  *
  * Documentation is in SDL_sound.h ... It's verbose, honest.  :)
- *
- * Please see the file LICENSE.txt in the source's root directory.
- *
- *  This file written by Ryan C. Gordon. (icculus@icculus.org)
  */
 
 #if HAVE_CONFIG_H
@@ -48,7 +33,6 @@
 /* The various decoder drivers... */
 
 /* All these externs may be missing; we check SOUND_SUPPORTS_xxx before use. */
-extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MPG123;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MIKMOD;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MODPLUG;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV;
@@ -58,7 +42,6 @@ extern const Sound_DecoderFunctions __Sound_DecoderFunctions_OGG;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_VOC;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_SHN;
-extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MIDI;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_FLAC;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_QuickTime;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_SPEEX;
@@ -72,10 +55,6 @@ typedef struct
 
 static decoder_element decoders[] =
 {
-#if (defined SOUND_SUPPORTS_MPG123)
-    { 0, &__Sound_DecoderFunctions_MPG123 },
-#endif
-
 #if (defined SOUND_SUPPORTS_MODPLUG)
     { 0, &__Sound_DecoderFunctions_MODPLUG },
 #endif
@@ -114,10 +93,6 @@ static decoder_element decoders[] =
 
 #if (defined SOUND_SUPPORTS_FLAC)
     { 0, &__Sound_DecoderFunctions_FLAC },
-#endif
-
-#if (defined SOUND_SUPPORTS_MIDI)
-    { 0, &__Sound_DecoderFunctions_MIDI },
 #endif
 
 #if (defined SOUND_SUPPORTS_QUICKTIME)
@@ -181,7 +156,7 @@ int Sound_Init(void)
     error_msgs = NULL;
 
     available_decoders = (const Sound_DecoderInfo **)
-                            malloc((total) * sizeof (Sound_DecoderInfo *));
+                            SDL_calloc(total, sizeof (Sound_DecoderInfo *));
     BAIL_IF_MACRO(available_decoders == NULL, ERR_OUT_OF_MEMORY, 0);
 
     SDL_InitSubSystem(SDL_INIT_AUDIO);
@@ -198,8 +173,6 @@ int Sound_Init(void)
             pos++;
         } /* if */
     } /* for */
-
-    available_decoders[pos] = NULL;
 
     initialized = 1;
     return(1);

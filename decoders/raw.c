@@ -1,20 +1,9 @@
-/*
- * SDL_sound -- An abstract sound format decoding API.
- * Copyright (C) 2001  Ryan C. Gordon.
+/**
+ * SDL_sound; A sound processing toolkit.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Please see the file LICENSE.txt in the source's root directory.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  This file written by Ryan C. Gordon.
  */
 
 /*
@@ -32,10 +21,6 @@
  *  audio format. The "actual" format will always match what you specify, so
  *  there will be no conversion overhead, but these routines need to know how
  *  to treat the bits, since it's all random garbage otherwise.
- *
- * Please see the file LICENSE.txt in the source's root directory.
- *
- *  This file written by Ryan C. Gordon. (icculus@icculus.org)
  */
 
 #if HAVE_CONFIG_H
