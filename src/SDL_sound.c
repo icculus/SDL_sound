@@ -22,7 +22,6 @@
 /* The various decoder drivers... */
 
 /* All these externs may be missing; we check SOUND_SUPPORTS_xxx before use. */
-extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MIKMOD;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MODPLUG;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_AIFF;
@@ -46,9 +45,6 @@ static decoder_element decoders[] =
 {
 #if SOUND_SUPPORTS_MODPLUG
     { 0, &__Sound_DecoderFunctions_MODPLUG },
-#endif
-#if SOUND_SUPPORTS_MIKMOD
-    { 0, &__Sound_DecoderFunctions_MIKMOD },
 #endif
 #if SOUND_SUPPORTS_WAV
     { 0, &__Sound_DecoderFunctions_WAV },

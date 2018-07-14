@@ -52,7 +52,6 @@ sdlsound_decoder_option(RAW "raw PCM audio" ".RAW")
 sdlsound_decoder_option(SHN "Shorten" ".SHN")
 sdlsound_decoder_option(SPEEX "Speex" ".SPEEX")
 sdlsound_decoder_option(MODPLUG "ModPlug" "various tracker formats")
-sdlsound_decoder_option(MIKMOD "MikMod" "various tracker formats")
 
 if(APPLE)
     sdlsound_decoder_option(COREAUDIO "CoreAudio" "various audio formats")
@@ -109,7 +108,6 @@ set(SDLSOUND_SRCS
     src/SDL_sound_au.c
     src/SDL_sound_coreaudio.c
     src/SDL_sound_flac.c
-    src/SDL_sound_mikmod.c
     src/SDL_sound_modplug.c
     src/SDL_sound_ogg.c
     src/SDL_sound_raw.c
@@ -231,7 +229,6 @@ message_bool_option("RAW support" SDLSOUND_DECODER_RAW)
 message_bool_option("SHN support" SDLSOUND_DECODER_SHN)
 message_bool_option("SPEEX support" SDLSOUND_DECODER_SPEEX)
 message_bool_option("MODPLUG support" SDLSOUND_DECODER_MODPLUG)
-message_bool_option("MIKMOD support" SDLSOUND_DECODER_MIKMOD)
 message_bool_option("COREAUDIO support" SDLSOUND_DECODER_COREAUDIO)
 message_bool_option("Build static library" SDLSOUND_BUILD_STATIC)
 message_bool_option("Build shared library" SDLSOUND_BUILD_SHARED)
