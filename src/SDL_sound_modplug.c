@@ -46,9 +46,6 @@ static const char *extensions_modplug[] =
     "FAR",   /* Farandole module                                            */
     "IT",    /* Impulse Tracker IT file                                     */
     "MDL",   /* DigiTracker module                                          */
-#if 0
-    "J2B",   /* Not implemented? What is it anyway?                         */
-#endif
     "MED",   /* OctaMed MED file                                            */
     "MOD",   /* ProTracker / NoiseTracker MOD/NST file                      */
     "MT2",   /* MadTracker 2.0                                              */
