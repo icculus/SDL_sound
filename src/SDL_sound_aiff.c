@@ -49,7 +49,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_AIFF =
         extensions_aiff,
         "Audio Interchange File Format",
         "Torbjörn Andersson <d91tan@Update.UU.SE>",
-        "http://www.icculus.org/SDL_sound/"
+        "https://www.icculus.org/SDL_sound/"
     },
 
     AIFF_init,      /*   init() method */

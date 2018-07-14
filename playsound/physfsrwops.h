@@ -14,7 +14,7 @@
  * Unless otherwise stated, the rest of PhysicsFS falls under the zlib
  *  license.
  *
- * SDL2 falls under zlib, too. You can get SDL2 at http://www.libsdl.org/
+ * SDL2 falls under zlib, too. You can get SDL2 at https://www.libsdl.org/
  *
  *  This file was written by Ryan C. Gordon.
  */

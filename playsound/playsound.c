@@ -185,7 +185,7 @@ static void output_credits(void)
            "     Tsuyoshi Iguchi, Tyler Montbriand, Darrell Walisser,\n"
            "     and a cast of thousands.\n"
            "\n"
-           "    Website and source code: http://icculus.org/SDL_sound/\n"
+           "    Website and source code: https://icculus.org/SDL_sound/\n"
            "\n",
             PLAYSOUND_VER_MAJOR, PLAYSOUND_VER_MINOR, PLAYSOUND_VER_PATCH);
 } /* output_credits */

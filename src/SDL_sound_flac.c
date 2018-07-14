@@ -11,7 +11,7 @@
  *
  * This driver handles FLAC audio, that is to say the Free Lossless Audio
  *  Codec. It depends on libFLAC for decoding, which can be grabbed from:
- *  http://flac.sourceforge.net
+ *  https://xiph.org/flac/
  */
 
 #define __SDL_SOUND_INTERNAL__
@@ -122,7 +122,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_FLAC =
         extensions_flac,
         "Free Lossless Audio Codec",
         "Torbjörn Andersson <d91tan@Update.UU.SE>",
-        "http://flac.sourceforge.net/"
+        "https://xiph.org/flac/"
     },
 
     FLAC_init,       /*   init() method */

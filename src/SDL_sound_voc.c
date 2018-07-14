@@ -18,7 +18,7 @@
  * This code was ripped from a decoder I had written for SDL_mixer, which was
  *  largely ripped from sox v12.17.1's voc.c.
  *
- *    SDL_mixer: http://www.libsdl.org/projects/SDL_mixer/
+ *    SDL_mixer: https://www.libsdl.org/projects/SDL_mixer/
  *    sox: http://www.freshmeat.net/projects/sox/
  */
 
@@ -42,7 +42,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_VOC =
         extensions_voc,
         "Creative Labs Voice format",
         "Ryan C. Gordon <icculus@icculus.org>",
-        "http://www.icculus.org/SDL_sound/"
+        "https://www.icculus.org/SDL_sound/"
     },
 
     VOC_init,       /*   init() method */

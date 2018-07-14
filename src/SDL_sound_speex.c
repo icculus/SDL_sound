@@ -19,7 +19,7 @@
  * Speex isn't meant for general audio compression. Something like Ogg Vorbis
  *  will give better results in that case.
  *
- * Further Speex information can be found at http://www.speex.org/
+ * Further Speex information can be found at https://www.speex.org/
  *
  * This code is based on speexdec.c (see the Speex website).
  */
@@ -48,7 +48,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_SPEEX =
         extensions_speex,
         "SPEEX speech compression format",
         "Ryan C. Gordon <icculus@icculus.org>",
-        "http://www.icculus.org/SDL_sound/"
+        "https://www.icculus.org/SDL_sound/"
     },
 
     SPEEX_init,       /*   init() method */

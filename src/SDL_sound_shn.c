@@ -22,6 +22,8 @@
  *
  * Shorten homepage: http://www.softsound.com/Shorten.html
  *
+ * !!! FIXME: softsound.com is gone, I think.
+ *
  * The Shorten format was gleaned from the shorten codebase, by Tony
  *  Robinson and SoftSound Limited.
  */
@@ -46,7 +48,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_SHN =
         extensions_shn,
         "Shorten-compressed audio data",
         "Ryan C. Gordon <icculus@icculus.org>",
-        "http://www.icculus.org/SDL_sound/"
+        "https://www.icculus.org/SDL_sound/"
     },
 
     SHN_init,       /*   init() method */

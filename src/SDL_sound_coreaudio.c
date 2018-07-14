@@ -63,7 +63,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_CoreAudio =
         extensions_coreaudio,
         "Decode audio through Core Audio through",
         "Eric Wing <ewing . public @ playcontrol.net>",
-        "http://playcontrol.net"
+        "https://playcontrol.net"
     },
 	
     CoreAudio_init,       /*   init() method */
@@ -88,7 +88,7 @@ static void CoreAudio_quit(void)
 } /* CoreAudio_quit */
 
 /*
-   http://developer.apple.com/library/ios/#documentation/MusicAudio/Reference/AudioFileConvertRef/Reference/reference.html
+   https://developer.apple.com/library/ios/#documentation/MusicAudio/Reference/AudioFileConvertRef/Reference/reference.html
    kAudioFileAIFFType = 'AIFF',
    kAudioFileAIFCType            = 'AIFC',
    kAudioFileWAVEType            = 'WAVE',
@@ -696,7 +696,7 @@ static int CoreAudio_rewind(Sound_Sample *sample)
 } /* CoreAudio_rewind */
 
 /* Note: I found this tech note:
- http://developer.apple.com/library/mac/#qa/qa2009/qa1678.html
+ https://developer.apple.com/library/mac/#qa/qa2009/qa1678.html
  I don't know if this applies to us. So far, I haven't noticed the problem,
  so I haven't applied any of the techniques.
  */

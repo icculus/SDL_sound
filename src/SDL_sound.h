@@ -10,7 +10,7 @@
  * \mainpage SDL_sound
  *
  * The latest version of SDL_sound can be found at:
- *     http://icculus.org/SDL_sound/
+ *     https://icculus.org/SDL_sound/
  *
  * The basic gist of SDL_sound is that you use an SDL_RWops to get sound data
  *  into this library, and SDL_sound will take that data, in one of several
@@ -24,7 +24,7 @@
  *
  * As the name implies, this library depends on SDL: Simple Directmedia Layer,
  *  which is a powerful, free, and cross-platform multimedia library. It can
- *  be found at http://www.libsdl.org/
+ *  be found at https://www.libsdl.org/
  *
  * Support is in place or planned for the following sound formats:
  *   - .WAV  (Microsoft WAVfile RIFF data, internal.)
