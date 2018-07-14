@@ -1,20 +1,9 @@
-/*
- * SDL_sound Core Audio backend
- * Copyright (C) 2010 Eric Wing <ewing . public @ playcontrol.net>
+/**
+ * SDL_sound; An abstract sound format decoding API.
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Please see the file LICENSE.txt in the source's root directory.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  This file written by Eric Wing.
  */
 
 #if HAVE_CONFIG_H
