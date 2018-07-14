@@ -31,7 +31,7 @@
  *   - .VOC  (Creative Labs' Voice format, internal.)
  *   - .MP3  (MPEG-1 Layer 3 support, via libmpg123.)
  *   - .MID  (MIDI music converted to Waveform data, internal.)
- *   - .MOD  (MOD files, via MikMod and ModPlug.)
+ *   - .MOD  (MOD files, via internal copy of libModPlug.)
  *   - .OGG  (Ogg files, via Ogg Vorbis libraries.)
  *   - .SPX  (Speex files, via libspeex.)
  *   - .SHN  (Shorten files, internal.)
