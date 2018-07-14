@@ -266,16 +266,6 @@ static void abc_add_setjumploop(ABCHANDLE *h, ABCTRACK *tp, uint32_t tracktime, 
 static uint32_t abc_pattracktime(ABCHANDLE *h, uint32_t tracktime);
 static int abc_patno(ABCHANDLE *h, uint32_t tracktime);
 
-#ifndef HAVE_SETENV
-static void setenv(const char *name, const char *value, int overwrite)
-{
-	int len = strlen(name)+1+strlen(value)+1;
-	char *str = (char *)malloc(len);
-	sprintf(str, "%s=%s", name, value);
-	putenv(str);
-	free(str);
-}
-#endif
 
 static int abc_isvalidchar(char c) {
 	return(isalpha(c) || isdigit(c) || isspace(c) || c == '%' || c == ':');
@@ -2401,7 +2391,7 @@ static ABCHANDLE *ABC_Init(void)
 		retval->line        = NULL;
 		strcpy(retval->gchord, "");
 		retval->barticks    = 0;
-		p = getenv(ABC_ENV_NORANDOMPICK);
+		p = SDL_getenv(ABC_ENV_NORANDOMPICK);
 		if( p ) {
 			if( isdigit(*p) )
 				retval->pickrandom = atoi(p);
@@ -2413,7 +2403,7 @@ static ABCHANDLE *ABC_Init(void)
 				retval->pickrandom = atoi(p+1)-1; // xmms preloads the file
 				sprintf(buf,"-%ld",retval->pickrandom+2);
 #endif
-				setenv(ABC_ENV_NORANDOMPICK, buf, 1);
+				SDL_setenv(ABC_ENV_NORANDOMPICK, buf, 1);
 			}
 		}
 		else {
@@ -2425,7 +2415,7 @@ static ABCHANDLE *ABC_Init(void)
 #else
 			sprintf(buf,"-%ld",retval->pickrandom); // xmms preloads the file
 #endif
-			setenv(ABC_ENV_NORANDOMPICK, buf, 1);
+			SDL_setenv(ABC_ENV_NORANDOMPICK, buf, 1);
 		}
     return retval;
 }
