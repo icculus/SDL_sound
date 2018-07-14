@@ -18,7 +18,12 @@
 #error Do not include this header from your applications.
 #endif
 
-#include "SDL.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+
+#include "SDL_sound.h"
 
 /* SDL 1.2.4 defines this, but better safe than sorry. */
 #if (!defined(__inline__))
@@ -47,6 +52,44 @@
 
 #if (!defined assert)  /* if all else fails. */
 #  define assert(x)
+#endif
+
+
+#ifndef SOUND_SUPPORTS_MODPLUG
+#define SOUND_SUPPORTS_MODPLUG 1
+#endif
+#ifndef SOUND_SUPPORTS_MIKMOD
+#define SOUND_SUPPORTS_MIKMOD 1
+#endif
+#ifndef SOUND_SUPPORTS_WAV
+#define SOUND_SUPPORTS_WAV 1
+#endif
+#ifndef SOUND_SUPPORTS_AIFF
+#define SOUND_SUPPORTS_AIFF 1
+#endif
+#ifndef SOUND_SUPPORTS_AU
+#define SOUND_SUPPORTS_AU 1
+#endif
+#ifndef SOUND_SUPPORTS_OGG
+#define SOUND_SUPPORTS_OGG 1
+#endif
+#ifndef SOUND_SUPPORTS_VOC
+#define SOUND_SUPPORTS_VOC 1
+#endif
+#ifndef SOUND_SUPPORTS_RAW
+#define SOUND_SUPPORTS_RAW 1
+#endif
+#ifndef SOUND_SUPPORTS_SHN
+#define SOUND_SUPPORTS_SHN 1
+#endif
+#ifndef SOUND_SUPPORTS_FLAC
+#define SOUND_SUPPORTS_FLAC 1
+#endif
+#ifndef SOUND_SUPPORTS_SPEEX
+#define SOUND_SUPPORTS_SPEEX 1
+#endif
+#ifndef SOUND_SUPPORTS_COREAUDIO
+#define SOUND_SUPPORTS_COREAUDIO 1
 #endif
 
 

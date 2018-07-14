@@ -22,20 +22,10 @@
 #error  You should base your code on this file, and remove these error lines
 #error  from your version.
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#ifdef SOUND_SUPPORTS_FMT
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "SDL_sound.h"
-
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
+
+#if SOUND_SUPPORTS_FMT
 
 static int FMT_init(void);
 static void FMT_quit(void);

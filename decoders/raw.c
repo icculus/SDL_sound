@@ -23,20 +23,10 @@
  *  to treat the bits, since it's all random garbage otherwise.
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#ifdef SOUND_SUPPORTS_RAW
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "SDL_sound.h"
-
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
+
+#if SOUND_SUPPORTS_RAW
 
 static int RAW_init(void);
 static void RAW_quit(void);

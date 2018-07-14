@@ -17,25 +17,13 @@
  *   vorbisfile documentation: http://www.xiph.org/ogg/vorbis/doc/vorbisfile/
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#ifdef SOUND_SUPPORTS_OGG
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-
-#include "SDL_sound.h"
-
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
 
+#if SOUND_SUPPORTS_OGG
+
 #include <vorbis/codec.h>
 #include <vorbis/vorbisfile.h>
-
 
 static int OGG_init(void);
 static void OGG_quit(void);
