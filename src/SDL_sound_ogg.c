@@ -13,8 +13,8 @@
  *  do the actual decoding work. libvorbisfile is part of libvorbis, which
  *  is part of the Ogg Vorbis project.
  *
- *   Ogg Vorbis: http://www.xiph.org/ogg/vorbis/
- *   vorbisfile documentation: http://www.xiph.org/ogg/vorbis/doc/vorbisfile/
+ *   Ogg Vorbis: https://www.xiph.org/ogg/vorbis/
+ *   vorbisfile documentation: https://www.xiph.org/ogg/vorbis/doc/vorbisfile/
  */
 
 #define __SDL_SOUND_INTERNAL__
@@ -40,7 +40,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_OGG =
         extensions_ogg,
         "Ogg Vorbis audio through VorbisFile",
         "Ryan C. Gordon <icculus@icculus.org>",
-        "http://www.icculus.org/SDL_sound/"
+        "https://www.icculus.org/SDL_sound/"
     },
 
     OGG_init,       /*   init() method */

@@ -33,7 +33,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV =
         extensions_wav,
         "Microsoft WAVE audio format",
         "Ryan C. Gordon <icculus@icculus.org>",
-        "http://www.icculus.org/SDL_sound/"
+        "https://www.icculus.org/SDL_sound/"
     },
 
     WAV_init,       /*   init() method */
