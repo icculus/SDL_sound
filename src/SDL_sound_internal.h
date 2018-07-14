@@ -89,6 +89,12 @@
 #define SOUND_SUPPORTS_COREAUDIO 1
 #endif
 
+/* only build CoreAudio support if on an Apple platform. */
+#if SOUND_SUPPORTS_COREAUDIO && !defined(__APPLE__)
+#undef SOUND_SUPPORTS_COREAUDIO
+#define SOUND_SUPPORTS_COREAUDIO 0
+#endif
+
 
 /*
  * SDL itself only supports mono and stereo output, but hopefully we can
