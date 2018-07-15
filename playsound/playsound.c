@@ -74,11 +74,7 @@ static void output_versions(const char *argv0)
 
     fprintf(stdout,
            "%s version %d.%d.%d\n"
-           "Copyright 2001 Ryan C. Gordon\n"
-           "This program is free software, covered by the GNU Lesser General\n"
-           "Public License, and you are welcome to change it and/or\n"
-           "distribute copies of it under certain conditions. There is\n"
-           "absolutely NO WARRANTY for this program.\n"
+           "Copyright 2001-2018 Ryan C. Gordon and others.\n"
            "\n"
            " Compiled against SDL_sound version %d.%d.%d,\n"
            " and linked against %d.%d.%d.\n"
@@ -165,11 +161,7 @@ static void output_credits(void)
 {
     fprintf(stdout,
            "playsound version %d.%d.%d\n"
-           "Copyright 2001 Ryan C. Gordon\n"
-           "playsound is free software, covered by the GNU Lesser General\n"
-           "Public License, and you are welcome to change it and/or\n"
-           "distribute copies of it under certain conditions. There is\n"
-           "absolutely NO WARRANTY for playsound.\n"
+           "Copyright 2001-2018 Ryan C. Gordon and others.\n"
            "\n"
            "    Written by Ryan C. Gordon, Torbjörn Andersson, Max Horn,\n"
            "     Tsuyoshi Iguchi, Tyler Montbriand, Darrell Walisser,\n"
