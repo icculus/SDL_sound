@@ -16,9 +16,6 @@
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
 
-#include <ctype.h>
-
-
 /* The various decoder drivers... */
 
 /* All these externs may be missing; we check SOUND_SUPPORTS_xxx before use. */
