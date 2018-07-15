@@ -8,7 +8,7 @@
 
 /**
  * This file implements the core API, which is relatively simple.
- *   The real meat of SDL_sound is in the decoders directory.
+ *   The real meat of SDL_sound is in the decoders.
  *
  * Documentation is in SDL_sound.h ... It's verbose, honest.  :)
  */
@@ -358,10 +358,18 @@ static SDL_INLINE const char *fmt_to_str(Uint16 fmt)
             return("U16LSB");
         case AUDIO_S16LSB:
             return("S16LSB");
+        case AUDIO_S32LSB:
+            return("S32LSB");
+        case AUDIO_F32LSB:
+            return("F32LSB");
         case AUDIO_U16MSB:
             return("U16MSB");
         case AUDIO_S16MSB:
             return("S16MSB");
+        case AUDIO_S32MSB:
+            return("S32MSB");
+        case AUDIO_F32MSB:
+            return("F32MSB");
     } /* switch */
 
     return("Unknown");
@@ -549,7 +557,6 @@ Sound_Sample *Sound_NewSampleFromFile(const char *filename,
 
     ext = SDL_strrchr(filename, '.');
     rw = SDL_RWFromFile(filename, "rb");
-    /* !!! FIXME: rw = RWops_FromFile(filename, "rb");*/
     BAIL_IF_MACRO(rw == NULL, SDL_GetError(), NULL);
 
     if (ext != NULL)
