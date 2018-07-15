@@ -52,7 +52,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_AU =
 /* no init/deinit needed */
 static int AU_init(void)
 {
-    return(1);
+    return 1;
 } /* AU_init */
 
 static void AU_quit(void)
@@ -108,30 +108,30 @@ struct audec
 static int read_au_header(SDL_RWops *rw, struct au_file_hdr *hdr)
 {
     if (SDL_RWread(rw, &hdr->magic, sizeof (hdr->magic), 1) != 1)
-        return(0);
+        return 0;
     hdr->magic = SDL_SwapBE32(hdr->magic);
 
     if (SDL_RWread(rw, &hdr->hdr_size, sizeof (hdr->hdr_size), 1) != 1)
-        return(0);
+        return 0;
     hdr->hdr_size = SDL_SwapBE32(hdr->hdr_size);
 
     if (SDL_RWread(rw, &hdr->data_size, sizeof (hdr->data_size), 1) != 1)
-        return(0);
+        return 0;
     hdr->data_size = SDL_SwapBE32(hdr->data_size);
 
     if (SDL_RWread(rw, &hdr->encoding, sizeof (hdr->encoding), 1) != 1)
-        return(0);
+        return 0;
     hdr->encoding = SDL_SwapBE32(hdr->encoding);
 
     if (SDL_RWread(rw, &hdr->sample_rate, sizeof (hdr->sample_rate), 1) != 1)
-        return(0);
+        return 0;
     hdr->sample_rate = SDL_SwapBE32(hdr->sample_rate);
 
     if (SDL_RWread(rw, &hdr->channels, sizeof (hdr->channels), 1) != 1)
-        return(0);
+        return 0;
     hdr->channels = SDL_SwapBE32(hdr->channels);
 
-    return(1);
+    return 1;
 } /* read_au_header */
 
 
@@ -231,7 +231,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
     dec->start_offset = SDL_RWtell(rw);
 
     SNDDBG(("AU: Accepting data stream.\n"));
-    return(1);
+    return 1;
 } /* AU_open */
 
 
@@ -321,7 +321,7 @@ static Uint32 AU_read(Sound_Sample *sample)
         } /* if */
     } /* else */
 
-    return(ret);
+    return ret;
 } /* AU_read */
 
 
@@ -332,7 +332,7 @@ static int AU_rewind(Sound_Sample *sample)
     int rc = SDL_RWseek(internal->rw, dec->start_offset, SEEK_SET);
     BAIL_IF_MACRO(rc != dec->start_offset, ERR_IO_ERROR, 0);
     dec->remaining = dec->total;
-    return(1);
+    return 1;
 } /* AU_rewind */
 
 
@@ -351,7 +351,7 @@ static int AU_seek(Sound_Sample *sample, Uint32 ms)
     rc = SDL_RWseek(internal->rw, pos, SEEK_SET);
     BAIL_IF_MACRO(rc != pos, ERR_IO_ERROR, 0);
     dec->remaining = dec->total - offset;
-    return(1);
+    return 1;
 } /* AU_seek */
 
 #endif /* SOUND_SUPPORTS_AU */

@@ -86,7 +86,7 @@ typedef struct
 
 static int SPEEX_init(void)
 {
-    return(1);   /* no-op. */
+    return 1;   /* no-op. */
 } /* SPEEX_init */
 
 
@@ -151,7 +151,7 @@ static int process_header(speex_t *speex, Sound_Sample *sample)
 
     /* plus 2: one for this header, one for the comment header. */
     speex->header_count = header.extra_headers + 2;
-    return(1);
+    return 1;
 } /* process_header */
 
 
@@ -228,7 +228,7 @@ static int SPEEX_open(Sound_Sample *sample, const char *ext)
                     speex->have_ogg_packet = 1;
                     sample->flags = SOUND_SAMPLEFLAG_NONE;
                     internal->decoder_private = speex;
-                    return(1); /* we'll handle this data. */
+                    return 1; /* we'll handle this data. */
                 } /* if */
             } /* while */
 
@@ -254,7 +254,7 @@ speex_open_failed:
     if (set_error_str)
         BAIL_MACRO("SPEEX: decoding error", 0);
 
-    return(0);
+    return 0;
 } /* SPEEX_open */
 
 
@@ -303,7 +303,7 @@ static Uint32 copy_from_decoded(speex_t *speex,
         *dst = (Sint16) (0.5f + f);
     } /* for */
     
-    return(cpypos << 1);
+    return cpypos << 1;
 } /* copy_from_decoded */
 
 
@@ -324,7 +324,7 @@ static Uint32 SPEEX_read(Sound_Sample *sample)
         {
             retval = copy_from_decoded(speex, internal, retval);
             if (retval >= internal->buffer_size)
-                return(retval);  /* whee. */
+                return retval;  /* whee. */
         } /* if */
 
         /* okay, decoded buffer is spent. What else do we have? */
@@ -358,7 +358,7 @@ static Uint32 SPEEX_read(Sound_Sample *sample)
         if (speex->op.e_o_s)   /* okay, we're really spent. */
         {
             sample->flags |= SOUND_SAMPLEFLAG_EOF;
-            return(retval);
+            return retval;
         } /* if */
 
         while ((!speex->op.e_o_s) && (!speex->have_ogg_packet))
@@ -402,13 +402,13 @@ static int SPEEX_rewind(Sound_Sample *sample)
      */
     BAIL_IF_MACRO(SDL_RWseek(internal->rw, 0, SEEK_SET) != 0, ERR_IO_ERROR, 0);
     SPEEX_close(sample);
-    return(SPEEX_open(sample, "SPX"));
+    return SPEEX_open(sample, "SPX");
 } /* SPEEX_rewind */
 
 
 static int SPEEX_seek(Sound_Sample *sample, Uint32 ms)
 {
-    /* !!! FIXME */ return(0);
+    /* !!! FIXME */ return 0;
 } /* SPEEX_seek */
 
 

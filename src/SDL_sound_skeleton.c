@@ -59,7 +59,7 @@ static int FMT_init(void)
 {
     /* do any global decoder/library initialization you need here. */
 
-    return(1);  /* initialization successful. */
+    return 1;  /* initialization successful. */
 } /* FMT_init */
 
 
@@ -80,7 +80,7 @@ static int FMT_open(Sound_Sample *sample, const char *ext)
     SNDDBG(("FMT: Accepting data stream.\n"));
     set up sample->actual;
     sample->flags = SOUND_SAMPLEFLAG_NONE;
-    return(1); /* we'll handle this data. */
+    return 1; /* we'll handle this data. */
 } /* FMT_open */
 
 
@@ -118,7 +118,7 @@ static Uint32 FMT_read(Sound_Sample *sample)
 
     (or whatever. retval == number of bytes you put in internal->buffer).
 
-    return(retval);
+    return retval;
 } /* FMT_read */
 
 
@@ -131,7 +131,7 @@ static int FMT_rewind(Sound_Sample *sample)
 
     (reset state as necessary.)
 
-    return(1);  /* success. */
+    return 1;  /* success. */
 } /* FMT_rewind */
 
 
@@ -144,7 +144,7 @@ static int FMT_seek(Sound_Sample *sample, Uint32 ms)
 
     (set state as necessary.)
 
-    return(1);  /* success. */
+    return 1;  /* success. */
 } /* FMT_seek */
 
 

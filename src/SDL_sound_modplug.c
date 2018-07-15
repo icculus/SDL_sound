@@ -119,7 +119,7 @@ static int MODPLUG_init(void)
     modplug_mutex = SDL_CreateMutex();
 
     ModPlug_SetSettings(&settings);
-    return(1);  /* success. */
+    return 1;  /* success. */
 } /* MODPLUG_init */
 
 
@@ -246,7 +246,7 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
 
     SNDDBG(("MODPLUG: Accepting data stream\n"));
-    return(1); /* we'll handle this data. */
+    return 1; /* we'll handle this data. */
 } /* MODPLUG_open */
 
 
@@ -276,7 +276,7 @@ static Uint32 MODPLUG_read(Sound_Sample *sample)
     retval = ModPlug_Read(module, internal->buffer, internal->buffer_size);
     if (retval == 0)
         sample->flags |= SOUND_SAMPLEFLAG_EOF;
-    return(retval);
+    return retval;
 } /* MODPLUG_read */
 
 
@@ -286,7 +286,7 @@ static int MODPLUG_rewind(Sound_Sample *sample)
     ModPlugFile *module = (ModPlugFile *) internal->decoder_private;
 
     ModPlug_Seek(module, 0);
-    return(1);
+    return 1;
 } /* MODPLUG_rewind */
 
 
@@ -297,7 +297,7 @@ static int MODPLUG_seek(Sound_Sample *sample, Uint32 ms)
 
         /* Assume that this will work. */
     ModPlug_Seek(module, ms);
-    return(1);
+    return 1;
 } /* MODPLUG_seek */
 
 #endif /* SOUND_SUPPORTS_MODPLUG */
