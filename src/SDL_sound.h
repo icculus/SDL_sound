@@ -63,10 +63,6 @@ extern "C" {
 
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
 
-#ifndef SDLCALL  /* may not be defined with older SDL releases. */
-#define SDLCALL
-#endif
-
 #ifdef SDL_SOUND_DLL_EXPORTS
 #  define SNDDECLSPEC __declspec(dllexport)
 #elif (__GNUC__ >= 3)
