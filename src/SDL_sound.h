@@ -73,8 +73,8 @@ extern "C" {
 #endif
 
 #define SOUND_VER_MAJOR 1
-#define SOUND_VER_MINOR 0
-#define SOUND_VER_PATCH 1
+#define SOUND_VER_MINOR 9
+#define SOUND_VER_PATCH 0
 #endif
 
 
