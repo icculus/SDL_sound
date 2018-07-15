@@ -47,7 +47,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV =
 
 
 /* Better than SDL_ReadLE16, since you can detect i/o errors... */
-static __inline__ int read_le16(SDL_RWops *rw, Uint16 *ui16)
+static SDL_INLINE int read_le16(SDL_RWops *rw, Uint16 *ui16)
 {
     int rc = SDL_RWread(rw, ui16, sizeof (Uint16), 1);
     BAIL_IF_MACRO(rc != 1, ERR_IO_ERROR, 0);
@@ -57,7 +57,7 @@ static __inline__ int read_le16(SDL_RWops *rw, Uint16 *ui16)
 
 
 /* Better than SDL_ReadLE32, since you can detect i/o errors... */
-static __inline__ int read_le32(SDL_RWops *rw, Uint32 *ui32)
+static SDL_INLINE int read_le32(SDL_RWops *rw, Uint32 *ui32)
 {
     int rc = SDL_RWread(rw, ui32, sizeof (Uint32), 1);
     BAIL_IF_MACRO(rc != 1, ERR_IO_ERROR, 0);
@@ -67,7 +67,7 @@ static __inline__ int read_le32(SDL_RWops *rw, Uint32 *ui32)
 
 
 /* This is just cleaner on the caller's end... */
-static __inline__ int read_uint8(SDL_RWops *rw, Uint8 *ui8)
+static SDL_INLINE int read_uint8(SDL_RWops *rw, Uint8 *ui8)
 {
     int rc = SDL_RWread(rw, ui8, sizeof (Uint8), 1);
     BAIL_IF_MACRO(rc != 1, ERR_IO_ERROR, 0);
@@ -230,7 +230,7 @@ static Uint32 read_sample_fmt_normal(Sound_Sample *sample)
     Uint32 max = (internal->buffer_size < (Uint32) w->bytesLeft) ?
                     internal->buffer_size : (Uint32) w->bytesLeft;
 
-    assert(max > 0);
+    SDL_assert(max > 0);
 
         /*
          * We don't actually do any decoding, so we read the wav data
@@ -297,7 +297,7 @@ static int read_fmt_normal(SDL_RWops *rw, fmt_t *fmt)
 #define SMALLEST_ADPCM_DELTA       16
 
 
-static __inline__ int read_adpcm_block_headers(Sound_Sample *sample)
+static SDL_INLINE int read_adpcm_block_headers(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SDL_RWops *rw = internal->rw;
@@ -333,7 +333,7 @@ static __inline__ int read_adpcm_block_headers(Sound_Sample *sample)
 } /* read_adpcm_block_headers */
 
 
-static __inline__ void do_adpcm_nibble(Uint8 nib,
+static SDL_INLINE void do_adpcm_nibble(Uint8 nib,
                                        ADPCMBLOCKHEADER *header,
                                        Sint32 lPredSamp)
 {
@@ -371,7 +371,7 @@ static __inline__ void do_adpcm_nibble(Uint8 nib,
 } /* do_adpcm_nibble */
 
 
-static __inline__ int decode_adpcm_sample_frame(Sound_Sample *sample)
+static SDL_INLINE int decode_adpcm_sample_frame(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     wav_t *w = (wav_t *) internal->decoder_private;
@@ -410,7 +410,7 @@ static __inline__ int decode_adpcm_sample_frame(Sound_Sample *sample)
 } /* decode_adpcm_sample_frame */
 
 
-static __inline__ void put_adpcm_sample_frame1(void *_buf, fmt_t *fmt)
+static SDL_INLINE void put_adpcm_sample_frame1(void *_buf, fmt_t *fmt)
 {
     Uint16 *buf = (Uint16 *) _buf;
     ADPCMBLOCKHEADER *headers = fmt->fmt.adpcm.blockheaders;
@@ -420,7 +420,7 @@ static __inline__ void put_adpcm_sample_frame1(void *_buf, fmt_t *fmt)
 } /* put_adpcm_sample_frame1 */
 
 
-static __inline__ void put_adpcm_sample_frame2(void *_buf, fmt_t *fmt)
+static SDL_INLINE void put_adpcm_sample_frame2(void *_buf, fmt_t *fmt)
 {
     Uint16 *buf = (Uint16 *) _buf;
     ADPCMBLOCKHEADER *headers = fmt->fmt.adpcm.blockheaders;
@@ -488,10 +488,10 @@ static Uint32 read_sample_fmt_adpcm(Sound_Sample *sample)
 static void free_fmt_adpcm(fmt_t *fmt)
 {
     if (fmt->fmt.adpcm.aCoef != NULL)
-        free(fmt->fmt.adpcm.aCoef);
+        SDL_free(fmt->fmt.adpcm.aCoef);
 
     if (fmt->fmt.adpcm.blockheaders != NULL)
-        free(fmt->fmt.adpcm.blockheaders);
+        SDL_free(fmt->fmt.adpcm.blockheaders);
 } /* free_fmt_adpcm */
 
 
@@ -557,7 +557,7 @@ static int read_fmt_adpcm(SDL_RWops *rw, fmt_t *fmt)
 {
     size_t i;
 
-    memset(&fmt->fmt.adpcm, '\0', sizeof (fmt->fmt.adpcm));
+    SDL_memset(&fmt->fmt.adpcm, '\0', sizeof (fmt->fmt.adpcm));
     fmt->free = free_fmt_adpcm;
     fmt->read_sample = read_sample_fmt_adpcm;
     fmt->rewind_sample = rewind_sample_fmt_adpcm;
@@ -570,7 +570,7 @@ static int read_fmt_adpcm(SDL_RWops *rw, fmt_t *fmt)
     /* fmt->free() is always called, so these malloc()s will be cleaned up. */
 
     i = sizeof (ADPCMCOEFSET) * fmt->fmt.adpcm.wNumCoef;
-    fmt->fmt.adpcm.aCoef = (ADPCMCOEFSET *) malloc(i);
+    fmt->fmt.adpcm.aCoef = (ADPCMCOEFSET *) SDL_malloc(i);
     BAIL_IF_MACRO(fmt->fmt.adpcm.aCoef == NULL, ERR_OUT_OF_MEMORY, 0);
 
     for (i = 0; i < fmt->fmt.adpcm.wNumCoef; i++)
@@ -580,7 +580,7 @@ static int read_fmt_adpcm(SDL_RWops *rw, fmt_t *fmt)
     } /* for */
 
     i = sizeof (ADPCMBLOCKHEADER) * fmt->wChannels;
-    fmt->fmt.adpcm.blockheaders = (ADPCMBLOCKHEADER *) malloc(i);
+    fmt->fmt.adpcm.blockheaders = (ADPCMBLOCKHEADER *) SDL_malloc(i);
     BAIL_IF_MACRO(fmt->fmt.adpcm.blockheaders == NULL, ERR_OUT_OF_MEMORY, 0);
 
     return(1);
@@ -625,7 +625,7 @@ static int read_fmt(SDL_RWops *rw, fmt_t *fmt)
             BAIL_MACRO("WAV: Unsupported format", 0);
     } /* switch */
 
-    assert(0);  /* shouldn't hit this point. */
+    SDL_assert(0);  /* shouldn't hit this point. */
     return(0);
 } /* read_fmt */
 
@@ -647,7 +647,7 @@ static int find_chunk(SDL_RWops *rw, Uint32 id)
 
             /* skip ahead and see what next chunk is... */
         BAIL_IF_MACRO(!read_le32(rw, &siz), NULL, 0);
-        assert(siz >= 0);
+        SDL_assert(siz >= 0);
         pos += (sizeof (Uint32) * 2) + siz;
         if (siz > 0)
             BAIL_IF_MACRO(SDL_RWseek(rw, pos, SEEK_SET) != pos, NULL, 0);
@@ -690,7 +690,7 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
     BAIL_IF_MACRO(!find_chunk(rw, dataID), "WAV: No data chunk.", 0);
     BAIL_IF_MACRO(!read_data_chunk(rw, &d), "WAV: Can't read data chunk.", 0);
 
-    w = (wav_t *) malloc(sizeof(wav_t));
+    w = (wav_t *) SDL_malloc(sizeof(wav_t));
     BAIL_IF_MACRO(w == NULL, ERR_OUT_OF_MEMORY, 0);
     w->fmt = fmt;
     fmt->total_bytes = w->bytesLeft = d.chunkSize;
@@ -716,16 +716,15 @@ static int WAV_open(Sound_Sample *sample, const char *ext)
 {
     int rc;
 
-    fmt_t *fmt = (fmt_t *) malloc(sizeof (fmt_t));
+    fmt_t *fmt = (fmt_t *) SDL_calloc(1, sizeof (fmt_t));
     BAIL_IF_MACRO(fmt == NULL, ERR_OUT_OF_MEMORY, 0);
-    memset(fmt, '\0', sizeof (fmt_t));
 
     rc = WAV_open_internal(sample, ext, fmt);
     if (!rc)
     {
         if (fmt->free != NULL)
             fmt->free(fmt);
-        free(fmt);
+        SDL_free(fmt);
     } /* if */
 
     return(rc);
@@ -740,8 +739,8 @@ static void WAV_close(Sound_Sample *sample)
     if (w->fmt->free != NULL)
         w->fmt->free(w->fmt);
 
-    free(w->fmt);
-    free(w);
+    SDL_free(w->fmt);
+    SDL_free(w);
 } /* WAV_close */
 
 

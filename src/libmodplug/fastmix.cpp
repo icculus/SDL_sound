@@ -147,7 +147,7 @@ CzCUBICSPLINE sspline;
 
      calculate coefficients for ideal lowpass filter (with cutoff = fc in 
 	0..1 (mapped to 0..nyquist))
-     c[-N..N] = (i==0) ? fc : sin(fc*pi*i)/(pi*i)
+     c[-N..N] = (i==0) ? fc : SDL_sin(fc*pi*i)/(pi*i)
 
      then apply selected window to coefficients
       c[-N..N] *= w(0..N)
@@ -201,51 +201,51 @@ public:
 		double	_LPos           = _LPosU-_LWidthM1Half;
 		double	_LPIdl          = 2.0*M_zPI/_LWidthM1;
 		double	_LWc,_LSi;
-		if( fabs(_LPos)<M_zEPS ) {	
+		if( SDL_fabs(_LPos)<M_zEPS ) {
 			_LWc	= 1.0;
 			_LSi	= _PCut;
 		} else {	
 			switch( _PType )
 			{	
 			case WFIR_HANN:
-				_LWc = 0.50 - 0.50 * cos(_LPIdl*_LPosU);
+				_LWc = 0.50 - 0.50 * SDL_cos(_LPIdl*_LPosU);
 				break;
 			case WFIR_HAMMING:
-				_LWc = 0.54 - 0.46 * cos(_LPIdl*_LPosU);
+				_LWc = 0.54 - 0.46 * SDL_cos(_LPIdl*_LPosU);
 				break;
 			case WFIR_BLACKMANEXACT:
-				_LWc = 0.42 - 0.50 * cos(_LPIdl*_LPosU) + 
-					0.08 * cos(2.0*_LPIdl*_LPosU);
+				_LWc = 0.42 - 0.50 * SDL_cos(_LPIdl*_LPosU) + 
+					0.08 * SDL_cos(2.0*_LPIdl*_LPosU);
 				break;
 			case WFIR_BLACKMAN3T61:
-				_LWc = 0.44959 - 0.49364 * cos(_LPIdl*_LPosU) + 
-					0.05677 * cos(2.0*_LPIdl*_LPosU);
+				_LWc = 0.44959 - 0.49364 * SDL_cos(_LPIdl*_LPosU) + 
+					0.05677 * SDL_cos(2.0*_LPIdl*_LPosU);
 				break;
 			case WFIR_BLACKMAN3T67:
-				_LWc = 0.42323 - 0.49755 * cos(_LPIdl*_LPosU) + 
-					0.07922 * cos(2.0*_LPIdl*_LPosU);
+				_LWc = 0.42323 - 0.49755 * SDL_cos(_LPIdl*_LPosU) + 
+					0.07922 * SDL_cos(2.0*_LPIdl*_LPosU);
 				break;
 			case WFIR_BLACKMAN4T92:
-				_LWc = 0.35875 - 0.48829 * cos(_LPIdl*_LPosU) + 
-					0.14128 * cos(2.0*_LPIdl*_LPosU) - 
-					0.01168 * cos(3.0*_LPIdl*_LPosU);
+				_LWc = 0.35875 - 0.48829 * SDL_cos(_LPIdl*_LPosU) + 
+					0.14128 * SDL_cos(2.0*_LPIdl*_LPosU) - 
+					0.01168 * SDL_cos(3.0*_LPIdl*_LPosU);
 				break;
 			case WFIR_BLACKMAN4T74:
-				_LWc = 0.40217 - 0.49703 * cos(_LPIdl*_LPosU) + 
-					0.09392 * cos(2.0*_LPIdl*_LPosU) - 
-					0.00183 * cos(3.0*_LPIdl*_LPosU);
+				_LWc = 0.40217 - 0.49703 * SDL_cos(_LPIdl*_LPosU) + 
+					0.09392 * SDL_cos(2.0*_LPIdl*_LPosU) - 
+					0.00183 * SDL_cos(3.0*_LPIdl*_LPosU);
 				break;
 			case WFIR_KAISER4T:
-				_LWc = 0.40243 - 0.49804 * cos(_LPIdl*_LPosU) + 
-					0.09831 * cos(2.0*_LPIdl*_LPosU) - 
-					0.00122 * cos(3.0*_LPIdl*_LPosU);
+				_LWc = 0.40243 - 0.49804 * SDL_cos(_LPIdl*_LPosU) + 
+					0.09831 * SDL_cos(2.0*_LPIdl*_LPosU) - 
+					0.00122 * SDL_cos(3.0*_LPIdl*_LPosU);
 				break;
 			default:
 				_LWc = 1.0;
 				break;
 			}
 			_LPos	 *= M_zPI;
-			_LSi	 = sin(_PCut*_LPos)/_LPos;
+			_LSi	 = SDL_sin(_PCut*_LPos)/_LPos;
 		}
 		return (float)(_LWc*_LSi);
 	}
@@ -1525,7 +1525,7 @@ UINT CSoundFile::CreateStereoMix(int count)
 		if (pChannel->dwFlags & CHN_REVERB) pbuffer = MixReverbBuffer;
 		if (pbuffer == MixReverbBuffer)
 		{
-			if (!gnReverbSend) memset(MixReverbBuffer, 0, count * 8);
+			if (!gnReverbSend) SDL_memset(MixReverbBuffer, 0, count * 8);
 			gnReverbSend += count;
 		}
 #else
@@ -2028,7 +2028,7 @@ done:;
 // Will fill in later.
 void MPPASMCALL X86_InitMixBuffer(int *pBuffer, UINT nSamples)
 {
-	memset(pBuffer, 0, nSamples * sizeof(int));
+	SDL_memset(pBuffer, 0, nSamples * sizeof(int));
 }
 #endif
 

@@ -300,7 +300,7 @@ static int ulong_get(shn_t *shn, SDL_RWops *rw, Sint32 *word)
 } /* ulong_get */
 
 
-static __inline__ int uint_get(int nbit, shn_t *shn, SDL_RWops *rw, Sint32 *w)
+static SDL_INLINE int uint_get(int nbit, shn_t *shn, SDL_RWops *rw, Sint32 *w)
 {
     return((shn->version == 0) ?
                 uvar_get(nbit, shn, rw, w) :
@@ -324,7 +324,7 @@ static void SHN_quit(void)
  * Look through the whole file for a SHN magic number. This is costly, so
  *  it should only be done if the user SWEARS they have a Shorten stream...
  */
-static __inline__ int extended_shn_magic_search(Sound_Sample *sample)
+static SDL_INLINE int extended_shn_magic_search(Sound_Sample *sample)
 {
     SDL_RWops *rw = ((Sound_SampleInternal *) sample->opaque)->rw;
     Uint32 word = 0;
@@ -346,7 +346,7 @@ static __inline__ int extended_shn_magic_search(Sound_Sample *sample)
 
 
 /* look for the magic number in the RWops and see what kind of file this is. */
-static __inline__ int determine_shn_version(Sound_Sample *sample,
+static SDL_INLINE int determine_shn_version(Sound_Sample *sample,
                                             const char *ext)
 {
     SDL_RWops *rw = ((Sound_SampleInternal *) sample->opaque)->rw;
@@ -361,7 +361,7 @@ static __inline__ int determine_shn_version(Sound_Sample *sample,
      *  check the whole stream, though.
      */
 
-    if (__Sound_strcasecmp(ext, "shn") == 0)
+    if (SDL_strcasecmp(ext, "shn") == 0)
         return(extended_shn_magic_search(sample));
 
     BAIL_IF_MACRO(SDL_RWread(rw, &magic, sizeof (magic), 1) != 1, NULL, -1);
@@ -411,7 +411,7 @@ static void init_shn_offset(Sint32 **offset, int nchan, int nblock, int ftype)
 } /* init_shn_offset */
 
 
-static __inline__ Uint16 cvt_shnftype_to_sdlfmt(Sint16 shntype)
+static SDL_INLINE Uint16 cvt_shnftype_to_sdlfmt(Sint16 shntype)
 {
     switch (shntype)
     {
@@ -443,7 +443,7 @@ static __inline__ Uint16 cvt_shnftype_to_sdlfmt(Sint16 shntype)
 } /* cvt_shnftype_to_sdlfmt */
 
 
-static __inline__ int skip_bits(shn_t *shn, SDL_RWops *rw)
+static SDL_INLINE int skip_bits(shn_t *shn, SDL_RWops *rw)
 {
     int i;
     Sint32 skip;
@@ -464,7 +464,7 @@ static Sint32 **shn_long2d(Uint32 n0, Uint32 n1)
     Sint32 **array0;
     Uint32 size = (n0 * sizeof (Sint32 *)) + (n0 * n1 * sizeof (Sint32));
 
-    array0 = (Sint32 **) malloc(size);
+    array0 = (Sint32 **) SDL_malloc(size);
     if (array0 != NULL)
     {
         int i;
@@ -494,7 +494,7 @@ static int verb_ReadLE32(shn_t *shn, SDL_RWops *rw, Uint32 *word)
         chars[i] = (Uint8) byte;
     } /* for */
 
-    memcpy(word, chars, sizeof (*word));
+    SDL_memcpy(word, chars, sizeof (*word));
     *word = SDL_SwapLE32(*word);
 
     return(1);
@@ -514,14 +514,14 @@ static int verb_ReadLE16(shn_t *shn, SDL_RWops *rw, Uint16 *word)
         chars[i] = (Uint8) byte;
     } /* for */
 
-    memcpy(word, chars, sizeof (*word));
+    SDL_memcpy(word, chars, sizeof (*word));
     *word = SDL_SwapLE16(*word);
 
     return(1);
 } /* verb_ReadLE16 */
 
 
-static __inline__ int parse_riff_header(shn_t *shn, Sound_Sample *sample)
+static SDL_INLINE int parse_riff_header(shn_t *shn, Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SDL_RWops *rw = internal->rw;
@@ -572,8 +572,8 @@ static int SHN_open(Sound_Sample *sample, const char *ext)
     Sint32 cmd;
     Sint32 chan;
 
-    memset(shn, '\0', sizeof (shn_t));
-    shn->getbufp = shn->getbuf = (Uint8 *) malloc(SHN_BUFSIZ);
+    SDL_memset(shn, '\0', sizeof (shn_t));
+    shn->getbufp = shn->getbuf = (Uint8 *) SDL_malloc(SHN_BUFSIZ);
     shn->datatype = SHN_TYPE_EOF;
     shn->nchan = DEFAULT_NCHAN;
     shn->blocksize = DEFAULT_BLOCK_SIZE;
@@ -594,7 +594,7 @@ static int SHN_open(Sound_Sample *sample, const char *ext)
 
     if (shn->version > 0)
     {
-        int rc = uint_get((int) (log((double) DEFAULT_BLOCK_SIZE) / M_LN2),
+        int rc = uint_get((int) (SDL_log((double) DEFAULT_BLOCK_SIZE) / M_LN2),
                            shn, rw, &shn->blocksize);
         if (!rc)  goto shn_open_puke;;
         if (!uint_get(SHN_LPCQSIZE, shn, rw, &shn->maxnlpc)) goto shn_open_puke;
@@ -618,7 +618,7 @@ static int SHN_open(Sound_Sample *sample, const char *ext)
 
     if (shn->maxnlpc > 0)
     {
-        shn->qlpc = (int *) malloc((Uint32) (shn->maxnlpc * sizeof (Sint32)));
+        shn->qlpc = (int *) SDL_malloc((Uint32) (shn->maxnlpc * sizeof (Sint32)));
         if (shn->qlpc == NULL)
         {
             __Sound_SetError(ERR_OUT_OF_MEMORY);
@@ -645,14 +645,14 @@ static int SHN_open(Sound_Sample *sample, const char *ext)
 
     shn->start_pos = SDL_RWtell(rw);
 
-    shn = (shn_t *) malloc(sizeof (shn_t));
+    shn = (shn_t *) SDL_malloc(sizeof (shn_t));
     if (shn == NULL)
     {
         __Sound_SetError(ERR_OUT_OF_MEMORY);
         goto shn_open_puke;
     } /* if */
 
-    memcpy(shn, &_shn, sizeof (shn_t));
+    SDL_memcpy(shn, &_shn, sizeof (shn_t));
     internal->decoder_private = shn;
 
     SNDDBG(("SHN: Accepting data stream.\n"));
@@ -661,13 +661,13 @@ static int SHN_open(Sound_Sample *sample, const char *ext)
 
 shn_open_puke:
     if (_shn.getbuf)
-        free(_shn.getbuf);
+        SDL_free(_shn.getbuf);
     if (_shn.buffer != NULL)
-        free(_shn.buffer);
+        SDL_free(_shn.buffer);
     if (_shn.offset != NULL)
-        free(_shn.offset);
+        SDL_free(_shn.offset);
     if (_shn.qlpc != NULL)
-        free(_shn.qlpc);
+        SDL_free(_shn.qlpc);
 
     return(0);
 } /* SHN_open */
@@ -711,21 +711,21 @@ static void SHN_close(Sound_Sample *sample)
     shn_t *shn = (shn_t *) internal->decoder_private;
 
     if (shn->qlpc != NULL)
-        free(shn->qlpc);
+        SDL_free(shn->qlpc);
 
     if (shn->backBuffer != NULL)
-        free(shn->backBuffer);
+        SDL_free(shn->backBuffer);
 
     if (shn->offset != NULL)
-        free(shn->offset);
+        SDL_free(shn->offset);
 
     if (shn->buffer != NULL)
-        free(shn->buffer);
+        SDL_free(shn->buffer);
 
     if (shn->getbuf != NULL)
-        free(shn->getbuf);
+        SDL_free(shn->getbuf);
 
-    free(shn);
+    SDL_free(shn);
 } /* SHN_close */
 
 
@@ -852,11 +852,11 @@ static Uint32 put_to_buffers(Sound_Sample *sample, Uint32 bw)
     int datasize = ((sample->actual.format & 0xFF) / 8);
     Uint32 bsiz = shn->nchan * nitem * datasize;
 
-    assert(shn->backBufLeft == 0);
+    SDL_assert(shn->backBufLeft == 0);
 
     if (shn->backBufferSize < bsiz)
     {
-        void *rc = realloc(shn->backBuffer, bsiz);
+        void *rc = SDL_realloc(shn->backBuffer, bsiz);
         if (rc == NULL)
         {
             sample->flags |= SOUND_SAMPLEFLAG_ERROR;
@@ -1033,9 +1033,9 @@ static Uint32 put_to_buffers(Sound_Sample *sample, Uint32 bw)
     } /* switch */
 
     i = MIN_MACRO(internal->buffer_size - bw, bsiz);
-    memcpy((char *)internal->buffer + bw, shn->backBuffer, i);
+    SDL_memcpy((char *)internal->buffer + bw, shn->backBuffer, i);
     shn->backBufLeft = bsiz - i;
-    memcpy(shn->backBuffer, shn->backBuffer + i, shn->backBufLeft);
+    SDL_memcpy(shn->backBuffer, shn->backBuffer + i, shn->backBufLeft);
     return(i);
 } /* put_to_buffers */
 
@@ -1052,18 +1052,18 @@ static Uint32 SHN_read(Sound_Sample *sample)
     shn_t *shn = (shn_t *) internal->decoder_private;
     Sint32 cmd;
 
-    assert(shn->backBufLeft >= 0);
+    SDL_assert(shn->backBufLeft >= 0);
 
         /* see if there are leftovers to copy... */
     if (shn->backBufLeft > 0)
     {
         retval = MIN_MACRO(shn->backBufLeft, internal->buffer_size);
-        memcpy(internal->buffer, shn->backBuffer, retval);
+        SDL_memcpy(internal->buffer, shn->backBuffer, retval);
         shn->backBufLeft -= retval;
-        memcpy(shn->backBuffer, shn->backBuffer + retval, shn->backBufLeft);
+        SDL_memcpy(shn->backBuffer, shn->backBuffer + retval, shn->backBufLeft);
     } /* if */
 
-    assert((shn->backBufLeft == 0) || (retval == internal->buffer_size));
+    SDL_assert((shn->backBufLeft == 0) || (retval == internal->buffer_size));
 
     /* get commands from file and execute them */
     while (retval < internal->buffer_size)
@@ -1253,7 +1253,7 @@ static Uint32 SHN_read(Sound_Sample *sample)
             } /* case */
 
             case SHN_FN_BLOCKSIZE:
-                if (!uint_get((int) (log((double) shn->blocksize) / M_LN2),
+                if (!uint_get((int) (SDL_log((double) shn->blocksize) / M_LN2),
                               shn, rw, &shn->blocksize))
                 {
                     sample->flags |= SOUND_SAMPLEFLAG_ERROR;

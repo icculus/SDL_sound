@@ -108,95 +108,95 @@ static void CoreAudio_quit(void)
 */
 static AudioFileTypeID CoreAudio_GetAudioTypeForExtension(const char* file_extension)
 {
-	if( (__Sound_strcasecmp(file_extension, "aif") == 0)
-		|| (__Sound_strcasecmp(file_extension, "aiff") == 0)
-		|| (__Sound_strcasecmp(file_extension, "aifc") == 0)
+	if( (SDL_strcasecmp(file_extension, "aif") == 0)
+		|| (SDL_strcasecmp(file_extension, "aiff") == 0)
+		|| (SDL_strcasecmp(file_extension, "aifc") == 0)
 	)
 	{
 		return kAudioFileAIFCType;
 	}
-	else if( (__Sound_strcasecmp(file_extension, "wav") == 0)
-		|| (__Sound_strcasecmp(file_extension, "wave") == 0)
+	else if( (SDL_strcasecmp(file_extension, "wav") == 0)
+		|| (SDL_strcasecmp(file_extension, "wave") == 0)
 	)
 	{
 		return kAudioFileWAVEType;
 	}
-	else if( (__Sound_strcasecmp(file_extension, "mp3") == 0)
+	else if( (SDL_strcasecmp(file_extension, "mp3") == 0)
 	)
 	{
 		return kAudioFileMP3Type;
 	}
-	else if( (__Sound_strcasecmp(file_extension, "mp4") == 0)
+	else if( (SDL_strcasecmp(file_extension, "mp4") == 0)
 	)
 	{
 		return kAudioFileMPEG4Type;
 	}
-	else if( (__Sound_strcasecmp(file_extension, "m4a") == 0)
+	else if( (SDL_strcasecmp(file_extension, "m4a") == 0)
 	)
 	{
 		return kAudioFileM4AType;
 	}
-	else if( (__Sound_strcasecmp(file_extension, "aac") == 0)
+	else if( (SDL_strcasecmp(file_extension, "aac") == 0)
 	)
 	{
 		return kAudioFileAAC_ADTSType;
 	}
-	else if( (__Sound_strcasecmp(file_extension, "aac") == 0)
+	else if( (SDL_strcasecmp(file_extension, "aac") == 0)
 	)
 	{
 		return kAudioFileAAC_ADTSType;
 	}
-	else if( (__Sound_strcasecmp(file_extension, "caf") == 0)
-		|| (__Sound_strcasecmp(file_extension, "caff") == 0)
+	else if( (SDL_strcasecmp(file_extension, "caf") == 0)
+		|| (SDL_strcasecmp(file_extension, "caff") == 0)
 	)
 	{
 		return kAudioFileCAFType;
 	}
-	else if( (__Sound_strcasecmp(file_extension, "Sd2f") == 0)
-		|| (__Sound_strcasecmp(file_extension, "sd2") == 0)
+	else if( (SDL_strcasecmp(file_extension, "Sd2f") == 0)
+		|| (SDL_strcasecmp(file_extension, "sd2") == 0)
 	)
 	{
 		return kAudioFileSoundDesigner2Type;
 	}
-	else if( (__Sound_strcasecmp(file_extension, "au") == 0)
-		|| (__Sound_strcasecmp(file_extension, "next") == 0)
+	else if( (SDL_strcasecmp(file_extension, "au") == 0)
+		|| (SDL_strcasecmp(file_extension, "next") == 0)
 	)
 	{
 		return kAudioFileNextType;
 	}
-	else if( (__Sound_strcasecmp(file_extension, "mp2") == 0)
+	else if( (SDL_strcasecmp(file_extension, "mp2") == 0)
 	)
 	{
 		return kAudioFileMP2Type;
 	}
-	else if( (__Sound_strcasecmp(file_extension, "mp1") == 0)
+	else if( (SDL_strcasecmp(file_extension, "mp1") == 0)
 	)
 	{
 		return kAudioFileMP1Type;
 	}
-	else if( (__Sound_strcasecmp(file_extension, "ac3") == 0)
+	else if( (SDL_strcasecmp(file_extension, "ac3") == 0)
 	)
 	{
 		return kAudioFileAC3Type;
 	}
-	else if( (__Sound_strcasecmp(file_extension, "3gpp") == 0)
+	else if( (SDL_strcasecmp(file_extension, "3gpp") == 0)
 	)
 	{
 		return kAudioFile3GPType;
 	}
-	else if( (__Sound_strcasecmp(file_extension, "3gp2") == 0)
+	else if( (SDL_strcasecmp(file_extension, "3gp2") == 0)
 	)
 	{
 		return kAudioFile3GP2Type;
 	}
-	else if( (__Sound_strcasecmp(file_extension, "amrf") == 0)
-		|| (__Sound_strcasecmp(file_extension, "amr") == 0)
+	else if( (SDL_strcasecmp(file_extension, "amrf") == 0)
+		|| (SDL_strcasecmp(file_extension, "amr") == 0)
 	)
 	{
 		return kAudioFileAMRType;
 	}
-	else if( (__Sound_strcasecmp(file_extension, "ima4") == 0)
-		|| (__Sound_strcasecmp(file_extension, "ima") == 0)
+	else if( (SDL_strcasecmp(file_extension, "ima4") == 0)
+		|| (SDL_strcasecmp(file_extension, "ima") == 0)
 	)
 	{
 		/* not sure about this one */
@@ -285,11 +285,11 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 	UInt32 format_size;
 	
 
-	core_audio_file_container = (CoreAudioFileContainer*)malloc(sizeof(CoreAudioFileContainer));
+	core_audio_file_container = (CoreAudioFileContainer*)SDL_malloc(sizeof(CoreAudioFileContainer));
 	BAIL_IF_MACRO(core_audio_file_container == NULL, ERR_OUT_OF_MEMORY, 0);
 
 
-	audio_file_id = (AudioFileID*)malloc(sizeof(AudioFileID));
+	audio_file_id = (AudioFileID*)SDL_malloc(sizeof(AudioFileID));
 	BAIL_IF_MACRO(audio_file_id == NULL, ERR_OUT_OF_MEMORY, 0);
 
 	error_result = AudioFileOpenWithCallbacks(
@@ -304,8 +304,8 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 	if (error_result != noErr)
 	{
 		AudioFileClose(*audio_file_id);
-		free(audio_file_id);
-		free(core_audio_file_container);
+		SDL_free(audio_file_id);
+		SDL_free(core_audio_file_container);
 		SNDDBG(("Core Audio: can't grok data. reason: [%s].\n", CoreAudio_FourCCToString(error_result)));
 		BAIL_MACRO("Core Audio: Not valid audio data.", 0);
 	} /* if */
@@ -320,8 +320,8 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
     if (error_result != noErr)
 	{
 		AudioFileClose(*audio_file_id);
-		free(audio_file_id);
-		free(core_audio_file_container);
+		SDL_free(audio_file_id);
+		SDL_free(core_audio_file_container);
 		SNDDBG(("Core Audio: AudioFileGetProperty failed. reason: [%s]", CoreAudio_FourCCToString(error_result)));
 		BAIL_MACRO("Core Audio: Not valid audio data.", 0);
 	} /* if */
@@ -336,8 +336,8 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
     if (error_result != noErr)
 	{
 		AudioFileClose(*audio_file_id);
-		free(audio_file_id);
-		free(core_audio_file_container);
+		SDL_free(audio_file_id);
+		SDL_free(core_audio_file_container);
 		SNDDBG(("Core Audio: AudioFileGetProperty failed. reason: [%s].\n", CoreAudio_FourCCToString(error_result)));
 		BAIL_MACRO("Core Audio: Not valid audio data.", 0);
 	} /* if */
@@ -447,8 +447,8 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 	if(error_result != noErr)
 	{
 		AudioFileClose(*audio_file_id);
-		free(audio_file_id);
-		free(core_audio_file_container);
+		SDL_free(audio_file_id);
+		SDL_free(core_audio_file_container);
 		SNDDBG(("Core Audio: can't wrap data. reason: [%s].\n", CoreAudio_FourCCToString(error_result)));
 		BAIL_MACRO("Core Audio: Failed to wrap data.", 0);
 	} /* if */
@@ -536,8 +536,8 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 	{
 		ExtAudioFileDispose(core_audio_file_container->extAudioFileRef);
 		AudioFileClose(*audio_file_id);
-		free(audio_file_id);
-		free(core_audio_file_container);
+		SDL_free(audio_file_id);
+		SDL_free(core_audio_file_container);
 		SNDDBG(("Core Audio: ExtAudioFileSetProperty(kExtAudioFileProperty_ClientDataFormat) failed, reason: [%s].\n", CoreAudio_FourCCToString(error_result)));
 		BAIL_MACRO("Core Audio: Not valid audio data.", 0);
 	}	
@@ -551,7 +551,7 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 	/* Copy the output format to the audio_description that was passed in so the 
 	 * info will be returned to the user.
 	 */
-	memcpy(core_audio_file_container->outputFormat, &output_format, sizeof(AudioStreamBasicDescription));
+	SDL_memcpy(core_audio_file_container->outputFormat, &output_format, sizeof(AudioStreamBasicDescription));
 
 	
 
@@ -564,12 +564,11 @@ static void CoreAudio_close(Sound_Sample *sample)
 	Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
 	CoreAudioFileContainer* core_audio_file_container = (CoreAudioFileContainer *) internal->decoder_private;
 
-	free(core_audio_file_container->outputFormat);
+	SDL_free(core_audio_file_container->outputFormat);
 	ExtAudioFileDispose(core_audio_file_container->extAudioFileRef);
 	AudioFileClose(*core_audio_file_container->audioFileID);
-	free(core_audio_file_container->audioFileID);
-	free(core_audio_file_container);
-		
+	SDL_free(core_audio_file_container->audioFileID);
+	SDL_free(core_audio_file_container);
 } /* CoreAudio_close */
 
 
@@ -599,7 +598,7 @@ static Uint32 CoreAudio_read(Sound_Sample *sample)
 //	printf("buffer_size_in_frames=%ld, internal->buffer_size=%d, internal->buffer=0x%x outputFormat->mBytesPerFrame=%d, sample->buffer_size=%d\n", buffer_size_in_frames, internal->buffer_size, internal->buffer, core_audio_file_container->outputFormat->mBytesPerFrame, sample->buffer_size); 
 
 
-//	void* temp_buffer = malloc(max_buffer_size);
+//	void* temp_buffer = SDL_malloc(max_buffer_size);
 	
 	AudioBufferList audio_buffer_list;
 	audio_buffer_list.mNumberBuffers = 1;

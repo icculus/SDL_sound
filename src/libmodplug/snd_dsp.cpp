@@ -130,10 +130,10 @@ void CSoundFile::InitializeDSP(BOOL bReset)
 	nDolbyHiFltPos = nDolbyHiFltSum = 0;
 	if (gdwSoundSetup & SNDMIX_SURROUND)
 	{
-		memset(DolbyLoFilterBuffer, 0, sizeof(DolbyLoFilterBuffer));
-		memset(DolbyHiFilterBuffer, 0, sizeof(DolbyHiFilterBuffer));
-		memset(DolbyLoFilterDelay, 0, sizeof(DolbyLoFilterDelay));
-		memset(SurroundBuffer, 0, sizeof(SurroundBuffer));
+		SDL_memset(DolbyLoFilterBuffer, 0, sizeof(DolbyLoFilterBuffer));
+		SDL_memset(DolbyHiFilterBuffer, 0, sizeof(DolbyHiFilterBuffer));
+		SDL_memset(DolbyLoFilterDelay, 0, sizeof(DolbyLoFilterDelay));
+		SDL_memset(SurroundBuffer, 0, sizeof(SurroundBuffer));
 		nSurroundSize = (gdwMixingFreq * m_nProLogicDelay) / 1000;
 		if (nSurroundSize > SURROUNDBUFFERSIZE) nSurroundSize = SURROUNDBUFFERSIZE;
 		if (m_nProLogicDepth < 8) nDolbyDepth = (32 >> m_nProLogicDepth) + 32;
@@ -160,13 +160,13 @@ void CSoundFile::InitializeDSP(BOOL bReset)
 			if (nReverbSize3 > REVERBBUFFERSIZE3) nReverbSize3 = REVERBBUFFERSIZE3;
 			nReverbSize4 = (nReverbSize * 7) / 19;
 			if (nReverbSize4 > REVERBBUFFERSIZE4) nReverbSize4 = REVERBBUFFERSIZE4;
-			memset(ReverbLoFilterBuffer, 0, sizeof(ReverbLoFilterBuffer));
-			memset(ReverbLoFilterDelay, 0, sizeof(ReverbLoFilterDelay));
-			memset(ReverbBuffer, 0, sizeof(ReverbBuffer));
-			memset(ReverbBuffer2, 0, sizeof(ReverbBuffer2));
-			memset(ReverbBuffer3, 0, sizeof(ReverbBuffer3));
-			memset(ReverbBuffer4, 0, sizeof(ReverbBuffer4));
-			memset(gRvbLowPass, 0, sizeof(gRvbLowPass));
+			SDL_memset(ReverbLoFilterBuffer, 0, sizeof(ReverbLoFilterBuffer));
+			SDL_memset(ReverbLoFilterDelay, 0, sizeof(ReverbLoFilterDelay));
+			SDL_memset(ReverbBuffer, 0, sizeof(ReverbBuffer));
+			SDL_memset(ReverbBuffer2, 0, sizeof(ReverbBuffer2));
+			SDL_memset(ReverbBuffer3, 0, sizeof(ReverbBuffer3));
+			SDL_memset(ReverbBuffer4, 0, sizeof(ReverbBuffer4));
+			SDL_memset(gRvbLowPass, 0, sizeof(gRvbLowPass));
 		}
 	} else nReverbSize = 0;
 #endif
@@ -190,8 +190,8 @@ void CSoundFile::InitializeDSP(BOOL bReset)
 	if (bResetBass)
 	{
 		nXBassSum = nXBassBufferPos = nXBassDlyPos = 0;
-		memset(XBassBuffer, 0, sizeof(XBassBuffer));
-		memset(XBassDelay, 0, sizeof(XBassDelay));
+		SDL_memset(XBassBuffer, 0, sizeof(XBassBuffer));
+		SDL_memset(XBassDelay, 0, sizeof(XBassDelay));
 	}
 }
 

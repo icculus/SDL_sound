@@ -94,7 +94,7 @@ static inline void run_pre_mix(void)
     if (premixer)
         premixer(mixbuf, mixbufsize);
     else  /* !!! FIXME: Do memset in another thread after mix is done. */
-        memset(mixbuf, '\0', mixbufsize * sizeof (float) * 2);
+        SDL_memset(mixbuf, '\0', mixbufsize * sizeof (float) * 2);
 } /* run_pre_mix */
 
 

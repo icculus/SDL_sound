@@ -274,7 +274,7 @@ static Uint32 read_sample_fmt_normal(Sound_Sample *sample)
     Uint32 max = (internal->buffer_size < (Uint32) a->bytesLeft) ?
                     internal->buffer_size : (Uint32) a->bytesLeft;
 
-    assert(max > 0);
+    SDL_assert(max > 0);
 
         /*
          * We don't actually do any decoding, so we read the AIFF data
@@ -391,7 +391,7 @@ static int find_chunk(SDL_RWops *rw, Uint32 id)
 
         BAIL_IF_MACRO(SDL_RWread(rw, &siz, sizeof (siz), 1) != 1, NULL, 0);
         siz = SDL_SwapBE32(siz);
-        assert(siz > 0);
+        SDL_assert(siz > 0);
         BAIL_IF_MACRO(SDL_RWseek(rw, siz, SEEK_CUR) == -1, NULL, 0);
     } /* while */
 
@@ -418,7 +418,7 @@ static int read_fmt(SDL_RWops *rw, comm_t *c, fmt_t *fmt)
             BAIL_MACRO("AIFF: Unsupported format", 0);
     } /* switch */
 
-    assert(0);  /* shouldn't hit this point. */
+    SDL_assert(0);  /* shouldn't hit this point. */
     return(0);
 } /* read_fmt */
 
@@ -473,12 +473,12 @@ static int AIFF_open(Sound_Sample *sample, const char *ext)
 
     BAIL_IF_MACRO(c.sampleRate == 0, "AIFF: Unsupported sample rate.", 0);
 
-    a = (aiff_t *) malloc(sizeof(aiff_t));
+    a = (aiff_t *) SDL_malloc(sizeof(aiff_t));
     BAIL_IF_MACRO(a == NULL, ERR_OUT_OF_MEMORY, 0);
 
     if (!read_fmt(rw, &c, &(a->fmt)))
     {
-        free(a);
+        SDL_free(a);
         return(0);
     } /* if */
 
@@ -486,13 +486,13 @@ static int AIFF_open(Sound_Sample *sample, const char *ext)
 
     if (!find_chunk(rw, ssndID))
     {
-        free(a);
+        SDL_free(a);
         BAIL_MACRO("AIFF: No sound data chunk.", 0);
     } /* if */
 
     if (!read_ssnd_chunk(rw, &s))
     {
-        free(a);
+        SDL_free(a);
         BAIL_MACRO("AIFF: Can't read sound data chunk.", 0);
     } /* if */
 
@@ -512,7 +512,7 @@ static void AIFF_close(Sound_Sample *sample)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     aiff_t *a = (aiff_t *) internal->decoder_private;
     a->fmt.free(&(a->fmt));
-    free(a);
+    SDL_free(a);
 } /* AIFF_close */
 
 

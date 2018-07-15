@@ -25,35 +25,11 @@
 
 #include "SDL_sound.h"
 
-/* SDL 1.2.4 defines this, but better safe than sorry. */
-#if (!defined(__inline__))
-#  define __inline__
-#endif
-
 #if (defined DEBUG_CHATTER)
-#define SNDDBG(x) printf x
+#define SNDDBG(x) SDL_LogDebug x
 #else
 #define SNDDBG(x)
 #endif
-
-#if HAVE_ASSERT_H
-#  include <assert.h>
-#endif
-
-#ifdef _WIN32_WCE
-    extern char *strrchr(const char *s, int c);
-#   ifdef NDEBUG
-#       define assert(x)
-#   else
-#       define assert(x) if(!x) { fprintf(stderr,"Assertion failed in %s, line %s.\n",__FILE__,__LINE__); fclose(stderr); fclose(stdout); exit(1); }
-#   endif
-#endif
- 
-
-#if (!defined assert)  /* if all else fails. */
-#  define assert(x)
-#endif
-
 
 #ifndef SOUND_SUPPORTS_MODPLUG
 #define SOUND_SUPPORTS_MODPLUG 1
@@ -304,11 +280,6 @@ void __Sound_SetError(const char *err);
  *  audio data characteristics.
  */
 Uint32 __Sound_convertMsToBytePos(Sound_AudioInfo *info, Uint32 ms);
-
-/*
- * Use this if you need a cross-platform stricmp().
- */
-int __Sound_strcasecmp(const char *x, const char *y);
 
 
 /* These get used all over for lessening code clutter. */

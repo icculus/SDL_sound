@@ -187,7 +187,7 @@ BOOL CSoundFile::ReadMod(const BYTE *lpStream, DWORD dwMemLength)
 	m_nChannels = 4;
 	pMagic = (PMODMAGIC)(lpStream+dwMemPos+sizeof(MODSAMPLE)*31);
 	// Check Mod Magic
-	memcpy(s, pMagic->Magic, 4);
+	SDL_memcpy(s, pMagic->Magic, 4);
 	if ((IsMagic(s, "M.K.")) || (IsMagic(s, "M!K!"))
 	 || (IsMagic(s, "M&K!")) || (IsMagic(s, "N.T."))) m_nChannels = 4; else
 	if ((IsMagic(s, "CD81")) || (IsMagic(s, "OKTA"))) m_nChannels = 8; else
@@ -208,7 +208,7 @@ BOOL CSoundFile::ReadMod(const BYTE *lpStream, DWORD dwMemLength)
 		MODINSTRUMENT *psmp = &Ins[i];
 		UINT loopstart, looplen;
 
-		memcpy(m_szNames[i], pms->name, 22);
+		SDL_memcpy(m_szNames[i], pms->name, 22);
 		m_szNames[i][22] = 0;
 		psmp->uFlags = 0;
 		psmp->nLength = bswapBE16(pms->length)*2;
@@ -251,8 +251,8 @@ BOOL CSoundFile::ReadMod(const BYTE *lpStream, DWORD dwMemLength)
 	pMagic = (PMODMAGIC)(lpStream+dwMemPos);
 	dwMemPos += sizeof(MODMAGIC);
 	if (m_nSamples == 15) dwMemPos -= 4;
-	memset(Order, 0,sizeof(Order));
-	memcpy(Order, pMagic->Orders, 128);
+	SDL_memset(Order, 0,sizeof(Order));
+	SDL_memcpy(Order, pMagic->Orders, 128);
 
 	UINT nbp, nbpbuggy, nbpbuggy2, norders;
 
@@ -300,7 +300,7 @@ BOOL CSoundFile::ReadMod(const BYTE *lpStream, DWORD dwMemLength)
 	m_nDefaultTempo = 125;
 	m_nMinPeriod = 14 << 2;
 	m_nMaxPeriod = 3424 << 2;
-	memcpy(m_szNames, lpStream, 20);
+	SDL_memcpy(m_szNames, lpStream, 20);
 	// Setting channels pan
 	for (UINT ich=0; ich<m_nChannels; ich++)
 	{
@@ -340,7 +340,7 @@ BOOL CSoundFile::ReadMod(const BYTE *lpStream, DWORD dwMemLength)
 		LPSTR p = (LPSTR)(lpStream+dwMemPos);
 		UINT flags = 0;
 		if (dwMemPos + 5 >= dwMemLength) break;
-		if (!strnicmp(p, "ADPCM", 5))
+		if (!SDL_strncasecmp(p, "ADPCM", 5))
 		{
 			flags = 3;
 			p += 5;
@@ -378,11 +378,11 @@ BOOL CSoundFile::SaveMod(LPCSTR lpszFileName, UINT nPacking)
 
 	if ((!m_nChannels) || (!lpszFileName)) return FALSE;
 	if ((f = fopen(lpszFileName, "wb")) == NULL) return FALSE;
-	memset(ord, 0, sizeof(ord));
-	memset(inslen, 0, sizeof(inslen));
+	SDL_memset(ord, 0, sizeof(ord));
+	SDL_memset(inslen, 0, sizeof(inslen));
 	if (m_nInstruments)
 	{
-		memset(insmap, 0, sizeof(insmap));
+		SDL_memset(insmap, 0, sizeof(insmap));
 		for (UINT i=1; i<32; i++) if (Headers[i])
 		{
 			for (UINT j=0; j<128; j++) if (Headers[i]->Keyboard[j])
@@ -401,7 +401,7 @@ BOOL CSoundFile::SaveMod(LPCSTR lpszFileName, UINT nPacking)
 	for (UINT iins=1; iins<=31; iins++)
 	{
 		MODINSTRUMENT *pins = &Ins[insmap[iins]];
-		memcpy(bTab, m_szNames[iins],22);
+		SDL_memcpy(bTab, m_szNames[iins],22);
 		inslen[iins] = pins->nLength;
 		if (inslen[iins] > 0x1fff0) inslen[iins] = 0x1fff0;
 		bTab[22] = inslen[iins] >> 9;
@@ -431,11 +431,11 @@ BOOL CSoundFile::SaveMod(LPCSTR lpszFileName, UINT nPacking)
 	bTab[1] = m_nRestartPos;
 	fwrite(bTab, 2, 1, f);
 	// Writing pattern list
-	if (norders) memcpy(ord, Order, norders);
+	if (norders) SDL_memcpy(ord, Order, norders);
 	fwrite(ord, 128, 1, f);
 	// Writing signature
 	if (m_nChannels == 4)
-		lstrcpy((LPSTR)&bTab, "M.K.");
+		SDL_strlcpy((LPSTR)&bTab, "M.K.", sizeof (bTab));
 	else
 		SDL_snprintf((LPSTR)&bTab, sizeof (bTab), "%luCHN", m_nChannels);
 	fwrite(bTab, 4, 1, f);
@@ -471,7 +471,7 @@ BOOL CSoundFile::SaveMod(LPCSTR lpszFileName, UINT nPacking)
 			fwrite(s, m_nChannels, 4, f);
 		} else
 		{
-			memset(s, 0, m_nChannels*4);
+			SDL_memset(s, 0, m_nChannels*4);
 			fwrite(s, m_nChannels, 4, f);
 		}
 	}

@@ -11,20 +11,7 @@
 extern "C" {
 #endif
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-# if defined(MODPLUG_BUILD) && defined(DLL_EXPORT)	/* building libmodplug as a dll for windows */
-#   define MODPLUG_EXPORT __declspec(dllexport)
-# elif defined(MODPLUG_BUILD) || defined(MODPLUG_STATIC)	/* building or using static libmodplug for windows */
-#   define MODPLUG_EXPORT
-# else
-#   define MODPLUG_EXPORT __declspec(dllimport)			/* using libmodplug dll for windows */
-# endif
-/* FIXME: USE VISIBILITY ATTRIBUTES HERE */
-#elif defined(MODPLUG_BUILD)
 #define MODPLUG_EXPORT
-#else
-#define MODPLUG_EXPORT
-#endif
 
 struct _ModPlugFile;
 typedef struct _ModPlugFile ModPlugFile;
@@ -153,8 +140,10 @@ MODPLUG_EXPORT unsigned int ModPlug_NumInstruments(ModPlugFile* file);
 MODPLUG_EXPORT unsigned int ModPlug_NumSamples(ModPlugFile* file);
 MODPLUG_EXPORT unsigned int ModPlug_NumPatterns(ModPlugFile* file);
 MODPLUG_EXPORT unsigned int ModPlug_NumChannels(ModPlugFile* file);
+#if 0  // !!! FIXME: buffer can overflow. Unused anyhow. Remove.
 MODPLUG_EXPORT unsigned int ModPlug_SampleName(ModPlugFile* file, unsigned int qual, char* buff);
 MODPLUG_EXPORT unsigned int ModPlug_InstrumentName(ModPlugFile* file, unsigned int qual, char* buff);
+#endif
 
 /*
  * Retrieve pattern note-data

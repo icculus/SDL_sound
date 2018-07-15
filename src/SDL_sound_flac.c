@@ -150,7 +150,7 @@ static void free_flac(flac_t *f)
 {
     d_finish(f->decoder);
     d_delete(f->decoder);
-    free(f);
+    SDL_free(f);
 } /* free_flac */
 
 
@@ -407,7 +407,7 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
      */
     for (i = 0; extensions_flac[i] != NULL; i++)
     {
-        if (__Sound_strcasecmp(ext, extensions_flac[i]) == 0)
+        if (SDL_strcasecmp(ext, extensions_flac[i]) == 0)
         {
             has_extension = 1;
             break;
@@ -425,13 +425,13 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
         BAIL_IF_MACRO(rc < 0, ERR_IO_ERROR, 0);
     } /* if */
 
-    f = (flac_t *) malloc(sizeof (flac_t));
+    f = (flac_t *) SDL_malloc(sizeof (flac_t));
     BAIL_IF_MACRO(f == NULL, ERR_OUT_OF_MEMORY, 0);
     
     decoder = d_new();
     if (decoder == NULL)
     {
-        free(f);
+        SDL_free(f);
         BAIL_MACRO(ERR_OUT_OF_MEMORY, 0);
     } /* if */       
 

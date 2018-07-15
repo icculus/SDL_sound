@@ -67,7 +67,7 @@ static void audio_callback(void *userdata, Uint8 *stream, int len)
             if (data->decoded_bytes == 0)
             {
                 /* ...there isn't any more data to read! */
-                memset(stream + bw, '\0', len - bw);  /* write silence. */
+                SDL_memset(stream + bw, '\0', len - bw);  /* write silence. */
                 global_done_flag = 1;
                 return;  /* we're done playback, one way or another. */
             } /* if */
@@ -82,7 +82,7 @@ static void audio_callback(void *userdata, Uint8 *stream, int len)
         if (cpysize > 0)
         {
             /* write this iteration's data to the device. */
-            memcpy(stream + bw, (Uint8 *) data->decoded_ptr, cpysize);
+            SDL_memcpy(stream + bw, (Uint8 *) data->decoded_ptr, cpysize);
 
             /* update state for next iteration or callback */
             bw += cpysize;
@@ -98,7 +98,7 @@ static void playOneSoundFile(const char *fname)
 {
     PlaysoundAudioCallbackData data;
 
-    memset(&data, '\0', sizeof (PlaysoundAudioCallbackData));
+    SDL_zero(data);
     data.sample = Sound_NewSampleFromFile(fname, NULL, 65536);
     if (data.sample == NULL)
     {

@@ -95,7 +95,7 @@ BOOL CSoundFile::ReadDMF(const BYTE *lpStream, DWORD dwMemLength)
 	if ((!lpStream) || (dwMemLength < 1024)) return FALSE;
 	if ((pfh->id != 0x464d4444) || (!pfh->version) || (pfh->version & 0xF0)) return FALSE;
 	dwMemPos = 66;
-	memcpy(m_szNames[0], pfh->songname, 30);
+	SDL_memcpy(m_szNames[0], pfh->songname, 30);
 	m_szNames[0][30] = 0;
 	m_nType = MOD_TYPE_DMF;
 	m_nChannels = 0;
@@ -185,7 +185,7 @@ BOOL CSoundFile::ReadDMF(const BYTE *lpStream, DWORD dwMemLength)
 					UINT glbinfobyte = 0;
 					UINT pbeat = (pt->beat & 0xf0) ? pt->beat>>4 : 8;
 					BOOL tempochange = (pt->beat & 0xf0) ? TRUE : FALSE;
-					memset(infobyte, 0, sizeof(infobyte));
+					SDL_memset(infobyte, 0, sizeof(infobyte));
 					for (UINT row=0; row<ticks; row++)
 					{
 						MODCOMMAND *p = &m[row*m_nChannels];
@@ -213,7 +213,8 @@ BOOL CSoundFile::ReadDMF(const BYTE *lpStream, DWORD dwMemLength)
 						// Parse channels
 						for (UINT i=0; i<tracks; i++) if (!infobyte[i])
 						{
-							MODCOMMAND cmd = {0,0,0,0,0,0};
+							MODCOMMAND cmd;
+                            SDL_zero(cmd);
 							BYTE info = lpStream[d++];
 							if (info & 0x80) infobyte[i] = lpStream[d++];
 							// Instrument
@@ -392,7 +393,7 @@ BOOL CSoundFile::ReadDMF(const BYTE *lpStream, DWORD dwMemLength)
 						if (namelen)
 						{
 							UINT rlen = (namelen < 32) ? namelen : 31;
-							memcpy(m_szNames[iSmp], lpStream+dwPos+1, rlen);
+							SDL_memcpy(m_szNames[iSmp], lpStream+dwPos+1, rlen);
 							m_szNames[iSmp][rlen] = 0;
 						}
 						dwPos += namelen + 1;
@@ -575,7 +576,7 @@ int DMFUnpack(LPBYTE psample, LPBYTE ibuf, LPBYTE ibufmax, UINT maxlen)
 	UINT actnode;
 	BYTE value, sign, delta = 0;
 	
-	memset(&tree, 0, sizeof(tree));
+	SDL_memset(&tree, 0, sizeof(tree));
 	tree.ibuf = ibuf;
 	tree.ibufmax = ibufmax;
 	DMFNewNode(&tree);

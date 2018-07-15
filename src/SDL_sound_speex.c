@@ -106,7 +106,7 @@ static int process_header(speex_t *speex, Sound_Sample *sample)
 
     hptr = speex_packet_to_header((char*) speex->op.packet, speex->op.bytes);
     BAIL_IF_MACRO(!hptr, "SPEEX: Cannot read header", 0);
-    memcpy(&header, hptr, sizeof (SpeexHeader)); /* move to stack. */
+    SDL_memcpy(&header, hptr, sizeof (SpeexHeader)); /* move to stack. */
     free(hptr);  /* lame that this forces you to malloc... */
 
     BAIL_IF_MACRO(header.mode >= SPEEX_NB_MODES, "SPEEX: Unknown mode", 0);
@@ -124,7 +124,7 @@ static int process_header(speex_t *speex, Sound_Sample *sample)
     speex_decoder_ctl(speex->state, SPEEX_SET_ENH, &enh_enabled);
     speex_decoder_ctl(speex->state, SPEEX_GET_FRAME_SIZE, &speex->frame_size);
 
-    speex->decode_buf = (float *) malloc(speex->frame_size * sizeof (float));
+    speex->decode_buf = (float *) SDL_malloc(speex->frame_size * sizeof (float));
     BAIL_IF_MACRO(!speex->decode_buf, ERR_OUT_OF_MEMORY, 0);
 
     speex->nframes = header.frames_per_packet;
@@ -178,9 +178,8 @@ static int SPEEX_open(Sound_Sample *sample, const char *ext)
     BAIL_IF_MACRO(magic != SPEEX_MAGIC, "SPEEX: Not a complete ogg stream", 0);
     BAIL_IF_MACRO(SDL_RWseek(rw, -4, SEEK_CUR) < 0, ERR_IO_ERROR, 0);
 
-    speex = (speex_t *) malloc(sizeof (speex_t));
+    speex = (speex_t *) SDL_calloc(1, sizeof (speex_t));
     BAIL_IF_MACRO(speex == NULL, ERR_OUT_OF_MEMORY, 0);
-    memset(speex, '\0', sizeof (speex_t));
 
     speex_bits_init(&speex->bits);
     if (ogg_sync_init(&speex->oy) != 0) goto speex_open_failed;
@@ -237,7 +236,7 @@ static int SPEEX_open(Sound_Sample *sample, const char *ext)
 
     } /* while */
 
-    assert(0);  /* shouldn't hit this point. */
+    SDL_assert(0);  /* shouldn't hit this point. */
 
 speex_open_failed:
     if (speex != NULL)
@@ -248,8 +247,8 @@ speex_open_failed:
             ogg_stream_clear(&speex->os);
         speex_bits_destroy(&speex->bits);
         ogg_sync_clear(&speex->oy);
-        free(speex->decode_buf);
-        free(speex);
+        SDL_free(speex->decode_buf);
+        SDL_free(speex);
     } /* if */
 
     if (set_error_str)
@@ -267,8 +266,8 @@ static void SPEEX_close(Sound_Sample *sample)
     ogg_stream_clear(&speex->os);
     speex_bits_destroy(&speex->bits);
     ogg_sync_clear(&speex->oy);
-    free(speex->decode_buf);
-    free(speex);
+    SDL_free(speex->decode_buf);
+    SDL_free(speex);
 } /* SPEEX_close */
 
 
@@ -383,7 +382,7 @@ static Uint32 SPEEX_read(Sound_Sample *sample)
         } /* while */
     } /* while */
 
-    assert(0);  /* never hit this. Either return or goto speex_read_failed */
+    SDL_assert(0);  /* never hit this. Either return or goto speex_read_failed */
 
 speex_read_failed:
     sample->flags |= SOUND_SAMPLEFLAG_ERROR;

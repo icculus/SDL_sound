@@ -114,7 +114,7 @@ BOOL CSoundFile::ReadDBM(const BYTE *lpStream, DWORD dwMemLength)
 	m_nChannels = bswapBE16(pfh->channels);
 	if (m_nChannels < 4) m_nChannels = 4;
 	if (m_nChannels > 64) m_nChannels = 64;
-	memcpy(m_szNames[0], (pfh->songname[0]) ? pfh->songname : pfh->songname2, 32);
+	SDL_memcpy(m_szNames[0], (pfh->songname[0]) ? pfh->songname : pfh->songname2, 32);
 	m_szNames[0][31] = 0;
 	for (UINT iOrd=0; iOrd < nOrders; iOrd++)
 	{
@@ -148,11 +148,11 @@ BOOL CSoundFile::ReadDBM(const BYTE *lpStream, DWORD dwMemLength)
 				pih = (DBMINSTRUMENT *)(lpStream+chunk_pos);
 				nsmp = bswapBE16(pih->sampleno);
 				psmp = ((nsmp) && (nsmp < MAX_SAMPLES)) ? &Ins[nsmp] : NULL;
-				memset(penv, 0, sizeof(INSTRUMENTHEADER));
-				memcpy(penv->name, pih->name, 30);
+				SDL_memset(penv, 0, sizeof(INSTRUMENTHEADER));
+				SDL_memcpy(penv->name, pih->name, 30);
 				if (psmp)
 				{
-					memcpy(m_szNames[nsmp], pih->name, 30);
+					SDL_memcpy(m_szNames[nsmp], pih->name, 30);
 					m_szNames[nsmp][30] = 0;
 				}
 				Headers[iIns+1] = penv;

@@ -194,10 +194,10 @@ BOOL CSoundFile::ReadMDL(const BYTE *lpStream, DWORD dwMemLength)
 
 	if ((!lpStream) || (dwMemLength < 1024)) return FALSE;
 	if ((pmsh->id != 0x4C444D44) || ((pmsh->version & 0xF0) > 0x10)) return FALSE;
-	memset(patterntracks, 0, sizeof(patterntracks));
-	memset(smpinfo, 0, sizeof(smpinfo));
-	memset(insvolenv, 0, sizeof(insvolenv));
-	memset(inspanenv, 0, sizeof(inspanenv));
+	SDL_memset(patterntracks, 0, sizeof(patterntracks));
+	SDL_memset(smpinfo, 0, sizeof(smpinfo));
+	SDL_memset(insvolenv, 0, sizeof(insvolenv));
+	SDL_memset(inspanenv, 0, sizeof(inspanenv));
 	dwMemPos = 5;
 	dwTrackPos = 0;
 	pvolenv = ppanenv = ppitchenv = NULL;
@@ -218,7 +218,7 @@ BOOL CSoundFile::ReadMDL(const BYTE *lpStream, DWORD dwMemLength)
 		// IN: infoblock
 		case 0x4E49:
 			pmib = (MDLINFOBLOCK *)(lpStream+dwMemPos);
-			memcpy(m_szNames[0], pmib->songname, 32);
+			SDL_memcpy(m_szNames[0], pmib->songname, 32);
 			norders = pmib->norders;
 			if (norders > MAX_ORDERS) norders = MAX_ORDERS;
 			m_nRestartPos = pmib->repeatpos;
@@ -245,7 +245,7 @@ BOOL CSoundFile::ReadMDL(const BYTE *lpStream, DWORD dwMemLength)
 				m_lpszSongComments = new char[blocklen];
 				if (m_lpszSongComments)
 				{
-					memcpy(m_lpszSongComments, lpStream+dwMemPos, blocklen);
+					SDL_memcpy(m_lpszSongComments, lpStream+dwMemPos, blocklen);
 					m_lpszSongComments[blocklen-1] = 0;
 				}
 			}
@@ -289,8 +289,8 @@ BOOL CSoundFile::ReadMDL(const BYTE *lpStream, DWORD dwMemLength)
 					UINT note = 12;
 					if ((Headers[nins] = new INSTRUMENTHEADER) == NULL) break;
 					INSTRUMENTHEADER *penv = Headers[nins];
-					memset(penv, 0, sizeof(INSTRUMENTHEADER));
-					memcpy(penv->name, lpStream+dwPos+2, 32);
+					SDL_memset(penv, 0, sizeof(INSTRUMENTHEADER));
+					SDL_memcpy(penv->name, lpStream+dwPos+2, 32);
 					penv->nGlobalVol = 64;
 					penv->nPPC = 5*12;
 					for (j=0; j<lpStream[dwPos+1]; j++)
@@ -333,7 +333,7 @@ BOOL CSoundFile::ReadMDL(const BYTE *lpStream, DWORD dwMemLength)
 			for (j=1; j<=m_nInstruments; j++) if (!Headers[j])
 			{
 				Headers[j] = new INSTRUMENTHEADER;
-				if (Headers[j]) memset(Headers[j], 0, sizeof(INSTRUMENTHEADER));
+				if (Headers[j]) SDL_memset(Headers[j], 0, sizeof(INSTRUMENTHEADER));
 			}
 			break;
 		// VE: Volume Envelope
@@ -361,8 +361,8 @@ BOOL CSoundFile::ReadMDL(const BYTE *lpStream, DWORD dwMemLength)
 				if ((nins >= MAX_SAMPLES) || (!nins)) continue;
 				if (m_nSamples < nins) m_nSamples = nins;
 				MODINSTRUMENT *pins = &Ins[nins];
-				memcpy(m_szNames[nins], lpStream+dwPos+1, 32);
-				memcpy(pins->name, lpStream+dwPos+33, 8);
+				SDL_memcpy(m_szNames[nins], lpStream+dwPos+1, 32);
+				SDL_memcpy(pins->name, lpStream+dwPos+33, 8);
 				pins->nC4Speed = *((DWORD *)(lpStream+dwPos+41));
 				pins->nLength = *((DWORD *)(lpStream+dwPos+45));
 				pins->nLoopStart = *((DWORD *)(lpStream+dwPos+49));

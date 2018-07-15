@@ -328,7 +328,7 @@ UINT CSoundFile::Read(LPVOID lpDestBuffer, UINT cbBuffer)
 		m_nBufferCount -= lCount;
 	}
 MixDone:
-	if (lRead) memset(lpBuffer, (gnBitsPerSample == 8) ? 0x80 : 0, lRead * lSampleSize);
+	if (lRead) SDL_memset(lpBuffer, (gnBitsPerSample == 8) ? 0x80 : 0, lRead * lSampleSize);
 	// VU-Meter
 	nVUMeterMin >>= (24-MIXING_ATTENUATION);
 	nVUMeterMax >>= (24-MIXING_ATTENUATION);

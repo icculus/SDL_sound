@@ -123,7 +123,7 @@ static const char *ogg_error(int errnum)
 } /* ogg_error */
 #endif
 
-static __inline__ void output_ogg_comments(OggVorbis_File *vf)
+static SDL_INLINE void output_ogg_comments(OggVorbis_File *vf)
 {
 #if (defined DEBUG_CHATTER)
     int i;
@@ -149,14 +149,14 @@ static int OGG_open(Sound_Sample *sample, const char *ext)
     vorbis_info *info;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
 
-    vf = (OggVorbis_File *) malloc(sizeof (OggVorbis_File));
+    vf = (OggVorbis_File *) SDL_malloc(sizeof (OggVorbis_File));
     BAIL_IF_MACRO(vf == NULL, ERR_OUT_OF_MEMORY, 0);
 
     rc = ov_open_callbacks(internal->rw, vf, NULL, 0, RWops_ogg_callbacks);
     if (rc != 0)
     {
         SNDDBG(("OGG: can't grok data. reason: [%s].\n", ogg_error(rc)));
-        free(vf);
+        SDL_free(vf);
         BAIL_MACRO("OGG: Not valid Ogg Vorbis data.", 0);
     } /* if */
 
@@ -164,7 +164,7 @@ static int OGG_open(Sound_Sample *sample, const char *ext)
     if (info == NULL)
     {
         ov_clear(vf);
-        free(vf);
+        SDL_free(vf);
         BAIL_MACRO("OGG: failed to retrieve bitstream info", 0);
     } /* if */
 
@@ -215,7 +215,7 @@ static void OGG_close(Sound_Sample *sample)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     OggVorbis_File *vf = (OggVorbis_File *) internal->decoder_private;
     ov_clear(vf);
-    free(vf);
+    SDL_free(vf);
 } /* OGG_close */
 
 /* Note: According to the Vorbis documentation:

@@ -50,13 +50,13 @@ BOOL CSoundFile::ReadUlt(const BYTE *lpStream, DWORD dwMemLength)
 
 	// try to read module header
 	if ((!lpStream) || (dwMemLength < 0x100)) return FALSE;
-	if (strncmp(pmh->id,"MAS_UTrack_V00",14)) return FALSE;
+	if (SDL_strncmp(pmh->id,"MAS_UTrack_V00",14)) return FALSE;
 	// Warning! Not supported ULT format, trying anyway
 	// if ((pmh->id[14] < '1') || (pmh->id[14] > '4')) return FALSE;
 	m_nType = MOD_TYPE_ULT;
 	m_nDefaultSpeed = 6;
 	m_nDefaultTempo = 125;
-	memcpy(m_szNames[0], pmh->songtitle, 32);
+	SDL_memcpy(m_szNames[0], pmh->songtitle, 32);
 	m_szNames[0][31] = '\0';
 	// read songtext
 	dwMemPos = sizeof(ULTHEADER);
@@ -68,7 +68,7 @@ BOOL CSoundFile::ReadUlt(const BYTE *lpStream, DWORD dwMemLength)
 		{
 			for (UINT l=0; l<pmh->reserved; l++)
 			{
-				memcpy(m_lpszSongComments+l*33, lpStream+dwMemPos+l*32, 32);
+				SDL_memcpy(m_lpszSongComments+l*33, lpStream+dwMemPos+l*32, 32);
 				m_lpszSongComments[l*33+32] = 0x0D;
 			}
 			m_lpszSongComments[len] = 0;
@@ -86,9 +86,9 @@ BOOL CSoundFile::ReadUlt(const BYTE *lpStream, DWORD dwMemLength)
 	{
 		pus	= (ULTSAMPLE *)(lpStream+dwMemPos);
 		MODINSTRUMENT *pins = &Ins[ins];
-		memcpy(m_szNames[ins], pus->samplename, 32);
+		SDL_memcpy(m_szNames[ins], pus->samplename, 32);
 		m_szNames[ins][31] = '\0';
-		memcpy(pins->name, pus->dosname, 12);
+		SDL_memcpy(pins->name, pus->dosname, 12);
 		pins->nLoopStart = pus->loopstart;
 		pins->nLoopEnd = pus->loopend;
 		pins->nLength = pus->sizeend - pus->sizestart;
@@ -108,7 +108,7 @@ BOOL CSoundFile::ReadUlt(const BYTE *lpStream, DWORD dwMemLength)
 			pins->nLoopEnd >>= 1;
 		}
 	}
-	memcpy(Order, lpStream+dwMemPos, 256);
+	SDL_memcpy(Order, lpStream+dwMemPos, 256);
 	dwMemPos += 256;
 	m_nChannels = lpStream[dwMemPos] + 1;
 	nop = lpStream[dwMemPos+1] + 1;

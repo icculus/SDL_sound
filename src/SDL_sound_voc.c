@@ -117,7 +117,7 @@ static void VOC_quit(void)
 } /* VOC_quit */
 
 
-static __inline__ int voc_readbytes(SDL_RWops *src, vs_t *v, void *p, int size)
+static SDL_INLINE int voc_readbytes(SDL_RWops *src, vs_t *v, void *p, int size)
 {
     if (SDL_RWread(src, p, size, 1) != 1)
     {
@@ -129,7 +129,7 @@ static __inline__ int voc_readbytes(SDL_RWops *src, vs_t *v, void *p, int size)
 } /* voc_readbytes */
 
 
-static __inline__ int voc_check_header(SDL_RWops *src)
+static SDL_INLINE int voc_check_header(SDL_RWops *src)
 {
     /* VOC magic header */
     Uint8  signature[20];  /* "Creative Voice File\032" */
@@ -139,7 +139,7 @@ static __inline__ int voc_check_header(SDL_RWops *src)
     if (!voc_readbytes(src, &v, signature, sizeof (signature)))
         return(0);
 
-    if (memcmp(signature, "Creative Voice File\032", sizeof (signature)) != 0)
+    if (SDL_memcmp(signature, "Creative Voice File\032", sizeof (signature)) != 0)
     {
         BAIL_MACRO("VOC: Wrong signature; not a VOC file.", 0);
     } /* if */
@@ -390,7 +390,7 @@ static int voc_read_waveform(Sound_Sample *sample, int fill_buf, Uint32 max)
 
         /* Fill in silence */
         if (fill_buf)
-            memset(buf + v->bufpos, silence, max);
+            SDL_memset(buf + v->bufpos, silence, max);
 
         done = max;
         v->rest -= done;
@@ -441,21 +441,20 @@ static int VOC_open(Sound_Sample *sample, const char *ext)
     if (!voc_check_header(internal->rw))
         return(0);
 
-    v = (vs_t *) malloc(sizeof (vs_t));
+    v = (vs_t *) SDL_calloc(1, sizeof (vs_t));
     BAIL_IF_MACRO(v == NULL, ERR_OUT_OF_MEMORY, 0);
-    memset(v, '\0', sizeof (vs_t));
 
     v->start_pos = SDL_RWtell(internal->rw);
     v->rate = -1;
     if (!voc_get_block(sample, v))
     {
-        free(v);
+        SDL_free(v);
         return(0);
     } /* if */
 
     if (v->rate == -1)
     {
-        free(v);
+        SDL_free(v);
         BAIL_MACRO("VOC: data had no sound!", 0);
     } /* if */
 
@@ -471,7 +470,7 @@ static int VOC_open(Sound_Sample *sample, const char *ext)
 static void VOC_close(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    free(internal->decoder_private);
+    SDL_free(internal->decoder_private);
 } /* VOC_close */
 
 

@@ -30,13 +30,13 @@ DWORD CSoundFile::GetLength(BOOL bAdjust, BOOL bTotal)
 	BYTE chnvols[MAX_CHANNELS];
 	DWORD patloop[MAX_CHANNELS];
 
-	memset(instr, 0, sizeof(instr));
-	memset(notes, 0, sizeof(notes));
-	memset(vols, 0xFF, sizeof(vols));
-	memset(patloop, 0, sizeof(patloop));
-	memset(oldparam, 0, sizeof(oldparam));
-	memset(chnvols, 64, sizeof(chnvols));
-	memset(samples, 0, sizeof(samples));
+	SDL_memset(instr, 0, sizeof(instr));
+	SDL_memset(notes, 0, sizeof(notes));
+	SDL_memset(vols, 0xFF, sizeof(vols));
+	SDL_memset(patloop, 0, sizeof(patloop));
+	SDL_memset(oldparam, 0, sizeof(oldparam));
+	SDL_memset(chnvols, 64, sizeof(chnvols));
+	SDL_memset(samples, 0, sizeof(samples));
 	for (UINT icv=0; icv<m_nChannels; icv++)
 		chnvols[icv] = ChnSettings[icv].nVolume;
 	nMaxRow = m_nNextRow;
@@ -607,7 +607,7 @@ void CSoundFile::CheckNNA(UINT nChn, UINT instr, int note, BOOL bForceCut)
 		if (!n) return;
 		MODCHANNEL *p = &Chn[n];
 		// Copy Channel
-		*p = *pChn;
+		SDL_memcpy(p, pChn, sizeof (*p));
 		p->dwFlags &= ~(CHN_VIBRATO|CHN_TREMOLO|CHN_PANBRELLO|CHN_MUTE|CHN_PORTAMENTO);
 		p->nMasterChn = nChn+1;
 		p->nCommand = 0;
@@ -697,7 +697,7 @@ void CSoundFile::CheckNNA(UINT nChn, UINT instr, int note, BOOL bForceCut)
 		{
 			MODCHANNEL *p = &Chn[n];
 			// Copy Channel
-			*p = *pChn;
+			SDL_memcpy(p, pChn, sizeof (*p));
 			p->dwFlags &= ~(CHN_VIBRATO|CHN_TREMOLO|CHN_PANBRELLO|CHN_MUTE|CHN_PORTAMENTO);
 			p->nMasterChn = nChn+1;
 			p->nCommand = 0;
@@ -2212,7 +2212,7 @@ BOOL CSoundFile::IsValidBackwardJump(UINT nStartOrder, UINT nStartRow, UINT nJum
 	 || (!Patterns[nStartOrder]) || (nStartRow >= 256) || (nJumpRow >= 256)) return FALSE;
 	// See if the pattern is being played backward
 	BYTE row_hist[256];
-	memset(row_hist, 0, sizeof(row_hist));
+	SDL_memset(row_hist, 0, sizeof(row_hist));
 	UINT nRows = PatternSize[nStartOrder], row = nJumpRow;
 	if (nRows > 256) nRows = 256;
 	row_hist[nStartRow] = TRUE;
