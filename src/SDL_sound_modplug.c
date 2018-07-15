@@ -95,8 +95,6 @@ static int MODPLUG_init(void)
          *  of them from the XMMS ModPlug plugin.
          */
     settings.mFlags = MODPLUG_ENABLE_OVERSAMPLING;
-
-#ifndef _WIN32_WCE
     settings.mFlags |= MODPLUG_ENABLE_NOISE_REDUCTION |
                        MODPLUG_ENABLE_MEGABASS |
                        MODPLUG_ENABLE_SURROUND;
@@ -107,8 +105,6 @@ static int MODPLUG_init(void)
     settings.mBassRange = 30;
     settings.mSurroundDepth = 20;
     settings.mSurroundDelay = 20;
-#endif
-
     settings.mChannels = 2;
     settings.mBits = 16;
     settings.mFrequency = 44100;
