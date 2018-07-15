@@ -163,6 +163,10 @@ if(SDLSOUND_BUILD_TEST)
     add_executable(playsound_simple playsound/playsound_simple.c)
     target_link_libraries(playsound_simple ${SDLSOUND_LIB_TARGET} ${OTHER_LDFLAGS})
     #set(SDLSOUND_INSTALL_TARGETS ${SDLSOUND_INSTALL_TARGETS} ";playsound_simple")
+    if(NOT SDLSOUND_BUILD_SHARED)
+        target_link_libraries(playsound ${SDL2_LIBRARIES} ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
+        target_link_libraries(playsound_simple ${SDL2_LIBRARIES} ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
+    endif()
 endif()
 
 install(TARGETS ${SDLSOUND_INSTALL_TARGETS}
