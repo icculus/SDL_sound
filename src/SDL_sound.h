@@ -52,7 +52,10 @@
 #define _INCLUDE_SDL_SOUND_H_
 
 #include "SDL.h"
-#include "SDL_endian.h"
+
+#if SDL_MAJOR_VERSION < 2
+#error SDL2_sound requires SDL 2.0.0 or later.
+#endif
 
 #ifdef __cplusplus
 extern "C" {
