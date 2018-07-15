@@ -58,6 +58,7 @@ static const char *extensions_modplug[] =
     "ULT",   
     "UMX",
     "XM",    /* FastTracker II                                              */
+    "ABC",
     NULL
 };
 
@@ -87,7 +88,7 @@ static SDL_mutex *modplug_mutex = NULL;
 
 static int MODPLUG_init(void)
 {
-    assert(modplug_mutex == NULL);
+    SDL_assert(modplug_mutex == NULL);
 
         /*
          * The settings will require some experimenting. I've borrowed some
@@ -128,7 +129,7 @@ static int MODPLUG_init(void)
 
 static void MODPLUG_quit(void)
 {
-    assert(total_mods_decoding == 0);
+    SDL_assert(total_mods_decoding == 0);
 
     if (modplug_mutex != NULL)
     {
@@ -160,7 +161,7 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
      */
     for (i = 0; extensions_modplug[i] != NULL; i++)
     {
-        if (__Sound_strcasecmp(ext, extensions_modplug[i]) == 0)
+        if (SDL_strcasecmp(ext, extensions_modplug[i]) == 0)
         {
             has_extension = 1;
             break;
@@ -177,7 +178,7 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
          * ModPlug needs the entire stream in one big chunk. I don't like it,
          *  but I don't think there's any way around it.
          */
-    data = (Uint8 *) malloc(CHUNK_SIZE);
+    data = (Uint8 *) SDL_malloc(CHUNK_SIZE);
     BAIL_IF_MACRO(data == NULL, ERR_OUT_OF_MEMORY, 0);
     size = 0;
 
@@ -187,7 +188,7 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
         size += retval;
         if (retval == CHUNK_SIZE)
         {
-            data = (Uint8 *) realloc(data, size + CHUNK_SIZE);
+            data = (Uint8 *) SDL_realloc(data, size + CHUNK_SIZE);
             BAIL_IF_MACRO(data == NULL, ERR_OUT_OF_MEMORY, 0);
         } /* if */
     } while (retval > 0);
@@ -202,12 +203,12 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
     if (total_mods_decoding > 0)
     {
         /* other mods decoding: use the same settings they are. */
-        memcpy(&sample->actual, &current_audioinfo, sizeof (Sound_AudioInfo));
+        SDL_memcpy(&sample->actual, &current_audioinfo, sizeof (Sound_AudioInfo));
     } /* if */
     else
     {
         /* no other mods decoding: define the new ModPlug output settings. */
-        memcpy(&sample->actual, &sample->desired, sizeof (Sound_AudioInfo));
+        SDL_memcpy(&sample->actual, &sample->desired, sizeof (Sound_AudioInfo));
         if (sample->actual.rate == 0)
             sample->actual.rate = 44100;
         if (sample->actual.channels == 0)
@@ -215,7 +216,7 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
         if (sample->actual.format == 0)
             sample->actual.format = AUDIO_S16SYS;
 
-        memcpy(&current_audioinfo, &sample->actual, sizeof (Sound_AudioInfo));
+        SDL_memcpy(&current_audioinfo, &sample->actual, sizeof (Sound_AudioInfo));
         settings.mChannels=sample->actual.channels;
         settings.mFrequency=sample->actual.rate;
         settings.mBits = sample->actual.format & 0xFF;
@@ -227,7 +228,7 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
          *  it's safe to free it as soon as ModPlug_Load() is finished anyway.
          */
     module = ModPlug_Load((void *) data, size);
-    free(data);
+    SDL_free(data);
     if (module == NULL)
     {
         if (modplug_mutex != NULL)

@@ -30,9 +30,6 @@
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
-#ifndef _WIN32
-#include <unistd.h> // for sleep
-#endif // _WIN32
 
 #ifdef NEWMIKMOD
 #include "mikmod.h"
@@ -310,12 +307,12 @@ static void abc_extractkeyvalue(char *key, size_t key_max,
 static void abc_message(const char *s1, const char *s2)
 {
 	char txt[256];
-	if( strlen(s1) + strlen(s2) > 255 ) return;
-	sprintf(txt, s1, s2);
+	if( SDL_strlen(s1) + SDL_strlen(s2) > 255 ) return;
+	SDL_snprintf(txt, sizeof (txt), s1, s2);
 #ifdef NEWMIKMOD
 	_mmlog(txt);
 #else
-	fprintf(stderr, "load_abc > %s\n", txt);
+	SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "load_abc > %s\n", txt);
 #endif
 }
 
@@ -339,6 +336,7 @@ static uint32_t notelen_notediv_to_ticks(int speed, int len, int div)
 
 static void abc_dumptracks(ABCHANDLE *h, const char *p)
 {
+#if 0
 	ABCTRACK *t;
 	ABCEVENT *e;
 	int n,pat,row,tck;
@@ -347,7 +345,7 @@ static void abc_dumptracks(ABCHANDLE *h, const char *p)
 	for( t=h->track; t; t=t->next ) {
 		printf("track %d.%d chan=%d %s\n", (int)(t->vno), (int)(t->vpos),
 		                                   (int)(t->chan), (char *)(t->v));
-		if( strcmp(p,"nonotes") )
+		if( SDL_strcmp(p,"nonotes") )
 			n = 1;
 		else
 			n = 0;
@@ -381,7 +379,7 @@ static void abc_dumptracks(ABCHANDLE *h, const char *p)
 					printf("CMD %c @%p 0x%08lX\n",
 					       (char)(e->cmd), e,
 					       (unsigned long)(e->lpar));
-				if( strcmp(p,"nonotes") )
+				if( SDL_strcmp(p,"nonotes") )
 					n = 1;
 				else
 					n = 0;
@@ -393,14 +391,15 @@ static void abc_dumptracks(ABCHANDLE *h, const char *p)
 					nn[1] = "b # #  # # #  # #  # # # #"[e->par[note]-23];
 					nn[2] = '\0';
 				}
-				else strcpy(nn,"--");
+				else SDL_strlcpy(nn,"--",sizeof (nn));
 				printf("NOTE %s octave %d inst %s vol %03d\n", 
 					nn, e->par[octave], pat_gm_name(pat_smptogm(e->par[smpno])),e->par[volume]);
-				if( strcmp(p,"all") )
+				if( SDL_strcmp(p,"all") )
 					n = 0;
 			}
 		}
 	}
+#endif
 }
 
 #ifdef NEWMIKMOD
@@ -414,114 +413,8 @@ static void abc_dumptracks(ABCHANDLE *h, const char *p)
 #define mmfopen(s,m)			_mm_fopen(s,m)
 #define mmfclose(f)			_mm_fclose(f)
 
-#else
-
-#if defined(WIN32) && defined(_mm_free)
-#undef _mm_free
 #endif
 
-#define MMSTREAM			FILE
-#define _mm_fopen(name,mode)		fopen(name,mode)
-#define _mm_fgets(f,buf,sz)		fgets(buf,sz,f)
-#define _mm_fseek(f,pos,whence)		fseek(f,pos,whence)
-#define _mm_ftell(f)			ftell(f)
-#define _mm_read_UBYTES(buf,sz,f)	fread(buf,sz,1,f)
-#define _mm_read_SBYTES(buf,sz,f)	fread(buf,sz,1,f)
-#define _mm_feof(f)			feof(f)
-#define _mm_fclose(f)			fclose(f)
-#define DupStr(h,buf,sz)		strdup(buf)
-#define _mm_calloc(h,n,sz)		calloc(n,sz)
-#define _mm_recalloc(h,buf,sz,elsz)	realloc(buf,sz)
-#define _mm_free(h,p)			free(p)
-
-typedef struct {
-	char *mm;
-	int sz;
-	int pos;
-} MMFILE;
-
-static MMFILE *mmfopen(const char *name, const char *mode)
-{
-	FILE *fp;
-	MMFILE *mmfile = NULL;
-	long len;
-	if( *mode != 'r' ) return NULL;
-	fp = fopen(name, mode);
-	if( !fp ) return NULL;
-	fseek(fp, 0, SEEK_END);
-	len = ftell(fp);
-	if ( len > 0 )
-		mmfile = (MMFILE *)malloc(len+sizeof(MMFILE));
-	if( !mmfile || len <= 0 ) {
-		fclose(fp);
-		return NULL;
-	}
-	fseek(fp, 0, SEEK_SET);
-	fread(&mmfile[1],1,len,fp);
-	fclose(fp);
-	mmfile->mm = (char *)&mmfile[1];
-	mmfile->sz = len;
-	mmfile->pos = 0;
-	return mmfile;
-}
-
-static void mmfclose(MMFILE *mmfile)
-{
-	free(mmfile);
-}
-
-static bool mmfeof(MMFILE *mmfile)
-{
-	if( mmfile->pos < 0 ) return TRUE;
-	if( mmfile->pos < mmfile->sz ) return FALSE;
-	return TRUE;
-}
-
-static int mmfgetc(MMFILE *mmfile)
-{
-	int b;
-	if( mmfeof(mmfile) ) return EOF;
-	b = mmfile->mm[mmfile->pos];
-	mmfile->pos++;
-	if( b=='\r' && !mmfeof(mmfile) && mmfile->mm[mmfile->pos] == '\n' ) {
-		b = '\n';
-		mmfile->pos++;
-	}
-	return b;
-}
-
-static void mmfgets(char buf[], unsigned int bufsz, MMFILE *mmfile)
-{
-	int i,b;
-	for( i=0; i<(int)bufsz-1; i++ ) {
-		b = mmfgetc(mmfile);
-		if( b==EOF ) break;
-		buf[i] = b;
-		if( b == '\n' ) break;
-	}
-	buf[i] = '\0';
-}
-
-static long mmftell(MMFILE *mmfile)
-{
-	return mmfile->pos;
-}
-
-static void mmfseek(MMFILE *mmfile, long p, int whence)
-{
-	switch(whence) {
-		case SEEK_SET:
-			mmfile->pos = p;
-			break;
-		case SEEK_CUR:
-			mmfile->pos += p;
-			break;
-		case SEEK_END:
-			mmfile->pos = mmfile->sz + p;
-			break;
-	}
-}
-#endif
 
 // =====================================================================================
 static ABCEVENT *abc_new_event(ABCHANDLE *h, uint32_t abctick, const char data[])
@@ -564,9 +457,9 @@ static void abc_new_macro(ABCHANDLE *h, const char *m)
 	abc_extractkeyvalue(key, sizeof(key), value, sizeof(value), m);
 
     retval = (ABCMACRO *)_mm_calloc(h->macrohandle, 1,sizeof(ABCMACRO));
-    retval->name  = DupStr(h->macrohandle, key, strlen(key));
-		retval->n     = strrchr(retval->name, 'n'); // for transposing macro's
-    retval->subst = DupStr(h->macrohandle, value, strlen(value));
+    retval->name  = DupStr(h->macrohandle, key, SDL_strlen(key));
+		retval->n     = SDL_strrchr(retval->name, 'n'); // for transposing macro's
+    retval->subst = DupStr(h->macrohandle, value, SDL_strlen(value));
 		retval->next  = h->macro;
 		h->macro      = retval;
 }
@@ -578,10 +471,10 @@ static void abc_new_umacro(ABCHANDLE *h, const char *m)
     ABCMACRO *retval, *mp;
 		char key[256], value[256];
 		abc_extractkeyvalue(key, sizeof(key), value, sizeof(value), m);
-		if( strlen(key) > 1 || strchr("~HIJKLMNOPQRSTUVWXY",toupper(key[0])) == 0 ) return;
-		while( char *q = strchr(key, '!') )
+		if( SDL_strlen(key) > 1 || SDL_strchr("~HIJKLMNOPQRSTUVWXY",SDL_toupper(key[0])) == 0 ) return;
+		while( char *q = SDL_strchr(key, '!') )
 			*q = '+'; // translate oldstyle to newstyle
-		if( !strcmp(key,"+nil+") ) { // delete a macro
+		if( !SDL_strcmp(key,"+nil+") ) { // delete a macro
 			mp = NULL;
 			for( retval=h->umacro; retval; retval = retval->next ) {
 				if( retval->name[0] == key[0] ) {	// delete this one
@@ -596,7 +489,7 @@ static void abc_new_umacro(ABCHANDLE *h, const char *m)
 		}
     retval = (ABCMACRO *)_mm_calloc(h->macrohandle, 1,sizeof(ABCMACRO));
     retval->name  = DupStr(h->macrohandle, key, 1);
-    retval->subst = DupStr(h->macrohandle, value, strlen(value));
+    retval->subst = DupStr(h->macrohandle, value, SDL_strlen(value));
 		retval->n     = 0;
 		retval->next  = h->umacro; // by placing it up front we mask out the old macro until we +nil+ it
 		h->umacro      = retval;
@@ -614,7 +507,7 @@ static ABCTRACK *abc_new_track(ABCHANDLE *h, const char *voice, int pos)
 	retval->vpos         = pos;
 	retval->tiedvpos     = pos;
 	retval->instr        = 1;
-	strncpy(retval->v, voice, 20);
+	SDL_strlcpy(retval->v, voice, 20);
 	retval->v[20]        = '\0';
 	retval->head         = NULL;
 	retval->tail         = NULL;
@@ -693,7 +586,7 @@ static int abc_transpose(const char *v)
 	t = 0;
 	global_octave_shift = 99;
 	for( ; *v && *v != ']'; v++ ) {
-		if( !strncasecmp(v,"t=",2) ) {
+		if( !SDL_strncasecmp(v,"t=",2) ) {
 			v+=2;
 			if( *v=='-' )	{
 				j = -1;
@@ -704,7 +597,7 @@ static int abc_transpose(const char *v)
 			t += i * j;
 			global_octave_shift = 0;
 		}
-		if( !strncasecmp(v,"octave=",7) ) {
+		if( !SDL_strncasecmp(v,"octave=",7) ) {
 			v+=7;
 			if( *v=='-' )	{
 				j = -1;
@@ -715,7 +608,7 @@ static int abc_transpose(const char *v)
 			t += i * j * 12;
 			global_octave_shift = 0;
 		}
-		if( !strncasecmp(v,"transpose=",10) ) {
+		if( !SDL_strncasecmp(v,"transpose=",10) ) {
 			v+=10;
 			if( *v=='-' )	{
 				j = -1;
@@ -726,7 +619,7 @@ static int abc_transpose(const char *v)
 			t += i * j;
 			global_octave_shift = 0;
 		}
-		if( !strncasecmp(v,"octave=",7) ) { // used in kv304*.abc
+		if( !SDL_strncasecmp(v,"octave=",7) ) { // used in kv304*.abc
 			v+=7;
 			if( *v=='-' )	{
 				j = -1;
@@ -737,22 +630,22 @@ static int abc_transpose(const char *v)
 			t += i * j * 12;
 			global_octave_shift = 0;
 		}
-		if( !strncasecmp(v,"m=",2) ) {
+		if( !SDL_strncasecmp(v,"m=",2) ) {
 			v += 2;
 			mv = v; // get the pitch for the middle staff line 
 			while( *v && *v != ' ' && *v != ']' ) v++;
 			global_octave_shift = 0;
 		}
-		if( !strncasecmp(v,"middle=",7) ) {
+		if( !SDL_strncasecmp(v,"middle=",7) ) {
 			v += 7;
 			mv = v; // get the pitch for the middle staff line 
 			while( *v && *v != ' ' && *v != ']' ) v++;
 			global_octave_shift = 0;
 		}
-		if( !strncasecmp(v,"clef=",5) )
+		if( !SDL_strncasecmp(v,"clef=",5) )
 			v += 5;
 		j = 1;
-		if( !strncasecmp(v,"treble",6) ) {
+		if( !SDL_strncasecmp(v,"treble",6) ) {
 			j = 0;
 			v += 6;
 			switch( *v ) {
@@ -765,7 +658,7 @@ static int abc_transpose(const char *v)
 			}
 			global_octave_shift = 0;
 		}
-		if( j && !strncasecmp(v,"bass",4) ) {
+		if( j && !SDL_strncasecmp(v,"bass",4) ) {
 			j = 0;
 			v += 4;
 			switch( *v ) {
@@ -779,7 +672,7 @@ static int abc_transpose(const char *v)
 			if( global_octave_shift == 99 )
 				global_octave_shift = -2;
 		}
-		if( j && !strncasecmp(v,"tenor",5) ) {
+		if( j && !SDL_strncasecmp(v,"tenor",5) ) {
 			j = 0;
 			v += 5;
 			switch( *v ) {
@@ -793,7 +686,7 @@ static int abc_transpose(const char *v)
 			if( global_octave_shift == 99 )
 				global_octave_shift = 1;
 		}
-		if( j && !strncasecmp(v,"alto",4) ) {
+		if( j && !SDL_strncasecmp(v,"alto",4) ) {
 			j = 0;
 			v += 4;
 			switch( *v ) {
@@ -807,7 +700,7 @@ static int abc_transpose(const char *v)
 			if( global_octave_shift == 99 )
 				global_octave_shift = 1;
 		}
-		if( j && strchr("+-",*v) && *v && v[1]=='8' ) {
+		if( j && SDL_strchr("+-",*v) && *v && v[1]=='8' ) {
 			switch(*v) {
 				case '+':
 					t += 12;
@@ -817,7 +710,7 @@ static int abc_transpose(const char *v)
 					break;
 			}
 			v += 2;
-			if( !strncasecmp(v,"va",2) ) v += 2;
+			if( !SDL_strncasecmp(v,"va",2) ) v += 2;
 			global_octave_shift = 0;
 			j = 0;
 		}
@@ -825,7 +718,7 @@ static int abc_transpose(const char *v)
 			while( *v && *v != ' ' && *v != ']' ) v++;
 		}
 	}
-	if( strlen(mv) > 0 ) // someone set the middle note
+	if( SDL_strlen(mv) > 0 ) // someone set the middle note
 		t += abc_interval(mv, m);
 	if( global_octave_shift == 99 )
 		global_octave_shift = 0;
@@ -851,7 +744,7 @@ static ABCTRACK *abc_locate_track(ABCHANDLE *h, const char *voice, int pos)
 			if( !trunused ) trunused = tr; // must reuse mastertrack (h->track) as first
 		}
 		else {
-			if( !strncasecmp(tr->v, vc, 20) ) {
+			if( !SDL_strncasecmp(tr->v, vc, 20) ) {
 				if( tr->vpos == pos ) 
 					return tr;
 				trans = tr->transpose;
@@ -878,7 +771,7 @@ static ABCTRACK *abc_locate_track(ABCHANDLE *h, const char *voice, int pos)
 		}
     tr->vpos         = pos;
 		tr->tiedvpos     = pos;
-		strncpy(tr->v, vc, 20);
+		SDL_strlcpy(tr->v, vc, 20);
 		tr->v[20]        = '\0';
 		tr->mute         = 0;
 		tr->transpose    = trans;
@@ -1234,7 +1127,7 @@ static ABCTRACK *abc_track_with_note_tied(ABCHANDLE *h, uint32_t tracktime, int 
 		if( tp->vno == vn ) {
 			e = tp->tienote;
 			if( e && e->tracktick < tracktime
-			&& e->par[octave] == oct && abs(e->par[note] - n) < 3 ) {
+			&& e->par[octave] == oct && SDL_abs(e->par[note] - n) < 3 ) {
 				if( tp->vpos != vp ) tp->tiedvpos = vp;
 				h->tp = tp;
 				return tp;
@@ -1345,7 +1238,7 @@ static int abc_add_noteon(ABCHANDLE *h, int ch, const char *p, uint32_t tracktim
 	}
 	else
 		d[note] = 0; // someone has doen ^X3 or something like it...
-	while( p[i] && strchr(",'",p[i]) ) {
+	while( p[i] && SDL_strchr(",'",p[i]) ) {
 		if( p[i]==',' ) oct--;
 		else oct++;
 		i++;
@@ -1365,7 +1258,7 @@ static int abc_add_noteon(ABCHANDLE *h, int ch, const char *p, uint32_t tracktim
 	tp = abc_track_with_note_tied(h, tracktime, d[note], oct);
 	if( tp->tienote ) {
 		if( tp->tienote->par[note] != d[note] ) {
-			if( abs(tp->tienote->par[note] - d[note]) < 3 ) {
+			if( SDL_abs(tp->tienote->par[note] - d[note]) < 3 ) {
 				// may be tied over bar symbol, recover local accidental to barkey
 				k = tp->tienote->par[note] - 23 - tp->transpose;
 				while( k < 0 ) k += 12;
@@ -1532,7 +1425,7 @@ static void	abc_add_chord(const char *p, ABCHANDLE *h, ABCTRACK *tp, uint32_t tr
 		}
 	}
 	for( i=0; i<chordsnamed; i++ )
-		if( !strcmp(s, chordname[i]) ) {
+		if( !SDL_strcmp(s, chordname[i]) ) {
 			d[chordnum] = i;
 			break;
 		}
@@ -1811,12 +1704,12 @@ static void	abc_set_parts(char **d, char *p)
 	static MM_ALLOC *h;
 	if( *d )	_mmalloc_close(h);
 #else
-	if( *d )	free(*d);
+	if( *d )	SDL_free(*d);
 #endif
 	*d = 0;
 	if( !p ) return;
 	for( i=0; p[i] && p[i] != '%'; i++ ) {
-		if( !strchr("ABCDEFGHIJKLMNOPQRSTUVWXYZ().0123456789 ",p[i]) ) {
+		if( !SDL_strchr("ABCDEFGHIJKLMNOPQRSTUVWXYZ().0123456789 ",p[i]) ) {
 			abc_message("invalid characters in part string scanning P:%s", p);
 			return;
 		}
@@ -1984,7 +1877,7 @@ static void abc_keeptiednotes(ABCHANDLE *h, uint32_t fromtime, uint32_t totime) 
 						e = e->next;
 					}
 					if( f && f->par[note] ) { // pfoeie, we've found a candidate
-						if( abs(n->par[note] - f->par[note]) < 3 ) { // undo the note on
+						if( SDL_abs(n->par[note] - f->par[note]) < 3 ) { // undo the note on
 							f->flg = 1;
 							f->cmd = cmdhide;
 							f->lpar = 0;
@@ -2041,7 +1934,7 @@ static void abc_song_to_parts(ABCHANDLE *h, char **abcparts, BYTE partp[27][2])
 	char buf[256];	// must be enough, mod's cannot handle more than 240 patterns
 	char *pfade;
 	if( !h || !h->track || !h->track->capostart ) return;
-	strcpy(buf,"A");	// initialize our temporary array
+	SDL_strlcpy(buf,"A",sizeof (buf));	// initialize our temporary array
 	i = 1;
 	loop = 1;
 	partno = 0;
@@ -2213,23 +2106,24 @@ static void abc_substitute(ABCHANDLE *h, char *target, char *s)
 {
 	char *p, *q;
 	int i;
-	int l = strlen(target);
-	int n = strlen(s);
-    if (l <= 0 ||n <= 0 || strstr(s, target))
-        return;
-	while( (p=strstr(h->line, target)) ) {
-		if( (i=strlen(h->line)) + n - l >= (int)h->len ) {
+	int l = SDL_strlen(target);
+	int n = SDL_strlen(s);
+	if (l <= 0 ||n <= 0 || SDL_strstr(s, target))
+		return;
+	while( (p=SDL_strstr(h->line, target)) ) {
+		if( (i=SDL_strlen(h->line)) + n - l >= (int)h->len ) {
 			h->line = (char *)_mm_recalloc(h->allochandle, h->line, h->len<<1, sizeof(char));
 			h->len <<= 1;
-			p=strstr(h->line, target);
+			p=SDL_strstr(h->line, target);
 		}
 		if( n > l ) {
 			for( q=&h->line[i]; q>p; q-- ) q[n-l] = q[0];
 			for( q=s; *q; q++ ) *p++ = *q;
 		}
 		else {
-			strcpy(p,s);
-			strcat(p,p+l);
+			const size_t buflen = h->len - ((size_t) (p - h->line));
+			SDL_strlcpy(p,s,buflen);
+			SDL_strlcat(p,p+l,buflen);
 		}
 	}
 }
@@ -2240,10 +2134,11 @@ static void abc_preprocess(ABCHANDLE *h, ABCMACRO *m)
 	if( m->n ) {
 		k = m->n - m->name;
 		for( i=0; i<14; i++ ) {
-			char t[strlen(m->name) + 1];
-			strcpy(t, m->name);
+            const size_t tlen = SDL_strlen(m->name) + 1;
+			char t[tlen];
+			SDL_strlcpy(t, m->name, tlen);
 			t[k] = "CDEFGABcdefgab"[i];
-			l = strlen(m->subst);
+			l = SDL_strlen(m->subst);
 			char s[2 * l + 1];
 			char *p = s;
 			for( j=0; j<l; j++ ) {
@@ -2276,7 +2171,7 @@ static char *abc_gets(ABCHANDLE *h, MMFILE *mmfile)
 		h->line = (char *)_mm_calloc(h->allochandle, h->len, sizeof(char));
 	}
 	if( abc_fgetbytes(mmfile, h->line, h->len) ) {
-		while( (i=strlen(h->line)) > (int)(h->len - 3) ) {
+		while( (i=SDL_strlen(h->line)) > (int)(h->len - 3) ) {
 			// line too short, double it
 			h->line = (char *)_mm_recalloc(h->allochandle, h->line, h->len<<1, sizeof(char));
 			if( h->line[i-1] != '\n' )
@@ -2294,9 +2189,9 @@ static char *abc_gets(ABCHANDLE *h, MMFILE *mmfile)
 static int abc_parse_decorations(ABCHANDLE *h, ABCTRACK *tp, const char *p)
 {
 	int vol=0;
-	if( !strncmp(p,"mp",2) ) vol = 75;
-	if( !strncmp(p,"mf",2) ) vol = 90;
-	if( !strncmp(p,"sfz",3) ) vol = 100;
+	if( !SDL_strncmp(p,"mp",2) ) vol = 75;
+	if( !SDL_strncmp(p,"mf",2) ) vol = 90;
+	if( !SDL_strncmp(p,"sfz",3) ) vol = 100;
 	if( *p == 'p' ) {
 		vol = 60;
 		while( *p++ == 'p' ) vol -= 15;
@@ -2379,7 +2274,7 @@ static ABCHANDLE *ABC_Init(void)
     allochandle = _mmalloc_create("Load_ABC_tracks", NULL);
     retval->trackhandle = allochandle;
 #else
-    retval = (ABCHANDLE *)calloc(1,sizeof(ABCHANDLE));
+    retval = (ABCHANDLE *)SDL_calloc(1,sizeof(ABCHANDLE));
 		if( !retval ) return NULL;
 #endif
 		retval->track       = NULL;
@@ -2389,19 +2284,19 @@ static ABCHANDLE *ABC_Init(void)
 		retval->pickrandom  = 0;
 		retval->len         = 0;
 		retval->line        = NULL;
-		strcpy(retval->gchord, "");
+		retval->gchord[0] = 0;
 		retval->barticks    = 0;
 		p = SDL_getenv(ABC_ENV_NORANDOMPICK);
 		if( p ) {
 			if( isdigit(*p) )
-				retval->pickrandom = atoi(p);
+				retval->pickrandom = SDL_atoi(p);
 			if( *p == '-' ) {
 #ifdef NEWMIKMOD
-				retval->pickrandom = atoi(p+1);
-				sprintf(buf,"-%ld",retval->pickrandom+1);
+				retval->pickrandom = SDL_atoi(p+1);
+				SDL_snprintf(buf,sizeof(buf),"-%ld",retval->pickrandom+1);
 #else
-				retval->pickrandom = atoi(p+1)-1; // xmms preloads the file
-				sprintf(buf,"-%ld",retval->pickrandom+2);
+				retval->pickrandom = SDL_atoi(p+1)-1; // xmms preloads the file
+				SDL_snprintf(buf,sizeof(buf),"-%ld",retval->pickrandom+2);
 #endif
 				SDL_setenv(ABC_ENV_NORANDOMPICK, buf, 1);
 			}
@@ -2411,9 +2306,9 @@ static ABCHANDLE *ABC_Init(void)
 			retval->pickrandom = 1+(int)(10000.0*random()/(RAND_MAX+1.0));
 			// can handle pickin' from songbooks with 10.000 songs
 #ifdef NEWMIKMOD
-			sprintf(buf,"-%ld",retval->pickrandom+1); // next in sequence
+			SDL_snprintf(buf,sizeof(buf),"-%ld",retval->pickrandom+1); // next in sequence
 #else
-			sprintf(buf,"-%ld",retval->pickrandom); // xmms preloads the file
+			SDL_snprintf(buf,sizeof(buf),"-%ld",retval->pickrandom); // xmms preloads the file
 #endif
 			SDL_setenv(ABC_ENV_NORANDOMPICK, buf, 1);
 		}
@@ -2427,7 +2322,7 @@ static void ABC_CleanupTrack(ABCTRACK *tp)
 	if( tp ) {
 		for( ep=tp->head; ep; ep = en ) {
 			en=ep->next;
-			free(ep);
+			SDL_free(ep);
 		}
 		tp->head = NULL;
 	}
@@ -2436,10 +2331,10 @@ static void ABC_CleanupTrack(ABCTRACK *tp)
 static void ABC_CleanupMacro(ABCMACRO *m)
 {
 	if( m->name )
-		free(m->name);
+		SDL_free(m->name);
 	if( m->subst )
-		free(m->subst);
-	free(m);
+		SDL_free(m->subst);
+	SDL_free(m);
 }
 #endif
 
@@ -2507,10 +2402,10 @@ static void ABC_Cleanup(ABCHANDLE *handle)
 		handle->len = 0;
 #else
 		if( handle->line )
-			free(handle->line);
+			SDL_free(handle->line);
 		if( handle->beatstring )
-			free(handle->beatstring);
-		free(handle);
+			SDL_free(handle->beatstring);
+		SDL_free(handle);
 #endif
 	}
 }
@@ -2875,34 +2770,35 @@ static int ABC_ReadPatterns(MODCOMMAND *pattern[], WORD psize[], ABCHANDLE *h, i
 static int ABC_Key(const char *p)
 {
 	int i,j;
-	char c[8] = {}; // initialize all to zero.
+	char c[8];
+    SDL_memset(c, 0, sizeof (c));
 	const char *q;
 	while( isspace(*p) ) p++;
 	q = p;
 	for( i=0; i<8 && *p && *p != ']'; p++ ) {
 		if( isspace(*p) ) {
 			while( isspace(*p) ) p++;
-			if( strncasecmp(p, "min", 3) && strncasecmp(p, "maj", 3) )
+			if( SDL_strncasecmp(p, "min", 3) && SDL_strncasecmp(p, "maj", 3) )
 				break;
 		}
 		c[i] = *p;
 		i++;
 	}
-	if( !strcmp(c,"Hp") || !strcmp(c,"HP") ) // highland pipes
-		strcpy(c,"Bm");	// two sharps at c and f
-	if( !strcasecmp(c+1, "minor") ) i=2;
-	if( !strcasecmp(c+2, "minor") ) i=3;
-	if( !strcasecmp(c+1, "major") ) i=1;
-	if( !strcasecmp(c+2, "major") ) i=2;
-	if( !strcasecmp(c+1, "min") ) i=2;
-	if( !strcasecmp(c+2, "min") ) i=3;
-	if( !strcasecmp(c+1, "maj") ) i=1;
-	if( !strcasecmp(c+2, "maj") ) i=2;
+	if( !SDL_strcmp(c,"Hp") || !SDL_strcmp(c,"HP") ) // highland pipes
+		SDL_strlcpy(c,"Bm",sizeof (c));	// two sharps at c and f
+	if( !SDL_strcasecmp(c+1, "minor") ) i=2;
+	if( !SDL_strcasecmp(c+2, "minor") ) i=3;
+	if( !SDL_strcasecmp(c+1, "major") ) i=1;
+	if( !SDL_strcasecmp(c+2, "major") ) i=2;
+	if( !SDL_strcasecmp(c+1, "min") ) i=2;
+	if( !SDL_strcasecmp(c+2, "min") ) i=3;
+	if( !SDL_strcasecmp(c+1, "maj") ) i=1;
+	if( !SDL_strcasecmp(c+2, "maj") ) i=2;
 	for( ; i<6; i++ )
 		c[i] = ' ';
 	for( i=0; keySigs[i]; i++ ) {
 		for( j=10; j<46; j+=6 )
-			if( !strncasecmp(keySigs[i]+j, c, 6) )
+			if( !SDL_strncasecmp(keySigs[i]+j, c, 6) )
 				return i;
 	}
 	abc_message("Failure: Unrecognised K: field %s", q);
@@ -2931,7 +2827,7 @@ static void abc_addchordname(const char *s, int len, const int *notes)
 // adds chord name and note set to list of known chords
 {
 	int i, j;
-	if(strlen(s) > 7) {
+	if(SDL_strlen(s) > 7) {
 		abc_message("Failure: Chord name cannot exceed 7 characters, %s", s);
 		return;
 	}
@@ -2940,7 +2836,7 @@ static void abc_addchordname(const char *s, int len, const int *notes)
 		return;
 	}
 	for( i=0; i < chordsnamed; i++ ) {
-		if(strcmp(s, chordname[i]) == 0) {
+		if(SDL_strcmp(s, chordname[i]) == 0) {
 			/* change chord */
 			chordlen[i] = len;
 			for(j = 0; j < len; j++) chordnotes[i][j] = notes[j];
@@ -2950,7 +2846,7 @@ static void abc_addchordname(const char *s, int len, const int *notes)
 	if(chordsnamed > MAXCHORDNAMES - 1)
 		abc_message("Failure: Too many Guitar Chord Names used, %s", s);
 	else {
-		strcpy(chordname[chordsnamed], s);
+		SDL_strlcpy(chordname[chordsnamed], s, 8);
 		chordlen[chordsnamed] = len;
 		for(j = 0; j < len; j++) chordnotes[chordsnamed][j] = notes[j];
 		chordsnamed++;
@@ -3144,24 +3040,24 @@ static void abc_MIDI_voice(const char *p, ABCTRACK *tp, ABCHANDLE *h)
 {
 	int i1, i2;
 	for( ; *p && isspace(*p); p++ ) ;
-	if( strncmp(p,"instrument=",11) && strncmp(p,"mute",4) ) {
+	if( SDL_strncmp(p,"instrument=",11) && SDL_strncmp(p,"mute",4) ) {
 		tp = abc_locate_track(h, p, 0);
 		for( ; *p && !isspace(*p); p++ ) ;
 		for( ; *p && isspace(*p); p++ ) ;
 	}
 	i1 = tp? tp->vno: 1;
 	i2 = 0;
-	if( !strncmp(p,"instrument=",11) && isdigit(p[11]) ) {
+	if( !SDL_strncmp(p,"instrument=",11) && isdigit(p[11]) ) {
 		p += 11;
 		p += abc_getnumber(p, &i2);
 		for( ; *p && isspace(*p); p++ ) ;
-		if( !strncmp(p,"bank=",5) && isdigit(p[5]) ) {
+		if( !SDL_strncmp(p,"bank=",5) && isdigit(p[5]) ) {
 			for( ; *p && !isspace(*p); p++ ) ;
 			for( ; *p && isspace(*p); p++ ) ;
 		}
 	}
 	if( tp ) abc_mute_voice(h,tp,0);
-	if( !strncmp(p,"mute",4) && (p[4]=='\0' || p[4]=='%' || isspace(p[4])) ) {
+	if( !SDL_strncmp(p,"mute",4) && (p[4]=='\0' || p[4]=='%' || isspace(p[4])) ) {
 		if( tp ) abc_mute_voice(h,tp,1);
 	}
 	abc_instr_to_tracks(h, i1, i2); // starts already at 1 (draft 4.0)
@@ -3171,7 +3067,8 @@ static void abc_MIDI_voice(const char *p, ABCTRACK *tp, ABCHANDLE *h)
 static void abc_MIDI_chordname(const char *p)
 {
 	char name[20];
-	int i, notes[6] = {};
+	int i, notes[6];
+    SDL_memset(notes, 0, sizeof (notes));
 
 	for( ; *p && isspace(*p); p++ ) ;
 	i = 0;
@@ -3203,11 +3100,11 @@ static int abc_MIDI_drum(const char *p, ABCHANDLE *h)
 	int i, n, m;
 	uint32_t len;
 	while( isspace(*p) ) p++;
-	if( !strncmp(p,"on",2) && (isspace(p[2]) || p[2] == '\0') ) return 2;
-	if( !strncmp(p,"off",3) && (isspace(p[3]) || p[3] == '\0') ) return 1;
+	if( !SDL_strncmp(p,"on",2) && (isspace(p[2]) || p[2] == '\0') ) return 2;
+	if( !SDL_strncmp(p,"off",3) && (isspace(p[3]) || p[3] == '\0') ) return 1;
 	n = 0; len = 0;
 	for( q = h->drum; *p && !isspace(*p); p++ ) {
-		if( !strchr("dz0123456789",*p) ) break;
+		if( !SDL_strchr("dz0123456789",*p) ) break;
 		*q++ = *p; len++;
 		if( !isdigit(*p) && len < sizeof(h->drum)-1 ) {
 			if( !isdigit(p[1]) ) { *q++ = '1'; len ++; }
@@ -3258,10 +3155,10 @@ static int abc_MIDI_gchord(const char *p, ABCHANDLE *h)
 	char *q;
 	uint32_t len = 0;
 	while( isspace(*p) ) p++;
-	if( !strncmp(p,"on",2) && (isspace(p[2]) || p[2] == '\0') ) return 2;
-	if( !strncmp(p,"off",3) && (isspace(p[3]) || p[3] == '\0') ) return 1;
+	if( !SDL_strncmp(p,"on",2) && (isspace(p[2]) || p[2] == '\0') ) return 2;
+	if( !SDL_strncmp(p,"off",3) && (isspace(p[3]) || p[3] == '\0') ) return 1;
 	for( q = h->gchord; *p && !isspace(*p); p++ ) {
-		if( !strchr("fbcz0123456789ghijGHIJ",*p) ) break;
+		if( !SDL_strchr("fbcz0123456789ghijGHIJ",*p) ) break;
 		*q++ = *p; len++;
 		if( !isdigit(*p) && len < sizeof(h->gchord)-1 && !isdigit(p[1]) ) { *q++ = '1'; len ++; }
 		if (len >= sizeof(h->gchord)-1) {
@@ -3314,18 +3211,18 @@ static void abc_metric_gchord(ABCHANDLE *h, int mlen, int mdiv)
 static void abc_MIDI_legato(const char *p, ABCTRACK *tp)
 {
 	for( ; *p && isspace(*p); p++ ) ;
-	if( !strncmp(p,"off",3) ) tp->legato = 0;
+	if( !SDL_strncmp(p,"off",3) ) tp->legato = 0;
 	else tp->legato = 1;
 }
 
 static void abc_M_field(const char *p, int *mlen, int *mdiv)
 {
-	if( !strncmp(p,"none",4) ) {
+	if( !SDL_strncmp(p,"none",4) ) {
 		*mlen = 1;
 		*mdiv = 1;
 		return;
 	}
-	if( !strncmp(p,"C|",2) ) {
+	if( !SDL_strncmp(p,"C|",2) ) {
 		*mlen = 2;
 		*mdiv = 2;
 		return;
@@ -3336,7 +3233,7 @@ static void abc_M_field(const char *p, int *mlen, int *mdiv)
 		return;
 	}
 	p += abc_getexpr(p,mlen);
-	sscanf(p," / %d", mdiv);
+	SDL_sscanf(p," / %d", mdiv);
 }
 
 static int abc_drum_steps(const char *dch)
@@ -3367,7 +3264,7 @@ static void abc_add_drum(ABCHANDLE *h, uint32_t tracktime, uint32_t bartime)
 	stime = ctime*steps;
 	rtime *= steps;
 	rtime += stime;
-	gsteps = strlen(h->drum)/2;
+	gsteps = SDL_strlen(h->drum)/2;
 	g = 0;
 	while( rtime > stime ) {
 		rtime -= ctime*(h->drum[g*2+1] - '0');
@@ -3432,7 +3329,7 @@ static void abc_add_gchord(ABCHANDLE *h, uint32_t tracktime, uint32_t bartime)
 	stime = ctime * steps;
 	rtime *= steps;
 	rtime += stime;
-	gsteps = strlen(h->gchord);
+	gsteps = SDL_strlen(h->gchord);
 	g = 0;
 	while( rtime > stime ) {
 		glen = h->gchord[2*g+1] - '0';
@@ -3478,7 +3375,7 @@ static void abc_add_gchord(ABCHANDLE *h, uint32_t tracktime, uint32_t bartime)
 			case 'H':
 			case 'I':
 			case 'J':
-				i = toupper(gnote) - 'G';
+				i = SDL_toupper(gnote) - 'G';
 				nnum = 0;
 				if( i < chordlen[gcnum] ) {
 					tp = abc_locate_track(h, h->tpc->v, GCHORDFPOS+i+1);
@@ -3549,8 +3446,8 @@ static void abc_MIDI_beatstring(ABCHANDLE *h, const char *p)
 {
 	while( isspace(*p) ) p++;
 	if( h->beatstring ) _mm_free(h->allochandle, h->beatstring);
-	if( strlen(p) )
-		h->beatstring = DupStr(h->allochandle,p,strlen(p)+1);
+	if( SDL_strlen(p) )
+		h->beatstring = DupStr(h->allochandle,p,SDL_strlen(p)+1);
 	else
 		h->beatstring = NULL;
 }
@@ -3560,7 +3457,7 @@ static int abc_beat_vol(ABCHANDLE *h, int abcvol, int barpos)
 	int vol;
 	if( h->beatstring ) {
 		vol = (h->beat[2] * 9) / 10;
-		if( barpos < (int)strlen(h->beatstring) ) {
+		if( barpos < (int)SDL_strlen(h->beatstring) ) {
 			switch(h->beatstring[barpos]) {
 				case 'f':
 					vol = h->beat[0];
@@ -3693,47 +3590,47 @@ static void abc_recalculate_tracktime(ABCHANDLE *h) {
 static void abc_MIDI_command(ABCHANDLE *h, char *p, char delim) {
 	int t;
 	// interpret some of the possibilitys
-	if( !strncmp(p,"bassprog",8)    && isspace(p[8]) ) h->abcbassprog = abc_MIDI_getprog(p+8)+1;
-	if( !strncmp(p,"bassvol",7)     && isspace(p[7]) ) h->abcbassvol = abc_MIDI_getnumber(p+7);
-	if( !strncmp(p,"beat",4)        && isspace(p[4]) ) abc_MIDI_beat(h, p+4);
-	if( !strncmp(p,"beatstring",10) && isspace(p[10]) ) abc_MIDI_beatstring(h, p+4);
-	if( !strncmp(p,"chordname",9)   && isspace(p[9]) ) abc_MIDI_chordname(p+9);
-	if( !strncmp(p,"chordprog",9)   && isspace(p[9]) ) h->abcchordprog = abc_MIDI_getprog(p+9)+1;
-	if( !strncmp(p,"chordvol",8)    && isspace(p[8]) ) h->abcchordvol = abc_MIDI_getnumber(p+8);
-	if( !strncmp(p,"drone",5)       && isspace(p[5]) ) abc_MIDI_drone(p+5, &h->dronegm, h->dronepitch, h->dronevol);
-	if( !strncmp(p,"droneoff",8)    && (p[8]=='\0' || p[8]==delim || isspace(p[8])) ) h->droneon = 0;
-	if( !strncmp(p,"droneon",7)     && (p[7]=='\0' || p[7]==delim || isspace(p[7])) ) h->droneon = 1;
+	if( !SDL_strncmp(p,"bassprog",8)    && isspace(p[8]) ) h->abcbassprog = abc_MIDI_getprog(p+8)+1;
+	if( !SDL_strncmp(p,"bassvol",7)     && isspace(p[7]) ) h->abcbassvol = abc_MIDI_getnumber(p+7);
+	if( !SDL_strncmp(p,"beat",4)        && isspace(p[4]) ) abc_MIDI_beat(h, p+4);
+	if( !SDL_strncmp(p,"beatstring",10) && isspace(p[10]) ) abc_MIDI_beatstring(h, p+4);
+	if( !SDL_strncmp(p,"chordname",9)   && isspace(p[9]) ) abc_MIDI_chordname(p+9);
+	if( !SDL_strncmp(p,"chordprog",9)   && isspace(p[9]) ) h->abcchordprog = abc_MIDI_getprog(p+9)+1;
+	if( !SDL_strncmp(p,"chordvol",8)    && isspace(p[8]) ) h->abcchordvol = abc_MIDI_getnumber(p+8);
+	if( !SDL_strncmp(p,"drone",5)       && isspace(p[5]) ) abc_MIDI_drone(p+5, &h->dronegm, h->dronepitch, h->dronevol);
+	if( !SDL_strncmp(p,"droneoff",8)    && (p[8]=='\0' || p[8]==delim || isspace(p[8])) ) h->droneon = 0;
+	if( !SDL_strncmp(p,"droneon",7)     && (p[7]=='\0' || p[7]==delim || isspace(p[7])) ) h->droneon = 1;
 	t = h->drumon;
-	if( !strncmp(p,"drum",4)        && isspace(p[4]) ) {
+	if( !SDL_strncmp(p,"drum",4)        && isspace(p[4]) ) {
 		h->drumon = abc_MIDI_drum(p+4, h);
 		if( h->drumon ) --h->drumon;
 		else h->drumon = t;
 	}
-	if( !strncmp(p,"drumoff",7)     && (p[7]=='\0' || p[7]==delim || isspace(p[7])) ) h->drumon = 0;
-	if( !strncmp(p,"drumon",6)      && (p[6]=='\0' || p[6]==delim || isspace(p[6])) ) h->drumon = 1;
+	if( !SDL_strncmp(p,"drumoff",7)     && (p[7]=='\0' || p[7]==delim || isspace(p[7])) ) h->drumon = 0;
+	if( !SDL_strncmp(p,"drumon",6)      && (p[6]=='\0' || p[6]==delim || isspace(p[6])) ) h->drumon = 1;
 	if( t != h->drumon ) {
 		if( h->drumon && !h->tpr ) h->tpr = h->track;
 		if( h->tpr ) abc_add_drum_sync(h, h->tpr, h->tracktime); // don't start drumming from the beginning of time!
 		if( h->tpr && !h->drumon ) h->tpr = NULL;
 	}
 	t = h->gchordon;
-	if( !strncmp(p,"gchord",6)      && (p[6]=='\0' || p[6]==delim || isspace(p[6])) ) {
+	if( !SDL_strncmp(p,"gchord",6)      && (p[6]=='\0' || p[6]==delim || isspace(p[6])) ) {
 		h->gchordon = abc_MIDI_gchord(p+6, h);
 		if( h->gchordon ) --h->gchordon;
 		else h->gchordon = t;
 	}
-	if( !strncmp(p,"gchordoff",9)   && (p[9]=='\0' || p[9]==delim || isspace(p[9])) ) h->gchordon = 0;
-	if( !strncmp(p,"gchordon",8)    && (p[8]=='\0' || p[8]==delim || isspace(p[8])) ) h->gchordon = 1;
+	if( !SDL_strncmp(p,"gchordoff",9)   && (p[9]=='\0' || p[9]==delim || isspace(p[9])) ) h->gchordon = 0;
+	if( !SDL_strncmp(p,"gchordon",8)    && (p[8]=='\0' || p[8]==delim || isspace(p[8])) ) h->gchordon = 1;
 	if( t != h->gchordon ) {
 		if( h->tpc ) abc_add_gchord_syncs(h, h->tpc, h->tracktime);
 	}
-	if( !strncmp(p,"channel",7)     && isspace(p[7]) )
+	if( !SDL_strncmp(p,"channel",7)     && isspace(p[7]) )
 		abc_MIDI_channel(p+8, h->tp = abc_check_track(h, h->tp), h);
-	if( !strncmp(p,"program",7)     && isspace(p[7]) )
+	if( !SDL_strncmp(p,"program",7)     && isspace(p[7]) )
 		abc_MIDI_program(p+8, h->tp = abc_check_track(h, h->tp), h);
-	if( !strncmp(p,"voice",5)       && isspace(p[5]) )
+	if( !SDL_strncmp(p,"voice",5)       && isspace(p[5]) )
 		abc_MIDI_voice(p+6, h->tp = abc_check_track(h, h->tp), h);
-	if( !strncmp(p,"legato",6)      && (p[6]=='\0' || p[6]==delim || isspace(p[6])) )
+	if( !SDL_strncmp(p,"legato",6)      && (p[6]=='\0' || p[6]==delim || isspace(p[6])) )
 		abc_MIDI_legato(p+6, h->tp = abc_check_track(h, h->tp));
 }
 
@@ -3747,9 +3644,9 @@ static char *abc_continuated(ABCHANDLE *h, MMFILE *mmf, char *p) {
 	char *pm, *p1, *p2 = 0;
 	int continued;
 	pm = p;
-	while( pm[strlen(pm)-1]=='\\' ) {
-		p1 = strdup(pm);
-		if( p2 ) free(p2);
+	while( pm[SDL_strlen(pm)-1]=='\\' ) {
+		p1 = SDL_strdup(pm);
+		if( p2 ) SDL_free(p2);
 		continued = 1;
 		while( continued ) {
 			continued = 0;
@@ -3759,9 +3656,9 @@ static char *abc_continuated(ABCHANDLE *h, MMFILE *mmf, char *p) {
 				return p1;
 			}
 			while( *pm && isspace(*pm) ) ++pm;
-			if( !strncmp(pm,"%%",2) ) {
+			if( !SDL_strncmp(pm,"%%",2) ) {
 				for( p2 = pm+2; *p2 && isspace(*p2); p2++ ) ;
-				if( !strncmp(p2,"MIDI",4) && (p2[4]=='=' || isspace(p2[4])) ) {
+				if( !SDL_strncmp(p2,"MIDI",4) && (p2[4]=='=' || isspace(p2[4])) ) {
 					for( p2+=5; *p2 && isspace(*p2); p2++ ) ;
 					if( *p2 == '=' )
 						for( p2+=1; *p2 && isspace(*p2); p2++ ) ;
@@ -3770,16 +3667,17 @@ static char *abc_continuated(ABCHANDLE *h, MMFILE *mmf, char *p) {
 				continued = 1;
 			}
 		}
-		p2 = (char *)malloc(strlen(p1)+strlen(pm));
+		const size_t macrolinelen = SDL_strlen(p1)+SDL_strlen(pm)+1;
+		p2 = (char *)SDL_malloc(macrolinelen);
 		if( !p2 ) {
 			abc_message("macro line too long\n%s", p1);
 			return p1;
 		}
-		p1[strlen(p1)-1] = '\0'; // strip off the backslash
-		strcpy(p2,p1);
-		strcat(p2,pm);
+		p1[SDL_strlen(p1)-1] = '\0'; // strip off the backslash
+		SDL_strlcpy(p2,p1,macrolinelen);
+		SDL_strlcat(p2,pm,macrolinelen);
 		pm = p2;
-		free(p1);
+		SDL_free(p1);
 	}
 	return pm;
 }
@@ -3833,7 +3731,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 	mm.sz = dwMemLength;
 	mm.pos = 0;
 #endif
-	while( avoid_reentry ) sleep(1);
+	while( avoid_reentry ) SDL_Delay(1);
 	avoid_reentry = 1;
 	pat_resetsmp();
 	pat_init_patnames();
@@ -3911,7 +3809,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 		mmfseek(mmfile,0,SEEK_SET);
 		while( (line=abc_gets(h, mmfile)) ) {
 			for( p=line; isspace(*p); p++ ) ;
-			if( !strncmp(p,"X:",2) ) abcxcount++;
+			if( !SDL_strncmp(p,"X:",2) ) abcxcount++;
 		}
 		if( abcxcount == 0 )
 			abcstate = NOWHERE;
@@ -3926,21 +3824,21 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 			for( p=line; isspace(*p); p++ ) ;
 			switch(abcstate) {
 				case INSKIPFORX:
-					if( !strncmp(p,"X:",2) ) {
+					if( !SDL_strncmp(p,"X:",2) ) {
 						if( abcxcount++ != abcxwanted )
 							break;
 					}
 					// fall through
 				case INBETWEEN:
-					if( !strncmp(p,"X:",2) ) {
+					if( !SDL_strncmp(p,"X:",2) ) {
 						abcstate = INHEAD;
 #ifdef NEWMIKMOD
 						of->songname = NULL;
 #else
-						memset(m_szNames[0], 0, 32);
+						SDL_memset(m_szNames[0], 0, 32);
 #endif
 						for( p+=2; isspace(*p); p++ ) ;
-						abcxnumber = atoi(p);
+						abcxnumber = SDL_atoi(p);
 						abchornpipe = 0;
 						h->droneon = 0;
 						h->dronegm       = 71;
@@ -3965,7 +3863,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 						global_songstart = h->tracktime;
 						abc_MIDI_beat(h, ""); // reset beat array
 						abc_MIDI_beatstring(h, ""); // reset beatstring
-						strcpy(h->gchord, ""); // reset gchord string
+						h->gchord[0] = 0; // reset gchord string
 						abcnolegato = 1; // reset legato switch
 					}
 					break;
@@ -3973,7 +3871,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 					if( p[0] != '\0' && p[1] == ':' ) {
 						abcstate = INHEAD;
 						abc_set_parts(&abcparts, 0);
-						strcpy(h->gchord, "");
+						h->gchord[0] = 0;
 						if( h->drumon && h->tpr ) abc_add_drum_sync(h, h->tpr, h->tracktime);
 						if( h->tpc && !h->gchordon ) abc_add_gchord_syncs(h, h->tpc, h->tracktime);
 						h->gchordon = 1;
@@ -3982,19 +3880,19 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 					else
 						break;
 				case INHEAD:
-					if( !strncmp(p,"L:",2) ) {
-						sscanf(p+2," %d / %d", &snotelen, &snotediv);
+					if( !SDL_strncmp(p,"L:",2) ) {
+						SDL_sscanf(p+2," %d / %d", &snotelen, &snotediv);
 						break;
 					}
-					if( !strncmp(p,"M:",2) ) {
+					if( !SDL_strncmp(p,"M:",2) ) {
 						abc_M_field(p+2, &mnotelen, &mnotediv);
 						break;
 					}
-					if( !strncmp(p,"P:",2) ) {
+					if( !SDL_strncmp(p,"P:",2) ) {
 						abc_set_parts(&abcparts, p+2);
 						break;
 					}
-					if( !strncmp(p,"Q:",2) ) {
+					if( !SDL_strncmp(p,"Q:",2) ) {
 						abctempo = abc_extract_tempo(p+2,0);
 						ktempo = 1;
 						if( h->track ) {
@@ -4005,38 +3903,38 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 						if( m_nDefaultTempo == 0 ) m_nDefaultTempo = abctempo;
 						break;
 					}
-					if( !strncmp(p,"T:",2) ) {
+					if( !SDL_strncmp(p,"T:",2) ) {
 						char buf[200];
-						if( strchr(p,'%') ) *strchr(p,'%') = '\0';
-						for( t=strlen(p)-1; isspace(p[t]); t-- )
+						if( SDL_strchr(p,'%') ) *SDL_strchr(p,'%') = '\0';
+						for( t=SDL_strlen(p)-1; isspace(p[t]); t-- )
 							p[t]='\0';
 						for( t=2; isspace(p[t]); t++ ) ;
 #ifdef NEWMIKMOD
 						if( of->songname )
-							strcpy(buf,of->songname);
+							SDL_strlcpy(buf,of->songname, sizeof (buf));
 						else
-							strcpy(buf,"");
+							buf[0] = 0;
 #else
-						strcpy(buf,m_szNames[0]);
+						SDL_strlcpy(buf,m_szNames[0], sizeof (buf));
 #endif
-						if( strlen(buf) + strlen(p+t) > 199 ) p[t+199-strlen(buf)] = '\0'; // chop it of
-						if( strlen(buf) ) strcat(buf," "); // add a space
-						strcat(buf, p+t);
+						if( SDL_strlen(buf) + SDL_strlen(p+t) > 199 ) p[t+199-SDL_strlen(buf)] = '\0'; // chop it off
+						if( buf[0] ) SDL_strlcat(buf," ", sizeof (buf)); // add a space
+						SDL_strlcat(buf, p+t, sizeof (buf));
 #ifdef NEWMIKMOD
-						of->songname = DupStr(of->allochandle, buf, strlen(buf));
+						of->songname = DupStr(of->allochandle, buf, SDL_strlen(buf));
 #else
-						if( strlen(buf) > 31 ) buf[31] = '\0'; // chop it of
-						strcpy(m_szNames[0], buf);
+						if( SDL_strlen(buf) > 31 ) buf[31] = '\0'; // chop it of
+						SDL_strlcpy(m_szNames[0], buf, 32);
 #endif
 						break;
 					}
-					if( !strncmp(p,"R:",2) ) {
+					if( !SDL_strncmp(p,"R:",2) ) {
 						for( p+=2; isspace(*p); p++ ) ;
-						if( !strncmp(p,"hornpipe",8) && (isspace(p[8]) || p[8]=='\0') ) abchornpipe = 1;
+						if( !SDL_strncmp(p,"hornpipe",8) && (isspace(p[8]) || p[8]=='\0') ) abchornpipe = 1;
 						else abchornpipe = 0;
 						break;
 					}
-					if( !strncmp(p,"V:",2) ) {
+					if( !SDL_strncmp(p,"V:",2) ) {
 						for( t=2; p[t]==' '; t++ ) ;
 						h->tp = abc_locate_track(h, p+t, 0);
 						abcvol = h->tp->volume;
@@ -4044,10 +3942,10 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 						if( !abcnolegato ) abcnoslurs = 0;
 						break;
 					}
-					if( !strncmp(p,"K:",2) ) {
+					if( !SDL_strncmp(p,"K:",2) ) {
 						abcstate = INBODY;
 						abckey = ABC_Key(p+2);
-						sprintf(barsig, "%s%s", sig[abckey], sig[abckey]);	// reset the key signature
+						SDL_snprintf(barsig, sizeof (barsig), "%s%s", sig[abckey], sig[abckey]);	// reset the key signature
 						p = abc_skip_word(p+2);
 						h->ktrans = abc_transpose(p);
 						*p = '%'; // force skip rest of line
@@ -4071,7 +3969,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 						h->tpc = NULL; // reset chord track
 						tpd = NULL; // reset drone track
 						h->tpr = NULL; // reset drum  track
-						if( !strlen(h->gchord) ) abc_metric_gchord(h, mnotelen, mnotediv);
+						if( !SDL_strlen(h->gchord) ) abc_metric_gchord(h, mnotelen, mnotediv);
 						h->barticks = notelen_notediv_to_ticks(h->speed, mnotelen, mnotediv);
 						if( abctempo && !ktempo ) {	// did not set tempo in this songpiece so reset to abcrate
 							abctempo = 0;
@@ -4090,7 +3988,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 						abc_globalslide(h, h->tracktime, 2); // reset all volumeslides
 						break;
 					}
-					if( !strlen(p) )
+					if( !SDL_strlen(p) )
 						abcstate = INBETWEEN;
 					break;
 				case INSKIPFORQUOTE:
@@ -4101,7 +3999,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 						abcstate = INBODY;
 						// fall through
 				case INBODY:
-					if( !strlen(p) && h->track ) { // end of this song
+					if( !SDL_strlen(p) && h->track ) { // end of this song
 						abcstate = h->pickrandom? INSKIPFORX: INBETWEEN;
 						// last but not least shut off all pending events
 						abc_recalculate_tracktime(h);
@@ -4126,10 +4024,10 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 						if( !abcparts ) abc_song_to_parts(h, &abcparts, partpat);
 						orderlen = abc_partpat_to_orderlist(partpat, abcparts, h, &orderlist, orderlen);
 					}
-					if( !strncmp(p,"V:",2) ) {
+					if( !SDL_strncmp(p,"V:",2) ) {
 						for( t=2; p[t]==' '; t++ ) ;
 						h->tp = abc_locate_track(h, p+t, 0);
-						sprintf(barsig, "%s%s", sig[abckey], sig[abckey]);	// reset the key signature
+						SDL_snprintf(barsig, sizeof (barsig), "%s%s", sig[abckey], sig[abckey]);	// reset the key signature
 						abcgrace = 0;
 						brokenrithm = 0;
 						h->tracktime = abc_tracktime(h->tp);
@@ -4138,23 +4036,23 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 						if( !abcnolegato ) abcnoslurs = 0;
 						*p = '%';	// make me skip the rest of the line....
 					}
-					if( !strncmp(p,"K:",2) ) {
+					if( !SDL_strncmp(p,"K:",2) ) {
 						abckey = ABC_Key(p+2);
-						sprintf(barsig, "%s%s", sig[abckey], sig[abckey]);	// reset the key signature
+						SDL_snprintf(barsig, sizeof (barsig), "%s%s", sig[abckey], sig[abckey]);	// reset the key signature
 						p = abc_skip_word(p+2);
 						h->ktrans = abc_transpose(p);
 						*p = '%';	// make me skip the rest of the line....
 					}
-					if( !strncmp(p,"L:",2) ) {
-						sscanf(p+2," %d / %d", &snotelen, &snotediv);
+					if( !SDL_strncmp(p,"L:",2) ) {
+						SDL_sscanf(p+2," %d / %d", &snotelen, &snotediv);
 						*p = '%';	// make me skip the rest of the line....
 					}
-					if( !strncmp(p,"M:",2) ) {
+					if( !SDL_strncmp(p,"M:",2) ) {
 						abc_M_field(p+2, &mnotelen, &mnotediv);
 						h->barticks = notelen_notediv_to_ticks(h->speed, mnotelen, mnotediv);
 						*p = '%';	// make me skip the rest of the line....
 					}
-					if( !strncmp(p,"Q:",2) ) {
+					if( !SDL_strncmp(p,"Q:",2) ) {
 						abctempo = abc_extract_tempo(p+2,ch0=='\\');
 						if( !h->track ) {
 							h->tp = abc_check_track(h, h->track);
@@ -4163,73 +4061,76 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 						abc_add_tempo_event(h, h->track, h->tracktime, abctempo);
 						*p = '%';	// make me skip the rest of the line....
 					}
-					if( !strncmp(p,"T:",2) ) {
+					if( !SDL_strncmp(p,"T:",2) ) {
 						char buf[200];
-						if( strchr(p,'%') ) *strchr(p,'%') = '\0';
-						for( t=strlen(p)-1; isspace(p[t]); t-- )
+						if( SDL_strchr(p,'%') ) *SDL_strchr(p,'%') = '\0';
+						for( t=SDL_strlen(p)-1; isspace(p[t]); t-- )
 							p[t]='\0';
 						for( t=2; isspace(p[t]); t++ ) ;
 #ifdef NEWMIKMOD
 						if( of->songname )
-							strcpy(buf,of->songname);
+							SDL_strlcpy(buf,of->songname,sizeof (buf));
 						else
-							strcpy(buf,"");
+							buf[0] = 0;
 #else
-						strcpy(buf,m_szNames[0]);
+						SDL_strlcpy(buf,m_szNames[0],sizeof (buf));
 #endif
-						if( strlen(buf) + strlen(p+t) > 198 ) p[t+198-strlen(buf)] = '\0'; // chop it of
-						if( strlen(buf) ) strcat(buf," "); // add a space
-						strcat(buf, p+t);
+						if( SDL_strlen(buf) + SDL_strlen(p+t) > 198 ) p[t+198-SDL_strlen(buf)] = '\0'; // chop it of
+						if( SDL_strlen(buf) ) SDL_strlcat(buf," ",sizeof (buf)); // add a space
+						SDL_strlcat(buf, p+t, sizeof (buf));
 #ifdef NEWMIKMOD
-						of->songname = DupStr(of->allochandle, buf, strlen(buf));
+						of->songname = DupStr(of->allochandle, buf, SDL_strlen(buf));
 #else
-						if( strlen(buf) > 31 ) buf[31] = '\0'; // chop it of
-						strcpy(m_szNames[0], buf);
+						if( SDL_strlen(buf) > 31 ) buf[31] = '\0'; // chop it of
+						SDL_strlcpy(m_szNames[0], buf, 32);
 #endif
 						*p = '%';	// make me skip the rest of the line....
 					}
 					break;
 			}
-			if( !strncmp(p,"m:",2) ) {
+			if( !SDL_strncmp(p,"m:",2) ) {
 				if( abcstate != INSKIPFORX ) {
 					char *pm;
 					pm = abc_continuated(h, mmstack[mmsp], p);
 					abc_new_macro(h, pm+2);
 					if( pm != p ) {
-						free(pm);
+						SDL_free(pm);
 						if( h->tp ) abcnolegato = !h->tp->legato;
 						if( !abcnolegato ) abcnoslurs = 0;
 					}
 				}
 				*p = '%'; // skip rest of line
 			}
-			if( !strncmp(p,"U:",2) ) {
+			if( !SDL_strncmp(p,"U:",2) ) {
 				abc_new_umacro(h, p+2);
 				*p = '%'; // skip rest of line
 			}
-			if( !strncmp(p,"w:",2) ) {	// inline lyrics
+			if( !SDL_strncmp(p,"w:",2) ) {	// inline lyrics
 				*p = '%'; // skip rest of line
 			}
-			if( !strncmp(p,"W:",2) ) {	// lyrics at end of song body
+			if( !SDL_strncmp(p,"W:",2) ) {	// lyrics at end of song body
 				*p = '%'; // skip rest of line
 			}
-			if( !strncmp(p,"d:",2) ) {	// oldstyle decorations
+			if( !SDL_strncmp(p,"d:",2) ) {	// oldstyle decorations
 				abc_message("warning: old style decorations not handled\n%s", p);
 				*p = '%'; // skip rest of line
 			}
-			if( !strncmp(p,"s:",2) ) {	// newstyle decorations (symbols)
+			if( !SDL_strncmp(p,"s:",2) ) {	// newstyle decorations (symbols)
 				abc_message("warning: new style decorations not handled\n%s", p);
 				*p = '%'; // skip rest of line
 			}
-			if( !strncmp(p,"I:",2) && abcstate != INSKIPFORX ) { // handle like oldstyle '%%command' lines
+			if( !SDL_strncmp(p,"I:",2) && abcstate != INSKIPFORX ) { // handle like oldstyle '%%command' lines
 				p[0]= '%';
 				p[1]= '%';
 			}
-			if( !strncmp(p,"%%",2) ) {
+			if( !SDL_strncmp(p,"%%",2) ) {
 				for( p+=2; *p && isspace(*p); p++ ) ;
-				if( !strncmp(p,"abc-include",11) && isspace(p[11]) ) {
+				if( !SDL_strncmp(p,"abc-include",11) && isspace(p[11]) ) {
 					for( t=12; isspace(p[t]); t++ ) ;
 					if( p[t] ) {
+						#if 1  // we don't want people opening arbitrary files.
+						abc_message("failure: abc-include unsupported, %s", &p[t]);
+						#else
 						mmsp++;
 						if( mmsp == MAXABCINCLUDES ) {
 							mmsp--;
@@ -4241,10 +4142,11 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 								abc_message("failure: abc-include file %s not found", &p[t]);
 							}
 						}
+						#endif
 					}
 					else abc_message("failure: abc-include missing file name, %s", p);
 				}
-				if( !strncmp(p,"MIDI",4) && (p[4]=='=' || isspace(p[4])) && abcstate != INSKIPFORX ) {
+				if( !SDL_strncmp(p,"MIDI",4) && (p[4]=='=' || isspace(p[4])) && abcstate != INSKIPFORX ) {
 					for( p+=5; *p && isspace(*p); p++ ) ;
 					if( *p == '=' )
 						for( p+=1; *p && isspace(*p); p++ ) ;
@@ -4338,13 +4240,13 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 							case '[':	// chord follows or some inline field
 								abcto = 0;
 								if( *p=='|' ) break; // [| a thick-thin bar line, loop around and let case '|' handle it
-								if( !strncmp(p,"V:",2) ) {	// inline voice change
+								if( !SDL_strncmp(p,"V:",2) ) {	// inline voice change
 									for( t=2; isspace(p[t]); t++ ) ;
 									h->tp = abc_locate_track(h, p+t, 0);
 									for( ; *p && *p != ']'; p++ ) ;
 									abcgrace = 0;
 									brokenrithm = 0;
-									sprintf(barsig, "%s%s", sig[abckey], sig[abckey]);	// reset the key signature
+									SDL_snprintf(barsig, sizeof (barsig), "%s%s", sig[abckey], sig[abckey]);	// reset the key signature
 									h->tracktime = abc_tracktime(h->tp);
 									bartime = h->tracktime; // it is not wise to break voices in the middle of a track...
 									abcvol = h->tp->volume;
@@ -4352,21 +4254,21 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									if( !abcnolegato ) abcnoslurs = 0;
 									break;
 								}
-								if( !strncmp(p,"K:",2) ) {
+								if( !SDL_strncmp(p,"K:",2) ) {
 									abckey = ABC_Key(p+2);
-									sprintf(barsig, "%s%s", sig[abckey], sig[abckey]);	// reset the key signature
+									SDL_snprintf(barsig, sizeof (barsig), "%s%s", sig[abckey], sig[abckey]);	// reset the key signature
 									p = abc_skip_word(p+2);
 									h->ktrans = abc_transpose(p);
 									for( ; *p && *p != ']'; p++ ) ;
 									break;
 								}
-								if( !strncmp(p,"M:",2) ) {
+								if( !SDL_strncmp(p,"M:",2) ) {
 									abc_M_field(p+2, &mnotelen, &mnotediv);
 									for( ; *p && *p != ']'; p++ ) ;
 									h->barticks = notelen_notediv_to_ticks(h->speed, mnotelen, mnotediv);
 									break;
 								}
-								if( !strncmp(p,"P:",2) ) {	// a [P:X] field inline
+								if( !SDL_strncmp(p,"P:",2) ) {	// a [P:X] field inline
 									if( abcparts != NULL ) {
 										// make h->tracktime start of a new age...
 										if( h->track )
@@ -4390,16 +4292,16 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									for( ; *p && *p != ']'; p++ ) ;
 									break;
 								}
-								if( !strncmp(p,"Q:",2) ) {
+								if( !SDL_strncmp(p,"Q:",2) ) {
 									abctempo = abc_extract_tempo(p+2,1);
 									for( ; *p && *p != ']'; p++ ) ;
 									if( h->track )
 										abc_add_tempo_event(h, h->track, h->tracktime, abctempo);
 									break;
 								}
-								if( !strncmp(p,"I:",2) ) { // interpret some of the possibilitys
+								if( !SDL_strncmp(p,"I:",2) ) { // interpret some of the possibilitys
 									for( p += 2; isspace(*p); p++ ) ;
-									if( !strncmp(p,"MIDI",4) && (p[4]=='=' || isspace(p[4])) ) { // interpret some of the possibilitys
+									if( !SDL_strncmp(p,"MIDI",4) && (p[4]=='=' || isspace(p[4])) ) { // interpret some of the possibilitys
 										for( p += 4; isspace(*p); p++ ) ;
 										if( *p == '=' )
 											for( p += 1; isspace(*p); p++ ) ;											
@@ -4413,7 +4315,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									for( ; *p && *p != ']'; p++ ) ;
 									break;
 								}
-								if( *p && strchr("abcdefgABCDEFG^_=",*p) ) {
+								if( *p && SDL_strchr("abcdefgABCDEFG^_=",*p) ) {
 									int cnl[8],cnd[8],vnl,nl0=0,nd0=0;	// for chords with notes of varying length
 									abcchord = 0;
 									vnl = 0;
@@ -4609,7 +4511,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									abc_add_gchord(h, h->tracktime, bartime);
 								if( h->drumon && (h->tp == h->tpr) )	
 									abc_add_drum(h, h->tracktime, bartime);
-								sprintf(barsig, "%s%s", sig[abckey], sig[abckey]);	// reset the key signature
+								SDL_snprintf(barsig, sizeof (barsig), "%s%s", sig[abckey], sig[abckey]);	// reset the key signature
 								bartime = h->tracktime;
 								if( h->tp && h->tp->vpos ) h->tp = abc_locate_track(h, h->tp->v, 0); // reset from voice overlay
 								if( isdigit(*p) ) {	// different endings in repeats |i,j,n-r,s,...
@@ -4663,16 +4565,16 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 								}
 								break;
 							case '"':	// chord notation
-								if( !strchr("_^<>@", *p) && !isdigit(*p) ) { // if it's not a annotation string
+								if( !SDL_strchr("_^<>@", *p) && !isdigit(*p) ) { // if it's not a annotation string
 									h->tp = abc_check_track(h, h->tp);
 									if( !h->tpc ) h->tpc = abc_locate_track(h, h->tp->v, 0);
  									if( h->tp == h->tpc ) abc_add_chord(p, h, h->tpc, h->tracktime); // only do chords for one voice
 								}
 								abcto = 0;
 								while( (ch=*p++) && (ch != '"') ) {
-									if( !strncasecmp(p,"fade",4) && h->track && h->track->slidevol > -2 )
+									if( !SDL_strncasecmp(p,"fade",4) && h->track && h->track->slidevol > -2 )
 										abc_globalslide(h, h->tracktime, -2); // set volumeslide to fade away...
-									if( !strncasecmp(p,"to coda",7) ) {
+									if( !SDL_strncasecmp(p,"to coda",7) ) {
 										h->tp = abc_check_track(h, h->tp);
 										abc_add_partbreak(h, h->tp, h->tracktime);
 										abc_add_tocoda(h, h->tp, h->tracktime);
@@ -4681,7 +4583,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									}
 									else
 										if( !isspace(*p) ) abcto = 0;
-									if( !strncasecmp(p,"to",2) && (isspace(p[2]) || p[2] == '"') ) abcto = 1;
+									if( !SDL_strncasecmp(p,"to",2) && (isspace(p[2]) || p[2] == '"') ) abcto = 1;
 								}
 								if( !ch ) abcstate = INSKIPFORQUOTE;
 								break;
@@ -4691,7 +4593,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 								break;
 							case '!':	// line break, or deprecated old style decoration
 							case '+': // decorations new style
-								if( !strncmp(p,"coda",4) && p[4] == ch ) {
+								if( !SDL_strncmp(p,"coda",4) && p[4] == ch ) {
 									h->tp = abc_check_track(h, h->tp);
 									if( abcto ) {
 										if( abcto > 0 ) {
@@ -4708,134 +4610,134 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									break;
 								}
 								abcto = 0;
-								if( !strncmp(p,"arpeggio",8) && p[8] == ch ) {
+								if( !SDL_strncmp(p,"arpeggio",8) && p[8] == ch ) {
 									abcarpeggio = 1;
 									p += 9;
 									break;
 								}
-								if( !strncmp(p,"crescendo(",10) && p[10] == ch ) {
+								if( !SDL_strncmp(p,"crescendo(",10) && p[10] == ch ) {
 									h->tp = abc_check_track(h, h->tp);
 									abc_globalslide(h, h->tracktime, 1);
 									p += 11;
 									break;
 								}
-								if( !strncmp(p,"crescendo)",10) && p[10] == ch ) {
+								if( !SDL_strncmp(p,"crescendo)",10) && p[10] == ch ) {
 									h->tp = abc_check_track(h, h->tp);
 									abc_globalslide(h, h->tracktime, 0);
 									p += 11;
 									break;
 								}
-								if( !strncmp(p,"<(",2) && p[2] == ch ) {
+								if( !SDL_strncmp(p,"<(",2) && p[2] == ch ) {
 									h->tp = abc_check_track(h, h->tp);
 									abc_globalslide(h, h->tracktime, 1);
 									p += 3;
 									break;
 								}
-								if( !strncmp(p,"<)",2) && p[2] == ch ) {
+								if( !SDL_strncmp(p,"<)",2) && p[2] == ch ) {
 									h->tp = abc_check_track(h, h->tp);
 									abc_globalslide(h, h->tracktime, 0);
 									p += 3;
 									break;
 								}
-								if( !strncmp(p,"dimimuendo(",11) && p[11] == ch ) {
+								if( !SDL_strncmp(p,"dimimuendo(",11) && p[11] == ch ) {
 									h->tp = abc_check_track(h, h->tp);
 									abc_globalslide(h, h->tracktime, -1);
 									p += 12;
 									break;
 								}
-								if( !strncmp(p,"diminuendo)",11) && p[11] == ch ) {
+								if( !SDL_strncmp(p,"diminuendo)",11) && p[11] == ch ) {
 									h->tp = abc_check_track(h, h->tp);
 									abc_globalslide(h, h->tracktime, 0);
 									p += 12;
 									break;
 								}
-								if( !strncmp(p,">(",2) && p[2] == ch ) {
+								if( !SDL_strncmp(p,">(",2) && p[2] == ch ) {
 									h->tp = abc_check_track(h, h->tp);
 									abc_globalslide(h, h->tracktime, -1);
 									p += 3;
 									break;
 								}
-								if( !strncmp(p,">)",2) && p[2] == ch ) {
+								if( !SDL_strncmp(p,">)",2) && p[2] == ch ) {
 									h->tp = abc_check_track(h, h->tp);
 									abc_globalslide(h, h->tracktime, 0);
 									p += 3;
 									break;
 								}
-								if( !strncmp(p,"upbow",5) && p[5] == ch ) {
+								if( !SDL_strncmp(p,"upbow",5) && p[5] == ch ) {
 									abceffect = bow;
 									abceffoper = 1;
 									p += 6;
 									break;
 								}
-								if( !strncmp(p,"downbow",7) && p[7] == ch ) {
+								if( !SDL_strncmp(p,"downbow",7) && p[7] == ch ) {
 									abceffect = bow;
 									abceffoper = 0;
 									p += 8;
 									break;
 								}
-								if( !strncmp(p,"trill",5) && p[5] == ch ) {
+								if( !SDL_strncmp(p,"trill",5) && p[5] == ch ) {
 									abceffect = trill;
 									abceffoper = 0;
 									p += 6;
 									break;
 								}
-								if( !strncmp(p,"trill(",6) && p[6] == ch ) {
+								if( !SDL_strncmp(p,"trill(",6) && p[6] == ch ) {
 									abceffect = trill;
 									abceffoper = 255;
 									p += 7;
 									break;
 								}
-								if( !strncmp(p,"trill)",6) && p[6] == ch ) {
+								if( !SDL_strncmp(p,"trill)",6) && p[6] == ch ) {
 									abceffect = none;
 									abceffoper = 0;
 									p += 7;
 									break;
 								}
-								if( !strncmp(p,"accent",6) && p[6] == ch ) {
+								if( !SDL_strncmp(p,"accent",6) && p[6] == ch ) {
 									abceffect = accent;
 									abceffoper = 0;
 									p += 7;
 									break;
 								}
-								if( !strncmp(p,"emphasis",8) && p[8] == ch ) {
+								if( !SDL_strncmp(p,"emphasis",8) && p[8] == ch ) {
 									abceffect = accent;
 									abceffoper = 0;
 									p += 9;
 									break;
 								}
-								if( !strncmp(p,">",1) && p[1] == ch ) {
+								if( !SDL_strncmp(p,">",1) && p[1] == ch ) {
 									abceffect = accent;
 									abceffoper = 0;
 									p += 2;
 									break;
 								}
-								if( !strncmp(p,"fermata",7) && p[7] == ch ) {
+								if( !SDL_strncmp(p,"fermata",7) && p[7] == ch ) {
 									abcfermata = 1;
 									p += 8;
 									break;
 								}
-								if( !strncmp(p,"fine",4) && p[4] == ch ) {
+								if( !SDL_strncmp(p,"fine",4) && p[4] == ch ) {
 									h->tp = abc_check_track(h, h->tp);
 									abc_add_partbreak(h, h->tp, h->tracktime);
 									abc_add_fine(h, h->tp, h->tracktime);
 									p += 5;
 									break;
 								}
-								if( !strncmp(p,"segno",5) && p[5] == ch ) {
+								if( !SDL_strncmp(p,"segno",5) && p[5] == ch ) {
 									h->tp = abc_check_track(h, h->tp);
 									abc_add_partbreak(h, h->tp, h->tracktime);
 									abc_add_segno(h, h->tp, h->tracktime);
 									p += 6;
 									break;
 								}
-								if( !strncmp(p,"tocoda",6) && p[6] == ch ) {
+								if( !SDL_strncmp(p,"tocoda",6) && p[6] == ch ) {
 									h->tp = abc_check_track(h, h->tp);
 									abc_add_partbreak(h, h->tp, h->tracktime);
 									abc_add_tocoda(h, h->tp, h->tracktime);
 									p += 7;
 									break;
 								}
-								if( !strncmp(p,"D.C.",4) && p[4] == ch ) {
+								if( !SDL_strncmp(p,"D.C.",4) && p[4] == ch ) {
 									h->tp = abc_check_track(h, h->tp);
 									j = (h->tp->slidevol == -2)? jumpdcfade: jumpdacapo;
 									abc_add_setjumploop(h, h->tp, h->tracktime, j);
@@ -4843,7 +4745,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									p += 5;
 									break;
 								}
-								if( !strncmp(p,"D.S.",4) && p[4] == ch ) {
+								if( !SDL_strncmp(p,"D.S.",4) && p[4] == ch ) {
 									h->tp = abc_check_track(h, h->tp);
 									j = (h->tp->slidevol == -2)? jumpdsfade: jumpdasegno;
 									abc_add_setjumploop(h, h->tp, h->tracktime, j);
@@ -4851,7 +4753,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									p += 5;
 									break;
 								}
-								if( !strncmp(p,"dacapo",6) && p[6] == ch ) {
+								if( !SDL_strncmp(p,"dacapo",6) && p[6] == ch ) {
 									h->tp = abc_check_track(h, h->tp);
 									j = (h->tp->slidevol == -2)? jumpdcfade: jumpdacapo;
 									abc_add_setjumploop(h, h->tp, h->tracktime, j);
@@ -4859,7 +4761,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									p += 7;
 									break;
 								}
-								if( !strncmp(p,"dacoda",6) && p[6] == ch ) {
+								if( !SDL_strncmp(p,"dacoda",6) && p[6] == ch ) {
 									h->tp = abc_check_track(h, h->tp);
 									j = (h->tp->slidevol == -2)? jumpdcfade: jumpdacapo;
 									abc_add_setjumploop(h, h->tp, h->tracktime, j);
@@ -4868,7 +4770,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									break;
 								}
 								if( ch == '!' ) {
-									for( t=0; p[t] && strchr("|[:]!",p[t])==0 && !isspace(p[t]); t++ ) ;
+									for( t=0; p[t] && SDL_strchr("|[:]!",p[t])==0 && !isspace(p[t]); t++ ) ;
 									if( p[t] == '!' ) {	// volume and other decorations, deprecated
 										h->tp = abc_check_track(h, h->tp);
 										abcvol = abc_parse_decorations(h, h->tp, p);
@@ -4887,7 +4789,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 							case '.':	// staccato marks
 								break;
 							default:	// some kinda note must follow
-								if( strchr("abcdefgABCDEFG^_=X",ch) ) {
+								if( SDL_strchr("abcdefgABCDEFG^_=X",ch) ) {
 									h->tp = abc_check_track(h, h->tp);
 									abc_track_clear_tiedvpos(h);
 									abcbeatvol = abc_beat_vol(h, abcvol, (h->tracktime - bartime)/notelen_notediv_to_ticks(h->speed,1,mnotediv));
@@ -4929,7 +4831,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									abcarpeggio = 0;
 									break;
 								}
-								if( strchr("zx",ch) ) {
+								if( SDL_strchr("zx",ch) ) {
 									h->tp = abc_check_track(h, h->tp);
 									abc_track_clear_tiednote(h);
 									p += abc_notelen(p, &notelen, &notediv);
@@ -4959,7 +4861,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									abcarpeggio = 0;
 									break;
 								}
-								if( strchr("Z",ch) ) {
+								if( SDL_strchr("Z",ch) ) {
 									h->tp = abc_check_track(h, h->tp);
 									abc_track_clear_tiednote(h);
 									p += abc_notelen(p, &notelen, &notediv);
@@ -4978,7 +4880,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 										abcgrace += abcticks(h->speed);
 									}
 									h->tracktime += thistime; 
-									sprintf(barsig, "%s%s", sig[abckey], sig[abckey]);	// reset the key signature
+									SDL_snprintf(barsig, sizeof (barsig), "%s%s", sig[abckey], sig[abckey]);	// reset the key signature
 									abc_add_sync(h, h->tp, h->tracktime);
 									if( h->gchordon && (h->tp == h->tpc) )
 										abc_add_gchord(h, h->tracktime, bartime);
@@ -5010,7 +4912,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 	ABC_CleanupMacros(h);	// we dont need them anymore
 	if( !h->track ) {
 		char buf[10];
-		sprintf(buf,"%u",abcxnumber);
+		SDL_snprintf(buf,sizeof (buf),"%u",abcxnumber);
 		abc_message("abc X:%s has no body", buf);
 		h->track = abc_check_track(h, h->track); // for sanity...
 	}
@@ -5055,7 +4957,8 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 	ord  = calculated
 
 */
-	if( (p=getenv(ABC_ENV_DUMPTRACKS)) ) {
+#if 0
+	if( (p=SDL_getenv(ABC_ENV_DUMPTRACKS)) ) {
 		printf("P:%s\n",abcparts);
 		for( t=0; t<26; t++ )
 			if( partpat[t][1] >= partpat[t][0] )
@@ -5079,6 +4982,8 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 		printf("\n");
 		abc_dumptracks(h,p);
 	}
+#endif
+
 	// set module variables
 	if( abctempo == 0 ) abctempo = abcrate;
 	if( m_nDefaultTempo == 0 ) m_nDefaultTempo = abctempo;
@@ -5117,7 +5022,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 			break;
 		Order[t] = orderlist[t];
 	}
-	free(orderlist);	// get rid of orderlist memory
+	SDL_free(orderlist);	// get rid of orderlist memory
 #endif
 #ifdef NEWMIKMOD
 	// ==============================
@@ -5186,7 +5091,7 @@ CHAR *ABC_LoadTitle(MMSTREAM *mmfile)
 	while(abc_fgets(mmfile,s,128)) {
 		if( s[0]=='T' && s[1]==':' ) {
 			for( i=2; s[i]==' '; i++ ) ;
-			return(DupStr(NULL, s+i,strlen(s+i)));
+			return(DupStr(NULL, s+i,SDL_strlen(s+i)));
 		}
 	}
 	return NULL;

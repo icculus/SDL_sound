@@ -207,7 +207,7 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 	{
 		Order[iOrd] = (BYTE)((iOrd < pfh->nOrders) ? pfh->Orders[iOrd] : 0xFF);
 	}
-	memcpy(m_szNames[0], pfh->szSongName, 32);
+	SDL_memcpy(m_szNames[0], pfh->szSongName, 32);
 	m_szNames[0][31] = 0;
 	dwMemPos = sizeof(MT2FILEHEADER);
 	nDrumDataLen = *(WORD *)(lpStream + dwMemPos);
@@ -238,7 +238,7 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 		if (dwMemPos + dwLen > dwMemLength) return TRUE;
 #ifdef MT2DEBUG
 		CHAR s[5];
-		memcpy(s, &dwId, 4);
+		SDL_memcpy(s, &dwId, 4);
 		s[4] = 0;
 		Log("pos=0x%04X: %s: %d bytes\n", dwMemPos-8, s, dwLen);
 #endif
@@ -253,7 +253,7 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 				m_lpszSongComments = new char[nTxtLen];  // changed from CHAR
 				if (m_lpszSongComments)
 				{
-					memcpy(m_lpszSongComments, lpStream+dwMemPos+1, nTxtLen-1);
+					SDL_memcpy(m_lpszSongComments, lpStream+dwMemPos+1, nTxtLen-1);
 					m_lpszSongComments[nTxtLen-1] = 0;
 				}
 			}
@@ -392,7 +392,7 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 #ifdef MT2DEBUG
 	Log("Loading instruments at offset 0x%08X\n", dwMemPos);
 #endif
-	memset(InstrMap, 0, sizeof(InstrMap));
+	SDL_memset(InstrMap, 0, sizeof(InstrMap));
 	m_nInstruments = (pfh->wInstruments < MAX_INSTRUMENTS) ? pfh->wInstruments : MAX_INSTRUMENTS-1;
 	for (UINT iIns=1; iIns<=255; iIns++)
 	{
@@ -405,8 +405,8 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 			Headers[iIns] = penv;
 			if (penv)
 			{
-				memset(penv, 0, sizeof(INSTRUMENTHEADER));
-				memcpy(penv->name, pmi->szName, 32);
+				SDL_memset(penv, 0, sizeof(INSTRUMENTHEADER));
+				SDL_memcpy(penv->name, pmi->szName, 32);
 				penv->nGlobalVol = 64;
 				penv->nPan = 128;
 				for (UINT i=0; i<NOTE_MAX; i++)
@@ -526,7 +526,7 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 #ifdef MT2DEBUG
 	Log("Loading samples at offset 0x%08X\n", dwMemPos);
 #endif
-	memset(SampleMap, 0, sizeof(SampleMap));
+	SDL_memset(SampleMap, 0, sizeof(SampleMap));
 	m_nSamples = (pfh->wSamples < MAX_SAMPLES) ? pfh->wSamples : MAX_SAMPLES-1;
 	for (UINT iSmp=1; iSmp<=256; iSmp++)
 	{
@@ -537,7 +537,7 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 	#endif
 		if (iSmp < MAX_SAMPLES)
 		{
-			memcpy(m_szNames[iSmp], pms->szName, 32);
+			SDL_memcpy(m_szNames[iSmp], pms->szName, 32);
 		}
 		if (pms->dwDataLen > 0)
 		{

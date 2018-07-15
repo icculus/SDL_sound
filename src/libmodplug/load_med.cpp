@@ -633,7 +633,7 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 		UINT nbo = pmsh->songlen >> 8;
 		if (nbo >= MAX_ORDERS) nbo = MAX_ORDERS-1;
 		if (!nbo) nbo = 1;
-		memcpy(Order, pmsh->playseq, nbo);
+		SDL_memcpy(Order, pmsh->playseq, nbo);
 		playtransp = pmsh->playtransp;
 	} else
 	{
@@ -668,7 +668,7 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 			if ((pseq) && (pseq < dwMemLength - sizeof(MMD2PLAYSEQ)))
 			{
 				const MMD2PLAYSEQ *pmps = (MMD2PLAYSEQ *)(lpStream + pseq);
-				if (!m_szNames[0][0]) memcpy(m_szNames[0], pmps->name, 31);
+				if (!m_szNames[0][0]) SDL_memcpy(m_szNames[0], pmps->name, 31);
 				UINT n = bswapBE16(pmps->length);
 				if (n < (dwMemLength - (pseq + sizeof(*pmps)) + sizeof(pmps->seq)) / sizeof(pmps->seq[0]))
 				{
@@ -704,7 +704,7 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 				&& (annotxt+annolen <= dwMemLength))
 		{
 			m_lpszSongComments = new char[annolen+1];
-			memcpy(m_lpszSongComments, lpStream+annotxt, annolen);
+			SDL_memcpy(m_lpszSongComments, lpStream+annotxt, annolen);
 			m_lpszSongComments[annolen] = 0;
 		}
 		// Song Name
@@ -714,7 +714,7 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 				&& (songname+songnamelen <= dwMemLength))
 		{
 			if (songnamelen > 31) songnamelen = 31;
-			memcpy(m_szNames[0], lpStream+songname, songnamelen);
+			SDL_memcpy(m_szNames[0], lpStream+songname, songnamelen);
 			m_szNames[0][31] = '\0';
 		}
 		// Sample Names
@@ -735,7 +735,7 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 				if (maxnamelen > 32) maxnamelen = 32;
 				for (UINT i=0; i<ientries; i++) if (i < m_nSamples)
 				{
-					lstrcpyn(m_szNames[i+1], psznames + i*ientrysz, maxnamelen);
+					SDL_strlcpy(m_szNames[i+1], psznames + i*ientrysz, maxnamelen);
 					m_szNames[i+1][31] = '\0';
 				}
 			}
@@ -766,7 +766,7 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 					if (trknamelen > MAX_CHANNELNAME) trknamelen = MAX_CHANNELNAME;
 					if ((trknameofs) && (trknamelen < dwMemLength) && (trknameofs < dwMemLength - trknamelen))
 					{
-						lstrcpyn(ChnSettings[i].szName, (LPCSTR)(lpStream+trknameofs), MAX_CHANNELNAME);
+						SDL_strlcpy(ChnSettings[i].szName, (LPCSTR)(lpStream+trknameofs), MAX_CHANNELNAME);
 						ChnSettings[i].szName[MAX_CHANNELNAME-1] = '\0';
 					}
 				}

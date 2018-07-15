@@ -76,7 +76,7 @@ VOID AMF_Unpack(MODCOMMAND *pPat, const BYTE *pTrack, UINT nRows, UINT nChannels
 		{
 			signed char rdelta = (signed char)arg;
 			int rowsrc = (int)row + (int)rdelta;
-			if ((rowsrc >= 0) && (rowsrc < (int)nRows)) memcpy(m, &pPat[rowsrc*nChannels],sizeof(pPat[rowsrc*nChannels]));
+			if ((rowsrc >= 0) && (rowsrc < (int)nRows)) SDL_memcpy(m, &pPat[rowsrc*nChannels],sizeof(pPat[rowsrc*nChannels]));
 		} else
 		if (cmd == 0x80) // instrument
 		{
@@ -169,7 +169,7 @@ BOOL CSoundFile::ReadAMF(LPCBYTE lpStream, const DWORD dwMemLength)
 	DWORD dwMemPos;
 	
 	if ((!lpStream) || (dwMemLength < 2048)) return FALSE;
-	if ((!strncmp((LPCTSTR)lpStream, "ASYLUM Music Format V1.0", 25)) && (dwMemLength > 4096))
+	if ((!SDL_strncmp((LPCTSTR)lpStream, "ASYLUM Music Format V1.0", 25)) && (dwMemLength > 4096))
 	{
 		UINT numorders, numpats, numsamples;
 
@@ -194,7 +194,7 @@ BOOL CSoundFile::ReadAMF(LPCBYTE lpStream, const DWORD dwMemLength)
 		for (UINT iSmp=0; iSmp<numsamples; iSmp++)
 		{
 			MODINSTRUMENT *psmp = &Ins[iSmp+1];
-			memcpy(m_szNames[iSmp+1], lpStream+dwMemPos, 22);
+			SDL_memcpy(m_szNames[iSmp+1], lpStream+dwMemPos, 22);
 			m_szNames[iSmp+1][21] = '\0';
 			psmp->nFineTune = MOD2XMFineTune(lpStream[dwMemPos+22]);
 			psmp->nVolume = lpStream[dwMemPos+23];
@@ -268,7 +268,7 @@ BOOL CSoundFile::ReadAMF(LPCBYTE lpStream, const DWORD dwMemLength)
 	 || (!pfh->numsamples) || (pfh->numsamples >= MAX_SAMPLES)
 	 || (pfh->numchannels < 4) || (pfh->numchannels > 32))
 		return FALSE;
-	memcpy(m_szNames[0], pfh->title, 32);
+	SDL_memcpy(m_szNames[0], pfh->title, 32);
 	m_szNames[0][31] = '\0';
 	dwMemPos = sizeof(AMFFILEHEADER);
 	m_nType = MOD_TYPE_AMF;
@@ -331,9 +331,9 @@ BOOL CSoundFile::ReadAMF(LPCBYTE lpStream, const DWORD dwMemLength)
 		const AMFSAMPLE *psh = (AMFSAMPLE *)(lpStream + dwMemPos);
 
 		dwMemPos += sizeof(AMFSAMPLE);
-		memcpy(m_szNames[iIns+1], psh->samplename, 32);
+		SDL_memcpy(m_szNames[iIns+1], psh->samplename, 32);
 		m_szNames[iIns+1][31] = '\0';
-		memcpy(pins->name, psh->filename, 13);
+		SDL_memcpy(pins->name, psh->filename, 13);
 		pins->name[12] = '\0';
 		pins->nLength = bswapLE32(psh->length);
 		pins->nC4Speed = bswapLE16(psh->c2spd);
@@ -370,7 +370,7 @@ BOOL CSoundFile::ReadAMF(LPCBYTE lpStream, const DWORD dwMemLength)
 	}
 	// Store tracks positions
 	BYTE **pTrackData = new BYTE *[realtrackcnt];
-	memset(pTrackData, 0, sizeof(BYTE *) * realtrackcnt);
+	SDL_memset(pTrackData, 0, sizeof(BYTE *) * realtrackcnt);
 	for (UINT iTrack=0; iTrack<realtrackcnt; iTrack++) if (dwMemPos <= dwMemLength - 3)
 	{
 		UINT nTrkSize = bswapLE16(*(USHORT *)(lpStream+dwMemPos));

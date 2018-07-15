@@ -73,7 +73,7 @@ BOOL CSoundFile::Read669(const BYTE *lpStream, DWORD dwMemLength)
 	m_nDefaultTempo = 125;
 	m_nDefaultSpeed = 6;
 	m_nChannels = 8;
-	memcpy(m_szNames[0], pfh->songmessage, 16);
+	SDL_memcpy(m_szNames[0], pfh->songmessage, 16);
 	m_nSamples = pfh->samples;
 	for (UINT nins=1; nins<=m_nSamples; nins++, psmp++)
 	{
@@ -88,17 +88,17 @@ BOOL CSoundFile::Read669(const BYTE *lpStream, DWORD dwMemLength)
 		Ins[nins].nLoopStart = loopstart;
 		Ins[nins].nLoopEnd = loopend;
 		if (loopend) Ins[nins].uFlags |= CHN_LOOP;
-		memcpy(m_szNames[nins], psmp->filename, 13);
+		SDL_memcpy(m_szNames[nins], psmp->filename, 13);
 		Ins[nins].nVolume = 256;
 		Ins[nins].nGlobalVol = 64;
 		Ins[nins].nPan = 128;
 	}
 	// Song Message
 	m_lpszSongComments = new char[109];
-	memcpy(m_lpszSongComments, pfh->songmessage, 108);
+	SDL_memcpy(m_lpszSongComments, pfh->songmessage, 108);
 	m_lpszSongComments[108] = 0;
 	// Reading Orders
-	memcpy(Order, pfh->orders, 128);
+	SDL_memcpy(Order, pfh->orders, 128);
 	m_nRestartPos = pfh->restartpos;
 	if (Order[m_nRestartPos] >= pfh->patterns) m_nRestartPos = 0;
 	// Reading Pattern Break Locations

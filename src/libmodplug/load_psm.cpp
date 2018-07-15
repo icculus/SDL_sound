@@ -141,7 +141,7 @@ BOOL CSoundFile::ReadPSM(LPCBYTE lpStream, DWORD dwMemLength)
 		// "TITL": Song title
 		case IFFID_TITL:
 			if (!pdata[0]) { pdata++; len--; }
-			memcpy(m_szNames[0], pdata, (len>31) ? 31 : len);
+			SDL_memcpy(m_szNames[0], pdata, (len>31) ? 31 : len);
 			m_szNames[0][31] = 0;
 			break;
 		// "PBOD": Pattern
@@ -167,7 +167,7 @@ BOOL CSoundFile::ReadPSM(LPCBYTE lpStream, DWORD dwMemLength)
 				PSMSAMPLE *psmp = (PSMSAMPLE *)pdata;
 				swap_PSMSAMPLE(psmp);
 				smpnames[m_nSamples] = psmp->smpid;
-				memcpy(m_szNames[m_nSamples], psmp->samplename, 31);
+				SDL_memcpy(m_szNames[m_nSamples], psmp->samplename, 31);
 				m_szNames[m_nSamples][31] = 0;
 				samplemap[m_nSamples-1] = (BYTE)m_nSamples;
 				// Init sample

@@ -78,7 +78,7 @@ BOOL CSoundFile::ReadFAR(const BYTE *lpStream, DWORD dwMemLength)
 	m_nDefaultTempo = 80;
 	m_nDefaultGlobalVolume = 256;
 
-	memcpy(m_szNames[0], pmh1->songname, 32);
+	SDL_memcpy(m_szNames[0], pmh1->songname, 32);
 	// Channel Setting
 	for (UINT nchpan=0; nchpan<16; nchpan++)
 	{
@@ -93,7 +93,7 @@ BOOL CSoundFile::ReadFAR(const BYTE *lpStream, DWORD dwMemLength)
 		if (szLen > dwMemLength - dwMemPos) szLen = dwMemLength - dwMemPos;
 		if ((m_lpszSongComments = new char[szLen + 1]) != NULL)
 		{
-			memcpy(m_lpszSongComments, lpStream+dwMemPos, szLen);
+			SDL_memcpy(m_lpszSongComments, lpStream+dwMemPos, szLen);
 			m_lpszSongComments[szLen] = 0;
 		}
 		dwMemPos += stlen;
@@ -225,7 +225,7 @@ BOOL CSoundFile::ReadFAR(const BYTE *lpStream, DWORD dwMemLength)
 	}
 	// Reading samples
 	if (dwMemPos + 8 >= dwMemLength) return TRUE;
-	memcpy(samplemap, lpStream+dwMemPos, 8);
+	SDL_memcpy(samplemap, lpStream+dwMemPos, 8);
 	dwMemPos += 8;
 	MODINSTRUMENT *pins = &Ins[1];
 	for (UINT ismp=0; ismp<64; ismp++, pins++) if (samplemap[ismp >> 3] & (1 << (ismp & 7)))
@@ -234,7 +234,7 @@ BOOL CSoundFile::ReadFAR(const BYTE *lpStream, DWORD dwMemLength)
 		const FARSAMPLE *pfs = reinterpret_cast<const FARSAMPLE*>(lpStream + dwMemPos);
 		dwMemPos += sizeof(FARSAMPLE);
 		m_nSamples = ismp + 1;
-		memcpy(m_szNames[ismp+1], pfs->samplename, 32);
+		SDL_memcpy(m_szNames[ismp+1], pfs->samplename, 32);
 		const DWORD length = bswapLE32( pfs->length ) ; /* endian fix - Toad */
 		pins->nLength = length ;
 		pins->nLoopStart = bswapLE32(pfs->reppos) ;

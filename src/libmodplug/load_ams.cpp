@@ -50,7 +50,7 @@ BOOL CSoundFile::ReadAMS(LPCBYTE lpStream, DWORD dwMemLength)
 	UINT tmp, tmp2;
 	
 	if ((!lpStream) || (dwMemLength < 1024)) return FALSE;
-	if ((pfh->verhi != 0x01) || (strncmp(pfh->szHeader, "Extreme", 7))
+	if ((pfh->verhi != 0x01) || (SDL_strncmp(pfh->szHeader, "Extreme", 7))
 	 || (!pfh->patterns) || (!pfh->orders) || (!pfh->samples) || (pfh->samples >= MAX_SAMPLES)
 	 || (pfh->patterns > MAX_PATTERNS) || (pfh->orders > MAX_ORDERS))
 	{
@@ -83,7 +83,7 @@ BOOL CSoundFile::ReadAMS(LPCBYTE lpStream, DWORD dwMemLength)
 	tmp = lpStream[dwMemPos++];
 	if (dwMemPos + tmp + 1 >= dwMemLength) return TRUE;
 	tmp2 = (tmp < 32) ? tmp : 31;
-	if (tmp2) memcpy(m_szNames[0], lpStream+dwMemPos, tmp2);
+	if (tmp2) SDL_memcpy(m_szNames[0], lpStream+dwMemPos, tmp2);
 	m_szNames[0][tmp2] = 0;
 	dwMemPos += tmp;
 	// Read sample names
@@ -92,7 +92,7 @@ BOOL CSoundFile::ReadAMS(LPCBYTE lpStream, DWORD dwMemLength)
 		if (dwMemPos + 32 >= dwMemLength) return TRUE;
 		tmp = lpStream[dwMemPos++];
 		tmp2 = (tmp < 32) ? tmp : 31;
-		if (tmp2) memcpy(m_szNames[sNam], lpStream+dwMemPos, tmp2);
+		if (tmp2) SDL_memcpy(m_szNames[sNam], lpStream+dwMemPos, tmp2);
 		dwMemPos += tmp;
 	}
 	// Skip Channel names
@@ -106,13 +106,13 @@ BOOL CSoundFile::ReadAMS(LPCBYTE lpStream, DWORD dwMemLength)
 	m_lpszPatternNames = new char[pfh->patterns * 32];  // changed from CHAR
 	if (!m_lpszPatternNames) return TRUE;
 	m_nPatternNames = pfh->patterns;
-	memset(m_lpszPatternNames, 0, m_nPatternNames * 32);
+	SDL_memset(m_lpszPatternNames, 0, m_nPatternNames * 32);
 	for (UINT pNam=0; pNam < m_nPatternNames; pNam++)
 	{
 		if (dwMemPos + 32 >= dwMemLength) return TRUE;
 		tmp = lpStream[dwMemPos++];
 		tmp2 = (tmp < 32) ? tmp : 31;
-		if (tmp2) memcpy(m_lpszPatternNames+pNam*32, lpStream+dwMemPos, tmp2);
+		if (tmp2) SDL_memcpy(m_lpszPatternNames+pNam*32, lpStream+dwMemPos, tmp2);
 		dwMemPos += tmp;
 	}
 	// Read Song Comments
@@ -123,8 +123,8 @@ BOOL CSoundFile::ReadAMS(LPCBYTE lpStream, DWORD dwMemLength)
 	{
 		m_lpszSongComments = new char[tmp+1];  // changed from CHAR
 		if (!m_lpszSongComments) return TRUE;
-		memset(m_lpszSongComments, 0, tmp+1);
-		memcpy(m_lpszSongComments, lpStream + dwMemPos, tmp);
+		SDL_memset(m_lpszSongComments, 0, tmp+1);
+		SDL_memcpy(m_lpszSongComments, lpStream + dwMemPos, tmp);
 		dwMemPos += tmp;
 	}
 	// Read Order List
@@ -324,7 +324,7 @@ BOOL CSoundFile::ReadAMS2(LPCBYTE lpStream, DWORD dwMemLength)
 	dwMemPos += sizeof(AMS2SONGHEADER);
 	if (pfh->titlelen)
 	{
-		memcpy(m_szNames, pfh->szTitle, pfh->titlelen);
+		SDL_memcpy(m_szNames, pfh->szTitle, pfh->titlelen);
 		m_szNames[0][pfh->titlelen] = 0;
 	}
 	m_nType = MOD_TYPE_AMS;
@@ -351,8 +351,8 @@ BOOL CSoundFile::ReadAMS2(LPCBYTE lpStream, DWORD dwMemLength)
 		dwMemPos += 5 + pitchenv->points*3;
 		INSTRUMENTHEADER *penv = new INSTRUMENTHEADER;
 		if (!penv) return TRUE;
-		memset(smpmap, 0, sizeof(smpmap));
-		memset(penv, 0, sizeof(INSTRUMENTHEADER));
+		SDL_memset(smpmap, 0, sizeof(smpmap));
+		SDL_memset(penv, 0, sizeof(INSTRUMENTHEADER));
 		for (UINT ismpmap=0; ismpmap<pins->samples; ismpmap++)
 		{
 			if ((ismpmap >= 16) || (m_nSamples+1 >= MAX_SAMPLES)) break;
@@ -366,7 +366,7 @@ BOOL CSoundFile::ReadAMS2(LPCBYTE lpStream, DWORD dwMemLength)
 		if (insnamelen)
 		{
 			if (insnamelen > 31) insnamelen = 31;
-			memcpy(penv->name, pinsname, insnamelen);
+			SDL_memcpy(penv->name, pinsname, insnamelen);
 			penv->name[insnamelen] = 0;
 		}
 		for (UINT inotemap=0; inotemap<NOTE_MAX; inotemap++)
@@ -401,7 +401,7 @@ BOOL CSoundFile::ReadAMS2(LPCBYTE lpStream, DWORD dwMemLength)
 			UINT smpnamelen = lpStream[dwMemPos];
 			if ((psmp) && (smpnamelen) && (smpnamelen <= 22))
 			{
-				memcpy(m_szNames[smpmap[ismp]], lpStream+dwMemPos+1, smpnamelen);
+				SDL_memcpy(m_szNames[smpmap[ismp]], lpStream+dwMemPos+1, smpnamelen);
 			}
 			dwMemPos += smpnamelen + 1;
 			if (psmp)
@@ -432,7 +432,7 @@ BOOL CSoundFile::ReadAMS2(LPCBYTE lpStream, DWORD dwMemLength)
 			m_lpszSongComments = new char[composernamelen+1]; // changed from CHAR
 			if (m_lpszSongComments)
 			{
-				memcpy(m_lpszSongComments, lpStream+dwMemPos+1, composernamelen);
+				SDL_memcpy(m_lpszSongComments, lpStream+dwMemPos+1, composernamelen);
 				m_lpszSongComments[composernamelen] = 0;
 			}
 		}
@@ -443,7 +443,7 @@ BOOL CSoundFile::ReadAMS2(LPCBYTE lpStream, DWORD dwMemLength)
 			UINT chnnamlen = lpStream[dwMemPos];
 			if ((chnnamlen) && (chnnamlen < MAX_CHANNELNAME))
 			{
-				memcpy(ChnSettings[i].szName, lpStream+dwMemPos+1, chnnamlen);
+				SDL_memcpy(ChnSettings[i].szName, lpStream+dwMemPos+1, chnnamlen);
 			}
 			dwMemPos += chnnamlen + 1;
 			if (dwMemPos + chnnamlen + 256 >= dwMemLength) return TRUE;
@@ -481,7 +481,7 @@ BOOL CSoundFile::ReadAMS2(LPCBYTE lpStream, DWORD dwMemLength)
 			if ((patnamlen) && (patnamlen < MAX_PATTERNNAME))
 			{
 				char s[MAX_PATTERNNAME]; // changed from CHAR
-				memcpy(s, lpStream+dwMemPos+3, patnamlen);
+				SDL_memcpy(s, lpStream+dwMemPos+3, patnamlen);
 				s[patnamlen] = 0;
 				SetPatternName(ipat, s);
 			}

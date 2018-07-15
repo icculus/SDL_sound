@@ -118,7 +118,7 @@ BOOL CSoundFile::ReadDSM(LPCBYTE lpStream, DWORD dwMemLength)
 			ChnSettings[iPan].nPan = psong->panpos[iPan] << 1;
 		}
 	}
-	memcpy(m_szNames[0], psong->songname, 28);
+	SDL_memcpy(m_szNames[0], psong->songname, 28);
 	nPat = 0;
 	nSmp = 1;
 	while (dwMemPos < dwMemLength - 8)
@@ -211,9 +211,9 @@ BOOL CSoundFile::ReadDSM(LPCBYTE lpStream, DWORD dwMemLength)
 			if (dwMemPos + pins->inst_len >= dwMemLength - 8) break;
 			DWORD dwPos = dwMemPos + sizeof(DSMINST);
 			dwMemPos += 8 + pins->inst_len;
-			memcpy(m_szNames[nSmp], pins->samplename, 28);
+			SDL_memcpy(m_szNames[nSmp], pins->samplename, 28);
 			MODINSTRUMENT *psmp = &Ins[nSmp];
-			memcpy(psmp->name, pins->filename, 13);
+			SDL_memcpy(psmp->name, pins->filename, 13);
 			psmp->nGlobalVol = 64;
 			psmp->nC4Speed = pins->c2spd;
 			psmp->uFlags = (WORD)((pins->flags & 1) ? CHN_LOOP : 0);

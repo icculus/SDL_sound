@@ -149,7 +149,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
     /* read_au_header() will do byte order swapping. */
     BAIL_IF_MACRO(!read_au_header(rw, &hdr), "AU: bad header", 0);
 
-    dec = malloc(sizeof *dec);
+    dec = SDL_malloc(sizeof *dec);
     BAIL_IF_MACRO(dec == NULL, ERR_OUT_OF_MEMORY, 0);
     internal->decoder_private = dec;
 
@@ -175,7 +175,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
                 break;
 
             default:
-                free(dec);
+                SDL_free(dec);
                 BAIL_MACRO("AU: Unsupported .au encoding", 0);
         } /* switch */
 
@@ -189,13 +189,13 @@ static int AU_open(Sound_Sample *sample, const char *ext)
         {
             if (SDL_RWread(rw, &c, 1, 1) != 1)
             {
-                free(dec);
+                SDL_free(dec);
                 BAIL_MACRO(ERR_IO_ERROR, 0);
             } /* if */
         } /* for */
     } /* if */
 
-    else if (__Sound_strcasecmp(ext, "au") == 0)
+    else if (SDL_strcasecmp(ext, "au") == 0)
     {
         /*
          * A number of files in the wild have the .au extension but no valid
@@ -215,7 +215,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
 
     else
     {
-        free(dec);
+        SDL_free(dec);
         BAIL_MACRO("AU: Not an .AU stream.", 0);
     } /* else */    
 
@@ -238,7 +238,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
 static void AU_close(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = sample->opaque;
-    free(internal->decoder_private);
+    SDL_free(internal->decoder_private);
 } /* AU_close */
 
 

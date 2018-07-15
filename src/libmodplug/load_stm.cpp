@@ -63,9 +63,9 @@ BOOL CSoundFile::ReadSTM(const BYTE *lpStream, DWORD dwMemLength)
 	
 	if ((!lpStream) || (dwMemLength < sizeof(STMHEADER))) return FALSE;
 	if ((phdr->filetype != 2) || (phdr->unused != 0x1A)
-	 || ((strnicmp(phdr->trackername, "!SCREAM!", 8))
-	  && (strnicmp(phdr->trackername, "BMOD2STM", 8)))) return FALSE;
-	memcpy(m_szNames[0], phdr->songname, 20);
+	 || ((SDL_strncasecmp(phdr->trackername, "!SCREAM!", 8))
+	  && (SDL_strncasecmp(phdr->trackername, "BMOD2STM", 8)))) return FALSE;
+	SDL_memcpy(m_szNames[0], phdr->songname, 20);
 	// Read STM header
 	m_nType = MOD_TYPE_STM;
 	m_nSamples = 31;
@@ -78,7 +78,7 @@ BOOL CSoundFile::ReadSTM(const BYTE *lpStream, DWORD dwMemLength)
 	m_nDefaultTempo = 125;
 	m_nDefaultGlobalVolume = phdr->globalvol << 2;
 	if (m_nDefaultGlobalVolume > 256) m_nDefaultGlobalVolume = 256;
-	memcpy(Order, phdr->patorder, 128);
+	SDL_memcpy(Order, phdr->patorder, 128);
 	// Setting up channels
 	for (UINT nSet=0; nSet<4; nSet++)
 	{
@@ -91,8 +91,8 @@ BOOL CSoundFile::ReadSTM(const BYTE *lpStream, DWORD dwMemLength)
 	{
 		MODINSTRUMENT *pIns = &Ins[nIns+1];
 		const STMSAMPLE *pStm = &phdr->sample[nIns];  // STM sample data
-		memcpy(pIns->name, pStm->filename, 13);
-		memcpy(m_szNames[nIns+1], pStm->filename, 12);
+		SDL_memcpy(pIns->name, pStm->filename, 13);
+		SDL_memcpy(m_szNames[nIns+1], pStm->filename, 12);
 		pIns->nC4Speed = bswapLE16(pStm->c2spd);
 		pIns->nGlobalVol = 64;
 		pIns->nVolume = pStm->volume << 2;

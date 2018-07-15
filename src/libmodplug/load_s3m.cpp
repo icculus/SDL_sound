@@ -200,7 +200,8 @@ BOOL CSoundFile::ReadS3M(const BYTE *lpStream, DWORD dwMemLength)
 	BYTE insflags[MAX_SAMPLES], inspack[MAX_SAMPLES];
 
 	if ((!lpStream) || (dwMemLength <= sizeof(S3MFILEHEADER)+sizeof(S3MSAMPLESTRUCT)+64)) return FALSE;
-	S3MFILEHEADER psfh = *(S3MFILEHEADER *)lpStream;
+	S3MFILEHEADER psfh;
+    SDL_memcpy(&psfh, lpStream, sizeof (psfh));
 
 	psfh.reserved1 = bswapLE16(psfh.reserved1);
 	psfh.ordnum = bswapLE16(psfh.ordnum);
@@ -215,8 +216,8 @@ BOOL CSoundFile::ReadS3M(const BYTE *lpStream, DWORD dwMemLength)
 	if (psfh.scrm != 0x4D524353) return FALSE;
 	dwMemPos = 0x60;
 	m_nType = MOD_TYPE_S3M;
-	memset(m_szNames,0,sizeof(m_szNames));
-	memcpy(m_szNames[0], psfh.name, 28);
+	SDL_memset(m_szNames,0,sizeof(m_szNames));
+	SDL_memcpy(m_szNames[0], psfh.name, 28);
 	// Speed
 	m_nDefaultSpeed = psfh.speed;
 	if (m_nDefaultSpeed < 1) m_nDefaultSpeed = 6;
@@ -253,7 +254,7 @@ BOOL CSoundFile::ReadS3M(const BYTE *lpStream, DWORD dwMemLength)
 	if (iord > MAX_ORDERS) iord = MAX_ORDERS;
 	if (iord)
 	{
-		memcpy(Order, lpStream+dwMemPos, iord);
+		SDL_memcpy(Order, lpStream+dwMemPos, iord);
 		dwMemPos += iord;
 	}
 	if ((iord & 1) && (lpStream[dwMemPos] == 0xFF)) dwMemPos++;
@@ -263,14 +264,14 @@ BOOL CSoundFile::ReadS3M(const BYTE *lpStream, DWORD dwMemLength)
 	m_nSamples = insnum;
 	patnum = npat = psfh.patnum;
 	if (patnum > MAX_PATTERNS) patnum = MAX_PATTERNS;
-	memset(ptr, 0, sizeof(ptr));
+	SDL_memset(ptr, 0, sizeof(ptr));
 
 	// Ignore file if it has a corrupted header.
 	if (nins+npat > 256) return FALSE;
 
 	if (nins+npat)
 	{
-		memcpy(ptr, lpStream+dwMemPos, 2*(nins+npat));
+		SDL_memcpy(ptr, lpStream+dwMemPos, 2*(nins+npat));
 		dwMemPos += 2*(nins+npat);
 		for (UINT j = 0; j < (nins+npat); ++j) {
 		        ptr[j] = bswapLE16(ptr[j]);
@@ -286,7 +287,7 @@ BOOL CSoundFile::ReadS3M(const BYTE *lpStream, DWORD dwMemLength)
 	}
 	if (!m_nChannels) return TRUE;
 	// Reading instrument headers
-	memset(insfile, 0, sizeof(insfile));
+	SDL_memset(insfile, 0, sizeof(insfile));
 	for (UINT iSmp=1; iSmp<=insnum; iSmp++)
 	{
 		UINT nInd = ((DWORD)ptr[iSmp-1])*16;
@@ -297,11 +298,11 @@ BOOL CSoundFile::ReadS3M(const BYTE *lpStream, DWORD dwMemLength)
 			continue;
 		}
 		S3MSAMPLESTRUCT pSmp;
-		memcpy(&pSmp, lpStream+nInd, 0x50);
-		memcpy(Ins[iSmp].name, &pSmp.dosname, 12);
+		SDL_memcpy(&pSmp, lpStream+nInd, 0x50);
+		SDL_memcpy(Ins[iSmp].name, &pSmp.dosname, 12);
 		insflags[iSmp-1] = pSmp.flags;
 		inspack[iSmp-1] = pSmp.pack;
-		memcpy(m_szNames[iSmp], pSmp.name, 28);
+		SDL_memcpy(m_szNames[iSmp], pSmp.name, 28);
 		m_szNames[iSmp][28] = 0;
 		if ((pSmp.type==1) && (pSmp.scrs[2]=='R') && (pSmp.scrs[3]=='S'))
 		{
@@ -438,9 +439,9 @@ BOOL CSoundFile::SaveS3M(LPCSTR lpszFileName, UINT nPacking)
 	if ((!m_nChannels) || (!lpszFileName)) return FALSE;
 	if ((f = fopen(lpszFileName, "wb")) == NULL) return FALSE;
 	// Writing S3M header
-	memset(header, 0, sizeof(header));
-	memset(insex, 0, sizeof(insex));
-	memcpy(header, m_szNames[0], 0x1C);
+	SDL_memset(header, 0, sizeof(header));
+	SDL_memset(insex, 0, sizeof(insex));
+	SDL_memcpy(header, m_szNames[0], 0x1C);
 	header[0x1B] = 0;
 	header[0x1C] = 0x1A;
 	header[0x1D] = 0x10;
@@ -483,8 +484,8 @@ BOOL CSoundFile::SaveS3M(LPCSTR lpszFileName, UINT nPacking)
 	}
 	fwrite(header, 0x60, 1, f);
 	fwrite(Order, nbo, 1, f);
-	memset(patptr, 0, sizeof(patptr));
-	memset(insptr, 0, sizeof(insptr));
+	SDL_memset(patptr, 0, sizeof(patptr));
+	SDL_memset(insptr, 0, sizeof(insptr));
 	UINT ofs0 = 0x60 + nbo;
 	UINT ofs1 = ((0x60 + nbo + nbi*2 + nbp*2 + 15) & 0xFFF0) + 0x20;
 	UINT ofs = ofs1;
@@ -513,7 +514,7 @@ BOOL CSoundFile::SaveS3M(LPCSTR lpszFileName, UINT nPacking)
 	for (i=0; i<nbp; i++)
 	{
 		WORD len = 64;
-		memset(buffer, 0, sizeof(buffer));
+		SDL_memset(buffer, 0, sizeof(buffer));
 		patptr[i] = ofs / 16;
 		if (Patterns[i])
 		{
@@ -600,9 +601,9 @@ BOOL CSoundFile::SaveS3M(LPCSTR lpszFileName, UINT nPacking)
 				}
 			}
 		}
-		memcpy(insex[i-1].dosname, pins->name, 12);
-		memcpy(insex[i-1].name, m_szNames[i], 28);
-		memcpy(insex[i-1].scrs, "SCRS", 4);
+		SDL_memcpy(insex[i-1].dosname, pins->name, 12);
+		SDL_memcpy(insex[i-1].name, m_szNames[i], 28);
+		SDL_memcpy(insex[i-1].scrs, "SCRS", 4);
 		insex[i-1].hmem = (BYTE)((DWORD)ofs >> 20);
 		insex[i-1].memseg = (WORD)((DWORD)ofs >> 4);
 		if (pins->pSample)

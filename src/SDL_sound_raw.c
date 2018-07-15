@@ -78,7 +78,7 @@ static int RAW_open(Sound_Sample *sample, const char *ext)
          * We check this explicitly, since we have no other way to
          *  determine whether we should handle this data or not.
          */
-    if (__Sound_strcasecmp(ext, "RAW") != 0)
+    if (SDL_strcasecmp(ext, "RAW") != 0)
         BAIL_MACRO("RAW: extension isn't explicitly \"RAW\".", 0);
 
         /*
@@ -98,7 +98,7 @@ static int RAW_open(Sound_Sample *sample, const char *ext)
         /*
          * We never convert raw samples; what you ask for is what you get.
          */
-    memcpy(&sample->actual, &sample->desired, sizeof (Sound_AudioInfo));
+    SDL_memcpy(&sample->actual, &sample->desired, sizeof (Sound_AudioInfo));
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
 
     if ( (pos = SDL_RWseek(internal->rw, 0, SEEK_END) ) <= 0) {

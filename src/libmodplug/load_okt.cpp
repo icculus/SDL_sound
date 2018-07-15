@@ -64,7 +64,7 @@ BOOL CSoundFile::ReadOKT(const BYTE *lpStream, DWORD dwMemLength)
 			OKTSAMPLE *psmp = (OKTSAMPLE *)(lpStream + dwMemPos);
 			MODINSTRUMENT *pins = &Ins[smp];
 
-			memcpy(m_szNames[smp], psmp->name, 20);
+			SDL_memcpy(m_szNames[smp], psmp->name, 20);
 			pins->uFlags = 0;
 			pins->nLength = bswapBE32(psmp->length) & ~1;
 			pins->nLoopStart = bswapBE16(psmp->loopstart);

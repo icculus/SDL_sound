@@ -35,7 +35,6 @@
 #include <ctype.h>
 #ifndef _WIN32
 #include <limits.h> // for PATH_MAX
-#include <unistd.h> // for sleep
 #endif
 #ifndef PATH_MAX
 #define PATH_MAX 256
@@ -169,12 +168,12 @@ static int pat_getopt(const char *s, const char *o, int dflt);
 static void pat_message(const char *s1, const char *s2)
 {
 	char txt[256];
-	if( strlen(s1) + strlen(s2) > 255 ) return;
-	sprintf(txt, s1, s2);
+	if( SDL_strlen(s1) + SDL_strlen(s2) > 255 ) return;
+	SDL_snprintf(txt, sizeof (txt), s1, s2);
 #ifdef NEWMIKMOD
 	_mmlog(txt);
 #else
-	fprintf(stderr, "load_pat > %s\n", txt);
+	SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "load_pat > %s\n", txt);
 #endif
 }
 
@@ -189,12 +188,12 @@ void pat_resetsmp(void)
 
 int pat_numsmp()
 {
-	return strlen((const char *)pat_gm_used);
+	return SDL_strlen((const char *)pat_gm_used);
 }
 
 int pat_numinstr(void)
 {
-	return strlen((const char *)pat_gm_used);
+	return SDL_strlen((const char *)pat_gm_used);
 }
 
 int pat_smptogm(int smp)
@@ -227,7 +226,7 @@ const char *pat_gm_name(int gm)
 {
 	static char buf[40];
 	if( gm < 1 || gm > MAXSMP ) {
-		sprintf(buf, "invalid gm %d", gm);
+		SDL_snprintf(buf, sizeof (buf), "invalid gm %d", gm);
 		return buf;
 	}
 	return midipat[gm - 1];
@@ -244,7 +243,7 @@ int pat_gm_drumnr(int n)
 int pat_gm_drumnote(int n)
 {
 	char *p;
-	p = strchr(midipat[pat_gm_drumnr(n)-1], ':');
+	p = SDL_strchr(midipat[pat_gm_drumnr(n)-1], ':');
 	if( p ) return pat_getopt(p+1, "note", n);
 	return n;
 }
@@ -290,82 +289,6 @@ static PAT_SAMPLE_FUN pat_fun[] = { pat_sinus, pat_square, pat_sawtooth };
 #define mmfseek(f,p,w)		_mm_fseek(f,p,w)
 #define mmreadUBYTES(buf,sz,f)	_mm_read_UBYTES(buf,sz,f)
 
-#else
-
-#if defined(WIN32) && defined(_mm_free)
-#undef _mm_free
-#endif
-
-#define MMSTREAM				FILE
-#define _mm_fopen(name,mode)			fopen(name,mode)
-#define _mm_fgets(f,buf,sz)			fgets(buf,sz,f)
-#define _mm_fseek(f,pos,whence)			fseek(f,pos,whence)
-#define _mm_ftell(f)				ftell(f)
-#define _mm_read_UBYTES(buf,sz,f)		fread(buf,sz,1,f)
-#define _mm_read_SBYTES(buf,sz,f)		fread(buf,sz,1,f)
-#define _mm_feof(f)				feof(f)
-#define _mm_fclose(f)				fclose(f)
-#define DupStr(h,buf,sz)			strdup(buf)
-#define _mm_calloc(h,n,sz)			calloc(n,sz)
-#define _mm_recalloc(h,buf,sz,elsz)	realloc(buf,sz)
-#define _mm_free(h,p)				free(p)
-
-typedef struct {
-	char *mm;
-	int sz;
-	int pos;
-	int error;
-} MMFILE;
-
-static long mmftell(MMFILE *mmfile)
-{
-	return mmfile->pos;
-}
-
-static void mmfseek(MMFILE *mmfile, long p, int whence)
-{
-	int newpos = mmfile->pos;
-	switch(whence) {
-		case SEEK_SET:
-			newpos = p;
-			break;
-		case SEEK_CUR:
-			newpos += p;
-			break;
-		case SEEK_END:
-			newpos = mmfile->sz + p;
-			break;
-	}
-	if (newpos < mmfile->sz)
-		mmfile->pos = newpos;
-	else {
-		mmfile->error = 1;
-//		printf("WARNING: seeking too far\n");
-	}
-}
-
-static void mmreadUBYTES(BYTE *buf, long sz, MMFILE *mmfile)
-{
-	int sztr = sz;
-	// do not overread.
-	if (sz > mmfile->sz - mmfile->pos)
-		sztr = mmfile->sz - mmfile->pos;
-	memcpy(buf, &mmfile->mm[mmfile->pos], sztr);
-	mmfile->pos += sz;
-	// if truncated read, populate the rest of the array with zeros.
-	if (sz > sztr)
-		memset(buf+sztr, 0, sz-sztr);
-}
-
-static void mmreadSBYTES(char *buf, long sz, MMFILE *mmfile)
-{
-	// do not overread.
-	if (sz > mmfile->sz - mmfile->pos)
-		sz = mmfile->sz - mmfile->pos;
-	memcpy(buf, &mmfile->mm[mmfile->pos], sz);
-	mmfile->pos += sz;
-}
-
 #endif
 
 long _mm_getfsize(MMSTREAM *mmpat) {
@@ -381,18 +304,17 @@ void pat_init_patnames(void)
 	int z, i, nsources, isdrumset, nskip, pfnlen;
 	char *p, *q;
 	char line[PATH_MAX];
-	char cfgsources[5][PATH_MAX] = {{0}, {0}, {0}, {0}, {0}};
+	char cfgsources[5][PATH_MAX];
 	MMSTREAM *mmcfg;
-	strncpy(pathforpat, PATHFORPAT, PATH_MAX);
-	strncpy(timiditycfg, TIMIDITYCFG, PATH_MAX);
-	p = getenv(PAT_ENV_PATH2CFG);
+    SDL_memset(cfgsources, 0, sizeof (cfgsources));
+	SDL_strlcpy(pathforpat, PATHFORPAT, PATH_MAX);
+	SDL_strlcpy(timiditycfg, TIMIDITYCFG, PATH_MAX);
+	p = SDL_getenv(PAT_ENV_PATH2CFG);
 	if( p ) {
-		strncpy(timiditycfg, p, PATH_MAX - 14);
-		strncpy(pathforpat, p, PATH_MAX - 13);
-		strcat(timiditycfg, "/timidity.cfg");
-		strcat(pathforpat, "/instruments");
+        SDL_snprintf(timiditycfg, sizeof (timiditycfg), "%s/timidity.cfg", p);
+		SDL_snprintf(pathforpat, sizeof (pathforpat), "%s/instruments", p);
 	}
-	strncpy(cfgsources[0], timiditycfg, PATH_MAX - 1);
+	SDL_strlcpy(cfgsources[0], timiditycfg, PATH_MAX - 1);
 	nsources = 1;
 
 	for( i=0; i<MAXSMP; i++ )	midipat[i][0] = '\0';
@@ -408,44 +330,44 @@ void pat_init_patnames(void)
 			isdrumset = 0;
 			_mm_fgets(mmcfg, line, PATH_MAX);
 			while( !_mm_feof(mmcfg) ) {
-			if( isdigit(line[0]) || (isblank(line[0]) && isdigit(line[1])) ) {
+			if( SDL_isdigit(line[0]) || (isblank(line[0]) && SDL_isdigit(line[1])) ) {
 				p = line;
 				// get pat number
-				while ( isspace(*p) ) p ++;
-				i = atoi(p);
-				while ( isdigit(*p) ) p ++;
-				while ( isspace(*p) ) p ++;
+				while ( SDL_isspace(*p) ) p ++;
+				i = SDL_atoi(p);
+				while ( SDL_isdigit(*p) ) p ++;
+				while ( SDL_isspace(*p) ) p ++;
 				// get pat file name
 				if( *p && i < MAXSMP && i >= 0 && *p != '#' ) {
 					q = isdrumset ? midipat[pat_gm_drumnr(i)-1] : midipat[i];
 					pfnlen = 0;
-					while( *p && !isspace(*p) && *p != '#' && pfnlen < 128 ) {
+					while( *p && !SDL_isspace(*p) && *p != '#' && pfnlen < 128 ) {
 						pfnlen ++;
 						*q++ = *p++;
 					}
 					if( isblank(*p) && *(p+1) != '#' && pfnlen < 128 ) {
 						*q++ = ':'; pfnlen ++;
-						while( isspace(*p) ) {
-							while( isspace(*p) ) p++;
+						while( SDL_isspace(*p) ) {
+							while( SDL_isspace(*p) ) p++;
 							if ( *p == '#' ) { // comment
 
-							} else while( *p && !isspace(*p) && pfnlen < 128 ) {
+							} else while( *p && !SDL_isspace(*p) && pfnlen < 128 ) {
 								pfnlen ++;
 								*q++ = *p++;
 							}
-							if( isspace(*p) ) { *q++ = ' '; pfnlen++; }
+							if( SDL_isspace(*p) ) { *q++ = ' '; pfnlen++; }
 						}
 					}
 					*q++ = '\0';
 				}
 			}
-			if( !strncmp(line,"drumset",7) ) isdrumset = 1;
-			if( !strncmp(line,"source",6) && nsources < 5 ) {
+			if( !SDL_strncmp(line,"drumset",7) ) isdrumset = 1;
+			if( !SDL_strncmp(line,"source",6) && nsources < 5 ) {
 				q = cfgsources[nsources];
 				p = &line[7];
-				while ( isspace(*p) ) p ++;
+				while ( SDL_isspace(*p) ) p ++;
 				pfnlen = 0;
-				while ( *p && *p != '#' && !isspace(*p) && pfnlen < 128 ) {
+				while ( *p && *p != '#' && !SDL_isspace(*p) && pfnlen < 128 ) {
 					pfnlen ++;
 					*q++ = *p++;
 				}
@@ -465,7 +387,7 @@ void pat_init_patnames(void)
 		if( midipat[i][0] ) q = midipat[i];
 		else {
 			if( midipat[i] != q)
-				strcpy(midipat[i], q);
+				SDL_strlcpy(midipat[i], q, PATH_MAX);
 			if( midipat[i][0] == '\0' ) nskip++;
 		}
 	}
@@ -473,24 +395,27 @@ void pat_init_patnames(void)
 		for( i=MAXSMP; i-- > 0; )	{
 			if( midipat[i][0] ) q = midipat[i];
 			else if( midipat[i] != q )
-				strcpy(midipat[i], q);
+				SDL_strlcpy(midipat[i], q, PATH_MAX);
 		}
 	}
 }
 
-static char *pat_build_path(char *fname, int pat)
+static char *pat_build_path(char *fname, const size_t fnamelen, int pat)
 {
 	char *ps;
 	char *patfile = midipat[pat];
 	int isabspath = (patfile[0] == '/');
 	if ( isabspath ) patfile ++;
-	ps = strrchr(patfile, ':');
+	ps = SDL_strrchr(patfile, ':');
 	if( ps ) {
-		sprintf(fname, "%s%c%s", isabspath ? "" : pathforpat, DIRDELIM, patfile);
-		strcpy(strrchr(fname, ':'), ".pat");
+		SDL_snprintf(fname, fnamelen, "%s%c%s", isabspath ? "" : pathforpat, DIRDELIM, patfile);
+        char *replaceptr = SDL_strrchr(fname, ':');
+        SDL_assert(replaceptr != NULL);
+        *replaceptr = '\0';
+		SDL_strlcat(fname, ".pat", fnamelen);
 		return ps;
 	}
-	sprintf(fname, "%s%c%s.pat", isabspath ? "" : pathforpat, DIRDELIM, patfile);
+	SDL_snprintf(fname, fnamelen, "%s%c%s.pat", isabspath ? "" : pathforpat, DIRDELIM, patfile);
 	return 0;
 }
 
@@ -498,7 +423,7 @@ static void pat_read_patname(PATHANDLE *h, MMFILE *mmpat) {
 	InstrumentHeader ih;
 	mmfseek(mmpat,sizeof(PatchHeader), SEEK_SET);
 	mmreadUBYTES((BYTE *)&ih, sizeof(InstrumentHeader), mmpat);
-	strncpy(h->patname, ih.instrument_name, 16);
+	SDL_strlcpy(h->patname, ih.instrument_name, 16);
 	h->patname[15] = '\0';
 }
 
@@ -514,7 +439,7 @@ static void pat_get_layerheader(MMFILE *mmpat, LayerHeader *hl)
 	mmfseek(mmpat,sizeof(PatchHeader), SEEK_SET);
 	mmreadUBYTES((BYTE *)&ih, sizeof(InstrumentHeader), mmpat);
 	mmreadUBYTES((BYTE *)hl, sizeof(LayerHeader), mmpat);
-	strncpy(hl->reserved, ih.instrument_name, 40);
+	SDL_strlcpy(hl->reserved, ih.instrument_name, 40);
 }
 
 static int pat_read_numsmp(MMFILE *mmpat) {
@@ -558,7 +483,7 @@ static void pat_read_waveheader(MMSTREAM *mmpat, WaveHeader *hw, int layer)
 		}
 	}
 	_mm_read_UBYTES((BYTE *)hw, sizeof(WaveHeader), mmpat);
-	strncpy(hw->reserved, hl.reserved, 32);
+	SDL_strlcpy(hw->reserved, hl.reserved, 32);
 	hw->reserved[31] = 0;
 	if( hw->start_loop >= hw->wave_size ) {
 		hw->start_loop = 0;
@@ -624,7 +549,7 @@ static int pat_readpat_attr(int pat, WaveHeader *hw, int layer)
 	char fname[128];
 	unsigned long fsize;
 	MMSTREAM *mmpat;
-	pat_build_path(fname, pat);
+	pat_build_path(fname, sizeof (fname), pat);
 	mmpat = _mm_fopen(fname, "r");
 	if( !mmpat )
 		return 0;
@@ -691,9 +616,9 @@ static int pat_getopt(const char *s, const char *o, int dflt)
 {
 	const char *p;
 	if( !s ) return dflt;
-	p = strstr(s,o);
+	p = SDL_strstr(s,o);
 	if( !p ) return dflt;
-	return atoi(strchr(p,'=')+1);
+	return SDL_atoi(SDL_strchr(p,'=')+1);
 }
 
 static void pat_readpat(int pat, char *dest, int num)
@@ -721,7 +646,7 @@ static void pat_readpat(int pat, char *dest, int num)
 	}
 #endif
 	if( !readlasttime ) {
-		opt=pat_build_path(fname, pat);
+		opt=pat_build_path(fname, sizeof (fname), pat);
 		mmpat = _mm_fopen(fname, "r");
 		if( !mmpat )
 			return;
@@ -833,9 +758,9 @@ BOOL CSoundFile::TestPAT(const BYTE *lpStream, DWORD dwMemLength)
 	_mm_read_UBYTES((BYTE *)&ph, sizeof(PatchHeader), mmfile);
 #else
 	if( dwMemLength < sizeof(PatchHeader) ) return 0;
-	memcpy((BYTE *)&ph, lpStream, sizeof(PatchHeader));
+	SDL_memcpy((BYTE *)&ph, lpStream, sizeof(PatchHeader));
 #endif
-	if( !strcmp(ph.header,"GF1PATCH110") && !strcmp(ph.gravis_id,"ID#000002") ) return 1;
+	if( !SDL_strcmp(ph.header,"GF1PATCH110") && !SDL_strcmp(ph.gravis_id,"ID#000002") ) return 1;
 	return 0;
 }
 
@@ -851,7 +776,7 @@ static PATHANDLE *PAT_Init(void)
 		if( !retval ) return NULL;
     SL_RegisterDecompressor(&dec_raw);	// we can not get the samples out of our own routines...!
 #else
-    retval = (PATHANDLE *)calloc(1,sizeof(PATHANDLE));
+    retval = (PATHANDLE *)SDL_calloc(1,sizeof(PATHANDLE));
 		if( !retval ) return NULL;
 #endif
     return retval;
@@ -868,7 +793,7 @@ static void PAT_Cleanup(PATHANDLE *handle)
 	}
 #else
 	if(handle) {
-		free(handle);
+		SDL_free(handle);
 	}
 #endif
 }
@@ -1068,7 +993,7 @@ static void	pat_modenv(WaveHeader *hw, int mpos[6], int mvol[6])
 		mpos[i] = 0;
 		mvol[i] = 64;
 	}
-	if( !memcmp(prate, "??????", 6) || poffset[5] >= 100 ) return; // weird rates or high env end volume
+	if( !SDL_memcmp(prate, "??????", 6) || poffset[5] >= 100 ) return; // weird rates or high env end volume
 	if( !(hw->modes & PAT_SUSTAIN) ) return; // no sustain thus no need for envelope
 	s = hw->wave_size;
 	if (s == 0) return;
@@ -1204,7 +1129,7 @@ static void PATinst(INSTRUMENTHEADER *d, int smp, int gm)
 {
 	WaveHeader hw;
 	char s[32];
-	memset(s,0,32);
+	SDL_memset(s,0,32);
 	if( pat_readpat_attr(gm-1, &hw, 0) ) {
 		pat_setpat_inst(&hw, d, smp);
 	}
@@ -1226,23 +1151,22 @@ static void PATinst(INSTRUMENTHEADER *d, int smp, int gm)
 		hw.envelope_offset[3] = 0;
 		hw.envelope_offset[4] = 0;
 		hw.envelope_offset[5] = 0;
-		strncpy(hw.reserved, midipat[gm-1], sizeof(hw.reserved));
+		SDL_strlcpy(hw.reserved, midipat[gm-1], sizeof(hw.reserved));
 		pat_setpat_inst(&hw, d, smp);
 	}
 	if( hw.reserved[0] )
-		strncpy(s, hw.reserved, 32);
+		SDL_strlcpy(s, hw.reserved, 32);
 	else
-		strncpy(s, midipat[gm-1], 32);
+		SDL_strlcpy(s, midipat[gm-1], 32);
 #ifdef NEWMIKMOD
 	d->insname = DupStr(of->allochandle, s,28);
 #else
 	s[31] = '\0';
-	memset(d->name, 0, 32);
-	strcpy((char *)d->name, s);
-	strncpy(s, midipat[gm-1], 12);
-	s[11] = '\0';
-	memset(d->filename, 0, 12);
-	strcpy((char *)d->filename, s);
+	SDL_memset(d->name, 0, 32);
+	SDL_strlcpy((char *)d->name, s, sizeof (d->name));
+	SDL_strlcpy(s, midipat[gm-1], 12);
+	SDL_memset(d->filename, 0, 12);
+	SDL_strlcpy((char *)d->filename, s, sizeof (d->filename));
 #endif
 }
 
@@ -1300,7 +1224,7 @@ static void PATsample(CSoundFile *cs, MODINSTRUMENT *q, int smp, int gm)
 {
 	WaveHeader hw;
 	char s[256];
-	sprintf(s, "%d:%s", smp-1, midipat[gm-1]);
+	SDL_snprintf(s, sizeof (s), "%d:%s", smp-1, midipat[gm-1]);
 #ifdef NEWMIKMOD
 	q->samplename = DupStr(of->allochandle, s,28);
 	if( pat_readpat_attr(gm-1, &hw, 0) ) {
@@ -1326,8 +1250,8 @@ static void PATsample(CSoundFile *cs, MODINSTRUMENT *q, int smp, int gm)
 		q->flags |= SL_DECLICK;
 #else
 	s[31] = '\0';
-	memset(cs->m_szNames[smp], 0, 32);
-	strncpy(cs->m_szNames[smp], s, 32-1);
+	SDL_memset(cs->m_szNames[smp], 0, 32);
+	SDL_strlcpy(cs->m_szNames[smp], s, 32-1);
 	q->nGlobalVol = 64;
 	q->nPan       = 128;
 	q->uFlags     = CHN_16BIT;
@@ -1335,8 +1259,8 @@ static void PATsample(CSoundFile *cs, MODINSTRUMENT *q, int smp, int gm)
 		char *p;
 		pat_setpat_attr(&hw, q);
 		pat_loops[smp-1] = (q->uFlags & CHN_LOOP)? 1: 0;
-		if( hw.modes & PAT_16BIT ) p = (char *)malloc(hw.wave_size);
-		else p = (char *)malloc(hw.wave_size * sizeof(char)*2);
+		if( hw.modes & PAT_16BIT ) p = (char *)SDL_malloc(hw.wave_size);
+		else p = (char *)SDL_malloc(hw.wave_size * sizeof(char)*2);
 		if( p ) {
 			if( hw.modes & PAT_16BIT ) {
 				dec_pat_Decompress16Bit((short int *)p, hw.wave_size>>1, gm - 1);
@@ -1346,7 +1270,7 @@ static void PATsample(CSoundFile *cs, MODINSTRUMENT *q, int smp, int gm)
 				dec_pat_Decompress8Bit((short int *)p, hw.wave_size, gm - 1);
 				cs->ReadSample(q, (hw.modes&PAT_UNSIGNED)?RS_PCM16U:RS_PCM16S, (LPSTR)p, hw.wave_size * sizeof(short int));
 			}
-			free(p);
+			SDL_free(p);
 		}
 	}
 	else {
@@ -1358,11 +1282,11 @@ static void PATsample(CSoundFile *cs, MODINSTRUMENT *q, int smp, int gm)
 		q->nVolume    = 256;
 		q->uFlags    |= CHN_LOOP;
 		q->uFlags    |= CHN_16BIT;
-		p = (char *)malloc(q->nLength*sizeof(char)*2);
+		p = (char *)SDL_malloc(q->nLength*sizeof(char)*2);
 		if( p ) {
 			dec_pat_Decompress8Bit((short int *)p, q->nLength, smp + MAXSMP - 1);
 			cs->ReadSample(q, RS_PCM16S, (LPSTR)p, q->nLength*2);
-			free(p);
+			SDL_free(p);
 		}
 	}
 #endif
@@ -1399,7 +1323,7 @@ BOOL PAT_Load_Instruments(void *c)
 	of->m_nInstruments = pat_numinstr() + 1;
 	for(t=1; t<of->m_nInstruments; t++) { // xmms modplug doesn't use slot zero
 		if( (of->Headers[t] = new INSTRUMENTHEADER) == NULL ) return FALSE;
-		memset(of->Headers[t], 0, sizeof(INSTRUMENTHEADER));
+		SDL_memset(of->Headers[t], 0, sizeof(INSTRUMENTHEADER));
 		PATinst(of->Headers[t], t, pat_smptogm(t));
 	}
 	for(t=1; t<of->m_nSamples; t++) { // xmms modplug doesn't use slot zero
@@ -1408,11 +1332,11 @@ BOOL PAT_Load_Instruments(void *c)
 	// copy last of the mohicans to entry 0 for XMMS modinfo to work....
 	t = of->m_nInstruments - 1;
 	if( (of->Headers[0] = new INSTRUMENTHEADER) == NULL ) return FALSE;
-	memcpy(of->Headers[0], of->Headers[t], sizeof(INSTRUMENTHEADER));
-	memset(of->Headers[0]->name, 0, 32);
-	strncpy((char *)of->Headers[0]->name, "Timidity GM patches", 32);
+	SDL_memcpy(of->Headers[0], of->Headers[t], sizeof(INSTRUMENTHEADER));
+	SDL_memset(of->Headers[0]->name, 0, 32);
+	SDL_strlcpy((char *)of->Headers[0]->name, "Timidity GM patches", 32);
 	t = of->m_nSamples - 1;
-	memcpy(&of->Ins[0], &of->Ins[t], sizeof(MODINSTRUMENT));
+	SDL_memcpy(&of->Ins[0], &of->Ins[t], sizeof(MODINSTRUMENT));
 #endif
 	return TRUE;
 }
@@ -1445,19 +1369,19 @@ BOOL CSoundFile::ReadPAT(const BYTE *lpStream, DWORD dwMemLength)
 	mm.pos = 0;
 	mm.error = 0;
 #endif
-	while( avoid_reentry ) sleep(1);
+	while( avoid_reentry ) SDL_Delay(1);
 	avoid_reentry = 1;
 	pat_read_patname(h, mmfile);
 	h->samples = pat_read_numsmp(mmfile);
-	if( strlen(h->patname) )
-		sprintf(buf,"%s canon %d-v (Fr. Jacques)", h->patname, h->samples);
+	if( SDL_strlen(h->patname) )
+		SDL_snprintf(buf,sizeof (buf),"%s canon %d-v (Fr. Jacques)", h->patname, h->samples);
 	else
-		sprintf(buf,"%d-voice canon (Fr. Jacques)", h->samples);
+		SDL_snprintf(buf,sizeof (buf),"%d-voice canon (Fr. Jacques)", h->samples);
 #ifdef NEWMIKMOD
-	of->songname = DupStr(of->allochandle, buf, strlen(buf));
+	of->songname = DupStr(of->allochandle, buf, SDL_strlen(buf));
 #else
-	if( strlen(buf) > 31 ) buf[31] = '\0'; // chop it of
-	strcpy(m_szNames[0], buf);
+	if( SDL_strlen(buf) > 31 ) buf[31] = '\0'; // chop it of
+	SDL_strlcpy(m_szNames[0], buf, 32);
 #endif
 	m_nDefaultTempo = 60; // 120 / 2
 	t = (h->samples - 1) * 16 + 128;
@@ -1496,7 +1420,7 @@ BOOL CSoundFile::ReadPAT(const BYTE *lpStream, DWORD dwMemLength)
 	for(t=1; t<=of->numins; t++) {
 		WaveHeader hw;
 		char s[32];
-		sprintf(s, "%s", h->patname);
+		SDL_snprintf(s, sizeof (s),"%s", h->patname);
 		d->insname = DupStr(of->allochandle, s,28);
 		pat_read_waveheader(mmfile, &hw, t);
 		pat_setpat_inst(&hw, d, t);
@@ -1507,11 +1431,11 @@ BOOL CSoundFile::ReadPAT(const BYTE *lpStream, DWORD dwMemLength)
 		char s[28];
 		pat_read_waveheader(mmfile, &hw, t);
 		pat_setpat_attr(&hw, q, _mm_ftell(mmfile));
-		memset(s,0,28);
+		SDL_memset(s,0,28);
 		if( hw.wave_name[0] )
-			sprintf(s, "%d:%s", t, hw.wave_name);
+			SDL_snprintf(s, sizeof (s), "%d:%s", t, hw.wave_name);
 		else
-			sprintf(s, "%d:%s", t, h->patname);
+			SDL_snprintf(s, sizeof (s), "%d:%s", t, h->patname);
 		q->samplename = DupStr(of->allochandle, s,28);
 		if(!(q->flags & (SL_LOOP | SL_SUSTAIN_LOOP)) && (q->length > 5000))
 			q->flags |= SL_DECLICK;
@@ -1538,15 +1462,15 @@ BOOL CSoundFile::ReadPAT(const BYTE *lpStream, DWORD dwMemLength)
 			avoid_reentry = 0;
 			return FALSE;
 		}
-		memset(d, 0, sizeof(INSTRUMENTHEADER));
+		SDL_memset(d, 0, sizeof(INSTRUMENTHEADER));
 		Headers[t] = d;
-		sprintf(s, "%s", h->patname);
+		SDL_snprintf(s, sizeof (s), "%s", h->patname);
 		s[31] = '\0';
-		memset(d->name, 0, 32);
-		strcpy((char *)d->name, s);
+		SDL_memset(d->name, 0, 32);
+		SDL_strlcpy((char *)d->name, s, 32);
 		s[11] = '\0';
-		memset(d->filename, 0, 12);
-		strcpy((char *)d->filename, s);
+		SDL_memset(d->filename, 0, 12);
+		SDL_strlcpy((char *)d->filename, s, 12);
 		pat_get_waveheader(mmfile, &hw, t);
 		pat_setpat_inst(&hw, d, t);
 	}
@@ -1560,21 +1484,21 @@ BOOL CSoundFile::ReadPAT(const BYTE *lpStream, DWORD dwMemLength)
 		q->uFlags     = CHN_16BIT;
 		pat_get_waveheader(mmfile, &hw, t);
 		pat_setpat_attr(&hw, q);
-		memset(s,0,32);
+		SDL_memset(s,0,32);
 		if( hw.wave_name[0] )
-			sprintf(s, "%d:%s", t, hw.wave_name);
+			SDL_snprintf(s, sizeof (s), "%d:%s", t, hw.wave_name);
 		else {
 			if( h->patname[0] )
-				sprintf(s, "%d:%s", t, h->patname);
+				SDL_snprintf(s, sizeof (s), "%d:%s", t, h->patname);
 			else
-				sprintf(s, "%d:Untitled GM patch", t);
+				SDL_snprintf(s, sizeof (s), "%d:Untitled GM patch", t);
 		}
 		s[31] = '\0';
-		memset(m_szNames[t], 0, 32);
-		strcpy(m_szNames[t], s);
+		SDL_memset(m_szNames[t], 0, 32);
+		SDL_strlcpy(m_szNames[t], s, 32);
 		if ( hw.wave_size == 0 ) p = NULL;
-		else if( hw.modes & PAT_16BIT ) p = (char *)malloc(hw.wave_size);
-		else p = (char *)malloc(hw.wave_size * sizeof(char) * 2);
+		else if( hw.modes & PAT_16BIT ) p = (char *)SDL_malloc(hw.wave_size);
+		else p = (char *)SDL_malloc(hw.wave_size * sizeof(char) * 2);
 		if( p ) {
 			mmreadSBYTES(p, hw.wave_size, mmfile);
 			if( hw.modes & PAT_16BIT ) {
@@ -1584,7 +1508,7 @@ BOOL CSoundFile::ReadPAT(const BYTE *lpStream, DWORD dwMemLength)
 				pat_blowup_to16bit((short int *)p, hw.wave_size);
 				ReadSample(q, (hw.modes&PAT_UNSIGNED)?RS_PCM16U:RS_PCM16S, (LPSTR)p, hw.wave_size * sizeof(short int));
 			}
-			free(p);
+			SDL_free(p);
 		}
 	}
 	// copy last of the mohicans to entry 0 for XMMS modinfo to work....
@@ -1593,14 +1517,14 @@ BOOL CSoundFile::ReadPAT(const BYTE *lpStream, DWORD dwMemLength)
 		avoid_reentry = 0;
 		return FALSE;
 	}
-	memcpy(Headers[0], Headers[t], sizeof(INSTRUMENTHEADER));
-	memset(Headers[0]->name, 0, 32);
+	SDL_memcpy(Headers[0], Headers[t], sizeof(INSTRUMENTHEADER));
+	SDL_memset(Headers[0]->name, 0, 32);
 	if( h->patname[0] )
-		strncpy((char *)Headers[0]->name, h->patname, 32);
+		SDL_strlcpy((char *)Headers[0]->name, h->patname, 32);
 	else
-		strncpy((char *)Headers[0]->name, "Timidity GM patch", 32);
+		SDL_strlcpy((char *)Headers[0]->name, "Timidity GM patch", 32);
 	t = m_nSamples - 1;
-	memcpy(&Ins[0], &Ins[t], sizeof(MODINSTRUMENT));
+	SDL_memcpy(&Ins[0], &Ins[t], sizeof(MODINSTRUMENT));
 #endif
 #ifdef NEWMIKMOD
 	// ==============================
@@ -1641,7 +1565,7 @@ CHAR *PAT_LoadTitle(MMSTREAM *mmfile)
 {
 	PATHANDLE dummy;
 	pat_read_patname(&dummy, mmfile);
-	return(DupStr(NULL, dummy.patname,strlen(dummy.patname)));
+	return(DupStr(NULL, dummy.patname,SDL_strlen(dummy.patname)));
 }
 
 MLOADER load_pat =

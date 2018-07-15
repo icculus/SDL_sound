@@ -176,7 +176,7 @@ int Sound_Quit(void)
     } /* for */
 
     if (available_decoders != NULL)
-        free((void *) available_decoders);
+        SDL_free((void *) available_decoders);
     available_decoders = NULL;
 
     /* clean up error state for each thread... */
@@ -184,7 +184,7 @@ int Sound_Quit(void)
     for (err = error_msgs; err != NULL; err = nexterr)
     {
         nexterr = err->next;
-        free(err);
+        SDL_free(err);
     } /* for */
     error_msgs = NULL;
     SDL_UnlockMutex(errorlist_mutex);
@@ -277,11 +277,10 @@ void __Sound_SetError(const char *str)
     err = findErrorForCurrentThread();
     if (err == NULL)
     {
-        err = (ErrMsg *) malloc(sizeof (ErrMsg));
+        err = (ErrMsg *) SDL_calloc(1, sizeof (ErrMsg));
         if (err == NULL)
             return;   /* uhh...? */
 
-        memset((void *) err, '\0', sizeof (ErrMsg));
         err->tid = SDL_ThreadID();
 
         SDL_LockMutex(errorlist_mutex);
@@ -291,8 +290,7 @@ void __Sound_SetError(const char *str)
     } /* if */
 
     err->error_available = 1;
-    strncpy(err->error_string, str, sizeof (err->error_string));
-    err->error_string[sizeof (err->error_string) - 1] = '\0';
+    SDL_strlcpy(err->error_string, str, sizeof (err->error_string));
 } /* __Sound_SetError */
 
 
@@ -307,43 +305,6 @@ Uint32 __Sound_convertMsToBytePos(Sound_AudioInfo *info, Uint32 ms)
 
 
 /*
- * -ansi and -pedantic flags prevent use of strcasecmp() on Linux, and
- *  I honestly don't want to mess around with figuring out if a given
- *  platform has "strcasecmp", "stricmp", or
- *  "compare_two_damned_strings_case_insensitive", which I hear is in the
- *  next release of Carbon.  :)  This is exported so decoders may use it if
- *  they like.
- */
-int __Sound_strcasecmp(const char *x, const char *y)
-{
-    int ux, uy;
-
-    if (x == y)  /* same pointer? Both NULL? */
-        return(0);
-
-    if (x == NULL)
-        return(-1);
-
-    if (y == NULL)
-        return(1);
-       
-    do
-    {
-        ux = toupper((int) *x);
-        uy = toupper((int) *y);
-        if (ux > uy)
-            return(1);
-        else if (ux < uy)
-            return(-1);
-        x++;
-        y++;
-    } while ((ux) && (uy));
-
-    return(0);
-} /* __Sound_strcasecmp */
-
-
-/*
  * Allocate a Sound_Sample, and fill in most of its fields. Those that need
  *  to be filled in later, by a decoder, will be initialized to zero.
  */
@@ -354,36 +315,32 @@ static Sound_Sample *alloc_sample(SDL_RWops *rw, Sound_AudioInfo *desired,
      * !!! FIXME: We're going to need to pool samples, since the mixer
      * !!! FIXME:  might be allocating tons of these on a regular basis.
      */
-    Sound_Sample *retval = malloc(sizeof (Sound_Sample));
-    Sound_SampleInternal *internal = malloc(sizeof (Sound_SampleInternal));
+    Sound_Sample *retval = SDL_calloc(1, sizeof (Sound_Sample));
+    Sound_SampleInternal *internal = SDL_calloc(1, sizeof (Sound_SampleInternal));
     if ((retval == NULL) || (internal == NULL))
     {
         __Sound_SetError(ERR_OUT_OF_MEMORY);
         if (retval)
-            free(retval);
+            SDL_free(retval);
         if (internal)
-            free(internal);
+            SDL_free(internal);
 
         return(NULL);
     } /* if */
 
-    memset(retval, '\0', sizeof (Sound_Sample));
-    memset(internal, '\0', sizeof (Sound_SampleInternal));
-
-    assert(bufferSize > 0);
-    retval->buffer = malloc(bufferSize);  /* pure ugly. */
+    SDL_assert(bufferSize > 0);
+    retval->buffer = SDL_calloc(1, bufferSize);  /* pure ugly. */
     if (!retval->buffer)
     {
         __Sound_SetError(ERR_OUT_OF_MEMORY);
-        free(internal);
-        free(retval);
+        SDL_free(internal);
+        SDL_free(retval);
         return(NULL);
     } /* if */
-    memset(retval->buffer, '\0', bufferSize);
     retval->buffer_size = bufferSize;
 
     if (desired != NULL)
-        memcpy(&retval->desired, desired, sizeof (Sound_AudioInfo));
+        SDL_memcpy(&retval->desired, desired, sizeof (Sound_AudioInfo));
 
     internal->rw = rw;
     retval->opaque = internal;
@@ -392,7 +349,7 @@ static Sound_Sample *alloc_sample(SDL_RWops *rw, Sound_AudioInfo *desired,
 
 
 #if (defined DEBUG_CHATTER)
-static __inline__ const char *fmt_to_str(Uint16 fmt)
+static SDL_INLINE const char *fmt_to_str(Uint16 fmt)
 {
     switch(fmt)
     {
@@ -442,7 +399,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
 
     /* Now we need to set up the conversion buffer... */
 
-    memcpy(&desired, (_desired != NULL) ? _desired : &sample->actual,
+    SDL_memcpy(&desired, (_desired != NULL) ? _desired : &sample->actual,
             sizeof (Sound_AudioInfo));
 
     if (desired.format == 0)
@@ -468,8 +425,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
 
     if (internal->sdlcvt.len_mult > 1)
     {
-        void *rc = realloc(sample->buffer,
-                           sample->buffer_size * internal->sdlcvt.len_mult);
+        void *rc = SDL_realloc(sample->buffer, sample->buffer_size * internal->sdlcvt.len_mult);
         if (rc == NULL)
         {
             funcs->close(sample);
@@ -481,7 +437,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
     } /* if */
 
         /* these pointers are all one and the same. */
-    memcpy(&sample->desired, &desired, sizeof (Sound_AudioInfo));
+    SDL_memcpy(&sample->desired, &desired, sizeof (Sound_AudioInfo));
     internal->sdlcvt.buf = internal->buffer = sample->buffer;
     internal->buffer_size = sample->buffer_size / internal->sdlcvt.len_mult;
     internal->sdlcvt.len = internal->buffer_size;
@@ -534,7 +490,7 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
                 const char **decoderExt = decoder->funcs->info.extensions;
                 while (*decoderExt)
                 {
-                    if (__Sound_strcasecmp(*decoderExt, ext) == 0)
+                    if (SDL_strcasecmp(*decoderExt, ext) == 0)
                     {
                         if (init_sample(decoder->funcs, retval, ext, desired))
                             return(retval);
@@ -557,7 +513,7 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
                 /* skip if we would have tried decoder above... */
             while (*decoderExt)
             {
-                if (__Sound_strcasecmp(*decoderExt, ext) == 0)
+                if (SDL_strcasecmp(*decoderExt, ext) == 0)
                 {
                     should_try = 0;
                     break;
@@ -574,10 +530,10 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
     } /* for */
 
     /* nothing could handle the sound data... */
-    free(retval->opaque);
+    SDL_free(retval->opaque);
     if (retval->buffer != NULL)
-        free(retval->buffer);
-    free(retval);
+        SDL_free(retval->buffer);
+    SDL_free(retval);
     SDL_RWclose(rw);
     __Sound_SetError(ERR_UNSUPPORTED_FORMAT);
     return(NULL);
@@ -594,7 +550,7 @@ Sound_Sample *Sound_NewSampleFromFile(const char *filename,
     BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, NULL);
     BAIL_IF_MACRO(filename == NULL, ERR_INVALID_ARGUMENT, NULL);
 
-    ext = strrchr(filename, '.');
+    ext = SDL_strrchr(filename, '.');
     rw = SDL_RWFromFile(filename, "rb");
     /* !!! FIXME: rw = RWops_FromFile(filename, "rb");*/
     BAIL_IF_MACRO(rw == NULL, SDL_GetError(), NULL);
@@ -618,8 +574,7 @@ Sound_Sample *Sound_NewSampleFromMem(const Uint8 *data,
     BAIL_IF_MACRO(data == NULL, ERR_INVALID_ARGUMENT, NULL);
     BAIL_IF_MACRO(size == 0, ERR_INVALID_ARGUMENT, NULL);
 
-    rw = SDL_RWFromMem(data, size);
-    /* !!! FIXME: rw = RWops_FromMem(data, size);*/
+    rw = SDL_RWFromConstMem(data, size);
     BAIL_IF_MACRO(rw == NULL, SDL_GetError(), NULL);
 
     return(Sound_NewSample(rw, ext, desired, bufferSize));
@@ -655,7 +610,7 @@ void Sound_FreeSample(Sound_Sample *sample)
     } /* if */
     else
     {
-        assert(sample_list == sample);
+        SDL_assert(sample_list == sample);
         sample_list = internal->next;
     } /* else */
 
@@ -675,14 +630,14 @@ void Sound_FreeSample(Sound_Sample *sample)
         SDL_RWclose(internal->rw);
 
     if ((internal->buffer != NULL) && (internal->buffer != sample->buffer))
-        free(internal->buffer);
+        SDL_free(internal->buffer);
 
-    free(internal);
+    SDL_free(internal);
 
     if (sample->buffer != NULL)
-        free(sample->buffer);
+        SDL_free(sample->buffer);
 
-    free(sample);
+    SDL_free(sample);
 } /* Sound_FreeSample */
 
 
@@ -694,7 +649,7 @@ int Sound_SetBufferSize(Sound_Sample *sample, Uint32 newSize)
     BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, 0);
     BAIL_IF_MACRO(sample == NULL, ERR_INVALID_ARGUMENT, 0);
     internal = ((Sound_SampleInternal *) sample->opaque);
-    newBuf = realloc(sample->buffer, newSize * internal->sdlcvt.len_mult);
+    newBuf = SDL_realloc(sample->buffer, newSize * internal->sdlcvt.len_mult);
     BAIL_IF_MACRO(newBuf == NULL, ERR_OUT_OF_MEMORY, 0);
 
     internal->sdlcvt.buf = internal->buffer = sample->buffer = newBuf;
@@ -719,10 +674,10 @@ Uint32 Sound_Decode(Sound_Sample *sample)
 
     internal = (Sound_SampleInternal *) sample->opaque;
 
-    assert(sample->buffer != NULL);
-    assert(sample->buffer_size > 0);
-    assert(internal->buffer != NULL);
-    assert(internal->buffer_size > 0);
+    SDL_assert(sample->buffer != NULL);
+    SDL_assert(sample->buffer_size > 0);
+    SDL_assert(internal->buffer != NULL);
+    SDL_assert(internal->buffer_size > 0);
 
         /* reset EAGAIN. Decoder can flip it back on if it needs to. */
     sample->flags &= ~SOUND_SAMPLEFLAG_EAGAIN;
@@ -755,7 +710,7 @@ Uint32 Sound_DecodeAll(Sound_Sample *sample)
             ((sample->flags & SOUND_SAMPLEFLAG_ERROR) == 0) )
     {
         Uint32 br = Sound_Decode(sample);
-        void *ptr = realloc(buf, newBufSize + br);
+        void *ptr = SDL_realloc(buf, newBufSize + br);
         if (ptr == NULL)
         {
             sample->flags |= SOUND_SAMPLEFLAG_ERROR;
@@ -764,18 +719,18 @@ Uint32 Sound_DecodeAll(Sound_Sample *sample)
         else
         {
             buf = ptr;
-            memcpy( ((char *) buf) + newBufSize, sample->buffer, br );
+            SDL_memcpy( ((char *) buf) + newBufSize, sample->buffer, br );
             newBufSize += br;
         } /* else */
     } /* while */
 
-    if (buf == NULL)  /* ...in case first call to realloc() fails... */
+    if (buf == NULL)  /* ...in case first call to SDL_realloc() fails... */
         return(sample->buffer_size);
 
     if (internal->buffer != sample->buffer)
-        free(internal->buffer);
+        SDL_free(internal->buffer);
 
-    free(sample->buffer);
+    SDL_free(sample->buffer);
 
     internal->sdlcvt.buf = internal->buffer = sample->buffer = buf;
     sample->buffer_size = newBufSize;

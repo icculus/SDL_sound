@@ -52,12 +52,12 @@ BOOL CSoundFile::ReadMTM(LPCBYTE lpStream, DWORD dwMemLength)
 	DWORD dwMemPos = 66;
 
 	if ((!lpStream) || (dwMemLength < 0x100)) return FALSE;
-	if ((strncmp(pmh->id, "MTM", 3)) || (pmh->numchannels > 32)
+	if ((SDL_strncmp(pmh->id, "MTM", 3)) || (pmh->numchannels > 32)
 	 || (pmh->numsamples >= MAX_SAMPLES) || (!pmh->numsamples)
 	 || (!pmh->numtracks) || (!pmh->numchannels)
 	 || (!pmh->lastpattern) || (pmh->lastpattern >= MAX_PATTERNS))
 		return FALSE;
-	strncpy(m_szNames[0], pmh->songname, 20);
+	SDL_strlcpy(m_szNames[0], pmh->songname, 20);
 	m_szNames[0][20] = 0;
 	if (dwMemPos + 37*pmh->numsamples + 128 + 192*pmh->numtracks
 	 + 64 * (pmh->lastpattern+1) + pmh->commentsize >= dwMemLength) 
@@ -69,7 +69,7 @@ BOOL CSoundFile::ReadMTM(LPCBYTE lpStream, DWORD dwMemLength)
 	for	(UINT i=1; i<=m_nSamples; i++)
 	{
 		MTMSAMPLE *pms = (MTMSAMPLE *)(lpStream + dwMemPos);
-		strncpy(m_szNames[i], pms->samplename, 22);
+		SDL_strlcpy(m_szNames[i], pms->samplename, 22);
 		m_szNames[i][22] = 0;
 		Ins[i].nVolume = pms->volume << 2;
 		Ins[i].nGlobalVol = 64;
@@ -103,7 +103,7 @@ BOOL CSoundFile::ReadMTM(LPCBYTE lpStream, DWORD dwMemLength)
 		ChnSettings[ich].nVolume = 64;
 	}
 	// Reading pattern order
-	memcpy(Order, lpStream + dwMemPos, pmh->lastorder+1);
+	SDL_memcpy(Order, lpStream + dwMemPos, pmh->lastorder+1);
 	dwMemPos += 128;
 	// Reading Patterns
 	LPCBYTE pTracks = lpStream + dwMemPos;
@@ -141,7 +141,7 @@ BOOL CSoundFile::ReadMTM(LPCBYTE lpStream, DWORD dwMemLength)
 		m_lpszSongComments = new char[n+1];
 		if (m_lpszSongComments)
 		{
-			memcpy(m_lpszSongComments, lpStream+dwMemPos, n);
+			SDL_memcpy(m_lpszSongComments, lpStream+dwMemPos, n);
 			m_lpszSongComments[n] = 0;
 			for (UINT i=0; i<n; i++)
 			{
