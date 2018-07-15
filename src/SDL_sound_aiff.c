@@ -179,24 +179,24 @@ static int read_comm_chunk(SDL_RWops *rw, comm_t *comm)
     comm->ckID = commID;
 
     if (SDL_RWread(rw, &comm->ckDataSize, sizeof (comm->ckDataSize), 1) != 1)
-        return(0);
+        return 0;
     comm->ckDataSize = SDL_SwapBE32(comm->ckDataSize);
 
     if (SDL_RWread(rw, &comm->numChannels, sizeof (comm->numChannels), 1) != 1)
-        return(0);
+        return 0;
     comm->numChannels = SDL_SwapBE16(comm->numChannels);
 
     if (SDL_RWread(rw, &comm->numSampleFrames,
                    sizeof (comm->numSampleFrames), 1) != 1)
-        return(0);
+        return 0;
     comm->numSampleFrames = SDL_SwapBE32(comm->numSampleFrames);
 
     if (SDL_RWread(rw, &comm->sampleSize, sizeof (comm->sampleSize), 1) != 1)
-        return(0);
+        return 0;
     comm->sampleSize = SDL_SwapBE16(comm->sampleSize);
 
     if (SDL_RWread(rw, sampleRate, sizeof (sampleRate), 1) != 1)
-        return(0);
+        return 0;
     comm->sampleRate = SANE_to_Uint32(sampleRate);
 
     if (comm->ckDataSize > sizeof(comm->numChannels)
@@ -206,7 +206,7 @@ static int read_comm_chunk(SDL_RWops *rw, comm_t *comm)
     {
         if (SDL_RWread(rw, &comm->compressionType,
                        sizeof (comm->compressionType), 1) != 1)
-            return(0);
+            return 0;
         comm->compressionType = SDL_SwapBE32(comm->compressionType);
     } /* if */
     else
@@ -214,7 +214,7 @@ static int read_comm_chunk(SDL_RWops *rw, comm_t *comm)
         comm->compressionType = noneID;
     } /* else */
 
-    return(1);
+    return 1;
 } /* read_comm_chunk */
 
 
@@ -242,22 +242,22 @@ static int read_ssnd_chunk(SDL_RWops *rw, ssnd_t *ssnd)
     ssnd->ckID = ssndID;
 
     if (SDL_RWread(rw, &ssnd->ckDataSize, sizeof (ssnd->ckDataSize), 1) != 1)
-        return(0);
+        return 0;
     ssnd->ckDataSize = SDL_SwapBE32(ssnd->ckDataSize);
 
     if (SDL_RWread(rw, &ssnd->offset, sizeof (ssnd->offset), 1) != 1)
-        return(0);
+        return 0;
     ssnd->offset = SDL_SwapBE32(ssnd->offset);
 
     if (SDL_RWread(rw, &ssnd->blockSize, sizeof (ssnd->blockSize), 1) != 1)
-        return(0);
+        return 0;
     ssnd->blockSize = SDL_SwapBE32(ssnd->blockSize);
 
     /* Leave the SDL_RWops position indicator at the start of the samples */
     if (SDL_RWseek(rw, (int) ssnd->offset, SEEK_CUR) == -1)
-        return(0);
+        return 0;
 
-    return(1);
+    return 1;
 } /* read_ssnd_chunk */
 
 
@@ -295,14 +295,14 @@ static Uint32 read_sample_fmt_normal(Sound_Sample *sample)
     else if (retval < internal->buffer_size)
         sample->flags |= SOUND_SAMPLEFLAG_EAGAIN;
 
-    return(retval);
+    return retval;
 } /* read_sample_fmt_normal */
 
 
 static int rewind_sample_fmt_normal(Sound_Sample *sample)
 {
     /* no-op. */
-    return(1);
+    return 1;
 } /* rewind_sample_fmt_normal */
 
 
@@ -316,7 +316,7 @@ static int seek_sample_fmt_normal(Sound_Sample *sample, Uint32 ms)
     int rc = SDL_RWseek(internal->rw, pos, SEEK_SET);
     BAIL_IF_MACRO(rc != pos, ERR_IO_ERROR, 0);
     a->bytesLeft = fmt->total_bytes - offset;
-    return(1);  /* success. */
+    return 1;  /* success. */
 } /* seek_sample_fmt_normal */
 
 
@@ -333,7 +333,7 @@ static int read_fmt_normal(SDL_RWops *rw, fmt_t *fmt)
     fmt->read_sample = read_sample_fmt_normal;
     fmt->rewind_sample = rewind_sample_fmt_normal;
     fmt->seek_sample = seek_sample_fmt_normal;
-    return(1);
+    return 1;
 } /* read_fmt_normal */
 
 
@@ -345,7 +345,7 @@ static int read_fmt_normal(SDL_RWops *rw, fmt_t *fmt)
 
 static int AIFF_init(void)
 {
-    return(1);  /* always succeeds. */
+    return 1;  /* always succeeds. */
 } /* AIFF_init */
 
 
@@ -387,7 +387,7 @@ static int find_chunk(SDL_RWops *rw, Uint32 id)
     {
         BAIL_IF_MACRO(SDL_RWread(rw, &_id, sizeof (_id), 1) != 1, NULL, 0);
         if (SDL_SwapLE32(_id) == id)
-            return(1);
+            return 1;
 
         BAIL_IF_MACRO(SDL_RWread(rw, &siz, sizeof (siz), 1) != 1, NULL, 0);
         siz = SDL_SwapBE32(siz);
@@ -395,7 +395,7 @@ static int find_chunk(SDL_RWops *rw, Uint32 id)
         BAIL_IF_MACRO(SDL_RWseek(rw, siz, SEEK_CUR) == -1, NULL, 0);
     } /* while */
 
-    return(0);  /* shouldn't hit this, but just in case... */
+    return 0;  /* shouldn't hit this, but just in case... */
 } /* find_chunk */
 
 
@@ -408,7 +408,7 @@ static int read_fmt(SDL_RWops *rw, comm_t *c, fmt_t *fmt)
     {
         case noneID:
             SNDDBG(("AIFF: Appears to be uncompressed audio.\n"));
-            return(read_fmt_normal(rw, fmt));
+            return read_fmt_normal(rw, fmt);
 
         /* add other types here. */
 
@@ -419,7 +419,7 @@ static int read_fmt(SDL_RWops *rw, comm_t *c, fmt_t *fmt)
     } /* switch */
 
     SDL_assert(0);  /* shouldn't hit this point. */
-    return(0);
+    return 0;
 } /* read_fmt */
 
 
@@ -479,7 +479,7 @@ static int AIFF_open(Sound_Sample *sample, const char *ext)
     if (!read_fmt(rw, &c, &(a->fmt)))
     {
         SDL_free(a);
-        return(0);
+        return 0;
     } /* if */
 
     SDL_RWseek(rw, pos, SEEK_SET);    /* if the seek fails, let it go... */
@@ -503,7 +503,7 @@ static int AIFF_open(Sound_Sample *sample, const char *ext)
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
 
     SNDDBG(("AIFF: Accepting data stream.\n"));
-    return(1); /* we'll handle this data. */
+    return 1; /* we'll handle this data. */
 } /* AIFF_open */
 
 
@@ -520,7 +520,7 @@ static Uint32 AIFF_read(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     aiff_t *a = (aiff_t *) internal->decoder_private;
-    return(a->fmt.read_sample(sample));
+    return a->fmt.read_sample(sample);
 } /* AIFF_read */
 
 
@@ -532,7 +532,7 @@ static int AIFF_rewind(Sound_Sample *sample)
     int rc = SDL_RWseek(internal->rw, fmt->data_starting_offset, SEEK_SET);
     BAIL_IF_MACRO(rc != fmt->data_starting_offset, ERR_IO_ERROR, 0);
     a->bytesLeft = fmt->total_bytes;
-    return(fmt->rewind_sample(sample));
+    return fmt->rewind_sample(sample);
 } /* AIFF_rewind */
 
 
@@ -540,7 +540,7 @@ static int AIFF_seek(Sound_Sample *sample, Uint32 ms)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     aiff_t *a = (aiff_t *) internal->decoder_private;
-    return(a->fmt.seek_sample(sample, ms));
+    return a->fmt.seek_sample(sample, ms);
 } /* AIFF_seek */
 
 #endif /* SOUND_SUPPORTS_AIFF */

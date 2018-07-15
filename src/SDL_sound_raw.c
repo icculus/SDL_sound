@@ -58,7 +58,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW =
 
 static int RAW_init(void)
 {
-    return(1);  /* always succeeds. */
+    return 1;  /* always succeeds. */
 } /* RAW_init */
 
 
@@ -113,7 +113,7 @@ static int RAW_open(Sound_Sample *sample, const char *ext)
     internal->total_time = ( pos ) / sample_rate * 1000;
     internal->total_time += (pos % sample_rate) * 1000 / sample_rate;
 
-    return(1); /* we'll handle this data. */
+    return 1; /* we'll handle this data. */
 } /* RAW_open */
 
 
@@ -146,7 +146,7 @@ static Uint32 RAW_read(Sound_Sample *sample)
     else if (retval < internal->buffer_size)
         sample->flags |= SOUND_SAMPLEFLAG_EAGAIN;
 
-    return(retval);
+    return retval;
 } /* RAW_read */
 
 
@@ -154,7 +154,7 @@ static int RAW_rewind(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     BAIL_IF_MACRO(SDL_RWseek(internal->rw, 0, SEEK_SET) != 0, ERR_IO_ERROR, 0);
-    return(1);
+    return 1;
 } /* RAW_rewind */
 
 
@@ -164,7 +164,7 @@ static int RAW_seek(Sound_Sample *sample, Uint32 ms)
     int pos = (int) __Sound_convertMsToBytePos(&sample->actual, ms);
     int err = (SDL_RWseek(internal->rw, pos, SEEK_SET) != pos);
     BAIL_IF_MACRO(err, ERR_IO_ERROR, 0);
-    return(1);
+    return 1;
 } /* RAW_seek */
 
 

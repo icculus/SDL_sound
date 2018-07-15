@@ -173,14 +173,14 @@ static d_read_status_t read_callback(
     {
         *bytes = 0;
         f->sample->flags |= SOUND_SAMPLEFLAG_EOF;
-        return(D_READ_END_OF_STREAM);
+        return D_READ_END_OF_STREAM;
     } /* if */
 
     if (retval == -1)
     {
         *bytes = 0;
         f->sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-        return(D_READ_ABORT);
+        return D_READ_ABORT;
     } /* if */
 
     if (retval < *bytes)
@@ -189,7 +189,7 @@ static d_read_status_t read_callback(
         f->sample->flags |= SOUND_SAMPLEFLAG_EAGAIN;
     } /* if */
 
-    return(D_READ_CONTINUE);
+    return D_READ_CONTINUE;
 } /* read_callback */
 
 
@@ -242,7 +242,7 @@ static d_write_status_t write_callback(
             } /* for */
     } /* else */
 
-    return(D_WRITE_CONTINUE);
+    return D_WRITE_CONTINUE;
 } /* write_callback */
 
 
@@ -311,10 +311,10 @@ static d_seek_status_t seek_callback(
 
     if (SDL_RWseek(f->rw, absolute_byte_offset, SEEK_SET) >= 0)
     {
-        return(D_SEEK_STATUS_OK);
+        return D_SEEK_STATUS_OK;
     } /* if */
 
-    return(D_SEEK_STATUS_ERROR);
+    return D_SEEK_STATUS_ERROR;
 } /* seek_callback*/
 
 
@@ -330,11 +330,11 @@ static d_tell_status_t tell_callback(
 
     if (pos < 0)
     {
-        return(D_TELL_STATUS_ERROR);
+        return D_TELL_STATUS_ERROR;
     } /* if */
 
     *absolute_byte_offset = pos;
-    return(D_TELL_STATUS_OK);
+    return D_TELL_STATUS_OK;
 } /* tell_callback */
 
 
@@ -348,10 +348,10 @@ static d_length_status_t length_callback(
     if (f->sample->flags & SOUND_SAMPLEFLAG_CANSEEK)
     {
         *stream_length = f->stream_length;
-        return(D_LENGTH_STATUS_OK);
+        return D_LENGTH_STATUS_OK;
     } /* if */
 
-    return(D_LENGTH_STATUS_ERROR);
+    return D_LENGTH_STATUS_ERROR;
 } /* length_callback */
 
 
@@ -367,16 +367,16 @@ static FLAC__bool eof_callback(
     
     if (pos >= 0 && pos >= f->stream_length)
     {
-        return(true);
+        return true;
     } /* if */
 
-    return(false);
+    return false;
 } /* eof_callback */
 
 
 static int FLAC_init(void)
 {
-    return(1);  /* always succeeds. */
+    return 1;  /* always succeeds. */
 } /* FLAC_init */
 
 
@@ -498,7 +498,7 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     } /* if */
 
     SNDDBG(("FLAC: Accepting data stream.\n"));
-    return(1);
+    return 1;
 } /* FLAC_open */
 
 
@@ -526,14 +526,14 @@ static Uint32 FLAC_read(Sound_Sample *sample)
     if (d_get_state(f->decoder) == D_END_OF_STREAM)
     {
         sample->flags |= SOUND_SAMPLEFLAG_EOF;
-        return(0);
+        return 0;
     } /* if */
 
         /* An error may have been signalled through the error callback. */    
     if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
-        return(0);
+        return 0;
 
-    return(f->frame_size);
+    return f->frame_size;
 } /* FLAC_read */
 
 
@@ -549,7 +549,7 @@ static int FLAC_seek(Sound_Sample *sample, Uint32 ms)
     flac_t *f = (flac_t *) internal->decoder_private;
 
     d_seek_absolute(f->decoder, (ms * sample->actual.rate) / 1000);
-    return(1);
+    return 1;
 } /* FLAC_seek */
 
 #endif /* SOUND_SUPPORTS_FLAC */

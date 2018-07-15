@@ -142,7 +142,7 @@ int Sound_Init(void)
     } /* for */
 
     initialized = 1;
-    return(1);
+    return 1;
 } /* Sound_Init */
 
 
@@ -188,13 +188,13 @@ int Sound_Quit(void)
     SDL_DestroyMutex(errorlist_mutex);
     errorlist_mutex = NULL;
 
-    return(1);
+    return 1;
 } /* Sound_Quit */
 
 
 const Sound_DecoderInfo **Sound_AvailableDecoders(void)
 {
-    return(available_decoders);  /* READ. ONLY. */
+    return available_decoders;  /* READ. ONLY. */
 } /* Sound_AvailableDecoders */
 
 
@@ -213,13 +213,13 @@ static ErrMsg *findErrorForCurrentThread(void)
             if (i->tid == tid)
             {
                 SDL_UnlockMutex(errorlist_mutex);
-                return(i);
+                return i;
             } /* if */
         } /* for */
         SDL_UnlockMutex(errorlist_mutex);
     } /* if */
 
-    return(NULL);   /* no error available. */
+    return NULL;   /* no error available. */
 } /* findErrorForCurrentThread */
 
 
@@ -229,7 +229,7 @@ const char *Sound_GetError(void)
     ErrMsg *err;
 
     if (!initialized)
-        return(ERR_NOT_INITIALIZED);
+        return ERR_NOT_INITIALIZED;
 
     err = findErrorForCurrentThread();
     if ((err != NULL) && (err->error_available))
@@ -238,7 +238,7 @@ const char *Sound_GetError(void)
         err->error_available = 0;
     } /* if */
 
-    return(retval);
+    return retval;
 } /* Sound_GetError */
 
 
@@ -297,7 +297,7 @@ Uint32 __Sound_convertMsToBytePos(Sound_AudioInfo *info, Uint32 ms)
     float frames_per_ms = ((float) info->rate) / 1000.0f;
     Uint32 frame_offset = (Uint32) (frames_per_ms * ((float) ms));
     Uint32 frame_size = (Uint32) ((info->format & 0xFF) / 8) * info->channels;
-    return(frame_offset * frame_size);
+    return frame_offset * frame_size;
 } /* __Sound_convertMsToBytePos */
 
 
@@ -322,7 +322,7 @@ static Sound_Sample *alloc_sample(SDL_RWops *rw, Sound_AudioInfo *desired,
         if (internal)
             SDL_free(internal);
 
-        return(NULL);
+        return NULL;
     } /* if */
 
     SDL_assert(bufferSize > 0);
@@ -332,7 +332,7 @@ static Sound_Sample *alloc_sample(SDL_RWops *rw, Sound_AudioInfo *desired,
         __Sound_SetError(ERR_OUT_OF_MEMORY);
         SDL_free(internal);
         SDL_free(retval);
-        return(NULL);
+        return NULL;
     } /* if */
     retval->buffer_size = bufferSize;
 
@@ -341,7 +341,7 @@ static Sound_Sample *alloc_sample(SDL_RWops *rw, Sound_AudioInfo *desired,
 
     internal->rw = rw;
     retval->opaque = internal;
-    return(retval);
+    return retval;
 } /* alloc_sample */
 
 
@@ -351,28 +351,28 @@ static SDL_INLINE const char *fmt_to_str(Uint16 fmt)
     switch(fmt)
     {
         case AUDIO_U8:
-            return("U8");
+            return "U8";
         case AUDIO_S8:
-            return("S8");
+            return "S8";
         case AUDIO_U16LSB:
-            return("U16LSB");
+            return "U16LSB";
         case AUDIO_S16LSB:
-            return("S16LSB");
+            return "S16LSB";
         case AUDIO_S32LSB:
-            return("S32LSB");
+            return "S32LSB";
         case AUDIO_F32LSB:
-            return("F32LSB");
+            return "F32LSB";
         case AUDIO_U16MSB:
-            return("U16MSB");
+            return "U16MSB";
         case AUDIO_S16MSB:
-            return("S16MSB");
+            return "S16MSB";
         case AUDIO_S32MSB:
-            return("S32MSB");
+            return "S32MSB";
         case AUDIO_F32MSB:
-            return("F32MSB");
+            return "F32MSB";
     } /* switch */
 
-    return("Unknown");
+    return "Unknown";
 } /* fmt_to_str */
 #endif
 
@@ -397,7 +397,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
     if (!funcs->open(sample, ext))
     {
         SDL_RWseek(internal->rw, pos, SEEK_SET);  /* set for next try... */
-        return(0);
+        return 0;
     } /* if */
 
     /* success; we've got a decoder! */
@@ -425,7 +425,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
         __Sound_SetError(SDL_GetError());
         funcs->close(sample);
         SDL_RWseek(internal->rw, pos, SEEK_SET);  /* set for next try... */
-        return(0);
+        return 0;
     } /* if */
 
     if (internal->sdlcvt.len_mult > 1)
@@ -435,7 +435,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
         {
             funcs->close(sample);
             SDL_RWseek(internal->rw, pos, SEEK_SET);  /* set for next try... */
-            return(0);
+            return 0;
         } /* if */
 
         sample->buffer = rc;
@@ -468,7 +468,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
     SNDDBG(("On-the-fly conversion: %s.\n",
             internal->sdlcvt.needed ? "ENABLED" : "DISABLED"));
 
-    return(1);
+    return 1;
 } /* init_sample */
 
 
@@ -484,7 +484,7 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
 
     retval = alloc_sample(rw, desired, bSize);
     if (!retval)
-        return(NULL);  /* alloc_sample() sets error message... */
+        return NULL;  /* alloc_sample() sets error message... */
 
     if (ext != NULL)
     {
@@ -498,7 +498,7 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
                     if (SDL_strcasecmp(*decoderExt, ext) == 0)
                     {
                         if (init_sample(decoder->funcs, retval, ext, desired))
-                            return(retval);
+                            return retval;
                         break;  /* done with this decoder either way. */
                     } /* if */
                     decoderExt++;
@@ -529,7 +529,7 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
             if (should_try)
             {
                 if (init_sample(decoder->funcs, retval, ext, desired))
-                    return(retval);
+                    return retval;
             } /* if */
         } /* if */
     } /* for */
@@ -541,7 +541,7 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
     SDL_free(retval);
     SDL_RWclose(rw);
     __Sound_SetError(ERR_UNSUPPORTED_FORMAT);
-    return(NULL);
+    return NULL;
 } /* Sound_NewSample */
 
 
@@ -562,7 +562,7 @@ Sound_Sample *Sound_NewSampleFromFile(const char *filename,
     if (ext != NULL)
         ext++;
 
-    return(Sound_NewSample(rw, ext, desired, bufferSize));
+    return Sound_NewSample(rw, ext, desired, bufferSize);
 } /* Sound_NewSampleFromFile */
 
 
@@ -581,7 +581,7 @@ Sound_Sample *Sound_NewSampleFromMem(const Uint8 *data,
     rw = SDL_RWFromConstMem(data, size);
     BAIL_IF_MACRO(rw == NULL, SDL_GetError(), NULL);
 
-    return(Sound_NewSample(rw, ext, desired, bufferSize));
+    return Sound_NewSample(rw, ext, desired, bufferSize);
 } /* Sound_NewSampleFromMem */
 
 
@@ -661,7 +661,7 @@ int Sound_SetBufferSize(Sound_Sample *sample, Uint32 newSize)
     internal->buffer_size = newSize / internal->sdlcvt.len_mult;
     internal->sdlcvt.len = internal->buffer_size;
 
-    return(1);
+    return 1;
 } /* Sound_SetBufferSize */
 
 
@@ -694,7 +694,7 @@ Uint32 Sound_Decode(Sound_Sample *sample)
         retval = internal->sdlcvt.len_cvt;
     } /* if */
 
-    return(retval);
+    return retval;
 } /* Sound_Decode */
 
 
@@ -729,7 +729,7 @@ Uint32 Sound_DecodeAll(Sound_Sample *sample)
     } /* while */
 
     if (buf == NULL)  /* ...in case first call to SDL_realloc() fails... */
-        return(sample->buffer_size);
+        return sample->buffer_size;
 
     if (internal->buffer != sample->buffer)
         SDL_free(internal->buffer);
@@ -741,7 +741,7 @@ Uint32 Sound_DecodeAll(Sound_Sample *sample)
     internal->buffer_size = newBufSize / internal->sdlcvt.len_mult;
     internal->sdlcvt.len = internal->buffer_size;
 
-    return(newBufSize);
+    return newBufSize;
 } /* Sound_DecodeAll */
 
 
@@ -754,14 +754,14 @@ int Sound_Rewind(Sound_Sample *sample)
     if (!internal->funcs->rewind(sample))
     {
         sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-        return(0);
+        return 0;
     } /* if */
 
     sample->flags &= ~SOUND_SAMPLEFLAG_EAGAIN;
     sample->flags &= ~SOUND_SAMPLEFLAG_ERROR;
     sample->flags &= ~SOUND_SAMPLEFLAG_EOF;
 
-    return(1);
+    return 1;
 } /* Sound_Rewind */
 
 
@@ -780,7 +780,7 @@ int Sound_Seek(Sound_Sample *sample, Uint32 ms)
     sample->flags &= ~SOUND_SAMPLEFLAG_ERROR;
     sample->flags &= ~SOUND_SAMPLEFLAG_EOF;
 
-    return(1);
+    return 1;
 } /* Sound_Rewind */
 
 
@@ -789,7 +789,7 @@ Sint32 Sound_GetDuration(Sound_Sample *sample)
     Sound_SampleInternal *internal;
     BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, -1);
     internal = (Sound_SampleInternal *) sample->opaque;
-    return(internal->total_time);
+    return internal->total_time;
 } /* Sound_GetDuration */
 
 /* end of SDL_sound.c ... */

@@ -52,7 +52,7 @@ static SDL_INLINE int read_le16(SDL_RWops *rw, Uint16 *ui16)
     int rc = SDL_RWread(rw, ui16, sizeof (Uint16), 1);
     BAIL_IF_MACRO(rc != 1, ERR_IO_ERROR, 0);
     *ui16 = SDL_SwapLE16(*ui16);
-    return(1);
+    return 1;
 } /* read_le16 */
 
 
@@ -62,7 +62,7 @@ static SDL_INLINE int read_le32(SDL_RWops *rw, Uint32 *ui32)
     int rc = SDL_RWread(rw, ui32, sizeof (Uint32), 1);
     BAIL_IF_MACRO(rc != 1, ERR_IO_ERROR, 0);
     *ui32 = SDL_SwapLE32(*ui32);
-    return(1);
+    return 1;
 } /* read_le32 */
 
 
@@ -71,7 +71,7 @@ static SDL_INLINE int read_uint8(SDL_RWops *rw, Uint8 *ui8)
 {
     int rc = SDL_RWread(rw, ui8, sizeof (Uint8), 1);
     BAIL_IF_MACRO(rc != 1, ERR_IO_ERROR, 0);
-    return(1);
+    return 1;
 } /* read_uint8 */
 
 
@@ -168,7 +168,7 @@ static int read_fmt_chunk(SDL_RWops *rw, fmt_t *fmt)
     BAIL_IF_MACRO(!read_le16(rw, &fmt->wBlockAlign), NULL, 0);
     BAIL_IF_MACRO(!read_le16(rw, &fmt->wBitsPerSample), NULL, 0);
 
-    return(1);
+    return 1;
 } /* read_fmt_chunk */
 
 
@@ -196,7 +196,7 @@ static int read_data_chunk(SDL_RWops *rw, data_t *data)
     /* skip reading the chunk ID, since it was already read at this point... */
     data->chunkID = dataID;
     BAIL_IF_MACRO(!read_le32(rw, &data->chunkSize), NULL, 0);
-    return(1);
+    return 1;
 } /* read_data_chunk */
 
 
@@ -251,7 +251,7 @@ static Uint32 read_sample_fmt_normal(Sound_Sample *sample)
     else if (retval < internal->buffer_size)
         sample->flags |= SOUND_SAMPLEFLAG_EAGAIN;
 
-    return(retval);
+    return retval;
 } /* read_sample_fmt_normal */
 
 
@@ -265,14 +265,14 @@ static int seek_sample_fmt_normal(Sound_Sample *sample, Uint32 ms)
     int rc = SDL_RWseek(internal->rw, pos, SEEK_SET);
     BAIL_IF_MACRO(rc != pos, ERR_IO_ERROR, 0);
     w->bytesLeft = fmt->total_bytes - offset;
-    return(1);  /* success. */
+    return 1;  /* success. */
 } /* seek_sample_fmt_normal */
 
 
 static int rewind_sample_fmt_normal(Sound_Sample *sample)
 {
     /* no-op. */
-    return(1);
+    return 1;
 } /* rewind_sample_fmt_normal */
 
 
@@ -283,7 +283,7 @@ static int read_fmt_normal(SDL_RWops *rw, fmt_t *fmt)
     fmt->read_sample = read_sample_fmt_normal;
     fmt->rewind_sample = rewind_sample_fmt_normal;
     fmt->seek_sample = seek_sample_fmt_normal;
-    return(1);
+    return 1;
 } /* read_fmt_normal */
 
 
@@ -310,7 +310,7 @@ static SDL_INLINE int read_adpcm_block_headers(Sound_Sample *sample)
     if (w->bytesLeft < fmt->wBlockAlign)
     {
         sample->flags |= SOUND_SAMPLEFLAG_EOF;
-        return(0);
+        return 0;
     } /* if */
 
     w->bytesLeft -= fmt->wBlockAlign;
@@ -329,7 +329,7 @@ static SDL_INLINE int read_adpcm_block_headers(Sound_Sample *sample)
 
     fmt->fmt.adpcm.samples_left_in_block = fmt->fmt.adpcm.wSamplesPerBlock;
     fmt->fmt.adpcm.nibble_state = 0;
-    return(1);
+    return 1;
 } /* read_adpcm_block_headers */
 
 
@@ -406,7 +406,7 @@ static SDL_INLINE int decode_adpcm_sample_frame(Sound_Sample *sample)
     } /* for */
 
     fmt->fmt.adpcm.nibble = nib;
-    return(1);
+    return 1;
 } /* decode_adpcm_sample_frame */
 
 
@@ -450,7 +450,7 @@ static Uint32 read_sample_fmt_adpcm(Sound_Sample *sample)
                 {
                     if ((sample->flags & SOUND_SAMPLEFLAG_EOF) == 0)
                         sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-                    return(bw);
+                    return bw;
                 } /* if */
 
                 /* only write first sample frame for now. */
@@ -473,12 +473,12 @@ static Uint32 read_sample_fmt_adpcm(Sound_Sample *sample)
                 if (!decode_adpcm_sample_frame(sample))
                 {
                     sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-                    return(bw);
+                    return bw;
                 } /* if */
         } /* switch */
     } /* while */
 
-    return(bw);
+    return bw;
 } /* read_sample_fmt_adpcm */
 
 
@@ -500,7 +500,7 @@ static int rewind_sample_fmt_adpcm(Sound_Sample *sample)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     wav_t *w = (wav_t *) internal->decoder_private;
     w->fmt->fmt.adpcm.samples_left_in_block = 0;
-    return(1);
+    return 1;
 } /* rewind_sample_fmt_adpcm */
 
 
@@ -524,7 +524,7 @@ static int seek_sample_fmt_adpcm(Sound_Sample *sample, Uint32 ms)
     if (!read_adpcm_block_headers(sample))
     {
         SDL_RWseek(internal->rw, origpos, SEEK_SET);  /* try to make sane. */
-        return(0);
+        return 0;
     } /* if */
 
     /* first sample frame of block is a freebie. :) */
@@ -536,7 +536,7 @@ static int seek_sample_fmt_adpcm(Sound_Sample *sample, Uint32 ms)
         {
             SDL_RWseek(internal->rw, origpos, SEEK_SET);
             fmt->fmt.adpcm.samples_left_in_block = origsampsleft;
-            return(0);
+            return 0;
         } /* if */
 
         fmt->fmt.adpcm.samples_left_in_block--;
@@ -544,7 +544,7 @@ static int seek_sample_fmt_adpcm(Sound_Sample *sample, Uint32 ms)
     } /* while */
 
     w->bytesLeft = fmt->total_bytes - skipsize;
-    return(1);  /* success. */
+    return 1;  /* success. */
 } /* seek_sample_fmt_adpcm */
 
 
@@ -583,7 +583,7 @@ static int read_fmt_adpcm(SDL_RWops *rw, fmt_t *fmt)
     fmt->fmt.adpcm.blockheaders = (ADPCMBLOCKHEADER *) SDL_malloc(i);
     BAIL_IF_MACRO(fmt->fmt.adpcm.blockheaders == NULL, ERR_OUT_OF_MEMORY, 0);
 
-    return(1);
+    return 1;
 } /* read_fmt_adpcm */
 
 
@@ -594,7 +594,7 @@ static int read_fmt_adpcm(SDL_RWops *rw, fmt_t *fmt)
 
 static int WAV_init(void)
 {
-    return(1);  /* always succeeds. */
+    return 1;  /* always succeeds. */
 } /* WAV_init */
 
 
@@ -611,11 +611,11 @@ static int read_fmt(SDL_RWops *rw, fmt_t *fmt)
     {
         case FMT_NORMAL:
             SNDDBG(("WAV: Appears to be uncompressed audio.\n"));
-            return(read_fmt_normal(rw, fmt));
+            return read_fmt_normal(rw, fmt);
 
         case FMT_ADPCM:
             SNDDBG(("WAV: Appears to be ADPCM compressed audio.\n"));
-            return(read_fmt_adpcm(rw, fmt));
+            return read_fmt_adpcm(rw, fmt);
 
         /* add other types here. */
 
@@ -626,7 +626,7 @@ static int read_fmt(SDL_RWops *rw, fmt_t *fmt)
     } /* switch */
 
     SDL_assert(0);  /* shouldn't hit this point. */
-    return(0);
+    return 0;
 } /* read_fmt */
 
 
@@ -643,7 +643,7 @@ static int find_chunk(SDL_RWops *rw, Uint32 id)
     {
         BAIL_IF_MACRO(!read_le32(rw, &_id), NULL, 0);
         if (_id == id)
-            return(1);
+            return 1;
 
             /* skip ahead and see what next chunk is... */
         BAIL_IF_MACRO(!read_le32(rw, &siz), NULL, 0);
@@ -653,7 +653,7 @@ static int find_chunk(SDL_RWops *rw, Uint32 id)
             BAIL_IF_MACRO(SDL_RWseek(rw, pos, SEEK_SET) != pos, NULL, 0);
     } /* while */
 
-    return(0);  /* shouldn't hit this, but just in case... */
+    return 0;  /* shouldn't hit this, but just in case... */
 } /* find_chunk */
 
 
@@ -708,7 +708,7 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
         sample->flags |= SOUND_SAMPLEFLAG_CANSEEK;
 
     SNDDBG(("WAV: Accepting data stream.\n"));
-    return(1); /* we'll handle this data. */
+    return 1; /* we'll handle this data. */
 } /* WAV_open_internal */
 
 
@@ -727,7 +727,7 @@ static int WAV_open(Sound_Sample *sample, const char *ext)
         SDL_free(fmt);
     } /* if */
 
-    return(rc);
+    return rc;
 } /* WAV_open */
 
 
@@ -748,7 +748,7 @@ static Uint32 WAV_read(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     wav_t *w = (wav_t *) internal->decoder_private;
-    return(w->fmt->read_sample(sample));
+    return w->fmt->read_sample(sample);
 } /* WAV_read */
 
 
@@ -760,7 +760,7 @@ static int WAV_rewind(Sound_Sample *sample)
     int rc = SDL_RWseek(internal->rw, fmt->data_starting_offset, SEEK_SET);
     BAIL_IF_MACRO(rc != fmt->data_starting_offset, ERR_IO_ERROR, 0);
     w->bytesLeft = fmt->total_bytes;
-    return(fmt->rewind_sample(sample));
+    return fmt->rewind_sample(sample);
 } /* WAV_rewind */
 
 
@@ -768,7 +768,7 @@ static int WAV_seek(Sound_Sample *sample, Uint32 ms)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     wav_t *w = (wav_t *) internal->decoder_private;
-    return(w->fmt->seek_sample(sample, ms));
+    return w->fmt->seek_sample(sample, ms);
 } /* WAV_seek */
 
 #endif /* SOUND_SUPPORTS_WAV */

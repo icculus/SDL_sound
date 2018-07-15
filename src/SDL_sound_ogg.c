@@ -55,7 +55,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_OGG =
 
 static int OGG_init(void)
 {
-    return(1);  /* always succeeds. */
+    return 1;  /* always succeeds. */
 } /* OGG_init */
 
 
@@ -73,23 +73,23 @@ static void OGG_quit(void)
 
 static size_t RWops_ogg_read(void *ptr, size_t size, size_t nmemb, void *datasource)
 {
-    return((size_t) SDL_RWread((SDL_RWops *) datasource, ptr, size, nmemb));
+    return (size_t) SDL_RWread((SDL_RWops *) datasource, ptr, size, nmemb);
 } /* RWops_ogg_read */
 
 static int RWops_ogg_seek(void *datasource, ogg_int64_t offset, int whence)
 {
-    return(SDL_RWseek((SDL_RWops *) datasource, offset, whence));
+    return SDL_RWseek((SDL_RWops *) datasource, offset, whence);
 } /* RWops_ogg_seek */
 
 static int RWops_ogg_close(void *datasource)
 {
     /* do nothing; SDL_sound will delete the RWops at a higher level. */
-    return(0);  /* this is success in fclose(), so I guess that's okay. */
+    return 0;  /* this is success in fclose(), so I guess that's okay. */
 } /* RWops_ogg_close */
 
 static long RWops_ogg_tell(void *datasource)
 {
-    return((long) SDL_RWtell((SDL_RWops *) datasource));
+    return (long) SDL_RWtell((SDL_RWops *) datasource);
 } /* RWops_ogg_tell */
 
 static const ov_callbacks RWops_ogg_callbacks =
@@ -108,18 +108,18 @@ static const char *ogg_error(int errnum)
     switch(errnum)
     {
         case OV_EREAD:
-            return("i/o error");
+            return "i/o error";
         case OV_ENOTVORBIS:
-            return("not a vorbis file");
+            return "not a vorbis file";
         case OV_EVERSION:
-            return("Vorbis version mismatch");
+            return "Vorbis version mismatch";
         case OV_EBADHEADER:
-            return("invalid Vorbis bitstream header");
+            return "invalid Vorbis bitstream header";
         case OV_EFAULT:
-            return("internal logic fault in Vorbis library");
+            return "internal logic fault in Vorbis library";
     } /* switch */
 
-    return("unknown error");
+    return "unknown error";
 } /* ogg_error */
 #endif
 
@@ -206,7 +206,7 @@ static int OGG_open(Sound_Sample *sample, const char *ext)
      */
     sample->actual.format = (sample->desired.format == 0) ?
                              AUDIO_S16SYS : sample->desired.format;
-    return(1);
+    return 1;
 } /* OGG_open */
 
 
@@ -325,7 +325,7 @@ static Uint32 OGG_read(Sound_Sample *sample)
         rc = total_bytes_read;
     }
 
-    return((Uint32) rc);
+    return (Uint32) rc;
 } /* OGG_read */
 
 
@@ -335,7 +335,7 @@ static int OGG_rewind(Sound_Sample *sample)
     OggVorbis_File *vf = (OggVorbis_File *) internal->decoder_private;
 
     BAIL_IF_MACRO(ov_raw_seek(vf, 0) < 0, ERR_IO_ERROR, 0);
-    return(1);
+    return 1;
 } /* OGG_rewind */
 
 
@@ -345,7 +345,7 @@ static int OGG_seek(Sound_Sample *sample, Uint32 ms)
     OggVorbis_File *vf = (OggVorbis_File *) internal->decoder_private;
     double timepos = (((double) ms) / 1000.0);
     BAIL_IF_MACRO(ov_time_seek(vf, timepos) < 0, ERR_IO_ERROR, 0);
-    return(1);
+    return 1;
 } /* OGG_seek */
 
 #endif /* SOUND_SUPPORTS_OGG */

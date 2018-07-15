@@ -107,7 +107,7 @@ typedef struct vocstuff {
 
 static int VOC_init(void)
 {
-    return(1);  /* always succeeds. */
+    return 1;  /* always succeeds. */
 } /* VOC_init */
 
 
@@ -125,7 +125,7 @@ static SDL_INLINE int voc_readbytes(SDL_RWops *src, vs_t *v, void *p, int size)
         BAIL_MACRO("VOC: i/o error", 0);
     } /* if */
 
-    return(1);
+    return 1;
 } /* voc_readbytes */
 
 
@@ -137,7 +137,7 @@ static SDL_INLINE int voc_check_header(SDL_RWops *src)
     vs_t v; /* dummy struct for voc_readbytes */
 
     if (!voc_readbytes(src, &v, signature, sizeof (signature)))
-        return(0);
+        return 0;
 
     if (SDL_memcmp(signature, "Creative Voice File\032", sizeof (signature)) != 0)
     {
@@ -146,7 +146,7 @@ static SDL_INLINE int voc_check_header(SDL_RWops *src)
 
         /* get the offset where the first datablock is located */
     if (!voc_readbytes(src, &v, &datablockofs, sizeof (Uint16)))
-        return(0);
+        return 0;
 
     datablockofs = SDL_SwapLE16(datablockofs);
 
@@ -155,7 +155,7 @@ static SDL_INLINE int voc_check_header(SDL_RWops *src)
         BAIL_MACRO("VOC: Failed to seek to data block.", 0);
     } /* if */
 
-    return(1);  /* success! */
+    return 1;  /* success! */
 } /* voc_check_header */
 
 
@@ -211,7 +211,7 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
                 } /* if */
 
                 if (!voc_readbytes(src, v, &uc, sizeof (uc)))
-                    return(0);
+                    return 0;
 
                 BAIL_IF_MACRO(uc != 0, "VOC: only supports 8-bit data", 0);
 
@@ -429,7 +429,7 @@ static int voc_read_waveform(Sound_Sample *sample, int fill_buf, Uint32 max)
         v->bufpos += done;
     } /* else */
 
-    return(done);
+    return done;
 } /* voc_read_waveform */
 
 
@@ -439,7 +439,7 @@ static int VOC_open(Sound_Sample *sample, const char *ext)
     vs_t *v = NULL;
 
     if (!voc_check_header(internal->rw))
-        return(0);
+        return 0;
 
     v = (vs_t *) SDL_calloc(1, sizeof (vs_t));
     BAIL_IF_MACRO(v == NULL, ERR_OUT_OF_MEMORY, 0);
@@ -449,7 +449,7 @@ static int VOC_open(Sound_Sample *sample, const char *ext)
     if (!voc_get_block(sample, v))
     {
         SDL_free(v);
-        return(0);
+        return 0;
     } /* if */
 
     if (v->rate == -1)
@@ -463,7 +463,7 @@ static int VOC_open(Sound_Sample *sample, const char *ext)
     sample->actual.channels = v->channels;
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
     internal->decoder_private = v;
-    return(1);
+    return 1;
 } /* VOC_open */
 
 
@@ -500,7 +500,7 @@ static Uint32 VOC_read(Sound_Sample *sample)
         } /* if */
     } /* while */
 
-    return(v->bufpos);
+    return v->bufpos;
 } /* VOC_read */
 
 
@@ -511,7 +511,7 @@ static int VOC_rewind(Sound_Sample *sample)
     int rc = SDL_RWseek(internal->rw, v->start_pos, SEEK_SET);
     BAIL_IF_MACRO(rc != v->start_pos, ERR_IO_ERROR, 0);
     v->rest = 0;
-    return(1);
+    return 1;
 } /* VOC_rewind */
 
 
@@ -544,13 +544,13 @@ static int VOC_seek(Sound_Sample *sample, Uint32 ms)
         {
             SDL_RWseek(internal->rw, origpos, SEEK_SET);
             v->rest = origrest;
-            return(0);
+            return 0;
         } /* if */
 
         offset -= rc;
     } /* while */
 
-    return(1);
+    return 1;
 } /* VOC_seek */
 
 #endif /* SOUND_SUPPORTS_VOC */

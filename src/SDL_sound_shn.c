@@ -223,7 +223,7 @@ static int word_get(shn_t *shn, SDL_RWops *rw, Uint32 *word)
     shn->getbufp += 4;
     shn->nbyteget -= 4;
 
-    return(1);
+    return 1;
 } /* word_get */
 
 
@@ -269,7 +269,7 @@ static int uvar_get(int nbin, shn_t *shn, SDL_RWops *rw, Sint32 *word)
     if (word != NULL)
         *word = result;
 
-    return(1);
+    return 1;
 } /* uvar_get */
 
 
@@ -282,7 +282,7 @@ static int var_get(int nbin, shn_t *shn, SDL_RWops *rw, Sint32 *word)
     else
         *word = (Sint32) ((*word) >> 1);
 
-    return(1);
+    return 1;
 } /* var_get */
 
 
@@ -296,21 +296,19 @@ static int ulong_get(shn_t *shn, SDL_RWops *rw, Sint32 *word)
     if (word != NULL)
         *word = retval;
 
-    return(1);
+    return 1;
 } /* ulong_get */
 
 
 static SDL_INLINE int uint_get(int nbit, shn_t *shn, SDL_RWops *rw, Sint32 *w)
 {
-    return((shn->version == 0) ?
-                uvar_get(nbit, shn, rw, w) :
-                ulong_get(shn, rw, w));
+    return (shn->version == 0) ? uvar_get(nbit, shn, rw, w) : ulong_get(shn, rw, w);
 } /* uint_get */
 
 
 static int SHN_init(void)
 {
-    return(1);  /* initialization always successful. */
+    return 1;  /* initialization always successful. */
 } /* SHN_init */
 
 
@@ -337,11 +335,11 @@ static SDL_INLINE int extended_shn_magic_search(Sound_Sample *sample)
         if (SDL_SwapBE32(word) == SHN_MAGIC)
         {
             BAIL_IF_MACRO(SDL_RWread(rw, &ch, sizeof (ch), 1) != 1, NULL, -1);
-            return((int) ch);
+            return (int) ch;
         } /* if */
     } /* while */
 
-    return((int) ch);
+    return (int) ch;
 } /* extended_shn_magic_search */
 
 
@@ -362,14 +360,14 @@ static SDL_INLINE int determine_shn_version(Sound_Sample *sample,
      */
 
     if (SDL_strcasecmp(ext, "shn") == 0)
-        return(extended_shn_magic_search(sample));
+        return extended_shn_magic_search(sample);
 
     BAIL_IF_MACRO(SDL_RWread(rw, &magic, sizeof (magic), 1) != 1, NULL, -1);
     BAIL_IF_MACRO(SDL_SwapLE32(magic) != SHN_MAGIC, "SHN: Not a SHN file", -1);
     BAIL_IF_MACRO(SDL_RWread(rw, &ch, sizeof (ch), 1) != 1, NULL, -1);
     BAIL_IF_MACRO(ch > 3, "SHN: Unsupported file version", -1);
 
-    return((int) ch);
+    return (int) ch;
 } /* determine_shn_version */
 
 
@@ -416,7 +414,7 @@ static SDL_INLINE Uint16 cvt_shnftype_to_sdlfmt(Sint16 shntype)
     switch (shntype)
     {
         case SHN_TYPE_S8:
-            return(AUDIO_S8);
+            return AUDIO_S8;
 
         case SHN_TYPE_ALAW:
         case SHN_TYPE_ULAW:
@@ -424,22 +422,22 @@ static SDL_INLINE Uint16 cvt_shnftype_to_sdlfmt(Sint16 shntype)
         case SHN_TYPE_AU2:
         case SHN_TYPE_AU3:
         case SHN_TYPE_U8:
-            return(AUDIO_U8);
+            return AUDIO_U8;
 
         case SHN_TYPE_S16HL:
-            return(AUDIO_S16MSB);
+            return AUDIO_S16MSB;
 
         case SHN_TYPE_S16LH:
-            return(AUDIO_S16LSB);
+            return AUDIO_S16LSB;
 
         case SHN_TYPE_U16HL:
-            return(AUDIO_U16MSB);
+            return AUDIO_U16MSB;
 
         case SHN_TYPE_U16LH:
-            return(AUDIO_U16LSB);
+            return AUDIO_U16LSB;
     } /* switch */
 
-    return(0);
+    return 0;
 } /* cvt_shnftype_to_sdlfmt */
 
 
@@ -455,7 +453,7 @@ static SDL_INLINE int skip_bits(shn_t *shn, SDL_RWops *rw)
         BAIL_IF_MACRO(!uint_get(SHN_XBYTESIZE, shn, rw, &trash), NULL, 0);
     } /* for */
 
-    return(1);
+    return 1;
 } /* skip_bits */
 
 
@@ -473,7 +471,7 @@ static Sint32 **shn_long2d(Uint32 n0, Uint32 n1)
             array0[i] = array1 + (i * n1);
     } /* if */
 
-    return(array0);
+    return array0;
 } /* shn_long2d */
 
 #define riffID 0x46464952  /* "RIFF", in ascii. */
@@ -490,14 +488,14 @@ static int verb_ReadLE32(shn_t *shn, SDL_RWops *rw, Uint32 *word)
     for (i = 0; i < 4; i++)
     {
         if (!uvar_get(SHN_VERBATIM_BYTE_SIZE, shn, rw, &byte))
-            return(0);
+            return 0;
         chars[i] = (Uint8) byte;
     } /* for */
 
     SDL_memcpy(word, chars, sizeof (*word));
     *word = SDL_SwapLE32(*word);
 
-    return(1);
+    return 1;
 } /* verb_ReadLE32 */
 
 
@@ -510,14 +508,14 @@ static int verb_ReadLE16(shn_t *shn, SDL_RWops *rw, Uint16 *word)
     for (i = 0; i < 2; i++)
     {
         if (!uvar_get(SHN_VERBATIM_BYTE_SIZE, shn, rw, &byte))
-            return(0);
+            return 0;
         chars[i] = (Uint8) byte;
     } /* for */
 
     SDL_memcpy(word, chars, sizeof (*word));
     *word = SDL_SwapLE16(*word);
 
-    return(1);
+    return 1;
 } /* verb_ReadLE16 */
 
 
@@ -559,7 +557,7 @@ static SDL_INLINE int parse_riff_header(shn_t *shn, Sound_Sample *sample)
     BAIL_IF_MACRO(!verb_ReadLE32(shn, rw, &u32), NULL, 0); /* chunksize */
     internal->total_time = u32 / bytes_per_second * 1000;
     internal->total_time += (u32 % bytes_per_second) * 1000 / bytes_per_second;
-    return(1);
+    return 1;
 } /* parse_riff_header */
 
 
@@ -640,7 +638,7 @@ static int SHN_open(Sound_Sample *sample, const char *ext)
             __Sound_SetError("SHN: Expected VERBATIM function");
 
         goto shn_open_puke;
-        return(0);
+        return 0;
     } /* if */
 
     shn->start_pos = SDL_RWtell(rw);
@@ -657,7 +655,7 @@ static int SHN_open(Sound_Sample *sample, const char *ext)
 
     SNDDBG(("SHN: Accepting data stream.\n"));
     sample->flags = SOUND_SAMPLEFLAG_NONE;
-    return(1); /* we'll handle this data. */
+    return 1; /* we'll handle this data. */
 
 shn_open_puke:
     if (_shn.getbuf)
@@ -669,7 +667,7 @@ shn_open_puke:
     if (_shn.qlpc != NULL)
         SDL_free(_shn.qlpc);
 
-    return(0);
+    return 0;
 } /* SHN_open */
 
 
@@ -796,7 +794,7 @@ static Uint8 Slinear2ulaw(int sample)
     mantissa = (sample >> (exponent + 3)) & 0x0F;
     ulawbyte = ~(sign | (exponent << 4) | mantissa);
 
-    return(ulawbyte);
+    return ulawbyte;
 } /* Slinear2ulaw */
 
 
@@ -829,7 +827,7 @@ static Uint8 Slinear2alaw(Sint32 linear)
 
     /* Combine the sign, segment, and quantization bits. */
     if (seg >= NSEGS)    /* out of range, return maximum value. */
-        return((Uint8) (0x7F ^ mask));
+        return (Uint8) (0x7F ^ mask);
 
     aval = (Uint8) seg << SEG_SHIFT;
     if (seg < 2)
@@ -1036,7 +1034,7 @@ static Uint32 put_to_buffers(Sound_Sample *sample, Uint32 bw)
     SDL_memcpy((char *)internal->buffer + bw, shn->backBuffer, i);
     shn->backBufLeft = bsiz - i;
     SDL_memcpy(shn->backBuffer, shn->backBuffer + i, shn->backBufLeft);
-    return(i);
+    return i;
 } /* put_to_buffers */
 
 
@@ -1071,13 +1069,13 @@ static Uint32 SHN_read(Sound_Sample *sample)
         if (!uvar_get(SHN_FNSIZE, shn, rw, &cmd))
         {
             sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-            return(retval);
+            return retval;
         } /* if */
 
         if (cmd == SHN_FN_QUIT)
         {
             sample->flags |= SOUND_SAMPLEFLAG_EOF;
-            return(retval);
+            return retval;
         } /* if */
 
         switch(cmd)
@@ -1098,7 +1096,7 @@ static Uint32 SHN_read(Sound_Sample *sample)
                     if (!uvar_get(SHN_ENERGYSIZE, shn, rw, &resn))
                     {
                         sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-                        return(retval);
+                        return retval;
                     } /* if */
 
                     /* version 0 differed in definition of var_get */
@@ -1134,7 +1132,7 @@ static Uint32 SHN_read(Sound_Sample *sample)
                             if (!var_get(resn, shn, rw, &cbuffer[i]))
                             {
                                 sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-                                return(retval);
+                                return retval;
                             } /* if */
                             cbuffer[i] += coffset;
                         } /* for */
@@ -1146,7 +1144,7 @@ static Uint32 SHN_read(Sound_Sample *sample)
                             if (!var_get(resn, shn, rw, &cbuffer[i]))
                             {
                                 sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-                                return(retval);
+                                return retval;
                             } /* if */
                             cbuffer[i] += cbuffer[i - 1];
                         } /* for */
@@ -1158,7 +1156,7 @@ static Uint32 SHN_read(Sound_Sample *sample)
                             if (!var_get(resn, shn, rw, &cbuffer[i]))
                             {
                                 sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-                                return(retval);
+                                return retval;
                             } /* if */
                             cbuffer[i] += (2 * cbuffer[i-1] - cbuffer[i-2]);
                         } /* for */
@@ -1170,7 +1168,7 @@ static Uint32 SHN_read(Sound_Sample *sample)
                             if (!var_get(resn, shn, rw, &cbuffer[i]))
                             {
                                 sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-                                return(retval);
+                                return retval;
                             } /* if */
                             cbuffer[i] += 3 * (cbuffer[i - 1] - cbuffer[i - 2]) + cbuffer[i - 3];
                         } /* for */
@@ -1180,7 +1178,7 @@ static Uint32 SHN_read(Sound_Sample *sample)
                         if (!uvar_get(SHN_LPCQSIZE, shn, rw, &nlpc))
                         {
                             sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-                            return(retval);
+                            return retval;
                         } /* if */
 
                         for(i = 0; i < nlpc; i++)
@@ -1188,7 +1186,7 @@ static Uint32 SHN_read(Sound_Sample *sample)
                             if (!var_get(SHN_LPCQUANT, shn, rw, &shn->qlpc[i]))
                             {
                                 sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-                                return(retval);
+                                return retval;
                             } /* if */
                         } /* for */
 
@@ -1205,7 +1203,7 @@ static Uint32 SHN_read(Sound_Sample *sample)
                             if (!var_get(resn, shn, rw, &cbuffer[i]))
                             {
                                 sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-                                return(retval);
+                                return retval;
                             } /* if */
                             cbuffer[i] += (sum >> SHN_LPCQUANT);
                         } /* for */
@@ -1245,7 +1243,7 @@ static Uint32 SHN_read(Sound_Sample *sample)
                 {
                     retval += put_to_buffers(sample, retval);
                     if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
-                        return(retval);
+                        return retval;
                 } /* if */
 
                 chan = (chan + 1) % shn->nchan;
@@ -1257,7 +1255,7 @@ static Uint32 SHN_read(Sound_Sample *sample)
                               shn, rw, &shn->blocksize))
                 {
                     sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-                    return(retval);
+                    return retval;
                 } /* if */
                 break;
 
@@ -1265,7 +1263,7 @@ static Uint32 SHN_read(Sound_Sample *sample)
                 if (!uvar_get(SHN_BITSHIFTSIZE, shn, rw, &shn->bitshift))
                 {
                     sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-                    return(retval);
+                    return retval;
                 } /* if */
                 break;
 
@@ -1276,7 +1274,7 @@ static Uint32 SHN_read(Sound_Sample *sample)
         } /* switch */
     } /* while */
 
-    return(retval);
+    return retval;
 } /* SHN_read */
 
 
@@ -1289,7 +1287,7 @@ static int SHN_rewind(Sound_Sample *sample)
     int rc = SDL_RWseek(internal->rw, shn->start_pos, SEEK_SET);
     BAIL_IF_MACRO(rc != shn->start_pos, ERR_IO_ERROR, 0);
     /* !!! FIXME: set state. */
-    return(1);
+    return 1;
 #else
     /*
      * !!! FIXME: This is really unacceptable; state should be reset and
@@ -1299,7 +1297,7 @@ static int SHN_rewind(Sound_Sample *sample)
      */
     BAIL_IF_MACRO(SDL_RWseek(internal->rw, 0, SEEK_SET) != 0, ERR_IO_ERROR, 0);
     SHN_close(sample);
-    return(SHN_open(sample, "SHN"));
+    return SHN_open(sample, "SHN");
 #endif
 } /* SHN_rewind */
 

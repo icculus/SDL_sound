@@ -78,7 +78,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_CoreAudio =
 
 static int CoreAudio_init(void)
 {
-    return(1);  /* always succeeds. */
+    return 1;  /* always succeeds. */
 } /* CoreAudio_init */
 
 
@@ -555,7 +555,7 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 
 	
 
-	return(1);
+	return 1;
 } /* CoreAudio_open */
 
 
@@ -691,7 +691,7 @@ static int CoreAudio_rewind(Sound_Sample *sample)
 	{
 		sample->flags |= SOUND_SAMPLEFLAG_ERROR;
 	}
-	return(1);
+	return 1;
 } /* CoreAudio_rewind */
 
 /* Note: I found this tech note:
@@ -745,7 +745,7 @@ static int CoreAudio_seek(Sound_Sample *sample, Uint32 ms)
 		sample->flags |= SOUND_SAMPLEFLAG_ERROR;
 	}
 	
-	return(1);
+	return 1;
 } /* CoreAudio_seek */
 
 #endif /* SOUND_SUPPORTS_COREAUDIO */
