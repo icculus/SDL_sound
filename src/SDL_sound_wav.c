@@ -681,6 +681,8 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
     BAIL_IF_MACRO(!find_chunk(rw, fmtID), "WAV: No format chunk.", 0);
     BAIL_IF_MACRO(!read_fmt_chunk(rw, fmt), "WAV: Can't read format chunk.", 0);
 
+    /* !!! FIXME: need float32 format stuff, since it's not just wBitsPerSample. */
+
     sample->actual.channels = (Uint8) fmt->wChannels;
     sample->actual.rate = fmt->dwSamplesPerSec;
     if (fmt->wBitsPerSample == 4)
@@ -689,6 +691,8 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
         sample->actual.format = AUDIO_U8;
     else if (fmt->wBitsPerSample == 16)
         sample->actual.format = AUDIO_S16LSB;
+    else if (fmt->wBitsPerSample == 32)
+        sample->actual.format = AUDIO_S32LSB;
     else
     {
         SNDDBG(("WAV: %d bits per sample!?\n", (int) fmt->wBitsPerSample));
