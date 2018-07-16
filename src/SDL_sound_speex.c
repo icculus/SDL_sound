@@ -48,7 +48,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_SPEEX =
         extensions_speex,
         "SPEEX speech compression format",
         "Ryan C. Gordon <icculus@icculus.org>",
-        "https://www.icculus.org/SDL_sound/"
+        "https://icculus.org/SDL_sound/"
     },
 
     SPEEX_init,       /*   init() method */

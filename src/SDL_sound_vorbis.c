@@ -82,7 +82,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_VORBIS =
         extensions_vorbis,
         "Ogg Vorbis audio",
         "Ryan C. Gordon <icculus@icculus.org>",
-        "https://www.icculus.org/SDL_sound/"
+        "https://icculus.org/SDL_sound/"
     },
 
     VORBIS_init,       /*   init() method */

@@ -43,7 +43,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW =
         extensions_raw,
         "Raw audio",
         "Ryan C. Gordon <icculus@icculus.org>",
-        "https://www.icculus.org/SDL_sound/"
+        "https://icculus.org/SDL_sound/"
     },
 
     RAW_init,       /*   init() method */
