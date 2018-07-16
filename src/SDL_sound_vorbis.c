@@ -32,55 +32,38 @@
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 #define STB_VORBIS_BIG_ENDIAN 1
 #endif
+
+#if !defined(__clang_analyzer__)
 #ifdef assert
 #undef assert
 #endif
-#define assert SDL_assert
 #ifdef memset
 #undef memset
 #endif
-#define memset SDL_memset
-#ifdef memcmp
-#undef memcmp
-#endif
-#define memcmp SDL_memcmp
 #ifdef memcpy
 #undef memcpy
 #endif
-#define memcpy SDL_memcpy
-#ifdef qsort
-#undef qsort
-#endif
-#define qsort SDL_qsort
-#ifdef pow
-#undef pow
-#endif
-#define pow SDL_pow
-#ifdef floor
-#undef floor
-#endif
-#define floor SDL_floor
-#ifdef malloc
-#undef malloc
-#endif
-#define malloc SDL_malloc
-#ifdef realloc
-#undef realloc
-#endif
-#define realloc SDL_realloc
-#ifdef free
-#undef free
-#endif
-#define free SDL_free
 #ifdef alloca
 #undef alloca
 #endif
+#define assert SDL_assert
+#define memset SDL_memset
+#define memcmp SDL_memcmp
+#define memcpy SDL_memcpy
+#define qsort SDL_qsort
+#define pow SDL_pow
+#define floor SDL_floor
+#define malloc SDL_malloc
+#define realloc SDL_realloc
+#define free SDL_free
 #define alloca(x) ((void *) SDL_stack_alloc(Uint8, (x)))
 #define dealloca(x) SDL_stack_free((x))
-#ifdef ldexp
-#undef ldexp
-#endif
 #define ldexp(v, e) SDL_scalbn((v), (e))
+#define abs(x) SDL_abs(x)
+#define cos(x) SDL_cos(x)
+#define sin(x) SDL_sin(x)
+#define log(x) SDL_log(x)
+#endif
 #include "stb_vorbis.h"
 
 
