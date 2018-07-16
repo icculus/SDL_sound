@@ -49,9 +49,12 @@ Building/Installing:
   Please read the INSTALL document.
 
 Reporting bugs/commenting:
- There is a mailing list available. To subscribe, send a blank email to
- sdlsound-subscribe@icculus.org. This is the best way to get in touch with
- SDL_sound developers.
+ There is a mailing list available. Subscription and mailing list archives
+ can be found here:
+
+    https://icculus.org/mailman/listinfo/sdlsound
+
+ The mailing list is the best way to get in touch with SDL_sound developers.
 
 --ryan. (icculus@icculus.org)
 
