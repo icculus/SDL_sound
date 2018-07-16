@@ -142,6 +142,10 @@ static void output_usage(const char *argv0)
         "     U16MSB  Unsigned 16-bit (most significant byte first).\n"
         "     S16LSB  Signed 16-bit (least significant byte first).\n"
         "     S16MSB  Signed 16-bit (most significant byte first).\n"
+        "     S32LSB  Signed 32-bit (least significant byte first).\n"
+        "     S32MSB  Signed 32-bit (most significant byte first).\n"
+        "     F32LSB  Float 32-bit (least significant byte first).\n"
+        "     F32MSB  Float 32-bit (most significant byte first).\n"
         "\n"
         "   Valid arguments to the --seek options look like:\n"
         "     --seek \"mm:SS:ss;mm:SS:ss;mm:SS:ss\"\n"
@@ -450,6 +454,11 @@ static void memcpy_with_volume(Sound_Sample *sample,
     Uint16 *u16dst = NULL;
     Sint16 *s16src = NULL;
     Sint16 *s16dst = NULL;
+    Sint32 *s32src = NULL;
+    Sint32 *s32dst = NULL;
+    union { float f; Uint32 ui32; } floatswapper;
+    float *f32dst = NULL;
+    float *f32src = NULL;
     float volume = global_state.volume;
 
     if (!global_state.wants_volume_change)
@@ -508,6 +517,52 @@ static void memcpy_with_volume(Sound_Sample *sample,
             {
                 *s16dst = (Sint16) (((float) (SDL_SwapBE16(*s16src))) * volume);
                 *s16dst = SDL_SwapBE16(*s16dst);
+            } /* for */
+            break;
+
+        case AUDIO_S32LSB:
+            s32src = (Sint32 *) src;
+            s32dst = (Sint32 *) dst;
+            for (i = 0; i < len; i += sizeof (Sint32), s32src++, s32dst++)
+            {
+                *s32dst = (Sint32) (((double) (SDL_SwapLE32(*s32src))) * volume);
+                *s32dst = SDL_SwapLE32(*s32dst);
+            } /* for */
+            break;
+
+        case AUDIO_S32MSB:
+            s32src = (Sint32 *) src;
+            s32dst = (Sint32 *) dst;
+            for (i = 0; i < len; i += sizeof (Sint32), s32src++, s32dst++)
+            {
+                *s32dst = (Sint32) (((double) (SDL_SwapBE32(*s32src))) * volume);
+                *s32dst = SDL_SwapBE32(*s32dst);
+            } /* for */
+            break;
+
+        case AUDIO_F32LSB:
+            f32src = (float *) src;
+            f32dst = (float *) dst;
+            for (i = 0; i < len; i += sizeof (float), f32src++, f32dst++)
+            {
+                floatswapper.f = *f32src;
+                floatswapper.ui32 = SDL_SwapLE32(floatswapper.ui32);
+                floatswapper.f *= volume;
+                floatswapper.ui32 = SDL_SwapLE32(floatswapper.ui32);
+                *f32dst = floatswapper.f;
+            } /* for */
+            break;
+
+        case AUDIO_F32MSB:
+            f32src = (float *) src;
+            f32dst = (float *) dst;
+            for (i = 0; i < len; i += sizeof (float), f32src++, f32dst++)
+            {
+                floatswapper.f = *f32src;
+                floatswapper.ui32 = SDL_SwapBE32(floatswapper.ui32);
+                floatswapper.f *= volume;
+                floatswapper.ui32 = SDL_SwapBE32(floatswapper.ui32);
+                *f32dst = floatswapper.f;
             } /* for */
             break;
     } /* switch */
@@ -654,6 +709,14 @@ static int str_to_fmt(char *str)
         return AUDIO_U16MSB;
     if (SDL_strcmp(str, "S16MSB") == 0)
         return AUDIO_S16MSB;
+    if (SDL_strcmp(str, "S32LSB") == 0)
+        return AUDIO_S32LSB;
+    if (SDL_strcmp(str, "S32MSB") == 0)
+        return AUDIO_S32MSB;
+    if (SDL_strcmp(str, "F32LSB") == 0)
+        return AUDIO_F32LSB;
+    if (SDL_strcmp(str, "F32MSB") == 0)
+        return AUDIO_F32MSB;
     return 0;
 } /* str_to_fmt */
 
@@ -863,7 +926,7 @@ int main(int argc, char **argv)
             if (sound_desired.format == 0)
             {
                 fprintf(stderr, "Bad argument to --format! Try one of:\n"
-                                "U8, S8, U16LSB, S16LSB, U16MSB, S16MSB\n");
+                                "U8, S8, U16LSB, S16LSB, U16MSB, S16MSB, S32LSB, S32MSB, F32LSB, L32MSB\n");
                 return(42);
             } /* if */
         } /* else if */
