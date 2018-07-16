@@ -23,7 +23,7 @@ extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MODPLUG;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_AIFF;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_AU;
-extern const Sound_DecoderFunctions __Sound_DecoderFunctions_OGG;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_VORBIS;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_VOC;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_SHN;
@@ -52,8 +52,8 @@ static decoder_element decoders[] =
 #if SOUND_SUPPORTS_AU
     { 0, &__Sound_DecoderFunctions_AU },
 #endif
-#if SOUND_SUPPORTS_OGG
-    { 0, &__Sound_DecoderFunctions_OGG },
+#if SOUND_SUPPORTS_VORBIS
+    { 0, &__Sound_DecoderFunctions_VORBIS },
 #endif
 #if SOUND_SUPPORTS_VOC
     { 0, &__Sound_DecoderFunctions_VOC },

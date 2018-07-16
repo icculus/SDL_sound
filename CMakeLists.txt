@@ -47,7 +47,7 @@ sdlsound_decoder_option(AIFF "Audio Interchange" ".AIFF")
 sdlsound_decoder_option(AU "Sun/NeXT audio" ".AU")
 sdlsound_decoder_option(VOC "Creative Labs voice" ".VOC")
 sdlsound_decoder_option(FLAC "Free Lossless Audio Codec" ".FLAC")
-sdlsound_decoder_option(OGG "Ogg Vorbis" ".OGG")
+sdlsound_decoder_option(VORBIS "Ogg Vorbis" ".OGG")
 sdlsound_decoder_option(RAW "raw PCM audio" ".RAW")
 sdlsound_decoder_option(SHN "Shorten" ".SHN")
 sdlsound_decoder_option(SPEEX "Speex" ".SPEEX")
@@ -109,11 +109,11 @@ set(SDLSOUND_SRCS
     src/SDL_sound_coreaudio.c
     src/SDL_sound_flac.c
     src/SDL_sound_modplug.c
-    src/SDL_sound_ogg.c
     src/SDL_sound_raw.c
     src/SDL_sound_shn.c
     src/SDL_sound_speex.c
     src/SDL_sound_voc.c
+    src/SDL_sound_vorbis.c
     src/SDL_sound_wav.c
     ${LIBMODPLUG_SRCS}
 )
@@ -228,7 +228,7 @@ message_bool_option("AIFF support" SDLSOUND_DECODER_AIFF)
 message_bool_option("AU support" SDLSOUND_DECODER_AU)
 message_bool_option("VOC support" SDLSOUND_DECODER_VOC)
 message_bool_option("FLAC support" SDLSOUND_DECODER_FLAC)
-message_bool_option("OGG support" SDLSOUND_DECODER_OGG)
+message_bool_option("VORBIS support" SDLSOUND_DECODER_VORBIS)
 message_bool_option("RAW support" SDLSOUND_DECODER_RAW)
 message_bool_option("SHN support" SDLSOUND_DECODER_SHN)
 message_bool_option("SPEEX support" SDLSOUND_DECODER_SPEEX)
