@@ -37,7 +37,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_AU =
         extensions_au,
         "Sun/NeXT audio file format",
         "Mattias Engdegård <f91-men@nada.kth.se>",
-        "https://www.icculus.org/SDL_sound/"
+        "https://icculus.org/SDL_sound/"
     },
 
     AU_init,        /*   init() method */

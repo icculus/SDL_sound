@@ -42,7 +42,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_FMT =
         extensions_fmt,
         "FMT audio format description",
         "Ryan C. Gordon <icculus@icculus.org>",
-        "https://www.icculus.org/SDL_sound/"
+        "https://icculus.org/SDL_sound/"
     },
 
     FMT_init,       /*   init() method */

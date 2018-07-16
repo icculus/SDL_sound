@@ -54,7 +54,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_FLAC =
         extensions_flac,
         "Free Lossless Audio Codec",
         "Ryan C. Gordon <icculus@icculus.org>",
-        "https://www.icculus.org/SDL_sound/"
+        "https://icculus.org/SDL_sound/"
     },
 
     FLAC_init,       /*   init() method */

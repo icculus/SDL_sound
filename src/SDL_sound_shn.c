@@ -48,7 +48,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_SHN =
         extensions_shn,
         "Shorten-compressed audio data",
         "Ryan C. Gordon <icculus@icculus.org>",
-        "https://www.icculus.org/SDL_sound/"
+        "https://icculus.org/SDL_sound/"
     },
 
     SHN_init,       /*   init() method */
