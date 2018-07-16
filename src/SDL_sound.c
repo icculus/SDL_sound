@@ -404,15 +404,14 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
 
     /* Now we need to set up the conversion buffer... */
 
-    SDL_memcpy(&desired, (_desired != NULL) ? _desired : &sample->actual,
-            sizeof (Sound_AudioInfo));
-
-    if (desired.format == 0)
-        desired.format = sample->actual.format;
-    if (desired.channels == 0)
-        desired.channels = sample->actual.channels;
-    if (desired.rate == 0)
-        desired.rate = sample->actual.rate;
+    if (_desired == NULL)
+        SDL_memcpy(&desired, &sample->actual, sizeof (Sound_AudioInfo));
+    else
+    {
+        desired.format = _desired->format ? _desired->format : sample->actual.format;
+        desired.channels = _desired->channels ? _desired->channels : sample->actual.channels;
+        desired.rate = _desired->rate ? _desired->rate : sample->actual.rate;
+    } /* else */
 
     if (SDL_BuildAudioCVT(&internal->sdlcvt,
                             sample->actual.format,
