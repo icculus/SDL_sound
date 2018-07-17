@@ -4,8 +4,7 @@
  * Authors: Olivier Lapicque <olivierl@jps.net>
 */
 
-#include "stdafx.h"
-#include "sndfile.h"
+#include "libmodplug.h"
 
 #ifndef WAVE_FORMAT_EXTENSIBLE
 #define WAVE_FORMAT_EXTENSIBLE	0xFFFE

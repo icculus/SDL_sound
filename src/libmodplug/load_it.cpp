@@ -7,9 +7,7 @@
  *
 */
 
-#include "stdafx.h"
-#include "sndfile.h"
-#include "it_defs.h"
+#include "libmodplug.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4244)

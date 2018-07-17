@@ -8,8 +8,7 @@
 //////////////////////////////////////////////
 // Oktalyzer (OKT) module loader            //
 //////////////////////////////////////////////
-#include "stdafx.h"
-#include "sndfile.h"
+#include "libmodplug.h"
 
 //#pragma warning(disable:4244)
 

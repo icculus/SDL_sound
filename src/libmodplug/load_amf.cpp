@@ -13,8 +13,7 @@
 // - Advanced Music Format(DSM)
 //
 ///////////////////////////////////////////////////
-#include "stdafx.h"
-#include "sndfile.h"
+#include "libmodplug.h"
 
 //#define AMFLOG
 

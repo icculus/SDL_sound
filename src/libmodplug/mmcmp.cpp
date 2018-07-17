@@ -5,8 +5,7 @@
  * Authors: Olivier Lapicque <olivierl@jps.net>
 */
 
-#include "stdafx.h"
-#include "sndfile.h"
+#include "libmodplug.h"
 
 BOOL PP20_Unpack(LPCBYTE *ppMemFile, LPDWORD pdwMemLength);
 

@@ -4,8 +4,7 @@
  * Authors: Olivier Lapicque <olivierl@jps.net>
 */
 
-#include "stdafx.h"
-#include "sndfile.h"
+#include "libmodplug.h"
 
 //#pragma warning(disable:4244)
 
