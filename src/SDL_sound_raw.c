@@ -170,6 +170,5 @@ static int RAW_seek(Sound_Sample *sample, Uint32 ms)
 
 #endif /* SOUND_SUPPORTS_RAW */
 
-
-/* end of raw.c ... */
+/* end of SDL_sound_raw.c ... */
 

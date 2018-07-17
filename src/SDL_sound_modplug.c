@@ -302,5 +302,5 @@ static int MODPLUG_seek(Sound_Sample *sample, Uint32 ms)
 
 #endif /* SOUND_SUPPORTS_MODPLUG */
 
+/* end of SDL_sound_modplug.c ... */
 
-/* end of modplug.c ... */
