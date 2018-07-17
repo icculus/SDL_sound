@@ -20,6 +20,7 @@
 
 /* All these externs may be missing; we check SOUND_SUPPORTS_xxx before use. */
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MODPLUG;
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MP3;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_AIFF;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_AU;
@@ -42,6 +43,9 @@ static decoder_element decoders[] =
 {
 #if SOUND_SUPPORTS_MODPLUG
     { 0, &__Sound_DecoderFunctions_MODPLUG },
+#endif
+#if SOUND_SUPPORTS_MP3
+    { 0, &__Sound_DecoderFunctions_MP3 },
 #endif
 #if SOUND_SUPPORTS_WAV
     { 0, &__Sound_DecoderFunctions_WAV },
