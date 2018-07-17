@@ -555,4 +555,4 @@ static int VOC_seek(Sound_Sample *sample, Uint32 ms)
 
 #endif /* SOUND_SUPPORTS_VOC */
 
-/* end of voc.c ... */
+/* end of SDL_sound_voc.c ... */

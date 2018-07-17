@@ -150,6 +150,5 @@ static int FMT_seek(Sound_Sample *sample, Uint32 ms)
 
 #endif /* SOUND_SUPPORTS_FMT */
 
-
-/* end of fmt.c ... */
+/* end of SDL_sound_fmt.c ... */
 

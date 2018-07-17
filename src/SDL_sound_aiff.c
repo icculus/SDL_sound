@@ -545,5 +545,5 @@ static int AIFF_seek(Sound_Sample *sample, Uint32 ms)
 
 #endif /* SOUND_SUPPORTS_AIFF */
 
-/* end of aiff.c ... */
+/* end of SDL_sound_aiff.c ... */
 

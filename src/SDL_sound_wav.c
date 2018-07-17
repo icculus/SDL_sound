@@ -787,5 +787,5 @@ static int WAV_seek(Sound_Sample *sample, Uint32 ms)
 
 #endif /* SOUND_SUPPORTS_WAV */
 
-/* end of wav.c ... */
+/* end of SDL_sound_wav.c ... */
 

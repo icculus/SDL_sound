@@ -356,3 +356,5 @@ static int AU_seek(Sound_Sample *sample, Uint32 ms)
 
 #endif /* SOUND_SUPPORTS_AU */
 
+/* end of SDL_sound_au.c ... */
+

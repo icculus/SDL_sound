@@ -751,5 +751,5 @@ static int CoreAudio_seek(Sound_Sample *sample, Uint32 ms)
 #endif /* SOUND_SUPPORTS_COREAUDIO */
 
 
-/* end of coreaudio.c ... */
+/* end of SDL_sound_coreaudio.c ... */
 

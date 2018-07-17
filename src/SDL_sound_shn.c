@@ -1314,5 +1314,5 @@ static int SHN_seek(Sound_Sample *sample, Uint32 ms)
 
 #endif  /* defined SOUND_SUPPORTS_SHN */
 
-/* end of shn.c ... */
+/* end of SDL_sound_shn.c ... */
 
