@@ -1082,7 +1082,7 @@ int main(int argc, char **argv)
 
         if (global_state.predecode)
         {
-            fprintf(stdout, "  predecoding...");
+            fprintf(stdout, "  predecoding..."); fflush(stdout);
             global_state.decoded_bytes = Sound_DecodeAll(sample);
             global_state.decoded_ptr = sample->buffer;
             if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
