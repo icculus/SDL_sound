@@ -5068,7 +5068,7 @@ stb_vorbis * stb_vorbis_open_rwops_section(SDL_RWops *rwops, int close_on_free, 
    if (start_decoder(&p)) {
       f = vorbis_alloc(&p);
       if (f) {
-         *f = p;
+         memcpy(f, &p, sizeof (stb_vorbis));
          vorbis_pump_first_frame(f);
          return f;
       }
@@ -5099,7 +5099,7 @@ stb_vorbis * stb_vorbis_open_memory(const unsigned char *data, int len, int *err
    if (start_decoder(&p)) {
       f = vorbis_alloc(&p);
       if (f) {
-         *f = p;
+         memcpy(f, &p, sizeof (stb_vorbis));
          vorbis_pump_first_frame(f);
          if (error) *error = VORBIS__no_error;
          return f;

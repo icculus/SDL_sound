@@ -898,7 +898,8 @@ static drflac_bool32 drflac__gIsLZCNTSupported = DRFLAC_FALSE;
 static drflac_bool32 drflac__gIsSSE42Supported = DRFLAC_FALSE;
 static void drflac__init_cpu_caps()
 {
-    int info[4] = {0};
+    int info[4];
+    drflac_zero_memory(info, sizeof (info));
 
     // LZCNT
     drflac__cpuid(info, 0x80000001);
@@ -1865,7 +1866,8 @@ static drflac_result drflac__read_utf8_coded_number(drflac_bs* bs, drflac_uint64
 
     drflac_uint8 crc = *pCRCOut;
 
-    unsigned char utf8[7] = {0};
+    unsigned char utf8[7];
+    drflac_zero_memory(utf8, sizeof (utf8));
     if (!drflac__read_uint8(bs, 8, utf8)) {
         *pNumberOut = 0;
         return DRFLAC_END_OF_STREAM;
@@ -2617,7 +2619,7 @@ static drflac_bool32 drflac__decode_samples__verbatim(drflac_bs* bs, drflac_uint
 
 static drflac_bool32 drflac__decode_samples__fixed(drflac_bs* bs, drflac_uint32 blockSize, drflac_uint32 bitsPerSample, drflac_uint8 lpcOrder, drflac_int32* pDecodedSamples)
 {
-    drflac_int32 lpcCoefficientsTable[5][4] = {
+    static const drflac_int32 lpcCoefficientsTable[5][4] = {
         {0,  0, 0,  0},
         {1,  0, 0,  0},
         {2, -1, 0,  0},
@@ -3789,7 +3791,7 @@ drflac_bool32 drflac__init_private__native(drflac_init_info* pInit, drflac_read_
             metadata.type = DRFLAC_METADATA_BLOCK_TYPE_STREAMINFO;
             metadata.pRawData = NULL;
             metadata.rawDataSize = 0;
-            metadata.data.streaminfo = streaminfo;
+            drflac_copy_memory(&metadata.data.streaminfo, &streaminfo, sizeof (metadata.data.streaminfo));
             onMeta(pUserDataMD, &metadata);
         }
 
@@ -4126,7 +4128,7 @@ static drflac_bool32 drflac_oggbs__goto_next_page(drflac_oggbs* oggbs, drflac_og
         (void)recoveryMethod;   // <-- Silence a warning.
 #endif
 
-        oggbs->currentPageHeader = header;
+        drflac_copy_memory(&oggbs->currentPageHeader, &header, sizeof (oggbs->currentPageHeader));
         oggbs->bytesRemainingInPage = pageBodySize;
         return DRFLAC_TRUE;
     }
@@ -4515,14 +4517,14 @@ drflac_bool32 drflac__init_private__ogg(drflac_init_info* pInit, drflac_read_pro
                                 metadata.type = DRFLAC_METADATA_BLOCK_TYPE_STREAMINFO;
                                 metadata.pRawData = NULL;
                                 metadata.rawDataSize = 0;
-                                metadata.data.streaminfo = streaminfo;
+                                drflac_copy_memory(&metadata.data.streaminfo, &streaminfo, sizeof (metadata.data.streaminfo));
                                 onMeta(pUserDataMD, &metadata);
                             }
 
                             pInit->runningFilePos  += pageBodySize;
                             pInit->oggFirstBytePos  = pInit->runningFilePos - 79;   // Subtracting 79 will place us right on top of the "OggS" identifier of the FLAC bos page.
                             pInit->oggSerial        = header.serialNumber;
-                            pInit->oggBosHeader     = header;
+                            drflac_copy_memory(&pInit->oggBosHeader, &header, sizeof (pInit->oggBosHeader));
                             break;
                         } else {
                             // Failed to read STREAMINFO block. Aww, so close...
@@ -4656,7 +4658,7 @@ void drflac__init_from_info(drflac* pFlac, drflac_init_info* pInit)
     drflac_assert(pInit != NULL);
 
     drflac_zero_memory(pFlac, sizeof(*pFlac));
-    pFlac->bs               = pInit->bs;
+    drflac_copy_memory(&pFlac->bs, &pInit->bs, sizeof (pFlac->bs));
     pFlac->onMeta           = pInit->onMeta;
     pFlac->pUserDataMD      = pInit->pUserDataMD;
     pFlac->maxBlockSize     = pInit->maxBlockSize;
@@ -4719,7 +4721,7 @@ drflac* drflac_open_with_metadata_private(drflac_read_proc onRead, drflac_seek_p
         oggbs.currentBytePos = init.oggFirstBytePos;
         oggbs.firstBytePos = init.oggFirstBytePos;
         oggbs.serialNumber = init.oggSerial;
-        oggbs.bosPageHeader = init.oggBosHeader;
+        drflac_copy_memory(&oggbs.bosPageHeader, &init.oggBosHeader, sizeof (oggbs.bosPageHeader));
         oggbs.bytesRemainingInPage = 0;
     }
 #endif
@@ -4758,7 +4760,7 @@ drflac* drflac_open_with_metadata_private(drflac_read_proc onRead, drflac_seek_p
 #ifndef DR_FLAC_NO_OGG
     if (init.container == drflac_container_ogg) {
         drflac_oggbs* pInternalOggbs = (drflac_oggbs*)((drflac_uint8*)pFlac->pDecodedSamples + decodedSamplesAllocationSize + seektableSize);
-        *pInternalOggbs = oggbs;
+        drflac_copy_memory(pInternalOggbs, &oggbs, sizeof (drflac_oggbs));
 
         // The Ogg bistream needs to be layered on top of the original bitstream.
         pFlac->bs.onRead = drflac__on_read_ogg;
