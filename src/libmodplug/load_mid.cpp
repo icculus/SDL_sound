@@ -1405,7 +1405,7 @@ BOOL CSoundFile::ReadMID(const BYTE *lpStream, DWORD dwMemLength)
 		return FALSE;
 	}
 	p = (BYTE *)SDL_getenv(ENV_MMMID_SPEED);
-	if( p && isdigit(*p) && p[0] != '0' && p[1] == '\0' ) {
+	if( p && SDL_isdigit(*p) && p[0] != '0' && p[1] == '\0' ) {
 		// transform speed
 		t = *p - '0';
 		h->speed *= t;

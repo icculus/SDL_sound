@@ -263,14 +263,25 @@ static void abc_add_setjumploop(ABCHANDLE *h, ABCTRACK *tp, uint32_t tracktime, 
 static uint32_t abc_pattracktime(ABCHANDLE *h, uint32_t tracktime);
 static int abc_patno(ABCHANDLE *h, uint32_t tracktime);
 
+static SDL_INLINE int IsAlpha(const char c) {
+    return ( ((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) );
+}
+
+static SDL_INLINE int IsUpper(const char c) {
+    return ( (c >= 'A') && (c <= 'Z') );
+}
+
+static SDL_INLINE int IsLower(const char c) {
+    return ( (c >= 'a') && (c <= 'z') );
+}
 
 static int abc_isvalidchar(char c) {
-	return(isalpha(c) || isdigit(c) || isspace(c) || c == '%' || c == ':');
+	return(IsAlpha(c) || SDL_isdigit(c) || SDL_isspace(c) || c == '%' || c == ':');
 }
 
 static const char *abc_skipspace(const char *p)
 {
-	while (*p && isspace(*p))
+	while (*p && SDL_isspace(*p))
 		p++;
 	return p;
 }
@@ -278,7 +289,7 @@ static const char *abc_skipspace(const char *p)
 static void abc_extractkeyvalue(char *key, size_t key_max,
 								char *value, size_t value_max, const char *src)
 {
-	while (*src && isspace(*src))
+	while (*src && SDL_isspace(*src))
 		src++;
 
 	size_t key_size;
@@ -289,17 +300,17 @@ static void abc_extractkeyvalue(char *key, size_t key_max,
 		}
 		key[key_size++] = *src++;
 	}
-	while (key_size > 0 && isspace(key[key_size - 1]))
+	while (key_size > 0 && SDL_isspace(key[key_size - 1]))
 		key_size--;
 	key[key_size] = '\0';
 
-	while (*src && isspace(*src))
+	while (*src && SDL_isspace(*src))
 		src++;
 
 	size_t value_size;
 	for (value_size = 0; value_size < value_max - 1 && *src;)
 		value[value_size++] = *src++;
-	while (value_size > 0 && isspace(value[value_size - 1]))
+	while (value_size > 0 && SDL_isspace(value[value_size - 1]))
 		value_size--;
 	value[value_size] = '\0';
 }
@@ -364,7 +375,7 @@ static void abc_dumptracks(ABCHANDLE *h, const char *p)
 					nn[0] = "CCCDDEFFGGAABccddeffggaabb"[e->par[chordnote]];
 					nn[1] = "b # #  # # #  # #  # # # #"[e->par[chordnote]];
 					nn[2] = '\0';
-					if( isspace(nn[1]) ) nn[1] = '\0';
+					if( SDL_isspace(nn[1]) ) nn[1] = '\0';
 					printf("CMD %c: gchord %s%s",
 					       (char)(e->cmd), nn, chordname[e->par[chordnum]]);
 					if( e->par[chordbase] != e->par[chordnote] ) {
@@ -733,7 +744,7 @@ static ABCTRACK *abc_locate_track(ABCHANDLE *h, const char *voice, int pos)
 	char vc[21];
 	int i, trans=0, voiceno=0, instrno = 1, channo = 0;
 	for( ; *voice == ' '; voice++ ) ;	// skip leading spaces
-	for( i=0; i+1 < sizeof(vc) && *voice && *voice != ']' && *voice != '%' && !isspace(*voice); voice++ )	// can work with inline voice instructions
+	for( i=0; i+1 < sizeof(vc) && *voice && *voice != ']' && *voice != '%' && !SDL_isspace(*voice); voice++ )	// can work with inline voice instructions
 		vc[i++] = *voice;
 	vc[i] = '\0';
 	prev = NULL;
@@ -1263,9 +1274,9 @@ static int abc_add_noteon(ABCHANDLE *h, int ch, const char *p, uint32_t tracktim
 				k = tp->tienote->par[note] - 23 - tp->transpose;
 				while( k < 0 ) k += 12;
 				while( k > 12 ) k -= 12;
-				if( (isupper(n) && barkey[k+12] == ' ') || (islower(n) && barkey[k] == ' ') ) {
+				if( (IsUpper(n) && barkey[k+12] == ' ') || (IsLower(n) && barkey[k] == ' ') ) {
 					barkey[j] = ' ';
-					if( isupper(n) )
+					if( IsUpper(n) )
 						barkey[k] = n;
 					else
 						barkey[k+12] = n;
@@ -1287,7 +1298,7 @@ static int abc_add_noteon(ABCHANDLE *h, int ch, const char *p, uint32_t tracktim
 			}
 		}
 		tp->tienote->tiednote = 1; // mark him for the pattern writers
-		for( j=i; isdigit(p[j]) || p[j]=='/'; j++ ) ; // look ahead to see if this one is tied too
+		for( j=i; SDL_isdigit(p[j]) || p[j]=='/'; j++ ) ; // look ahead to see if this one is tied too
 		if( p[j] != '-' ) // is this note tied too?
 			tp->tienote = NULL; // if not the tie ends here...
 		return i;
@@ -1508,7 +1519,7 @@ static int abc_getnumber(const char *p, int *number)
 	int i,h;
 	i = 0;
 	h = 0;
-	while( isdigit(p[i]) ) {
+	while( SDL_isdigit(p[i]) ) {
 		h = 10 * h + p[i] - '0';
 		i++;
 	}
@@ -1523,7 +1534,7 @@ static int abc_getexpr(const char *p, int *number)
 {
 	int i, term, total;
 	i = 0;
-	while( isspace(p[i]) )
+	while( SDL_isspace(p[i]) )
 		i++;
 	if( p[i] == '(' ) {
 		i += abc_getexpr(p+i+1, number);
@@ -1532,12 +1543,12 @@ static int abc_getexpr(const char *p, int *number)
 		return i;
 		}
 	i += abc_getnumber(p+i, &total);
-	while( isspace(p[i]) )
+	while( SDL_isspace(p[i]) )
 		i++;
 	while( p[i] == '+' ) {
 		i += 1 + abc_getexpr(p+i+1, &term);
 		total += term;
-		while( isspace(p[i]) )
+		while( SDL_isspace(p[i]) )
 			i++;
 	}
 	*number = total;
@@ -1553,7 +1564,7 @@ static int abc_notelen(const char *p, int *len, int *div)
 		h *= 2;
 		i++;
 	}
-	if( isdigit(p[i]) ) {
+	if( SDL_isdigit(p[i]) ) {
 		h /= 2;
 		i += abc_getnumber(p+i,&k);
 	}
@@ -1640,7 +1651,7 @@ static int abc_extract_tempo(const char *p, int invoice)
 				case '=':
 					break;
 				default:
-					if( isdigit(*q) ) {
+					if( SDL_isdigit(*q) ) {
 						if( state ) {
 							q+=abc_getnumber(q,&nd1)-1;
 							state = 0;
@@ -1722,10 +1733,10 @@ static void	abc_set_parts(char **d, char *p)
 	j=0;
 	k=0;
 	for( i=0; p[i] && p[i] != '%'; i++ ) {
-		if( isupper(p[i]) ) {
+		if( IsUpper(p[i]) ) {
 			j++;
 		}
-		if( isdigit(p[i]) ) {
+		if( SDL_isdigit(p[i]) ) {
 			n=abc_getnumber(p+i,&k);
 			if( k == 0 )
 				k = 1;
@@ -1742,7 +1753,7 @@ static void	abc_set_parts(char **d, char *p)
 	// now copy bytes from p to *d, taking parens and digits in account
 	j = 0;
 	for( i=0; p[i] && p[i] != '%' && j < size && i < size; i++ ) {
-		if( isdigit(p[i]) || isupper(p[i]) || p[i] == '(' || p[i] == ')' ) {
+		if( SDL_isdigit(p[i]) || IsUpper(p[i]) || p[i] == '(' || p[i] == ')' ) {
 			if( p[i] == ')' ) {
 				for( n=j; n > 0 && q[n-1] != '('; n-- )	;	// find open paren in q
 				// q[n+1] to q[j] contains the substring that must be repeated
@@ -1764,7 +1775,7 @@ static void	abc_set_parts(char **d, char *p)
 				}
 				continue;
 			}
-			if( isdigit(p[i]) ) {
+			if( SDL_isdigit(p[i]) ) {
 				n = abc_getnumber(p+i,&k);
 				i += n - 1;
 				while( k-- > 1 ) {
@@ -2143,7 +2154,7 @@ static void abc_preprocess(ABCHANDLE *h, ABCMACRO *m)
 			char *p = s;
 			for( j=0; j<l; j++ ) {
 				a = m->subst[j];
-				if( a > 'g' && islower(a) ) {
+				if( a > 'g' && IsLower(a) ) {
 					b = a - 'n';
 					a = "CDEFGABCDEFGABcdefgabcdefgab"[i+b+7];
 					*p++ = a;
@@ -2247,11 +2258,11 @@ BOOL CSoundFile::TestABC(const BYTE *lpStream, DWORD dwMemLength)
 		}
 	    if(id[0]=='K'
 			&& id[1]==':'
-			&& (isalpha(id[2]) || isspace(id[2])) ) return 1;
+			&& (IsAlpha(id[2]) || SDL_isspace(id[2])) ) return 1;
             // disable binary error if have any "tag"
 	    if((id[0]>='A' && id[0]<='Z')
 			&& id[1]==':'
-			&& (isalpha(id[2]) || isspace(id[2])) ) hasText = 1;
+			&& (IsAlpha(id[2]) || SDL_isspace(id[2])) ) hasText = 1;
 		}
     return 0;
 }
@@ -2288,7 +2299,7 @@ static ABCHANDLE *ABC_Init(void)
 		retval->barticks    = 0;
 		p = SDL_getenv(ABC_ENV_NORANDOMPICK);
 		if( p ) {
-			if( isdigit(*p) )
+			if( SDL_isdigit(*p) )
 				retval->pickrandom = SDL_atoi(p);
 			if( *p == '-' ) {
 #ifdef NEWMIKMOD
@@ -2773,11 +2784,11 @@ static int ABC_Key(const char *p)
 	char c[8];
     SDL_memset(c, 0, sizeof (c));
 	const char *q;
-	while( isspace(*p) ) p++;
+	while( SDL_isspace(*p) ) p++;
 	q = p;
 	for( i=0; i<8 && *p && *p != ']'; p++ ) {
-		if( isspace(*p) ) {
-			while( isspace(*p) ) p++;
+		if( SDL_isspace(*p) ) {
+			while( SDL_isspace(*p) ) p++;
 			if( SDL_strncasecmp(p, "min", 3) && SDL_strncasecmp(p, "maj", 3) )
 				break;
 		}
@@ -2807,9 +2818,9 @@ static int ABC_Key(const char *p)
 
 static char *abc_skip_word(char *p)
 {
-	while( isspace(*p) ) p++;
-	while( *p && !isspace(*p) && *p != ']') p++;
-	while( isspace(*p) ) p++;
+	while( SDL_isspace(*p) ) p++;
+	while( *p && !SDL_isspace(*p) && *p != ']') p++;
+	while( SDL_isspace(*p) ) p++;
 	return p;
 }
 
@@ -2918,7 +2929,7 @@ static void abc_setup_chordnames()
 static int abc_MIDI_getnumber(const char *p)
 {
 	int n;
-	while( isspace(*p) ) p++;
+	while( SDL_isspace(*p) ) p++;
 	abc_getnumber(p, &n);
 	if( n < 0 )   n = 0;
 	if( n > 127 ) n = 127;
@@ -2928,7 +2939,7 @@ static int abc_MIDI_getnumber(const char *p)
 static int abc_MIDI_getprog(const char *p)
 {
 	int n;
-	while( isspace(*p) ) p++;
+	while( SDL_isspace(*p) ) p++;
 	abc_getnumber(p, &n);
 	if( n < 1 )   n = 1;
 	if( n > 128 ) n = 128;
@@ -2939,32 +2950,32 @@ static int abc_MIDI_getprog(const char *p)
 static void abc_MIDI_drone(const char *p, int *gm, int *ptch, int *vol)
 {
 	int i;
-	while( isspace(*p) ) p++;
+	while( SDL_isspace(*p) ) p++;
 	p += abc_getnumber(p, &i);
 	i++;	// adjust for 1..128
 	if( i>0 && i < 129 )
 		*gm = i;
 	else
 		*gm = 71;	// bassoon
-	while( isspace(*p) ) p++;
+	while( SDL_isspace(*p) ) p++;
 	p += abc_getnumber(p, &i);
 	if( i>0 && i < 127 )
 		ptch[0] = i;
 	else
 		ptch[0] = 45;
-	while( isspace(*p) ) p++;
+	while( SDL_isspace(*p) ) p++;
 	p += abc_getnumber(p, &i);
 	if( i>0 && i < 127 )
 		ptch[1] = i;
 	else
 		ptch[1] = 33;
-	while( isspace(*p) ) p++;
+	while( SDL_isspace(*p) ) p++;
 	p += abc_getnumber(p, &i);
 	if( i>0 && i < 127 )
 		vol[0] = i;
 	else
 		vol[0] = 80;
-	while( isspace(*p) ) p++;
+	while( SDL_isspace(*p) ) p++;
 	p += abc_getnumber(p, &i);
 	if( i>0 && i < 127 )
 		vol[1] = i;
@@ -2989,8 +3000,8 @@ static void abc_MIDI_channel(const char *p, ABCTRACK *tp, ABCHANDLE *h)
 {
 	int i1, i2;
 	i1 = tp? tp->vno: 1;
-	for( ; *p && isspace(*p); p++ ) ;
-	if( isdigit(*p) ) {
+	for( ; *p && SDL_isspace(*p); p++ ) ;
+	if( SDL_isdigit(*p) ) {
 		p += abc_getnumber(p, &i2);
 		if( i2 >= 1 && i2 <= 16 )
 			abc_chan_to_tracks(h, i1, i2); // we start at 1
@@ -3014,11 +3025,11 @@ static void abc_MIDI_program(const char *p, ABCTRACK *tp, ABCHANDLE *h)
 {
 	int i1, i2;
 	i1 = tp? tp->vno: 1;
-	for( ; *p && isspace(*p); p++ ) ;
-	if( isdigit(*p) ) {
+	for( ; *p && SDL_isspace(*p); p++ ) ;
+	if( SDL_isdigit(*p) ) {
 		p += abc_getnumber(p, &i2);
-		for( ; *p && isspace(*p); p++ ) ;
-		if( isdigit(*p) ) {
+		for( ; *p && SDL_isspace(*p); p++ ) ;
+		if( SDL_isdigit(*p) ) {
 			i1 = i2;
 			p += abc_getnumber(p, &i2);
 		}
@@ -3039,25 +3050,25 @@ static void abc_mute_voice(ABCHANDLE *h, ABCTRACK *tp, int m)
 static void abc_MIDI_voice(const char *p, ABCTRACK *tp, ABCHANDLE *h)
 {
 	int i1, i2;
-	for( ; *p && isspace(*p); p++ ) ;
+	for( ; *p && SDL_isspace(*p); p++ ) ;
 	if( SDL_strncmp(p,"instrument=",11) && SDL_strncmp(p,"mute",4) ) {
 		tp = abc_locate_track(h, p, 0);
-		for( ; *p && !isspace(*p); p++ ) ;
-		for( ; *p && isspace(*p); p++ ) ;
+		for( ; *p && !SDL_isspace(*p); p++ ) ;
+		for( ; *p && SDL_isspace(*p); p++ ) ;
 	}
 	i1 = tp? tp->vno: 1;
 	i2 = 0;
-	if( !SDL_strncmp(p,"instrument=",11) && isdigit(p[11]) ) {
+	if( !SDL_strncmp(p,"instrument=",11) && SDL_isdigit(p[11]) ) {
 		p += 11;
 		p += abc_getnumber(p, &i2);
-		for( ; *p && isspace(*p); p++ ) ;
-		if( !SDL_strncmp(p,"bank=",5) && isdigit(p[5]) ) {
-			for( ; *p && !isspace(*p); p++ ) ;
-			for( ; *p && isspace(*p); p++ ) ;
+		for( ; *p && SDL_isspace(*p); p++ ) ;
+		if( !SDL_strncmp(p,"bank=",5) && SDL_isdigit(p[5]) ) {
+			for( ; *p && !SDL_isspace(*p); p++ ) ;
+			for( ; *p && SDL_isspace(*p); p++ ) ;
 		}
 	}
 	if( tp ) abc_mute_voice(h,tp,0);
-	if( !SDL_strncmp(p,"mute",4) && (p[4]=='\0' || p[4]=='%' || isspace(p[4])) ) {
+	if( !SDL_strncmp(p,"mute",4) && (p[4]=='\0' || p[4]=='%' || SDL_isspace(p[4])) ) {
 		if( tp ) abc_mute_voice(h,tp,1);
 	}
 	abc_instr_to_tracks(h, i1, i2); // starts already at 1 (draft 4.0)
@@ -3070,7 +3081,7 @@ static void abc_MIDI_chordname(const char *p)
 	int i, notes[6];
     SDL_memset(notes, 0, sizeof (notes));
 
-	for( ; *p && isspace(*p); p++ ) ;
+	for( ; *p && SDL_isspace(*p); p++ ) ;
 	i = 0;
 	while ((i < 19) && (*p != ' ') && (*p != '\0')) {
 		name[i] = *p;
@@ -3083,8 +3094,8 @@ static void abc_MIDI_chordname(const char *p)
 	}
 	else {
 		i = 0;
-		while ((i < 6) && isspace(*p)) {
-			for( ; *p && isspace(*p); p++ ) ;
+		while ((i < 6) && SDL_isspace(*p)) {
+			for( ; *p && SDL_isspace(*p); p++ ) ;
 			p += abc_getnumber(p, &notes[i]);
 			i = i + 1;
 		}
@@ -3099,21 +3110,21 @@ static int abc_MIDI_drum(const char *p, ABCHANDLE *h)
 	char *q;
 	int i, n, m;
 	uint32_t len;
-	while( isspace(*p) ) p++;
-	if( !SDL_strncmp(p,"on",2) && (isspace(p[2]) || p[2] == '\0') ) return 2;
-	if( !SDL_strncmp(p,"off",3) && (isspace(p[3]) || p[3] == '\0') ) return 1;
+	while( SDL_isspace(*p) ) p++;
+	if( !SDL_strncmp(p,"on",2) && (SDL_isspace(p[2]) || p[2] == '\0') ) return 2;
+	if( !SDL_strncmp(p,"off",3) && (SDL_isspace(p[3]) || p[3] == '\0') ) return 1;
 	n = 0; len = 0;
-	for( q = h->drum; *p && !isspace(*p); p++ ) {
+	for( q = h->drum; *p && !SDL_isspace(*p); p++ ) {
 		if( !SDL_strchr("dz0123456789",*p) ) break;
 		*q++ = *p; len++;
-		if( !isdigit(*p) && len < sizeof(h->drum)-1 ) {
-			if( !isdigit(p[1]) ) { *q++ = '1'; len ++; }
+		if( !SDL_isdigit(*p) && len < sizeof(h->drum)-1 ) {
+			if( !SDL_isdigit(p[1]) ) { *q++ = '1'; len ++; }
 			n++; // count the silences too....
 		}
 		if (len >= sizeof(h->drum)-1) {
 			// consume the rest of the input
 			// definitely enough "drum last state" stored.
-			while ( *p && !isspace(*p) ) p++;
+			while ( *p && !SDL_isspace(*p) ) p++;
 			break;
 		}
 	}
@@ -3121,10 +3132,10 @@ static int abc_MIDI_drum(const char *p, ABCHANDLE *h)
 	q = h->drumins;
 	for( i = 0; i<n; i++ ) {
 		if( h->drum[i*2] == 'd' ) {
-			while( *p && isspace(*p) ) p++;
-			if( !isdigit(*p) ) {
+			while( *p && SDL_isspace(*p) ) p++;
+			if( !SDL_isdigit(*p) ) {
 				m = 0;
-				while( *p && !isspace(*p) ) p++;
+				while( *p && !SDL_isspace(*p) ) p++;
 			}
 			else
 				p += abc_getnumber(p,&m);
@@ -3135,10 +3146,10 @@ static int abc_MIDI_drum(const char *p, ABCHANDLE *h)
 	q = h->drumvol;
 	for( i = 0; i<n; i++ ) {
 		if( h->drum[i*2] == 'd' ) {
-			while( *p && isspace(*p) ) p++;
-			if( !isdigit(*p) ) {
+			while( *p && SDL_isspace(*p) ) p++;
+			if( !SDL_isdigit(*p) ) {
 				m = 0;
-				while( *p && !isspace(*p) ) p++;
+				while( *p && !SDL_isspace(*p) ) p++;
 			}
 			else
 				p += abc_getnumber(p,&m);
@@ -3154,17 +3165,17 @@ static int abc_MIDI_gchord(const char *p, ABCHANDLE *h)
 {
 	char *q;
 	uint32_t len = 0;
-	while( isspace(*p) ) p++;
-	if( !SDL_strncmp(p,"on",2) && (isspace(p[2]) || p[2] == '\0') ) return 2;
-	if( !SDL_strncmp(p,"off",3) && (isspace(p[3]) || p[3] == '\0') ) return 1;
-	for( q = h->gchord; *p && !isspace(*p); p++ ) {
+	while( SDL_isspace(*p) ) p++;
+	if( !SDL_strncmp(p,"on",2) && (SDL_isspace(p[2]) || p[2] == '\0') ) return 2;
+	if( !SDL_strncmp(p,"off",3) && (SDL_isspace(p[3]) || p[3] == '\0') ) return 1;
+	for( q = h->gchord; *p && !SDL_isspace(*p); p++ ) {
 		if( !SDL_strchr("fbcz0123456789ghijGHIJ",*p) ) break;
 		*q++ = *p; len++;
-		if( !isdigit(*p) && len < sizeof(h->gchord)-1 && !isdigit(p[1]) ) { *q++ = '1'; len ++; }
+		if( !SDL_isdigit(*p) && len < sizeof(h->gchord)-1 && !SDL_isdigit(p[1]) ) { *q++ = '1'; len ++; }
 		if (len >= sizeof(h->gchord)-1) {
 			// consume the rest of the input
 			// definitely enough "drum last state" stored.
-			while ( *p && !isspace(*p) ) p++;
+			while ( *p && !SDL_isspace(*p) ) p++;
 			break;
 		}
 	}
@@ -3210,7 +3221,7 @@ static void abc_metric_gchord(ABCHANDLE *h, int mlen, int mdiv)
 
 static void abc_MIDI_legato(const char *p, ABCTRACK *tp)
 {
-	for( ; *p && isspace(*p); p++ ) ;
+	for( ; *p && SDL_isspace(*p); p++ ) ;
 	if( !SDL_strncmp(p,"off",3) ) tp->legato = 0;
 	else tp->legato = 1;
 }
@@ -3241,7 +3252,7 @@ static int abc_drum_steps(const char *dch)
 	const char *p;
 	int i=0;
 	for( p=dch; *p; p++ ) {
-		if( isdigit(*p) ) i += *p - '0';;
+		if( SDL_isdigit(*p) ) i += *p - '0';;
 	}
 	return i;
 }
@@ -3296,7 +3307,7 @@ static int abc_gchord_steps(const char *gch)
 	const char *p;
 	int i=0;
 	for( p=gch; *p; p++ )
-		if( isdigit(*p) ) i += *p - '0';
+		if( SDL_isdigit(*p) ) i += *p - '0';
 	return i;
 }
 
@@ -3381,7 +3392,7 @@ static void abc_add_gchord(ABCHANDLE *h, uint32_t tracktime, uint32_t bartime)
 					tp = abc_locate_track(h, h->tpc->v, GCHORDFPOS+i+1);
 					tp->instr = h->abcchordprog;
 					nnum = c->par[chordnote]+chordnotes[gcnum][i]+24;
-					if( isupper(gnote) ) nnum -= 12;
+					if( IsUpper(gnote) ) nnum -= 12;
 					abc_add_chordnote(h, tp, etime + rtime/steps, nnum, h->abcchordvol);
 				}
 				rtime += ctime * glen;
@@ -3421,7 +3432,7 @@ static void abc_MIDI_beat(ABCHANDLE *h, const char *p)
 	h->beat[2] = 110;
 	h->beat[3] = 1;
 	for( j=0; j<4; j++ ) {
-		while( isspace(*p) ) p++;
+		while( SDL_isspace(*p) ) p++;
 		if( *p ) {
 			p += abc_getnumber(p, &i);
 			if( i < 0   ) i = 0;
@@ -3444,7 +3455,7 @@ static void abc_MIDI_beat(ABCHANDLE *h, const char *p)
 // %%MIDI beatstring fppmpmp
 static void abc_MIDI_beatstring(ABCHANDLE *h, const char *p)
 {
-	while( isspace(*p) ) p++;
+	while( SDL_isspace(*p) ) p++;
 	if( h->beatstring ) _mm_free(h->allochandle, h->beatstring);
 	if( SDL_strlen(p) )
 		h->beatstring = DupStr(h->allochandle,p,SDL_strlen(p)+1);
@@ -3590,47 +3601,47 @@ static void abc_recalculate_tracktime(ABCHANDLE *h) {
 static void abc_MIDI_command(ABCHANDLE *h, char *p, char delim) {
 	int t;
 	// interpret some of the possibilitys
-	if( !SDL_strncmp(p,"bassprog",8)    && isspace(p[8]) ) h->abcbassprog = abc_MIDI_getprog(p+8)+1;
-	if( !SDL_strncmp(p,"bassvol",7)     && isspace(p[7]) ) h->abcbassvol = abc_MIDI_getnumber(p+7);
-	if( !SDL_strncmp(p,"beat",4)        && isspace(p[4]) ) abc_MIDI_beat(h, p+4);
-	if( !SDL_strncmp(p,"beatstring",10) && isspace(p[10]) ) abc_MIDI_beatstring(h, p+4);
-	if( !SDL_strncmp(p,"chordname",9)   && isspace(p[9]) ) abc_MIDI_chordname(p+9);
-	if( !SDL_strncmp(p,"chordprog",9)   && isspace(p[9]) ) h->abcchordprog = abc_MIDI_getprog(p+9)+1;
-	if( !SDL_strncmp(p,"chordvol",8)    && isspace(p[8]) ) h->abcchordvol = abc_MIDI_getnumber(p+8);
-	if( !SDL_strncmp(p,"drone",5)       && isspace(p[5]) ) abc_MIDI_drone(p+5, &h->dronegm, h->dronepitch, h->dronevol);
-	if( !SDL_strncmp(p,"droneoff",8)    && (p[8]=='\0' || p[8]==delim || isspace(p[8])) ) h->droneon = 0;
-	if( !SDL_strncmp(p,"droneon",7)     && (p[7]=='\0' || p[7]==delim || isspace(p[7])) ) h->droneon = 1;
+	if( !SDL_strncmp(p,"bassprog",8)    && SDL_isspace(p[8]) ) h->abcbassprog = abc_MIDI_getprog(p+8)+1;
+	if( !SDL_strncmp(p,"bassvol",7)     && SDL_isspace(p[7]) ) h->abcbassvol = abc_MIDI_getnumber(p+7);
+	if( !SDL_strncmp(p,"beat",4)        && SDL_isspace(p[4]) ) abc_MIDI_beat(h, p+4);
+	if( !SDL_strncmp(p,"beatstring",10) && SDL_isspace(p[10]) ) abc_MIDI_beatstring(h, p+4);
+	if( !SDL_strncmp(p,"chordname",9)   && SDL_isspace(p[9]) ) abc_MIDI_chordname(p+9);
+	if( !SDL_strncmp(p,"chordprog",9)   && SDL_isspace(p[9]) ) h->abcchordprog = abc_MIDI_getprog(p+9)+1;
+	if( !SDL_strncmp(p,"chordvol",8)    && SDL_isspace(p[8]) ) h->abcchordvol = abc_MIDI_getnumber(p+8);
+	if( !SDL_strncmp(p,"drone",5)       && SDL_isspace(p[5]) ) abc_MIDI_drone(p+5, &h->dronegm, h->dronepitch, h->dronevol);
+	if( !SDL_strncmp(p,"droneoff",8)    && (p[8]=='\0' || p[8]==delim || SDL_isspace(p[8])) ) h->droneon = 0;
+	if( !SDL_strncmp(p,"droneon",7)     && (p[7]=='\0' || p[7]==delim || SDL_isspace(p[7])) ) h->droneon = 1;
 	t = h->drumon;
-	if( !SDL_strncmp(p,"drum",4)        && isspace(p[4]) ) {
+	if( !SDL_strncmp(p,"drum",4)        && SDL_isspace(p[4]) ) {
 		h->drumon = abc_MIDI_drum(p+4, h);
 		if( h->drumon ) --h->drumon;
 		else h->drumon = t;
 	}
-	if( !SDL_strncmp(p,"drumoff",7)     && (p[7]=='\0' || p[7]==delim || isspace(p[7])) ) h->drumon = 0;
-	if( !SDL_strncmp(p,"drumon",6)      && (p[6]=='\0' || p[6]==delim || isspace(p[6])) ) h->drumon = 1;
+	if( !SDL_strncmp(p,"drumoff",7)     && (p[7]=='\0' || p[7]==delim || SDL_isspace(p[7])) ) h->drumon = 0;
+	if( !SDL_strncmp(p,"drumon",6)      && (p[6]=='\0' || p[6]==delim || SDL_isspace(p[6])) ) h->drumon = 1;
 	if( t != h->drumon ) {
 		if( h->drumon && !h->tpr ) h->tpr = h->track;
 		if( h->tpr ) abc_add_drum_sync(h, h->tpr, h->tracktime); // don't start drumming from the beginning of time!
 		if( h->tpr && !h->drumon ) h->tpr = NULL;
 	}
 	t = h->gchordon;
-	if( !SDL_strncmp(p,"gchord",6)      && (p[6]=='\0' || p[6]==delim || isspace(p[6])) ) {
+	if( !SDL_strncmp(p,"gchord",6)      && (p[6]=='\0' || p[6]==delim || SDL_isspace(p[6])) ) {
 		h->gchordon = abc_MIDI_gchord(p+6, h);
 		if( h->gchordon ) --h->gchordon;
 		else h->gchordon = t;
 	}
-	if( !SDL_strncmp(p,"gchordoff",9)   && (p[9]=='\0' || p[9]==delim || isspace(p[9])) ) h->gchordon = 0;
-	if( !SDL_strncmp(p,"gchordon",8)    && (p[8]=='\0' || p[8]==delim || isspace(p[8])) ) h->gchordon = 1;
+	if( !SDL_strncmp(p,"gchordoff",9)   && (p[9]=='\0' || p[9]==delim || SDL_isspace(p[9])) ) h->gchordon = 0;
+	if( !SDL_strncmp(p,"gchordon",8)    && (p[8]=='\0' || p[8]==delim || SDL_isspace(p[8])) ) h->gchordon = 1;
 	if( t != h->gchordon ) {
 		if( h->tpc ) abc_add_gchord_syncs(h, h->tpc, h->tracktime);
 	}
-	if( !SDL_strncmp(p,"channel",7)     && isspace(p[7]) )
+	if( !SDL_strncmp(p,"channel",7)     && SDL_isspace(p[7]) )
 		abc_MIDI_channel(p+8, h->tp = abc_check_track(h, h->tp), h);
-	if( !SDL_strncmp(p,"program",7)     && isspace(p[7]) )
+	if( !SDL_strncmp(p,"program",7)     && SDL_isspace(p[7]) )
 		abc_MIDI_program(p+8, h->tp = abc_check_track(h, h->tp), h);
-	if( !SDL_strncmp(p,"voice",5)       && isspace(p[5]) )
+	if( !SDL_strncmp(p,"voice",5)       && SDL_isspace(p[5]) )
 		abc_MIDI_voice(p+6, h->tp = abc_check_track(h, h->tp), h);
-	if( !SDL_strncmp(p,"legato",6)      && (p[6]=='\0' || p[6]==delim || isspace(p[6])) )
+	if( !SDL_strncmp(p,"legato",6)      && (p[6]=='\0' || p[6]==delim || SDL_isspace(p[6])) )
 		abc_MIDI_legato(p+6, h->tp = abc_check_track(h, h->tp));
 }
 
@@ -3655,13 +3666,13 @@ static char *abc_continuated(ABCHANDLE *h, MMFILE *mmf, char *p) {
 				abc_message("line not properly continued\n%s", p1);
 				return p1;
 			}
-			while( *pm && isspace(*pm) ) ++pm;
+			while( *pm && SDL_isspace(*pm) ) ++pm;
 			if( !SDL_strncmp(pm,"%%",2) ) {
-				for( p2 = pm+2; *p2 && isspace(*p2); p2++ ) ;
-				if( !SDL_strncmp(p2,"MIDI",4) && (p2[4]=='=' || isspace(p2[4])) ) {
-					for( p2+=5; *p2 && isspace(*p2); p2++ ) ;
+				for( p2 = pm+2; *p2 && SDL_isspace(*p2); p2++ ) ;
+				if( !SDL_strncmp(p2,"MIDI",4) && (p2[4]=='=' || SDL_isspace(p2[4])) ) {
+					for( p2+=5; *p2 && SDL_isspace(*p2); p2++ ) ;
 					if( *p2 == '=' )
-						for( p2+=1; *p2 && isspace(*p2); p2++ ) ;
+						for( p2+=1; *p2 && SDL_isspace(*p2); p2++ ) ;
 					abc_MIDI_command(h,p2,'%');
 				}
 				continued = 1;
@@ -3808,7 +3819,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 		abcxcount = 0;
 		mmfseek(mmfile,0,SEEK_SET);
 		while( (line=abc_gets(h, mmfile)) ) {
-			for( p=line; isspace(*p); p++ ) ;
+			for( p=line; SDL_isspace(*p); p++ ) ;
 			if( !SDL_strncmp(p,"X:",2) ) abcxcount++;
 		}
 		if( abcxcount == 0 )
@@ -3821,7 +3832,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 	while( mmsp > 0 ) {
 		mmsp--;
 		while((line=abc_gets(h, mmstack[mmsp]))) {
-			for( p=line; isspace(*p); p++ ) ;
+			for( p=line; SDL_isspace(*p); p++ ) ;
 			switch(abcstate) {
 				case INSKIPFORX:
 					if( !SDL_strncmp(p,"X:",2) ) {
@@ -3837,7 +3848,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 #else
 						SDL_memset(m_szNames[0], 0, 32);
 #endif
-						for( p+=2; isspace(*p); p++ ) ;
+						for( p+=2; SDL_isspace(*p); p++ ) ;
 						abcxnumber = SDL_atoi(p);
 						abchornpipe = 0;
 						h->droneon = 0;
@@ -3906,9 +3917,9 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 					if( !SDL_strncmp(p,"T:",2) ) {
 						char buf[200];
 						if( SDL_strchr(p,'%') ) *SDL_strchr(p,'%') = '\0';
-						for( t=SDL_strlen(p)-1; isspace(p[t]); t-- )
+						for( t=SDL_strlen(p)-1; SDL_isspace(p[t]); t-- )
 							p[t]='\0';
-						for( t=2; isspace(p[t]); t++ ) ;
+						for( t=2; SDL_isspace(p[t]); t++ ) ;
 #ifdef NEWMIKMOD
 						if( of->songname )
 							SDL_strlcpy(buf,of->songname, sizeof (buf));
@@ -3929,8 +3940,8 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 						break;
 					}
 					if( !SDL_strncmp(p,"R:",2) ) {
-						for( p+=2; isspace(*p); p++ ) ;
-						if( !SDL_strncmp(p,"hornpipe",8) && (isspace(p[8]) || p[8]=='\0') ) abchornpipe = 1;
+						for( p+=2; SDL_isspace(*p); p++ ) ;
+						if( !SDL_strncmp(p,"hornpipe",8) && (SDL_isspace(p[8]) || p[8]=='\0') ) abchornpipe = 1;
 						else abchornpipe = 0;
 						break;
 					}
@@ -4064,9 +4075,9 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 					if( !SDL_strncmp(p,"T:",2) ) {
 						char buf[200];
 						if( SDL_strchr(p,'%') ) *SDL_strchr(p,'%') = '\0';
-						for( t=SDL_strlen(p)-1; isspace(p[t]); t-- )
+						for( t=SDL_strlen(p)-1; SDL_isspace(p[t]); t-- )
 							p[t]='\0';
-						for( t=2; isspace(p[t]); t++ ) ;
+						for( t=2; SDL_isspace(p[t]); t++ ) ;
 #ifdef NEWMIKMOD
 						if( of->songname )
 							SDL_strlcpy(buf,of->songname,sizeof (buf));
@@ -4124,9 +4135,9 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 				p[1]= '%';
 			}
 			if( !SDL_strncmp(p,"%%",2) ) {
-				for( p+=2; *p && isspace(*p); p++ ) ;
-				if( !SDL_strncmp(p,"abc-include",11) && isspace(p[11]) ) {
-					for( t=12; isspace(p[t]); t++ ) ;
+				for( p+=2; *p && SDL_isspace(*p); p++ ) ;
+				if( !SDL_strncmp(p,"abc-include",11) && SDL_isspace(p[11]) ) {
+					for( t=12; SDL_isspace(p[t]); t++ ) ;
 					if( p[t] ) {
 						#if 1  // we don't want people opening arbitrary files.
 						abc_message("failure: abc-include unsupported, %s", &p[t]);
@@ -4146,10 +4157,10 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 					}
 					else abc_message("failure: abc-include missing file name, %s", p);
 				}
-				if( !SDL_strncmp(p,"MIDI",4) && (p[4]=='=' || isspace(p[4])) && abcstate != INSKIPFORX ) {
-					for( p+=5; *p && isspace(*p); p++ ) ;
+				if( !SDL_strncmp(p,"MIDI",4) && (p[4]=='=' || SDL_isspace(p[4])) && abcstate != INSKIPFORX ) {
+					for( p+=5; *p && SDL_isspace(*p); p++ ) ;
 					if( *p == '=' )
-						for( p+=1; *p && isspace(*p); p++ ) ;
+						for( p+=1; *p && SDL_isspace(*p); p++ ) ;
 					abc_MIDI_command(h,p,'%');
 					if( h->tp ) abcnolegato = !h->tp->legato;
 					if( !abcnolegato ) abcnoslurs = 0;
@@ -4182,7 +4193,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 							partpat[global_part - 'A'][1] = t;
 						// give every new coming abcevent the desired part indication
 						while( p[2]==' ' || p[2]=='.' ) p++;	// skip blancs and dots
-						if( isupper(p[2]) )
+						if( IsUpper(p[2]) )
 							global_part = p[2];
 						else
 							global_part = ' ';
@@ -4221,7 +4232,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 					ch0 = ' ';
 					pp = 0;
 					while( (ch = *p++) ) {
-						if( !pp && isalpha(ch) && *p != ':' ) { // maybe a macro
+						if( !pp && IsAlpha(ch) && *p != ':' ) { // maybe a macro
 							for( mp=h->umacro; mp; mp=mp->next ) {
 								if( ch == mp->name[0] ) {
 									pp = p;
@@ -4241,7 +4252,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 								abcto = 0;
 								if( *p=='|' ) break; // [| a thick-thin bar line, loop around and let case '|' handle it
 								if( !SDL_strncmp(p,"V:",2) ) {	// inline voice change
-									for( t=2; isspace(p[t]); t++ ) ;
+									for( t=2; SDL_isspace(p[t]); t++ ) ;
 									h->tp = abc_locate_track(h, p+t, 0);
 									for( ; *p && *p != ']'; p++ ) ;
 									abcgrace = 0;
@@ -4279,8 +4290,8 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 										else
 											partpat[global_part - 'A'][1] = t;
 										// give every new coming abcevent the desired part indication
-										while( isspace(p[2]) || p[2]=='.' ) p++;	// skip blancs and dots
-										if( isupper(p[2]) )
+										while( SDL_isspace(p[2]) || p[2]=='.' ) p++;	// skip blancs and dots
+										if( IsUpper(p[2]) )
 											global_part = p[2];
 										else
 											global_part = ' ';
@@ -4300,11 +4311,11 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									break;
 								}
 								if( !SDL_strncmp(p,"I:",2) ) { // interpret some of the possibilitys
-									for( p += 2; isspace(*p); p++ ) ;
-									if( !SDL_strncmp(p,"MIDI",4) && (p[4]=='=' || isspace(p[4])) ) { // interpret some of the possibilitys
-										for( p += 4; isspace(*p); p++ ) ;
+									for( p += 2; SDL_isspace(*p); p++ ) ;
+									if( !SDL_strncmp(p,"MIDI",4) && (p[4]=='=' || SDL_isspace(p[4])) ) { // interpret some of the possibilitys
+										for( p += 4; SDL_isspace(*p); p++ ) ;
 										if( *p == '=' )
-											for( p += 1; isspace(*p); p++ ) ;											
+											for( p += 1; SDL_isspace(*p); p++ ) ;											
 										abc_MIDI_command(h, p, ']');
 										if( h->tp ) abcnolegato = !h->tp->legato;
 										if( !abcnolegato ) abcnoslurs = 0;
@@ -4379,7 +4390,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									notelen *= cnotelen;
 									notediv *= cnotediv;
 									tupletr = abc_tuplet(&notelen, &notediv, tupletp, tupletq, tupletr);
-									while( isspace(*p) ) p++;	// allow spacing in broken rithm notation
+									while( SDL_isspace(*p) ) p++;	// allow spacing in broken rithm notation
 									p += abc_brokenrithm(p, &notelen, &notediv, &brokenrithm, abchornpipe);
 									thistime = notelen_notediv_to_ticks(h->speed, notelen*snotelen, notediv*snotediv);
 									if( abcfermata ) {
@@ -4421,7 +4432,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									if( abceffoper != 255 ) abceffect = none;
 									break;
 								}
-								if( isdigit(*p) ) {	// different endings in repeats [i,j,n-r,s,...
+								if( SDL_isdigit(*p) ) {	// different endings in repeats [i,j,n-r,s,...
 									h->tp = abc_check_track(h, h->tp);
 									abc_add_partbreak(h, h->tp, h->tracktime);
 									p += abc_getnumber(p, &notelen);
@@ -4447,7 +4458,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 								break;
 							case '(':	// slurs follow or some tuplet (duplet, triplet etc.)
 								abcto = 0;
-								if( isdigit(*p) ) {
+								if( SDL_isdigit(*p) ) {
 									p += abc_getnumber(p,&tupletp);
 									tupletr = tupletp;	// ABC draft 2.0 (4.13): if r is not given it defaults to p
 									switch( tupletp ) {	// ABC draft 2.0 (4.13): q defaults depending on p and time signature
@@ -4466,10 +4477,10 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									}
 									if( *p==':' ) {
 										p++;
-										if( isdigit(*p) ) p += abc_getnumber(p,&tupletq);
+										if( SDL_isdigit(*p) ) p += abc_getnumber(p,&tupletq);
 										if( *p==':' ) {
 											p++;
-											if( isdigit(*p) ) p += abc_getnumber(p,&tupletr);
+											if( SDL_isdigit(*p) ) p += abc_getnumber(p,&tupletr);
 										}
 									}
 								}
@@ -4514,7 +4525,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 								SDL_snprintf(barsig, sizeof (barsig), "%s%s", sig[abckey], sig[abckey]);	// reset the key signature
 								bartime = h->tracktime;
 								if( h->tp && h->tp->vpos ) h->tp = abc_locate_track(h, h->tp->v, 0); // reset from voice overlay
-								if( isdigit(*p) ) {	// different endings in repeats |i,j,n-r,s,...
+								if( SDL_isdigit(*p) ) {	// different endings in repeats |i,j,n-r,s,...
 									h->tp = abc_check_track(h, h->tp);
 									abc_add_partbreak(h, h->tp, h->tracktime);
 									p += abc_getnumber(p, &notelen);
@@ -4565,7 +4576,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 								}
 								break;
 							case '"':	// chord notation
-								if( !SDL_strchr("_^<>@", *p) && !isdigit(*p) ) { // if it's not a annotation string
+								if( !SDL_strchr("_^<>@", *p) && !SDL_isdigit(*p) ) { // if it's not a annotation string
 									h->tp = abc_check_track(h, h->tp);
 									if( !h->tpc ) h->tpc = abc_locate_track(h, h->tp->v, 0);
  									if( h->tp == h->tpc ) abc_add_chord(p, h, h->tpc, h->tracktime); // only do chords for one voice
@@ -4582,8 +4593,8 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 										abcto = -1;
 									}
 									else
-										if( !isspace(*p) ) abcto = 0;
-									if( !SDL_strncasecmp(p,"to",2) && (isspace(p[2]) || p[2] == '"') ) abcto = 1;
+										if( !SDL_isspace(*p) ) abcto = 0;
+									if( !SDL_strncasecmp(p,"to",2) && (SDL_isspace(p[2]) || p[2] == '"') ) abcto = 1;
 								}
 								if( !ch ) abcstate = INSKIPFORQUOTE;
 								break;
@@ -4770,7 +4781,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									break;
 								}
 								if( ch == '!' ) {
-									for( t=0; p[t] && SDL_strchr("|[:]!",p[t])==0 && !isspace(p[t]); t++ ) ;
+									for( t=0; p[t] && SDL_strchr("|[:]!",p[t])==0 && !SDL_isspace(p[t]); t++ ) ;
 									if( p[t] == '!' ) {	// volume and other decorations, deprecated
 										h->tp = abc_check_track(h, h->tp);
 										abcvol = abc_parse_decorations(h, h->tp, p);
@@ -4802,7 +4813,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 										h->tp->tienote = h->tp->tail;
 									}
 									tupletr = abc_tuplet(&notelen, &notediv, tupletp, tupletq, tupletr);
-									while( isspace(*p) ) p++;	// allow spacing in broken rithm notation
+									while( SDL_isspace(*p) ) p++;	// allow spacing in broken rithm notation
 									p += abc_brokenrithm(p, &notelen, &notediv, &brokenrithm, abchornpipe);
 									thistime = notelen_notediv_to_ticks(h->speed, notelen*snotelen, notediv*snotediv);
 									if( abcfermata ) {
@@ -4836,7 +4847,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									abc_track_clear_tiednote(h);
 									p += abc_notelen(p, &notelen, &notediv);
 									tupletr = abc_tuplet(&notelen, &notediv, tupletp, tupletq, tupletr);
-									while( isspace(*p) ) p++;	// allow spacing in broken rithm notation
+									while( SDL_isspace(*p) ) p++;	// allow spacing in broken rithm notation
 									p += abc_brokenrithm(p, &notelen, &notediv, &brokenrithm, abchornpipe);
 									thistime = notelen_notediv_to_ticks(h->speed, notelen*snotelen, notediv*snotediv);
 									if( abcfermata ) {
@@ -4889,7 +4900,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 									abcarpeggio = 0;
 									break;
 								}
-								if( isalpha(ch) && *p==':' ) {
+								if( IsAlpha(ch) && *p==':' ) {
 									// some unprocessed field line?
 									while( *p ) p++;	// skip it
 									break; 
