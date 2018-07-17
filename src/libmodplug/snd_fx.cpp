@@ -4,9 +4,8 @@
  * Authors: Olivier Lapicque <olivierl@jps.net>
 */
 
-#include "stdafx.h"
+#include "libmodplug.h"
 #include <stdlib.h>
-#include "sndfile.h"
 #include "tables.h"
 
 #ifdef MSC_VER

@@ -1,5 +1,4 @@
-#include "stdafx.h"
-#include "sndfile.h"
+#include "libmodplug.h"
 
 //#define MT2DEBUG
 

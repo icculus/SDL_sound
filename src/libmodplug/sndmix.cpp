@@ -4,8 +4,7 @@
  * Authors: Olivier Lapicque <olivierl@jps.net>
 */
 
-#include <libmodplug/stdafx.h>
-#include <libmodplug/sndfile.h>
+#include "libmodplug.h"
 #include "tables.h"
 
 #ifdef MODPLUG_TRACKER

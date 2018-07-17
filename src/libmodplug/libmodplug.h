@@ -1,21 +1,142 @@
 /*
  * This source code is public domain.
  *
+ * Authors: Rani Assaf <rani@magic.metawire.com>,
+ *          Olivier Lapicque <olivierl@jps.net>,
+ *          Adam Goode       <adam@evdebs.org> (endian and char fixes for PPC)
+ */
+
+#ifndef _INCL_LIBMODPLUG_H_
+#define _INCL_LIBMODPLUG_H_
+
+#include "SDL.h"
+
+#if (defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__)
+#pragma GCC visibility push(hidden)
+#endif
+
+#ifdef _WIN32
+
+#ifdef MSC_VER
+#pragma warning (disable:4201)
+#pragma warning (disable:4514)
+#endif
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <windowsx.h>
+#include <mmsystem.h>
+#include <stdio.h>
+#include <malloc.h>
+#include <stdint.h>
+
+#define srandom(_seed)  srand(_seed)
+#define random()        rand()
+
+inline void ProcessPlugins(int n) {}
+
+#else
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+typedef Sint8 CHAR;
+typedef Uint8 UCHAR;
+typedef Uint8* PUCHAR;
+typedef Uint16 USHORT;
+typedef Uint32 ULONG;
+typedef Uint32 UINT;
+typedef Uint32 DWORD;
+typedef Sint32 LONG;
+typedef Sint64 LONGLONG;
+typedef Sint32* LPLONG;
+typedef Uint32* LPDWORD;
+typedef Uint16 WORD;
+typedef Uint8 BYTE;
+typedef Uint8* LPBYTE;
+typedef int BOOL;
+typedef char* LPSTR;
+typedef void* LPVOID;
+typedef Uint16* LPWORD;
+typedef const char* LPCSTR;
+typedef void* PVOID;
+typedef void VOID;
+
+inline LONG MulDiv (long a, long b, long c)
+{
+  // if (!c) return 0;
+  return ((uint64_t) a * (uint64_t) b ) / c;
+}
+
+#define MODPLUG_NO_FILESAVE
+#define NO_AGC
+#define LPCTSTR LPCSTR
+#define WAVE_FORMAT_PCM 1
+//#define ENABLE_EQ
+
+#define  GHND   0
+
+#define GlobalAllocPtr(x, size) ((int8_t *) SDL_calloc(1, (size)))
+
+#define ProcessPlugins(n) do {} while (0)
+
+#define GlobalFreePtr(p) SDL_free((void *)(p))
+
+#ifndef FALSE
+#define FALSE	0
+#endif
+
+#ifndef TRUE
+#define TRUE	1
+#endif
+
+#endif // _WIN32
+
+
+typedef struct {
+	char *mm;
+	int sz;
+	int pos;
+	int error;
+} MMFILE;
+
+void mmfclose(MMFILE *mmfile);
+bool mmfeof(MMFILE *mmfile);
+int mmfgetc(MMFILE *mmfile);
+void mmfgets(char buf[], unsigned int bufsz, MMFILE *mmfile);
+long mmftell(MMFILE *mmfile);
+void mmfseek(MMFILE *mmfile, long p, int whence);
+BYTE mmreadUBYTE(MMFILE *mmfile);
+void mmreadUBYTES(BYTE *buf, long sz, MMFILE *mmfile);
+void mmreadSBYTES(char *buf, long sz, MMFILE *mmfile);
+char *rwops_fgets(char *buf, int buflen, SDL_RWops *rwops);
+
+#define MMSTREAM					SDL_RWops
+#define _mm_fopen(name,mode)		SDL_RWFromFile(name, mode)
+#define _mm_fgets(f,buf,sz)			rwops_fgets(buf,sz,f)
+#define _mm_fseek(f,pos,whence)		SDL_RWseek(f,pos,whence)
+#define _mm_ftell(f)				SDL_RWtell(f)
+#define _mm_read_UBYTES(buf,sz,f)	SDL_RWread(f, buf, 1, sz)
+#define _mm_read_SBYTES(buf,sz,f)	SDL_RWread(f, buf, 1, sz)
+#define _mm_feof(f)					(SDL_RWtell(f) < SDL_RWsize(f))
+#define _mm_fclose(f)				SDL_RWclose(f)
+#define DupStr(h,buf,sz)			SDL_strdup(buf)
+#define _mm_calloc(h,n,sz)			SDL_calloc(n,sz)
+#define _mm_recalloc(h,buf,sz,elsz)	SDL_realloc(buf,sz)
+#define _mm_free(h,p)				SDL_free(p)
+
+
+#define MODPLUG_EXPORT
+
+
+
+/*
+ * This source code is public domain.
+ *
  * Authors: Olivier Lapicque <olivierl@jps.net>,
  *          Adam Goode       <adam@evdebs.org> (endian and char fixes for PPC)
 */
-
-#if defined(HAVE_CONFIG_H) && !defined(CONFIG_H_INCLUDED)
-#include "config.h"
-#define CONFIG_H_INCLUDED 1
-#endif
-
-#ifndef __SNDFILE_H
-#define __SNDFILE_H
-
-#ifdef UNDER_CE
-int _strnicmp(const char *str1,const char *str2, int n);
-#endif
 
 #ifndef LPCBYTE
 typedef const BYTE * LPCBYTE;
@@ -602,10 +723,12 @@ public:
 	UINT GetMaxPosition() const;
 	void SetCurrentPos(UINT nPos);
 	void SetCurrentOrder(UINT nOrder);
-	void GetTitle(LPSTR s) const { lstrcpyn(s,m_szNames[0],32); }
+	void GetTitle(LPSTR s) const { SDL_strlcpy(s,m_szNames[0],32); }
 	LPCSTR GetTitle() const { return m_szNames[0]; }
+#if 0  // !!! FIXME: buffer can overflow. Unused anyhow. Remove.
 	UINT GetSampleName(UINT nSample,LPSTR s=NULL) const;
 	UINT GetInstrumentName(UINT nInstr,LPSTR s=NULL) const;
+#endif
 	UINT GetMusicSpeed() const { return m_nMusicSpeed; }
 	UINT GetMusicTempo() const { return m_nMusicTempo; }
 	DWORD GetLength(BOOL bAdjust, BOOL bTotal=FALSE);
@@ -771,7 +894,9 @@ public:
 	void ResetMidiCfg();
 	UINT MapMidiInstrument(DWORD dwProgram, UINT nChannel, UINT nNote);
 	BOOL ITInstrToMPT(const void *p, INSTRUMENTHEADER *penv, UINT trkvers);
+#ifndef MODPLUG_NO_FILESAVE
 	UINT SaveMixPlugins(FILE *f=NULL, BOOL bUpdate=TRUE);
+#endif
 	UINT LoadMixPlugins(const void *pData, UINT nLen);
 #ifndef NO_FILTER
 	DWORD CutOffToFrequency(UINT nCutOff, int flt_modifier=256) const; // [0-255] => [1-10KHz]
@@ -946,72 +1071,140 @@ typedef struct WAVEEXTRAHEADER
 int _muldiv(long a, long b, long c);
 int _muldivr(long a, long b, long c);
 
+#define bswapLE16(X) SDL_SwapLE16((X))
+#define bswapLE32(X) SDL_SwapLE32((X))
+#define bswapBE16(X) SDL_SwapBE16((X))
+#define bswapBE32(X) SDL_SwapBE32((X))
 
-// Byte swapping functions from the GNU C Library and libsdl
+#pragma pack(1)
 
-/* Swap bytes in 16 bit value.  */
-#ifdef __GNUC__
-# define bswap_16(x) \
-    (__extension__							      \
-     ({ unsigned short int __bsx = (x);					      \
-        ((((__bsx) >> 8) & 0xff) | (((__bsx) & 0xff) << 8)); }))
-#else
-static __inline unsigned short int
-bswap_16 (unsigned short int __bsx)
+typedef struct tagITFILEHEADER
 {
-  return ((((__bsx) >> 8) & 0xff) | (((__bsx) & 0xff) << 8));
-}
+	DWORD id;			// 0x4D504D49
+	CHAR songname[26];
+	WORD reserved1;		// 0x1004
+	WORD ordnum;
+	WORD insnum;
+	WORD smpnum;
+	WORD patnum;
+	WORD cwtv;
+	WORD cmwt;
+	WORD flags;
+	WORD special;
+	BYTE globalvol;
+	BYTE mv;
+	BYTE speed;
+	BYTE tempo;
+	BYTE sep;
+	BYTE zero;
+	WORD msglength;
+	DWORD msgoffset;
+	DWORD reserved2;
+	BYTE chnpan[64];
+	BYTE chnvol[64];
+} ITFILEHEADER;
+
+
+typedef struct tagITENVELOPE
+{
+	BYTE flags;
+	BYTE num;
+	BYTE lpb;
+	BYTE lpe;
+	BYTE slb;
+	BYTE sle;
+	BYTE data[25*3];
+	BYTE reserved;
+} ITENVELOPE;
+
+// Old Impulse Instrument Format (cmwt < 0x200)
+typedef struct tagITOLDINSTRUMENT
+{
+	DWORD id;			// IMPI = 0x49504D49
+	CHAR filename[12];	// DOS file name
+	BYTE zero;
+	BYTE flags;
+	BYTE vls;
+	BYTE vle;
+	BYTE sls;
+	BYTE sle;
+	WORD reserved1;
+	WORD fadeout;
+	BYTE nna;
+	BYTE dnc;
+	WORD trkvers;
+	BYTE nos;
+	BYTE reserved2;
+	CHAR name[26];
+	WORD reserved3[3];
+	BYTE keyboard[240];
+	BYTE volenv[200];
+	BYTE nodes[50];
+} ITOLDINSTRUMENT;
+
+
+// Impulse Instrument Format
+typedef struct tagITINSTRUMENT
+{
+	DWORD id;
+	CHAR filename[12];
+	BYTE zero;
+	BYTE nna;
+	BYTE dct;
+	BYTE dca;
+	WORD fadeout;
+	signed char pps;
+	BYTE ppc;
+	BYTE gbv;
+	BYTE dfp;
+	BYTE rv;
+	BYTE rp;
+	WORD trkvers;
+	BYTE nos;
+	BYTE reserved1;
+	CHAR name[26];
+	BYTE ifc;
+	BYTE ifr;
+	BYTE mch;
+	BYTE mpr;
+	WORD mbank;
+	BYTE keyboard[240];
+	ITENVELOPE volenv;
+	ITENVELOPE panenv;
+	ITENVELOPE pitchenv;
+	BYTE dummy[4]; // was 7, but IT v2.17 saves 554 bytes
+} ITINSTRUMENT;
+
+
+// IT Sample Format
+typedef struct ITSAMPLESTRUCT
+{
+	DWORD id;		// 0x53504D49
+	CHAR filename[12];
+	BYTE zero;
+	BYTE gvl;
+	BYTE flags;
+	BYTE vol;
+	CHAR name[26];
+	BYTE cvt;
+	BYTE dfp;
+	DWORD length;
+	DWORD loopbegin;
+	DWORD loopend;
+	DWORD C5Speed;
+	DWORD susloopbegin;
+	DWORD susloopend;
+	DWORD samplepointer;
+	BYTE vis;
+	BYTE vid;
+	BYTE vir;
+	BYTE vit;
+} ITSAMPLESTRUCT;
+
+#pragma pack()
+
+extern BYTE autovibit2xm[8];
+extern BYTE autovibxm2it[8];
+
 #endif
 
-/* Swap bytes in 32 bit value.  */
-#ifdef __GNUC__
-# define bswap_32(x) \
-    (__extension__							      \
-     ({ unsigned int __bsx = (x);					      \
-        ((((__bsx) & 0xff000000) >> 24) | (((__bsx) & 0x00ff0000) >>  8) |    \
-	 (((__bsx) & 0x0000ff00) <<  8) | (((__bsx) & 0x000000ff) << 24)); }))
-#else
-static __inline unsigned int
-bswap_32 (unsigned int __bsx)
-{
-  return ((((__bsx) & 0xff000000) >> 24) | (((__bsx) & 0x00ff0000) >>  8) |
-	  (((__bsx) & 0x0000ff00) <<  8) | (((__bsx) & 0x000000ff) << 24));
-}
-#endif
-
-#if (defined ARM) && (defined _WIN32_WCE)
-static __inline unsigned short int
-ARM_get16(const void *data)
-{
-	unsigned short int s;
-	memcpy(&s,data,sizeof(s));
-	return s;
-}
-
-static __inline unsigned int
-ARM_get32(const void *data)
-{
-	unsigned int s;
-	memcpy(&s,data,sizeof(s));
-	return s;
-}
-
-#define bswapLE16(X) ARM_get16(&X)
-#define bswapLE32(X) ARM_get32(&X)
-#define bswapBE16(X) bswap_16(ARM_get16(&X))
-#define bswapBE32(X) bswap_32(ARM_get32(&X))
-
-// From libsdl
-#elif defined(WORDS_BIGENDIAN) && WORDS_BIGENDIAN
-#define bswapLE16(X) bswap_16(X)
-#define bswapLE32(X) bswap_32(X)
-#define bswapBE16(X) (X)
-#define bswapBE32(X) (X)
-#else
-#define bswapLE16(X) (X)
-#define bswapLE32(X) (X)
-#define bswapBE16(X) bswap_16(X)
-#define bswapBE32(X) bswap_32(X)
-#endif
-
-#endif

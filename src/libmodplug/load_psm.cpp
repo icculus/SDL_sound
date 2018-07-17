@@ -10,8 +10,7 @@
 // PSM module loader
 //
 ///////////////////////////////////////////////////
-#include "stdafx.h"
-#include "sndfile.h"
+#include "libmodplug.h"
 
 //#define PSM_LOG
 

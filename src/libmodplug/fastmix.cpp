@@ -5,8 +5,7 @@
  *          Markus Fick <webmaster@mark-f.de> spline + fir-resampler
 */
 
-#include "stdafx.h"
-#include "sndfile.h"
+#include "libmodplug.h"
 #include <math.h>
 
 #ifdef MSC_VER
