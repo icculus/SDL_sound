@@ -543,7 +543,7 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 	}	
 
 
-	core_audio_file_container->outputFormat = (AudioStreamBasicDescription*)malloc(sizeof(AudioStreamBasicDescription));
+	core_audio_file_container->outputFormat = (AudioStreamBasicDescription*)SDL_malloc(sizeof(AudioStreamBasicDescription));
 	BAIL_IF_MACRO(core_audio_file_container->outputFormat == NULL, ERR_OUT_OF_MEMORY, 0);
 
 

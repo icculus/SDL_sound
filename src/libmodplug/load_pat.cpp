@@ -28,6 +28,15 @@
 	All systems - all compilers (hopefully)
 */
 
+#ifdef NEWMIKMOD
+#include "mikmod.h"
+#include "uniform.h"
+typedef UBYTE BYTE;
+typedef UWORD WORD;
+#else
+#include "libmodplug.h"
+#endif
+
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
@@ -38,15 +47,6 @@
 #endif
 #ifndef PATH_MAX
 #define PATH_MAX 256
-#endif
-
-#ifdef NEWMIKMOD
-#include "mikmod.h"
-#include "uniform.h"
-typedef UBYTE BYTE;
-typedef UWORD WORD;
-#else
-#include "libmodplug.h"
 #endif
 
 #include "load_pat.h"
@@ -152,6 +152,15 @@ static BYTE pat_loops[MAXSMP];
 
 /**************************************************************************
 **************************************************************************/
+
+static SDL_INLINE int IsAlpha(const char c) {
+    return ( ((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) );
+}
+
+static SDL_INLINE int IsBlank(const char c) {
+    return ( (c == ' ') || (c == '\t') );
+}
+
 
 typedef struct _PATHANDLE
 {
@@ -330,7 +339,7 @@ void pat_init_patnames(void)
 			isdrumset = 0;
 			_mm_fgets(mmcfg, line, PATH_MAX);
 			while( !_mm_feof(mmcfg) ) {
-			if( SDL_isdigit(line[0]) || (isblank(line[0]) && SDL_isdigit(line[1])) ) {
+			if( SDL_isdigit(line[0]) || (IsBlank(line[0]) && SDL_isdigit(line[1])) ) {
 				p = line;
 				// get pat number
 				while ( SDL_isspace(*p) ) p ++;
@@ -345,7 +354,7 @@ void pat_init_patnames(void)
 						pfnlen ++;
 						*q++ = *p++;
 					}
-					if( isblank(*p) && *(p+1) != '#' && pfnlen < 128 ) {
+					if( IsBlank(*p) && *(p+1) != '#' && pfnlen < 128 ) {
 						*q++ = ':'; pfnlen ++;
 						while( SDL_isspace(*p) ) {
 							while( SDL_isspace(*p) ) p++;
@@ -857,7 +866,7 @@ static void PAT_ReadPatterns(UNIMOD *of, PATHANDLE *h, int numpat)
 					i = tt2 - 16 * ((h->samples - 1 - ch) & 3);
 					if( tt1 < i ) {
 						t = t % 64;
-						if( isalpha(tune[t]) ) {
+						if( IsAlpha(tune[t]) ) {
 							utrk_settrack(of->ut, ch);
 							n   = pat_modnote(pat_note(tune[t]));
 							ins = ch;
@@ -920,7 +929,7 @@ static void PAT_ReadPatterns(MODCOMMAND *pattern[], WORD psize[], PATHANDLE *h, 
 					i = tt2 - 16 * ((h->samples - 1 - ch) & 3);
 					if( tt1 < i ) {
 						t = t % 64;
-						if( isalpha(tune[t]) ) {
+						if( IsAlpha(tune[t]) ) {
 							n   = pat_modnote(pat_note(tune[t]));
 							ins = ch + 1;
 							vol = 40;
