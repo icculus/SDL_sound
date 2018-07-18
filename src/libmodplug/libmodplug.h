@@ -69,8 +69,6 @@ inline LONG MulDiv (long a, long b, long c)
   return ((uint64_t) a * (uint64_t) b ) / c;
 }
 
-#define MODPLUG_NO_FILESAVE
-#define NO_AGC
 #define LPCTSTR LPCSTR
 #define WAVE_FORMAT_PCM 1
 //#define ENABLE_EQ
@@ -149,11 +147,7 @@ typedef const BYTE * LPCBYTE;
 #define MAX_PATTERNS		240
 #define MAX_SAMPLES			240
 #define MAX_INSTRUMENTS		MAX_SAMPLES
-#ifdef MODPLUG_FASTSOUNDLIB
-#define MAX_CHANNELS		80
-#else
 #define MAX_CHANNELS		128
-#endif
 #define MAX_BASECHANNELS	64
 #define MAX_ENVPOINTS		32
 #define MIN_PERIOD			0x0020
@@ -625,8 +619,6 @@ typedef struct _SNDMIXPLUGIN
 	SNDMIXPLUGININFO Info;
 } SNDMIXPLUGIN, *PSNDMIXPLUGIN;
 
-typedef	BOOL (*PMIXPLUGINCREATEPROC)(PSNDMIXPLUGIN);
-
 ////////////////////////////////////////////////////////////////////
 
 enum {
@@ -668,8 +660,6 @@ public:	// Static Members
 	static LONG m_nStreamVolume;
 	static DWORD gdwSysInfo, gdwSoundSetup, gdwMixingFreq, gnBitsPerSample, gnChannels;
 	static UINT gnAGC, gnVolumeRampSamples, gnVUMeter, gnCPUUsage;
-	static LPSNDMIXHOOKPROC gpSndMixHook;
-	static PMIXPLUGINCREATEPROC gpMixPluginCreateProc;
 
 public:	// for Editing
 	MODCHANNEL Chn[MAX_CHANNELS];					// Channels
@@ -707,28 +697,8 @@ public:
 public:
 	BOOL Create(LPCBYTE lpStream, DWORD dwMemLength=0);
 	BOOL Destroy();
-	UINT GetType() const { return m_nType; }
-	UINT GetNumChannels() const;
-	UINT GetLogicalChannels() const { return m_nChannels; }
-	BOOL SetMasterVolume(UINT vol, BOOL bAdjustAGC=FALSE);
-	UINT GetMasterVolume() const { return m_nMasterVolume; }
-	UINT GetNumPatterns() const;
-	UINT GetNumInstruments() const;
-	UINT GetNumSamples() const { return m_nSamples; }
-	UINT GetCurrentPos() const;
-	UINT GetCurrentPattern() const { return m_nPattern; }
-	UINT GetCurrentOrder() const { return m_nCurrentPattern; }
-	UINT GetSongComments(LPSTR s, UINT cbsize, UINT linesize=32);
-	UINT GetRawSongComments(LPSTR s, UINT cbsize, UINT linesize=32);
 	UINT GetMaxPosition() const;
 	void SetCurrentPos(UINT nPos);
-	void SetCurrentOrder(UINT nOrder);
-	void GetTitle(LPSTR s) const { SDL_strlcpy(s,m_szNames[0],32); }
-	LPCSTR GetTitle() const { return m_szNames[0]; }
-#if 0  // !!! FIXME: buffer can overflow. Unused anyhow. Remove.
-	UINT GetSampleName(UINT nSample,LPSTR s=NULL) const;
-	UINT GetInstrumentName(UINT nInstr,LPSTR s=NULL) const;
-#endif
 	UINT GetMusicSpeed() const { return m_nMusicSpeed; }
 	UINT GetMusicTempo() const { return m_nMusicTempo; }
 	DWORD GetLength(BOOL bAdjust, BOOL bTotal=FALSE);
@@ -736,10 +706,7 @@ public:
 	void SetRepeatCount(int n) { m_nRepeatCount = n; m_nInitialRepeatCount = n; }
 	int GetRepeatCount() const { return m_nRepeatCount; }
 	BOOL IsPaused() const {	return (m_dwSongFlags & SONG_PAUSED) ? TRUE : FALSE; }
-	void LoopPattern(int nPat, int nRow=0);
-	void CheckCPUUsage(UINT nCPU);
 	BOOL SetPatternName(UINT nPat, LPCSTR lpszName);
-	BOOL GetPatternName(UINT nPat, LPSTR lpszName, UINT cbSize=MAX_PATTERNNAME) const;
 	// Module Loaders
 	BOOL ReadXM(LPCBYTE lpStream, DWORD dwMemLength);
 	BOOL ReadS3M(LPCBYTE lpStream, DWORD dwMemLength);
@@ -750,7 +717,6 @@ public:
 	BOOL ReadIT(LPCBYTE lpStream, DWORD dwMemLength);
 	BOOL Read669(LPCBYTE lpStream, DWORD dwMemLength);
 	BOOL ReadUlt(LPCBYTE lpStream, DWORD dwMemLength);
-	BOOL ReadWav(LPCBYTE lpStream, DWORD dwMemLength);
 	BOOL ReadDSM(LPCBYTE lpStream, DWORD dwMemLength);
 	BOOL ReadFAR(LPCBYTE lpStream, DWORD dwMemLength);
 	BOOL ReadAMS(LPCBYTE lpStream, DWORD dwMemLength);
@@ -771,26 +737,12 @@ public:
 	BOOL TestMID(LPCBYTE lpStream, DWORD dwMemLength);
 	BOOL ReadPAT(LPCBYTE lpStream, DWORD dwMemLength);
 	BOOL TestPAT(LPCBYTE lpStream, DWORD dwMemLength);
-	// Save Functions
-#ifndef MODPLUG_NO_FILESAVE
-	UINT WriteSample(FILE *f, MODINSTRUMENT *pins, UINT nFlags, UINT nMaxLen=0);
-	BOOL SaveXM(LPCSTR lpszFileName, UINT nPacking=0);
-	BOOL SaveS3M(LPCSTR lpszFileName, UINT nPacking=0);
-	BOOL SaveMod(LPCSTR lpszFileName, UINT nPacking=0);
-	BOOL SaveIT(LPCSTR lpszFileName, UINT nPacking=0);
-#endif // MODPLUG_NO_FILESAVE
 	// MOD Convert function
-	UINT GetBestSaveFormat() const;
-	UINT GetSaveFormats() const;
 	void ConvertModCommand(MODCOMMAND *) const;
 	void S3MConvert(MODCOMMAND *m, BOOL bIT) const;
-	void S3MSaveConvert(UINT *pcmd, UINT *pprm, BOOL bIT) const;
-	WORD ModSaveCommand(const MODCOMMAND *m, BOOL bXM) const;
 
 public:
 	// Real-time sound functions
-	VOID ResetChannels();
-
 	UINT Read(LPVOID lpBuffer, UINT cbBuffer);
 	UINT CreateStereoMix(int count);
 	BOOL FadeSong(UINT msec);
@@ -809,18 +761,12 @@ public:
 	static DWORD GetBitsPerSample() { return gnBitsPerSample; }
 	static DWORD InitSysInfo();
 	static DWORD GetSysInfo() { return gdwSysInfo; }
-	// AGC
-	static BOOL GetAGC() { return (gdwSoundSetup & SNDMIX_AGC) ? TRUE : FALSE; }
-	static void SetAGC(BOOL b);
-	static void ResetAGC();
-	static void ProcessAGC(int count);
 
 	//GCCFIX -- added these functions back in!
 	static BOOL SetWaveConfigEx(BOOL bSurround,BOOL bNoOverSampling,BOOL bReverb,BOOL hqido,BOOL bMegaBass,BOOL bNR,BOOL bEQ);
 	// DSP Effects
 	static void InitializeDSP(BOOL bReset);
 	static void ProcessStereoDSP(int count);
-	static void ProcessMonoDSP(int count);
 	// [Reverb level 0(quiet)-100(loud)], [delay in ms, usually 40-200ms]
 	static BOOL SetReverbParameters(UINT nDepth, UINT nDelay);
 	// [XBass level 0(quiet)-100(loud)], [cutoff in Hz 10-100]
@@ -871,8 +817,6 @@ public:
 	BOOL IsValidBackwardJump(UINT nStartOrder, UINT nStartRow, UINT nJumpOrder, UINT nJumpRow) const;
 	// Read/Write sample functions
 	signed char GetDeltaValue(signed char prev, UINT n) const { return (signed char)(prev + CompressionTable[n & 0x0F]); }
-	UINT PackSample(int &sample, int next);
-	BOOL CanPackSample(LPSTR pSample, UINT nLen, UINT nPacking, BYTE *result=NULL);
 	UINT ReadSample(MODINSTRUMENT *pIns, UINT nFlags, LPCSTR pMemFile, DWORD dwMemLength);
 	BOOL DestroySample(UINT nSample);
 	BOOL DestroyInstrument(UINT nInstr);
@@ -880,7 +824,6 @@ public:
 	BOOL IsInstrumentUsed(UINT nInstr);
 	BOOL RemoveInstrumentSamples(UINT nInstr);
 	UINT DetectUnusedSamples(BOOL *);
-	BOOL RemoveSelectedSamples(BOOL *);
 	void AdjustSampleLoop(MODINSTRUMENT *pIns);
 	// I/O from another sound file
 	BOOL ReadInstrumentFromSong(UINT nInstr, CSoundFile *, UINT nSrcInstrument);
@@ -894,9 +837,6 @@ public:
 	void ResetMidiCfg();
 	UINT MapMidiInstrument(DWORD dwProgram, UINT nChannel, UINT nNote);
 	BOOL ITInstrToMPT(const void *p, INSTRUMENTHEADER *penv, UINT trkvers);
-#ifndef MODPLUG_NO_FILESAVE
-	UINT SaveMixPlugins(FILE *f=NULL, BOOL bUpdate=TRUE);
-#endif
 	UINT LoadMixPlugins(const void *pData, UINT nLen);
 #ifndef NO_FILTER
 	DWORD CutOffToFrequency(UINT nCutOff, int flt_modifier=256) const; // [0-255] => [1-10KHz]

@@ -15,10 +15,6 @@
 ///////////////////////////////////////////////////
 #include "libmodplug.h"
 
-//#define AMFLOG
-
-//#pragma warning(disable:4244)
-
 #pragma pack(1)
 
 typedef struct _AMFFILEHEADER
@@ -46,10 +42,6 @@ typedef struct _AMFSAMPLE
 
 #pragma pack()
 
-
-#ifdef AMFLOG
-extern void Log(LPCSTR, ...);
-#endif
 
 VOID AMF_Unpack(MODCOMMAND *pPat, const BYTE *pTrack, UINT nRows, UINT nChannels)
 //-------------------------------------------------------------------------------
@@ -234,9 +226,6 @@ BOOL CSoundFile::ReadAMF(LPCBYTE lpStream, const DWORD dwMemLength)
 				p->param = pin[3];
 				if (p->command > 0x0F)
 				{
-				#ifdef AMFLOG
-					Log("0x%02X.0x%02X ?", p->command, p->param);
-				#endif
 					p->command = 0;
 				}
 				ConvertModCommand(p);

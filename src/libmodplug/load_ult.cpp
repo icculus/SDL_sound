@@ -6,8 +6,6 @@
 
 #include "libmodplug.h"
 
-//#pragma warning(disable:4244)
-
 #define ULT_16BIT   0x04
 #define ULT_LOOP    0x08
 #define ULT_BIDI    0x10

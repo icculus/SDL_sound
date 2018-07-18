@@ -6,8 +6,6 @@
 
 #include "libmodplug.h"
 
-//#pragma warning(disable:4244)
-
 #pragma pack(1)
 
 typedef struct tagSTMNOTE

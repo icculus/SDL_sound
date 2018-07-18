@@ -6,21 +6,10 @@
 
 #include "libmodplug.h"
 
-#ifdef MODPLUG_FASTSOUNDLIB
-#define MODPLUG_NO_REVERB
-#endif
-
-
 // Delayed Surround Filters
-#ifndef MODPLUG_FASTSOUNDLIB
 #define nDolbyHiFltAttn		6
 #define nDolbyHiFltMask		3
 #define DOLBYATTNROUNDUP	31
-#else
-#define nDolbyHiFltAttn		3
-#define nDolbyHiFltMask		3
-#define DOLBYATTNROUNDUP	3
-#endif
 
 // Bass Expansion
 #define XBASS_DELAY			14	// 2.5 ms
@@ -253,9 +242,7 @@ void CSoundFile::ProcessStereoDSP(int count)
 		for (int r=count; r; r--)
 		{
 			int v = (pr[0]+pr[1]+DOLBYATTNROUNDUP) >> (nDolbyHiFltAttn+1);
-#ifndef MODPLUG_FASTSOUNDLIB
 			v *= (int)nDolbyDepth;
-#endif
 			// Low-Pass Filter
 			nDolbyHiFltSum -= DolbyHiFilterBuffer[nDolbyHiFltPos];
 			DolbyHiFilterBuffer[nDolbyHiFltPos] = v;
@@ -329,92 +316,6 @@ void CSoundFile::ProcessStereoDSP(int count)
 		}
 		nLeftNR = n1;
 		nRightNR = n2;
-	}
-}
-
-
-void CSoundFile::ProcessMonoDSP(int count)
-//----------------------------------------
-{
-#ifndef MODPLUG_NO_REVERB
-	// Reverb
-	if (gdwSoundSetup & SNDMIX_REVERB)
-	{
-		int *pr = MixSoundBuffer, rvbcount = count, *pin = MixReverbBuffer;
-		do
-		{
-			int echo = ReverbBuffer[nReverbBufferPos] + ReverbBuffer2[nReverbBufferPos2]
-					+ ReverbBuffer3[nReverbBufferPos3] + ReverbBuffer4[nReverbBufferPos4];	// echo = reverb signal
-			// Delay line and remove Low Frequencies			// v = original signal
-			int echodly = ReverbLoFilterDelay[nReverbLoDlyPos];	// echodly = delayed signal
-			ReverbLoFilterDelay[nReverbLoDlyPos] = echo >> 1;
-			nReverbLoDlyPos++;
-			nReverbLoDlyPos &= 0x1F;
-			int n = nReverbLoFltPos;
-			nReverbLoFltSum -= ReverbLoFilterBuffer[n];
-			int tmp = echo / 128;
-			ReverbLoFilterBuffer[n] = tmp;
-			nReverbLoFltSum += tmp;
-			echodly -= nReverbLoFltSum;
-			nReverbLoFltPos = (n + 1) & 0x3F;
-			// Reverb
-			int v = pin[0] >> (nFilterAttn-1);
-			*pr++ += pin[0] + echodly;
-			pin++;
-			v += echodly >> 2;
-			ReverbBuffer3[nReverbBufferPos3] = v;
-			ReverbBuffer4[nReverbBufferPos4] = v;
-			v += echodly >> 4;
-			v >>= 1;
-			gRvbLPSum -= gRvbLowPass[gRvbLPPos];
-			gRvbLPSum += v;
-			gRvbLowPass[gRvbLPPos] = v;
-			gRvbLPPos++;
-			gRvbLPPos &= 7;
-			int vlp = gRvbLPSum >> 2;
-			ReverbBuffer[nReverbBufferPos] = vlp;
-			ReverbBuffer2[nReverbBufferPos2] = vlp;
-			if (++nReverbBufferPos >= nReverbSize) nReverbBufferPos = 0;
-			if (++nReverbBufferPos2 >= nReverbSize2) nReverbBufferPos2 = 0;
-			if (++nReverbBufferPos3 >= nReverbSize3) nReverbBufferPos3 = 0;
-			if (++nReverbBufferPos4 >= nReverbSize4) nReverbBufferPos4 = 0;
-		} while (--rvbcount);
-	}
-#endif
-	// Bass Expansion
-	if (gdwSoundSetup & SNDMIX_MEGABASS)
-	{
-		int *px = MixSoundBuffer;
-		int xba = m_nXBassDepth, xbamask = (1 << xba)-1;
-		int n = nXBassBufferPos;
-		for (int x=count; x; x--)
-		{
-			nXBassSum -= XBassBuffer[n];
-			int tmp0 = *px;
-			int tmp = (tmp0 + ((tmp0 >> 31) & xbamask)) >> xba;
-			XBassBuffer[n] = tmp;
-			nXBassSum += tmp;
-			int v = XBassDelay[nXBassDlyPos];
-			XBassDelay[nXBassDlyPos] = *px;
-			*px++ = v + nXBassSum;
-			nXBassDlyPos = (nXBassDlyPos + 2) & nXBassMask;
-			n++;
-			n &= nXBassMask;
-		}
-		nXBassBufferPos = n;
-	}
-	// Noise Reduction
-	if (gdwSoundSetup & SNDMIX_NOISEREDUCTION)
-	{
-		int n = nLeftNR;
-		int *pnr = MixSoundBuffer;
-		for (int nr=count; nr; pnr++, nr--)
-		{
-			int vnr = *pnr >> 1;
-			*pnr = vnr + n;
-			n = vnr;
-		}
-		nLeftNR = n;
 	}
 }
 

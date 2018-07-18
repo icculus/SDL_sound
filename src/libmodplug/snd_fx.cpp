@@ -1204,7 +1204,6 @@ BOOL CSoundFile::ProcessEffects()
 			if (nPosJump < 0) nPosJump = m_nCurrentPattern+1;
 			if (nBreakRow < 0) nBreakRow = 0;
 			// Modplug Tracker & ModPlugin allow backward jumps
-		#ifndef MODPLUG_FASTSOUNDLIB
 			if ((nPosJump < (int)m_nCurrentPattern)
 			 || ((nPosJump == (int)m_nCurrentPattern) && (nBreakRow <= (int)m_nRow)))
 			{
@@ -1226,7 +1225,6 @@ BOOL CSoundFile::ProcessEffects()
 					}
 				}
 			}
-		#endif	// MODPLUG_FASTSOUNDLIB
 			if (((!bNoLoop) && (nPosJump < MAX_ORDERS))
 			 && ((nPosJump != (int)m_nCurrentPattern) || (nBreakRow != (int)m_nRow)))
 			{
@@ -2065,7 +2063,6 @@ void CSoundFile::SetSpeed(UINT param)
 	UINT max = (m_nType == MOD_TYPE_IT) ? 256 : 128;
 	// Modplug Tracker and Mod-Plugin don't do this check
 #ifndef MODPLUG_TRACKER
-#ifndef MODPLUG_FASTSOUNDLIB
 	// Big Hack!!!
 	if ((!param) || (param >= 0x80) || ((m_nType & (MOD_TYPE_MOD|MOD_TYPE_XM|MOD_TYPE_MT2)) && (param >= 0x1E)))
 	{
@@ -2074,7 +2071,6 @@ void CSoundFile::SetSpeed(UINT param)
 			GlobalFadeSong(1000);
 		}
 	}
-#endif // MODPLUG_FASTSOUNDLIB
 #endif // MODPLUG_TRACKER
 	if ((m_nType & MOD_TYPE_S3M) && (param > 0x80)) param -= 0x80;
 	if ((param) && (param <= max)) m_nMusicSpeed = param;

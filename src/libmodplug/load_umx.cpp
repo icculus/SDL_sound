@@ -8,7 +8,6 @@
 
 #define MODMAGIC_OFFSET	(20+31*30+130)
 
-
 BOOL CSoundFile::ReadUMX(const BYTE *lpStream, DWORD dwMemLength)
 //---------------------------------------------------------------
 {

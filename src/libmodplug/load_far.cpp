@@ -9,8 +9,6 @@
 ////////////////////////////////////////
 #include "libmodplug.h"
 
-//#pragma warning(disable:4244)
-
 #define FARFILEMAGIC	0xFE524146	// "FAR"
 
 #pragma pack(1)

@@ -16,18 +16,6 @@ extern "C" {
 struct _ModPlugFile;
 typedef struct _ModPlugFile ModPlugFile;
 
-struct _ModPlugNote {
-	unsigned char Note;
-	unsigned char Instrument;
-	unsigned char VolumeEffect;
-	unsigned char Effect;
-	unsigned char Volume;
-	unsigned char Parameter;
-};
-typedef struct _ModPlugNote ModPlugNote;
-
-typedef void (*ModPlugMixerProc)(int*, unsigned long, unsigned long);
-
 /* Load a mod file.  [data] should point to a block of memory containing the complete
  * file, and [size] should be the size of that block.
  * Return the loaded mod file on success, or NULL on failure. */
@@ -38,10 +26,6 @@ MODPLUG_EXPORT void ModPlug_Unload(ModPlugFile* file);
 /* Read sample data into the buffer.  Returns the number of bytes read.  If the end
  * of the mod has been reached, zero is returned. */
 MODPLUG_EXPORT int  ModPlug_Read(ModPlugFile* file, void* buffer, int size);
-
-/* Get the name of the mod.  The returned buffer is stored within the ModPlugFile
- * structure and will remain valid until you unload the file. */
-MODPLUG_EXPORT const char* ModPlug_GetName(ModPlugFile* file);
 
 /* Get the length of the mod, in milliseconds.  Note that this result is not always
  * accurate, especially in the case of mods with loops. */
@@ -99,74 +83,7 @@ typedef struct _ModPlug_Settings
 /* Get and set the mod decoder settings.  All options, except for channels, bits-per-sample,
  * sampling rate, and loop count, will take effect immediately.  Those options which don't
  * take effect immediately will take effect the next time you load a mod. */
-MODPLUG_EXPORT void ModPlug_GetSettings(ModPlug_Settings* settings);
 MODPLUG_EXPORT void ModPlug_SetSettings(const ModPlug_Settings* settings);
-
-/* New ModPlug API Functions */
-/* NOTE: Master Volume (1-512) */
-MODPLUG_EXPORT unsigned int ModPlug_GetMasterVolume(ModPlugFile* file) ;
-MODPLUG_EXPORT void ModPlug_SetMasterVolume(ModPlugFile* file,unsigned int cvol) ;
-
-MODPLUG_EXPORT int ModPlug_GetCurrentSpeed(ModPlugFile* file);
-MODPLUG_EXPORT int ModPlug_GetCurrentTempo(ModPlugFile* file);
-MODPLUG_EXPORT int ModPlug_GetCurrentOrder(ModPlugFile* file);
-MODPLUG_EXPORT int ModPlug_GetCurrentPattern(ModPlugFile* file);
-MODPLUG_EXPORT int ModPlug_GetCurrentRow(ModPlugFile* file);
-MODPLUG_EXPORT int ModPlug_GetPlayingChannels(ModPlugFile* file);
-
-MODPLUG_EXPORT void ModPlug_SeekOrder(ModPlugFile* file,int order);
-MODPLUG_EXPORT int ModPlug_GetModuleType(ModPlugFile* file);
-MODPLUG_EXPORT char* ModPlug_GetMessage(ModPlugFile* file);
-
-
-#ifndef MODPLUG_NO_FILESAVE
-/*
- * EXPERIMENTAL Export Functions
- */
-/*Export to a Scream Tracker 3 S3M module. EXPERIMENTAL (only works on Little-Endian platforms)*/
-MODPLUG_EXPORT char ModPlug_ExportS3M(ModPlugFile* file, const char* filepath);
-
-/*Export to a Extended Module (XM). EXPERIMENTAL (only works on Little-Endian platforms)*/
-MODPLUG_EXPORT char ModPlug_ExportXM(ModPlugFile* file, const char* filepath);
-
-/*Export to a Amiga MOD file. EXPERIMENTAL.*/
-MODPLUG_EXPORT char ModPlug_ExportMOD(ModPlugFile* file, const char* filepath);
-
-/*Export to a Impulse Tracker IT file. Should work OK in Little-Endian & Big-Endian platforms :-) */
-MODPLUG_EXPORT char ModPlug_ExportIT(ModPlugFile* file, const char* filepath);
-#endif // MODPLUG_NO_FILESAVE
-
-MODPLUG_EXPORT unsigned int ModPlug_NumInstruments(ModPlugFile* file);
-MODPLUG_EXPORT unsigned int ModPlug_NumSamples(ModPlugFile* file);
-MODPLUG_EXPORT unsigned int ModPlug_NumPatterns(ModPlugFile* file);
-MODPLUG_EXPORT unsigned int ModPlug_NumChannels(ModPlugFile* file);
-#if 0  // !!! FIXME: buffer can overflow. Unused anyhow. Remove.
-MODPLUG_EXPORT unsigned int ModPlug_SampleName(ModPlugFile* file, unsigned int qual, char* buff);
-MODPLUG_EXPORT unsigned int ModPlug_InstrumentName(ModPlugFile* file, unsigned int qual, char* buff);
-#endif
-
-/*
- * Retrieve pattern note-data
- */
-MODPLUG_EXPORT ModPlugNote* ModPlug_GetPattern(ModPlugFile* file, int pattern, unsigned int* numrows);
-
-/*
- * =================
- * Mixer callback
- * =================
- *
- * Use this callback if you want to 'modify' the mixed data of LibModPlug.
- * 
- * void proc(int* buffer,unsigned long channels,unsigned long nsamples) ;
- *
- * 'buffer': A buffer of mixed samples
- * 'channels': N. of channels in the buffer
- * 'nsamples': N. of samples in the buffeer (without taking care of n.channels)
- *
- * (Samples are signed 32-bit integers)
- */
-MODPLUG_EXPORT void ModPlug_InitMixerCallback(ModPlugFile* file,ModPlugMixerProc proc) ;
-MODPLUG_EXPORT void ModPlug_UnloadMixerCallback(ModPlugFile* file) ;
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -239,9 +239,6 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
         SDL_UnlockMutex(modplug_mutex);
 
     internal->total_time = ModPlug_GetLength(module);
-    SNDDBG(("MODPLUG: [%d ms] %s\n",
-            ModPlug_GetLength(module), ModPlug_GetName(module)));
-
     internal->decoder_private = (void *) module;
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
 

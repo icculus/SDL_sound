@@ -6,8 +6,6 @@
 
 #include "libmodplug.h"
 
-//#pragma warning(disable:4244)
-
 //////////////////////////////////////////////////////////
 // MTM file support (import only)
 

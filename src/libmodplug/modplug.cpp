@@ -107,147 +107,9 @@ int ModPlug_Read(ModPlugFile* file, void* buffer, int size)
 	return file->mSoundFile.Read(buffer, size) * ModPlug::gSampleSize;
 }
 
-const char* ModPlug_GetName(ModPlugFile* file)
-{
-	return file->mSoundFile.GetTitle();
-}
-
 int ModPlug_GetLength(ModPlugFile* file)
 {
 	return file->mSoundFile.GetSongTime() * 1000;
-}
-
-void ModPlug_InitMixerCallback(ModPlugFile* file,ModPlugMixerProc proc)
-{
-	file->mSoundFile.gpSndMixHook = (LPSNDMIXHOOKPROC)proc ;
-	return;
-}
-
-void ModPlug_UnloadMixerCallback(ModPlugFile* file)
-{
-	file->mSoundFile.gpSndMixHook = NULL;
-	return ;
-}
-
-unsigned int ModPlug_GetMasterVolume(ModPlugFile* file)
-{
-	return (unsigned int)file->mSoundFile.m_nMasterVolume;
-}
-
-void ModPlug_SetMasterVolume(ModPlugFile* file,unsigned int cvol)
-{
-	(void)file->mSoundFile.SetMasterVolume( (UINT)cvol,
-						FALSE );
-	return ;
-}
-
-int ModPlug_GetCurrentSpeed(ModPlugFile* file)
-{
-	return file->mSoundFile.m_nMusicSpeed;
-}
-
-int ModPlug_GetCurrentTempo(ModPlugFile* file)
-{
-	return file->mSoundFile.m_nMusicTempo;
-}
-
-int ModPlug_GetCurrentOrder(ModPlugFile* file)
-{
-	return file->mSoundFile.GetCurrentOrder();
-}
-
-int ModPlug_GetCurrentPattern(ModPlugFile* file)
-{
-	return file->mSoundFile.GetCurrentPattern();
-}
-
-int ModPlug_GetCurrentRow(ModPlugFile* file)
-{
-	return file->mSoundFile.m_nRow;
-}
-
-int ModPlug_GetPlayingChannels(ModPlugFile* file)
-{
-	return ( file->mSoundFile.m_nMixChannels < file->mSoundFile.m_nMaxMixChannels ? file->mSoundFile.m_nMixChannels : file->mSoundFile.m_nMaxMixChannels );
-}
-
-void ModPlug_SeekOrder(ModPlugFile* file,int order)
-{
-	file->mSoundFile.SetCurrentOrder(order);
-}
-
-int ModPlug_GetModuleType(ModPlugFile* file)
-{
-	return file->mSoundFile.m_nType;
-}
-
-char* ModPlug_GetMessage(ModPlugFile* file)
-{
-	return file->mSoundFile.m_lpszSongComments;
-}
-
-#ifndef MODPLUG_NO_FILESAVE
-char ModPlug_ExportS3M(ModPlugFile* file,const char* filepath)
-{
-	return (char)file->mSoundFile.SaveS3M(filepath,0);
-}
-
-char ModPlug_ExportXM(ModPlugFile* file,const char* filepath)
-{
-	return (char)file->mSoundFile.SaveXM(filepath,0);
-}
-
-char ModPlug_ExportMOD(ModPlugFile* file,const char* filepath)
-{
-	return (char)file->mSoundFile.SaveMod(filepath,0);
-}
-
-char ModPlug_ExportIT(ModPlugFile* file,const char* filepath)
-{
-	return (char)file->mSoundFile.SaveIT(filepath,0);
-}
-#endif // MODPLUG_NO_FILESAVE
-
-unsigned int ModPlug_NumInstruments(ModPlugFile* file)
-{
-	return file->mSoundFile.m_nInstruments;
-}
-
-unsigned int ModPlug_NumSamples(ModPlugFile* file)
-{
-	return file->mSoundFile.m_nSamples;
-}
-
-unsigned int ModPlug_NumPatterns(ModPlugFile* file)
-{
-	return file->mSoundFile.GetNumPatterns();
-}
-
-unsigned int ModPlug_NumChannels(ModPlugFile* file)
-{
-	return file->mSoundFile.GetNumChannels();
-}
-
-#if 0  // !!! FIXME: buffer can overflow. Unused anyhow. Remove.
-unsigned int ModPlug_SampleName(ModPlugFile* file,unsigned int qual,char* buff)
-{
-	return file->mSoundFile.GetSampleName(qual,buff);
-}
-
-unsigned int ModPlug_InstrumentName(ModPlugFile* file,unsigned int qual,char* buff)
-{
-	return file->mSoundFile.GetInstrumentName(qual,buff);
-}
-#endif
-
-ModPlugNote* ModPlug_GetPattern(ModPlugFile* file,int pattern,unsigned int* numrows) {
-	if ( pattern<MAX_PATTERNS && pattern >= 0) {
-		if (file->mSoundFile.Patterns[pattern]) {
-			if (numrows) *numrows=(unsigned int)file->mSoundFile.PatternSize[pattern];
-			return (ModPlugNote*)file->mSoundFile.Patterns[pattern];
-		}
-	}
-	return NULL;
 }
 
 void ModPlug_Seek(ModPlugFile* file, int millisecond)
@@ -264,11 +126,6 @@ void ModPlug_Seek(ModPlugFile* file, int millisecond)
 		postime = (float)maxpos / (float)maxtime;
 
 	file->mSoundFile.SetCurrentPos((int)(millisecond * postime));
-}
-
-void ModPlug_GetSettings(ModPlug_Settings* settings)
-{
-	SDL_memcpy(settings, &ModPlug::gSettings, sizeof(ModPlug_Settings));
 }
 
 void ModPlug_SetSettings(const ModPlug_Settings* settings)
