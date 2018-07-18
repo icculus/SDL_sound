@@ -87,7 +87,6 @@ if(SDLSOUND_DECODER_MODPLUG)
         src/libmodplug/load_stm.cpp
         src/libmodplug/load_ult.cpp
         src/libmodplug/load_umx.cpp
-        src/libmodplug/load_wav.cpp
         src/libmodplug/load_xm.cpp
         src/libmodplug/mmcmp.cpp
         src/libmodplug/modplug.cpp

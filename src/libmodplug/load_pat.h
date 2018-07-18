@@ -16,9 +16,7 @@ int pat_gm_drumnote(int n);
 const char *pat_gm_name(int gm);
 int pat_modnote(int midinote);
 int pat_smplooped(int smp);
-//#ifdef NEWMIKMOD
 BOOL PAT_Load_Instruments(void *c);
-//#endif
 
 #ifdef __cplusplus
 }

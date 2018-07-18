@@ -32,8 +32,6 @@ UINT CSoundFile::gnAGC = AGC_UNITY;
 UINT CSoundFile::gnVolumeRampSamples = 64;
 UINT CSoundFile::gnVUMeter = 0;
 UINT CSoundFile::gnCPUUsage = 0;
-LPSNDMIXHOOKPROC CSoundFile::gpSndMixHook = NULL;
-PMIXPLUGINCREATEPROC CSoundFile::gpMixPluginCreateProc = NULL;
 LONG gnDryROfsVol = 0;
 LONG gnDryLOfsVol = 0;
 LONG gnRvbROfsVol = 0;
@@ -79,98 +77,14 @@ const UINT PreAmpAGCTable[16] =
 // Return (a*b)/c - no divide error
 int _muldiv(long a, long b, long c)
 {
-#ifdef MSC_VER
-	int sign, result;
-	_asm {
-	mov eax, a
-	mov ebx, b
-	or eax, eax
-	mov edx, eax
-	jge aneg
-	neg eax
-aneg:
-	xor edx, ebx
-	or ebx, ebx
-	mov ecx, c
-	jge bneg
-	neg ebx
-bneg:
-	xor edx, ecx
-	or ecx, ecx
-	mov sign, edx
-	jge cneg
-	neg ecx
-cneg:
-	mul ebx
-	cmp edx, ecx
-	jae diverr
-	div ecx
-	jmp ok
-diverr:
-	mov eax, 0x7fffffff
-ok:
-	mov edx, sign
-	or edx, edx
-	jge rneg
-	neg eax
-rneg:
-	mov result, eax
-	}
-	return result;
-#else
 	return ((uint64_t) a * (uint64_t) b ) / c;
-#endif
 }
 
 
 // Return (a*b+c/2)/c - no divide error
 int _muldivr(long a, long b, long c)
 {
-#ifdef MSC_VER
-	int sign, result;
-	_asm {
-	mov eax, a
-	mov ebx, b
-	or eax, eax
-	mov edx, eax
-	jge aneg
-	neg eax
-aneg:
-	xor edx, ebx
-	or ebx, ebx
-	mov ecx, c
-	jge bneg
-	neg ebx
-bneg:
-	xor edx, ecx
-	or ecx, ecx
-	mov sign, edx
-	jge cneg
-	neg ecx
-cneg:
-	mul ebx
-	mov ebx, ecx
-	shr ebx, 1
-	add eax, ebx
-	adc edx, 0
-	cmp edx, ecx
-	jae diverr
-	div ecx
-	jmp ok
-diverr:
-	mov eax, 0x7fffffff
-ok:
-	mov edx, sign
-	or edx, edx
-	jge rneg
-	neg eax
-rneg:
-	mov result, eax
-	}
-	return result;
-#else
 	return ((uint64_t) a * (uint64_t) b + (c >> 1)) / c;
-#endif
 }
 
 
@@ -248,10 +162,8 @@ UINT CSoundFile::Read(LPVOID lpDestBuffer, UINT cbBuffer)
 	m_nMixStat = 0;
 	lSampleSize = gnChannels;
 	if (gnBitsPerSample == 16) { lSampleSize *= 2; pCvt = X86_Convert32To16; }
-#ifndef MODPLUG_FASTSOUNDLIB
 	else if (gnBitsPerSample == 24) { lSampleSize *= 3; pCvt = X86_Convert32To24; }
 	else if (gnBitsPerSample == 32) { lSampleSize *= 4; pCvt = X86_Convert32To32; }
-#endif
 	lMax = cbBuffer / lSampleSize;
 	if ((!lMax) || (!lpBuffer) || (!m_nChannels)) return 0;
 	lRead = lMax;
@@ -261,18 +173,14 @@ UINT CSoundFile::Read(LPVOID lpDestBuffer, UINT cbBuffer)
 		// Update Channel Data
 		if (!m_nBufferCount)
 		{
-#ifndef MODPLUG_FASTSOUNDLIB
 			if (m_dwSongFlags & SONG_FADINGSONG)
 			{
 				m_dwSongFlags |= SONG_ENDREACHED;
 				m_nBufferCount = lRead;
 			} else
-#endif
 			if (!ReadNote())
 			{
-#ifndef MODPLUG_FASTSOUNDLIB
 				if (!FadeSong(FADESONGDELAY))
-#endif
 				{
 					m_dwSongFlags |= SONG_ENDREACHED;
 					if (lRead == lMax) goto MixDone;
@@ -303,24 +211,13 @@ UINT CSoundFile::Read(LPVOID lpDestBuffer, UINT cbBuffer)
 			X86_MonoFromStereo(MixSoundBuffer, lCount);
 		}
 		nStat++;
-#ifndef NO_AGC
-		// Automatic Gain Control
-		if (gdwSoundSetup & SNDMIX_AGC) ProcessAGC(lSampleCount);
-#endif
 		UINT lTotalSampleCount = lSampleCount;
-#ifndef MODPLUG_FASTSOUNDLIB
 		// Multichannel
 		if (gnChannels > 2)
 		{
 			X86_InterleaveFrontRear(MixSoundBuffer, MixRearBuffer, lSampleCount);
 			lTotalSampleCount *= 2;
 		}
-		// Hook Function
-		if (gpSndMixHook)
-		{
-			gpSndMixHook(MixSoundBuffer, lTotalSampleCount, gnChannels);
-		}
-#endif
 		// Perform clipping + VU-Meter
 		lpBuffer += pCvt(lpBuffer, MixSoundBuffer, lTotalSampleCount, &nVUMeterMin, &nVUMeterMax);
 		// Buffer ready
@@ -1095,9 +992,7 @@ BOOL CSoundFile::ReadNote()
 
 				if (pan < 0) pan = 0;
 				if (pan > 256) pan = 256;
-#ifndef MODPLUG_FASTSOUNDLIB
 				if (gdwSoundSetup & SNDMIX_REVERSESTEREO) pan = 256 - pan;
-#endif
 				LONG realvol = (pChn->nRealVolume * kChnMasterVol) >> (8-1);
 				if (gdwSoundSetup & SNDMIX_SOFTPANNING)
 				{
@@ -1154,7 +1049,6 @@ BOOL CSoundFile::ReadNote()
 				LONG nRampLength = gnVolumeRampSamples;
 				LONG nRightDelta = ((pChn->nNewRightVol - pChn->nRightVol) << VOLUMERAMPPRECISION);
 				LONG nLeftDelta = ((pChn->nNewLeftVol - pChn->nLeftVol) << VOLUMERAMPPRECISION);
-#ifndef MODPLUG_FASTSOUNDLIB
 				if ((gdwSoundSetup & SNDMIX_DIRECTTODISK)
 				 || ((gdwSysInfo & (SYSMIX_ENABLEMMX|SYSMIX_FASTCPU))
 				  && (gdwSoundSetup & SNDMIX_HQRESAMPLER) && (gnCPUUsage <= 20)))
@@ -1166,7 +1060,6 @@ BOOL CSoundFile::ReadNote()
 						if (nRampLength < (LONG)gnVolumeRampSamples) nRampLength = gnVolumeRampSamples;
 					}
 				}
-#endif
 				pChn->nRightRamp = nRightDelta / nRampLength;
 				pChn->nLeftRamp = nLeftDelta / nRampLength;
 				pChn->nRightVol = pChn->nNewRightVol - ((pChn->nRightRamp * nRampLength) >> VOLUMERAMPPRECISION);

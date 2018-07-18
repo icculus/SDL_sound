@@ -10,8 +10,6 @@
 //////////////////////////////////////////////
 #include "libmodplug.h"
 
-//#pragma warning(disable:4244)
-
 typedef struct OKTFILEHEADER
 {
 	DWORD okta;		// "OKTA"

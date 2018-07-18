@@ -77,12 +77,6 @@ DWORD MMCMPBITBUFFER::GetBits(UINT nBits)
 	return d;
 }
 
-//#define MMCMP_LOG
-
-#ifdef MMCMP_LOG
-extern void Log(LPCSTR s, ...);
-#endif
-
 const DWORD MMCMP8BitCommands[8] =
 {
 	0x01, 0x03,	0x07, 0x0F,	0x1E, 0x3C,	0x78, 0xF8
@@ -135,11 +129,6 @@ BOOL MMCMP_Unpack(LPCBYTE *ppMemFile, LPDWORD pdwMemLength)
 
 		if ((dwMemPos + 20 >= dwMemLength) || (dwMemPos + 20 + pblk->sub_blk*8 >= dwMemLength)) break;
 		dwMemPos += 20 + pblk->sub_blk*8;
-#ifdef MMCMP_LOG
-		Log("block %d: flags=%04X sub_blocks=%d", nBlock, (UINT)pblk->flags, (UINT)pblk->sub_blk);
-		Log(" pksize=%d unpksize=%d", pblk->pk_size, pblk->unpk_size);
-		Log(" tt_entries=%d num_bits=%d\n", pblk->tt_entries, pblk->num_bits);
-#endif
 		// Data is not packed
 		if (!(pblk->flags & MMCMP_COMP))
 		{
@@ -148,9 +137,6 @@ BOOL MMCMP_Unpack(LPCBYTE *ppMemFile, LPDWORD pdwMemLength)
 				if ((psubblk->unpk_pos >= dwFileSize) ||
 					(psubblk->unpk_size >= dwFileSize) ||
 					(psubblk->unpk_size > dwFileSize - psubblk->unpk_pos)) break;
-#ifdef MMCMP_LOG
-				Log("  Unpacked sub-block %d: offset %d, size=%d\n", i, psubblk->unpk_pos, psubblk->unpk_size);
-#endif
 				SDL_memcpy(pBuffer+psubblk->unpk_pos, lpMemFile+dwMemPos, psubblk->unpk_size);
 				dwMemPos += psubblk->unpk_size;
 				psubblk++;
@@ -165,13 +151,6 @@ BOOL MMCMP_Unpack(LPCBYTE *ppMemFile, LPDWORD pdwMemLength)
 			DWORD dwPos = 0;
 			UINT numbits = pblk->num_bits;
 			UINT subblk = 0, oldval = 0;
-
-#ifdef MMCMP_LOG
-			Log("  16-bit block: pos=%d size=%d ", psubblk->unpk_pos, psubblk->unpk_size);
-			if (pblk->flags & MMCMP_DELTA) Log("DELTA ");
-			if (pblk->flags & MMCMP_ABS16) Log("ABS16 ");
-			Log("\n");
-#endif
 			bb.bitcount = 0;
 			bb.bitbuffer = 0;
 			bb.pSrc = lpMemFile+dwMemPos+pblk->tt_entries;
@@ -404,8 +383,4 @@ BOOL PP20_Unpack(LPCBYTE *ppMemFile, LPDWORD pdwMemLength)
 	*pdwMemLength = dwDstLen;
 	return TRUE;
 }
-
-
-
-
 

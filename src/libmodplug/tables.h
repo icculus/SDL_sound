@@ -6,10 +6,6 @@
 
 #include "libmodplug.h"
 
-#ifndef MODPLUG_FASTSOUNDLIB
-//#pragma data_seg(".tables")
-#endif
-
 static const BYTE ImpulseTrackerPortaVolCmd[16] =
 {
 	0x00, 0x01, 0x04, 0x08, 0x10, 0x20, 0x40, 0x60,

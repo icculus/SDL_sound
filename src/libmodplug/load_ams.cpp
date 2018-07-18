@@ -9,8 +9,6 @@
 //////////////////////////////////////////////
 #include "libmodplug.h"
 
-//#pragma warning(disable:4244)
-
 #pragma pack(1)
 
 typedef struct AMSFILEHEADER
@@ -38,7 +36,6 @@ typedef struct AMSSAMPLEHEADER
 
 
 #pragma pack()
-
 
 
 BOOL CSoundFile::ReadAMS(LPCBYTE lpStream, DWORD dwMemLength)

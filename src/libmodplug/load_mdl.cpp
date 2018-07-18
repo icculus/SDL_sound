@@ -9,8 +9,6 @@
 //////////////////////////////////////////////
 #include "libmodplug.h"
 
-//#pragma warning(disable:4244)
-
 typedef struct MDLSONGHEADER
 {
 	DWORD id;	// "DMDL" = 0x4C444D44

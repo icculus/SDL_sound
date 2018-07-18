@@ -9,10 +9,6 @@
 ///////////////////////////////////////////////////////
 #include "libmodplug.h"
 
-//#define DMFLOG
-
-//#pragma warning(disable:4244)
-
 #pragma pack(1)
 
 typedef struct DMFHEADER
@@ -77,11 +73,6 @@ typedef struct DMFSAMPLE
 #pragma pack()
 
 
-#ifdef DMFLOG
-extern void Log(LPCSTR s, ...);
-#endif
-
-
 BOOL CSoundFile::ReadDMF(const BYTE *lpStream, DWORD dwMemLength)
 //---------------------------------------------------------------
 {
@@ -99,9 +90,6 @@ BOOL CSoundFile::ReadDMF(const BYTE *lpStream, DWORD dwMemLength)
 	m_szNames[0][30] = 0;
 	m_nType = MOD_TYPE_DMF;
 	m_nChannels = 0;
-#ifdef DMFLOG
-	Log("DMF version %d: \"%s\": %d bytes (0x%04X)\n", pfh->version, m_szNames[0], dwMemLength, dwMemLength);
-#endif
 	while (dwMemPos + 7 < dwMemLength)
 	{
 		DWORD id = *((LPDWORD)(lpStream+dwMemPos));
@@ -164,9 +152,6 @@ BOOL CSoundFile::ReadDMF(const BYTE *lpStream, DWORD dwMemLength)
 				for (UINT npat=0; npat<numpat; npat++)
 				{
 					DMFTRACK *pt = (DMFTRACK *)(lpStream+dwPos);
-				#ifdef DMFLOG
-					Log("Pattern #%d: %d tracks, %d rows\n", npat, pt->tracks, pt->ticks);
-				#endif
 					UINT tracks = pt->tracks;
 					if (tracks > 32) tracks = 32;
 					UINT ticks = pt->ticks;
@@ -202,9 +187,6 @@ BOOL CSoundFile::ReadDMF(const BYTE *lpStream, DWORD dwMemLength)
 							case 1:	ttype = 0; tempo = infoval; tempochange = TRUE; break;
 							case 2: ttype = 1; tempo = infoval; tempochange = TRUE; break;
 							case 3: pbeat = infoval>>4; tempochange = ttype; break;
-							#ifdef DMFLOG
-							default: if (info) Log("GLB: %02X.%02X\n", info, infoval);
-							#endif
 							}
 						} else
 						{
@@ -251,9 +233,6 @@ BOOL CSoundFile::ReadDMF(const BYTE *lpStream, DWORD dwMemLength)
 								case 5: if (eval&0xe0) { cmd.command = CMD_RETRIG; cmd.param = (eval>>5); } break;
 								// 6: Offset
 								case 6: cmd.command = CMD_OFFSET; cmd.param = eval; break;
-								#ifdef DMFLOG
-								default: Log("FX1: %02X.%02X\n", efx, eval);
-								#endif
 								}
 							}
 							// Effect 2
@@ -280,9 +259,6 @@ BOOL CSoundFile::ReadDMF(const BYTE *lpStream, DWORD dwMemLength)
 								// 12: Note cut
 								case 12: if (eval & 0xe0) { cmd.command = CMD_S3MCMDEX; cmd.param = (eval>>5)|0xc0; }
 										else if (!cmd.note) { cmd.note = 0xfe; } break;
-								#ifdef DMFLOG
-								default: Log("FX2: %02X.%02X\n", efx, eval);
-								#endif
 								}
 							}
 							// Effect 3
@@ -309,9 +285,6 @@ BOOL CSoundFile::ReadDMF(const BYTE *lpStream, DWORD dwMemLength)
 								// 9: Pan Slide Right
 								case 9: eval = (eval+3)>>2; if (eval > 0x0f) eval = 0x0f;
 										cmd.command = CMD_PANNINGSLIDE; cmd.param = eval; break;
-								#ifdef DMFLOG
-								default: Log("FX3: %02X.%02X\n", efx, eval);
-								#endif
 
 								}
 							}
@@ -319,9 +292,6 @@ BOOL CSoundFile::ReadDMF(const BYTE *lpStream, DWORD dwMemLength)
 							if (i < m_nChannels) p[i] = cmd;
 							if (d > dwPos)
 							{
-							#ifdef DMFLOG
-								Log("Unexpected EOP: row=%d\n", row);
-							#endif
 								break;
 							}
 						} else
@@ -341,10 +311,6 @@ BOOL CSoundFile::ReadDMF(const BYTE *lpStream, DWORD dwMemLength)
 								if (modtempo <= 200) break;
 								if ((speed < 6) && (modtempo < 256)) break;
 							}
-						#ifdef DMFLOG
-							Log("Tempo change: ttype=%d pbeat=%d tempo=%3d -> speed=%d tempo=%d\n",
-								ttype, pbeat, tempo, speed, modtempo);
-						#endif
 							for (UINT ich=0; ich<m_nChannels; ich++) if (!p[ich].command)
 							{
 								if (speed)
@@ -366,9 +332,6 @@ BOOL CSoundFile::ReadDMF(const BYTE *lpStream, DWORD dwMemLength)
 						}
 						if (d >= dwPos) break;
 					}
-				#ifdef DMFLOG
-					Log(" %d/%d bytes remaining\n", dwPos-d, pt->jmpsize);
-				#endif
 					if (dwPos + 8 >= dwMemLength) break;
 				}
 				dwMemPos += patt->patsize + 8;
@@ -410,9 +373,6 @@ BOOL CSoundFile::ReadDMF(const BYTE *lpStream, DWORD dwMemLength)
 						if (psh->flags & 1) psmp->uFlags |= CHN_LOOP;
 						smplflags[iSmp] = psh->flags;
 						dwPos += (pfh->version < 8) ? 22 : 30;
-					#ifdef DMFLOG
-						Log("SMPI %d/%d: len=%d flags=0x%02X\n", iSmp, m_nSamples, psmp->nLength, psh->flags);
-					#endif
 					}
 				}
 				dwMemPos += pds->size + 8;
@@ -430,22 +390,12 @@ BOOL CSoundFile::ReadDMF(const BYTE *lpStream, DWORD dwMemLength)
 					DWORD pksize;
 					if (dwPos + 4 >= dwMemLength)
 					{
-					#ifdef DMFLOG
-						Log("Unexpected EOF at sample %d/%d! (pos=%d)\n", iSmp, m_nSamples, dwPos);
-					#endif
 						break;
 					}
 					pksize = *((LPDWORD)(lpStream+dwPos));
-				#ifdef DMFLOG
-					Log("sample %d: pos=0x%X pksize=%d ", iSmp, dwPos, pksize);
-					Log("len=%d flags=0x%X [%08X]\n", Ins[iSmp].nLength, smplflags[ismpd], *((LPDWORD)(lpStream+dwPos+4)));
-				#endif
 					dwPos += 4;
 					if (pksize > dwMemLength - dwPos)
 					{
-					#ifdef DMFLOG
-						Log("WARNING: pksize=%d, but only %d bytes left\n", pksize, dwMemLength-dwPos);
-					#endif
 						pksize = dwMemLength - dwPos;
 					}
 					if ((pksize) && (iSmp <= m_nSamples))
@@ -599,9 +549,6 @@ int DMFUnpack(LPBYTE psample, LPBYTE ibuf, LPBYTE ibufmax, UINT maxlen)
 		value += delta;
 		psample[i] = (i) ? value : 0;
 	}
-#ifdef DMFLOG
-//	Log("DMFUnpack: %d remaining bytes\n", tree.ibufmax-tree.ibuf);
-#endif
 	return tree.ibuf - ibuf;
 }
 

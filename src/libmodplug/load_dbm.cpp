@@ -15,8 +15,6 @@
 
 #include "libmodplug.h"
 
-//#pragma warning(disable:4244)
-
 #define DBM_FILE_MAGIC	0x304d4244
 #define DBM_ID_NAME		0x454d414e
 #define DBM_NAMELEN		0x2c000000
