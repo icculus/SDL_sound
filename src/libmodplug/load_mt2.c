@@ -338,7 +338,7 @@ BOOL CSoundFile_ReadMT2(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 		INSTRUMENTHEADER *penv = NULL;
 		if (iIns <= _this->m_nInstruments)
 		{
-			penv = new INSTRUMENTHEADER;
+			penv = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER));
 			_this->Headers[iIns] = penv;
 			if (penv)
 			{
@@ -472,7 +472,7 @@ BOOL CSoundFile_ReadMT2(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 				psmp->nC4Speed = pms->dwFrequency;
 				psmp->nLoopStart = pms->dwLoopStart;
 				psmp->nLoopEnd = pms->dwLoopEnd;
-				CSoundFile_FrequencyToTranspose(psmp);
+				CSoundFile_FrequencyToTransposeInstrument(psmp);
 				psmp->RelativeTone -= pms->nBaseNote - 49;
 				psmp->nC4Speed = CSoundFile_TransposeToFrequency(psmp->RelativeTone, psmp->nFineTune);
 				if (pms->nQuality == 2) { psmp->uFlags |= CHN_16BIT; psmp->nLength >>= 1; }

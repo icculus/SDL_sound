@@ -1447,6 +1447,7 @@ UINT CSoundFile_CreateStereoMix(CSoundFile *_this, int count)
 {
 	LPLONG pOfsL, pOfsR;
 	DWORD nchused, nchmixed;
+    UINT nrampsamples;
 
 	if (!count) return 0;
 	if (CSoundFile_gnChannels > 2) X86_InitMixBuffer(MixRearBuffer, count*2);
@@ -1505,7 +1506,7 @@ UINT CSoundFile_CreateStereoMix(CSoundFile *_this, int count)
 		nchused++;
 		////////////////////////////////////////////////////
 	SampleLooping:
-		UINT nrampsamples = nsamples;
+		nrampsamples = nsamples;
 		if (pChannel->nRampLength > 0)
 		{
 			if ((LONG)nrampsamples > pChannel->nRampLength) nrampsamples = pChannel->nRampLength;

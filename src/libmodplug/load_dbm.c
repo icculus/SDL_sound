@@ -140,7 +140,7 @@ BOOL CSoundFile_ReadDBM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 				UINT nsmp;
 
 				if (chunk_pos + sizeof(DBMINSTRUMENT) > dwMemPos) break;
-				if ((penv = new INSTRUMENTHEADER) == NULL) break;
+				if ((penv = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER))) == NULL) break;
 				pih = (DBMINSTRUMENT *)(lpStream+chunk_pos);
 				nsmp = bswapBE16(pih->sampleno);
 				psmp = ((nsmp) && (nsmp < MAX_SAMPLES)) ? &_this->Ins[nsmp] : NULL;

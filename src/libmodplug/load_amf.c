@@ -350,7 +350,8 @@ BOOL CSoundFile_ReadAMF(CSoundFile *_this, LPCBYTE lpStream, const DWORD dwMemLe
 		if (realtrackcnt < pTrackMap[iTrkMap]) realtrackcnt = pTrackMap[iTrkMap];
 	}
 	// Store tracks positions
-	BYTE **pTrackData = new BYTE *[realtrackcnt];
+	BYTE **pTrackData = (BYTE **) SDL_malloc(sizeof (BYTE *) * realtrackcnt);
+    if (!pTrackData) return TRUE;
 	SDL_memset(pTrackData, 0, sizeof(BYTE *) * realtrackcnt);
 	for (UINT iTrack=0; iTrack<realtrackcnt; iTrack++) if (dwMemPos <= dwMemLength - 3)
 	{
@@ -385,7 +386,7 @@ BOOL CSoundFile_ReadAMF(CSoundFile *_this, LPCBYTE lpStream, const DWORD dwMemLe
 			}
 		}
 	}
-	delete[] pTrackData;
+	SDL_free(pTrackData);
 	// Read Sample Data
 	for (UINT iSeek=1; iSeek<=maxsampleseekpos; iSeek++)
 	{

@@ -12,9 +12,8 @@ extern BOOL MMCMP_Unpack(LPCBYTE *ppMemFile, LPDWORD pdwMemLength);
 
 // External decompressors
 extern void AMSUnpack(const char *psrc, UINT inputlen, char *pdest, UINT dmax, char packcharacter);
-extern WORD MDLReadBits(DWORD &bitbuf, UINT &bitnum, LPBYTE &ibuf, CHAR n);
+extern WORD MDLReadBits(DWORD *bitbuf, UINT *bitnum, LPBYTE *ibuf, CHAR n);
 extern int DMFUnpack(LPBYTE psample, LPBYTE ibuf, LPBYTE ibufmax, UINT maxlen);
-extern DWORD ITReadBits(DWORD &bitbuf, UINT &bitnum, LPBYTE &ibuf, CHAR n);
 extern void ITUnpack8Bit(signed char *pSample, DWORD dwLen, LPBYTE lpMemFile, DWORD dwMemLength, BOOL b215);
 extern void ITUnpack16Bit(signed char *pSample, DWORD dwLen, LPBYTE lpMemFile, DWORD dwMemLength, BOOL b215);
 
@@ -179,7 +178,7 @@ void CSoundFile_Destroy(CSoundFile *_this)
 	_this->m_nPatternNames = 0;
 	if (_this->m_lpszPatternNames)
 	{
-		delete [] _this->m_lpszPatternNames;
+		SDL_free(_this->m_lpszPatternNames);
 		_this->m_lpszPatternNames = NULL;
 	}
 	for (i=1; i<MAX_SAMPLES; i++)
@@ -195,7 +194,7 @@ void CSoundFile_Destroy(CSoundFile *_this)
 	{
 		if (_this->Headers[i])
 		{
-			delete _this->Headers[i];
+			SDL_free(_this->Headers[i]);
 			_this->Headers[i] = NULL;
 		}
 	}
@@ -210,16 +209,14 @@ void CSoundFile_Destroy(CSoundFile *_this)
 MODCOMMAND *CSoundFile_AllocatePattern(UINT rows, UINT nchns)
 //------------------------------------------------------------
 {
-	MODCOMMAND *p = new MODCOMMAND[rows*nchns];
-	if (p) SDL_memset(p, 0, rows*nchns*sizeof(MODCOMMAND));
-	return p;
+	return (MODCOMMAND *) SDL_calloc(sizeof (MODCOMMAND), rows * nchns);
 }
 
 
 void CSoundFile_FreePattern(LPVOID pat)
 //--------------------------------------
 {
-	if (pat) delete [] (signed char*)pat;
+	SDL_free(pat);
 }
 
 
@@ -261,12 +258,11 @@ void CSoundFile_ResetMidiCfg(CSoundFile *_this)
 
 
 
-BOOL CSoundFile_SetWaveConfig(UINT nRate,UINT nBits,UINT nChannels,BOOL bMMX)
+BOOL CSoundFile_SetWaveConfig(UINT nRate,UINT nBits,UINT nChannels)
 //----------------------------------------------------------------------------
 {
 	BOOL bReset = FALSE;
-	DWORD d = CSoundFile_gdwSoundSetup & ~SNDMIX_ENABLEMMX;
-	if (bMMX) d |= SNDMIX_ENABLEMMX;
+	DWORD d = CSoundFile_gdwSoundSetup;
 	if ((CSoundFile_gdwMixingFreq != nRate) || (CSoundFile_gnBitsPerSample != nBits) || (CSoundFile_gnChannels != nChannels) || (d != CSoundFile_gdwSoundSetup)) bReset = TRUE;
 	CSoundFile_gnChannels = nChannels;
 	CSoundFile_gdwSoundSetup = d;
@@ -744,16 +740,16 @@ UINT CSoundFile_ReadSample(CSoundFile *_this, MODINSTRUMENT *pIns, UINT nFlags, 
 			{
 				BYTE hibyte;
 				BYTE sign;
-				if (nFlags == RS_MDL16) lowbyte = (BYTE)MDLReadBits(bitbuf, bitnum, ibuf, 8);
-				sign = (BYTE)MDLReadBits(bitbuf, bitnum, ibuf, 1);
-				if (MDLReadBits(bitbuf, bitnum, ibuf, 1))
+				if (nFlags == RS_MDL16) lowbyte = (BYTE)MDLReadBits(&bitbuf, &bitnum, &ibuf, 8);
+				sign = (BYTE)MDLReadBits(&bitbuf, &bitnum, &ibuf, 1);
+				if (MDLReadBits(&bitbuf, &bitnum, &ibuf, 1))
 				{
-					hibyte = (BYTE)MDLReadBits(bitbuf, bitnum, ibuf, 3);
+					hibyte = (BYTE)MDLReadBits(&bitbuf, &bitnum, &ibuf, 3);
 				} else
 				{
 					hibyte = 8;
-					while (!MDLReadBits(bitbuf, bitnum, ibuf, 1)) hibyte += 0x10;
-					hibyte += MDLReadBits(bitbuf, bitnum, ibuf, 4);
+					while (!MDLReadBits(&bitbuf, &bitnum, &ibuf, 1)) hibyte += 0x10;
+					hibyte += MDLReadBits(&bitbuf, &bitnum, &ibuf, 4);
 				}
 				if (sign) hibyte = ~hibyte;
 				dlt += hibyte;
@@ -991,11 +987,11 @@ DWORD CSoundFile_TransposeToFrequency(int transp, int ftune)
 int CSoundFile_FrequencyToTranspose(DWORD freq)
 //----------------------------------------------
 {
-	return int(1536*(SDL_log(freq/8363.0)/SDL_log(2.0)));
+	return (int) (1536*(SDL_log(freq/8363.0)/SDL_log(2.0)));
 }
 
 
-void CSoundFile_FrequencyToTranspose(MODINSTRUMENT *psmp)
+void CSoundFile_FrequencyToTransposeInstrument(MODINSTRUMENT *psmp)
 //--------------------------------------------------------
 {
 	int f2t = CSoundFile_FrequencyToTranspose(psmp->nC4Speed);
@@ -1034,13 +1030,13 @@ BOOL CSoundFile_SetPatternName(CSoundFile *_this, UINT nPat, LPCSTR lpszName)
 	{
 		if (!lpszName[0]) return TRUE;
 		UINT len = (nPat+1)*MAX_PATTERNNAME;
-		char *p = new char[len];
+		char *p = (char *) SDL_malloc(len);
 		if (!p) return FALSE;
 		SDL_memset(p, 0, len);
 		if (_this->m_lpszPatternNames)
 		{
 			SDL_memcpy(p, _this->m_lpszPatternNames, _this->m_nPatternNames * MAX_PATTERNNAME);
-			delete [] _this->m_lpszPatternNames;
+			SDL_free(_this->m_lpszPatternNames);
 			_this->m_lpszPatternNames = NULL;
 		}
 		_this->m_lpszPatternNames = p;

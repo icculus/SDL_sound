@@ -95,7 +95,7 @@ typedef struct {
 } MMFILE;
 
 void mmfclose(MMFILE *mmfile);
-bool mmfeof(MMFILE *mmfile);
+int mmfeof(MMFILE *mmfile);
 int mmfgetc(MMFILE *mmfile);
 void mmfgets(char buf[], unsigned int bufsz, MMFILE *mmfile);
 long mmftell(MMFILE *mmfile);
@@ -346,7 +346,6 @@ typedef const BYTE * LPCBYTE;
 #define DNA_NOTEFADE	2
 
 // Mixer Hardware-Dependent features
-#define SYSMIX_ENABLEMMX	0x01
 #define SYSMIX_WINDOWSNT	0x02
 #define SYSMIX_SLOWCPU		0x04
 #define SYSMIX_FASTCPU		0x08
@@ -384,7 +383,6 @@ typedef const BYTE * LPCBYTE;
 #define SNDMIX_ULTRAHQSRCMODE	0x0400
 // Misc Flags (can safely be turned on or off)
 #define SNDMIX_DIRECTTODISK		0x10000
-#define SNDMIX_ENABLEMMX		0x20000
 #define SNDMIX_NOBACKWARDJUMPS	0x40000
 #define SNDMIX_MAXDEFAULTPAN	0x80000	// Used by the MOD loader
 
@@ -592,11 +590,8 @@ extern UINT CSoundFile_m_nMaxMixChannels;
 extern DWORD CSoundFile_gdwSoundSetup, CSoundFile_gdwMixingFreq, CSoundFile_gnBitsPerSample, CSoundFile_gnChannels;
 extern UINT CSoundFile_gnVolumeRampSamples;
 
-//==============
-struct MODPLUG_EXPORT CSoundFile
-//==============
+typedef struct CSoundFile
 {
-//public:	// for Editing
 	MODCHANNEL Chn[MAX_CHANNELS];					// Channels
 	UINT ChnMix[MAX_CHANNELS];						// Channels to be mixed
 	MODINSTRUMENT Ins[MAX_SAMPLES];					// Instruments
@@ -622,14 +617,13 @@ struct MODPLUG_EXPORT CSoundFile
 	UINT m_nPatternNames;
 	LPSTR m_lpszPatternNames;
 	CHAR CompressionTable[16];
-};
+} CSoundFile;
 
-//public:
-	CSoundFile *CSoundFile_Create(CSoundFile *retval, LPCBYTE lpStream, DWORD dwMemLength=0);
+	CSoundFile *CSoundFile_Create(CSoundFile *retval, LPCBYTE lpStream, DWORD dwMemLength);
 	void CSoundFile_Destroy(CSoundFile *_this);
 	UINT CSoundFile_GetMaxPosition(CSoundFile *_this);
 	void CSoundFile_SetCurrentPos(CSoundFile *_this, UINT nPos);
-	DWORD CSoundFile_GetLength(CSoundFile *_this, BOOL bAdjust, BOOL bTotal=FALSE);
+	DWORD CSoundFile_GetLength(CSoundFile *_this, BOOL bAdjust, BOOL bTotal);
 	void CSoundFile_SetRepeatCount(CSoundFile *_this, int n);
 	BOOL CSoundFile_SetPatternName(CSoundFile *_this, UINT nPat, LPCSTR lpszName);
 	// Module Loaders
@@ -668,18 +662,16 @@ struct MODPLUG_EXPORT CSoundFile
 	void CSoundFile_ConvertModCommand(CSoundFile *_this, MODCOMMAND *);
 	void CSoundFile_S3MConvert(MODCOMMAND *m, BOOL bIT);
 
-//public:
 	// Real-time sound functions
 	UINT CSoundFile_Read(CSoundFile *_this, LPVOID lpBuffer, UINT cbBuffer);
 	UINT CSoundFile_CreateStereoMix(CSoundFile *_this, int count);
 	BOOL CSoundFile_FadeSong(CSoundFile *_this, UINT msec);
 	BOOL CSoundFile_GlobalFadeSong(CSoundFile *_this, UINT msec);
 
-//public:
 	// Mixer Config
-	BOOL CSoundFile_InitPlayer(BOOL bReset=FALSE);
+	BOOL CSoundFile_InitPlayer(BOOL bReset);
 	BOOL CSoundFile_SetMixConfig(UINT nStereoSeparation, UINT nMaxMixChannels);
-	BOOL CSoundFile_SetWaveConfig(UINT nRate,UINT nBits,UINT nChannels,BOOL bMMX=FALSE);
+	BOOL CSoundFile_SetWaveConfig(UINT nRate,UINT nBits,UINT nChannels);
 	BOOL CSoundFile_SetResamplingMode(UINT nMode); // SRCMODE_XXXX
 	DWORD CSoundFile_InitSysInfo(CSoundFile *_this);
 
@@ -694,14 +686,14 @@ struct MODPLUG_EXPORT CSoundFile
 	BOOL CSoundFile_SetXBassParameters(UINT nDepth, UINT nRange);
 	// [Surround level 0(quiet)-100(heavy)] [delay in ms, usually 5-40ms]
 	BOOL CSoundFile_SetSurroundParameters(UINT nDepth, UINT nDelay);
-//public:
+
 	BOOL CSoundFile_ReadNote(CSoundFile *_this);
 	BOOL CSoundFile_ProcessRow(CSoundFile *_this);
 	BOOL CSoundFile_ProcessEffects(CSoundFile *_this);
 	UINT CSoundFile_GetNNAChannel(CSoundFile *_this, UINT nChn);
 	void CSoundFile_CheckNNA(CSoundFile *_this, UINT nChn, UINT instr, int note, BOOL bForceCut);
-	void CSoundFile_NoteChange(CSoundFile *_this, UINT nChn, int note, BOOL bPorta=FALSE, BOOL bResetEnv=TRUE);
-	void CSoundFile_InstrumentChange(CSoundFile *_this, MODCHANNEL *pChn, UINT instr, BOOL bPorta=FALSE,BOOL bUpdVol=TRUE,BOOL bResetEnv=TRUE);
+	void CSoundFile_NoteChange(CSoundFile *_this, UINT nChn, int note, BOOL bPorta, BOOL bResetEnv);
+	void CSoundFile_InstrumentChange(CSoundFile *_this, MODCHANNEL *pChn, UINT instr, BOOL bPorta,BOOL bUpdVol,BOOL bResetEnv);
 	// Channel Effects
 	void CSoundFile_PortamentoUp(CSoundFile *_this, MODCHANNEL *pChn, UINT param);
 	void CSoundFile_PortamentoDown(CSoundFile *_this, MODCHANNEL *pChn, UINT param);
@@ -726,8 +718,8 @@ struct MODPLUG_EXPORT CSoundFile
 	void CSoundFile_ExtendedMODCommands(CSoundFile *_this, UINT nChn, UINT param);
 	void CSoundFile_ExtendedS3MCommands(CSoundFile *_this, UINT nChn, UINT param);
 	void CSoundFile_ExtendedChannelEffect(CSoundFile *_this, MODCHANNEL *, UINT param);
-	void CSoundFile_ProcessMidiMacro(CSoundFile *_this, UINT nChn, LPCSTR pszMidiMacro, UINT param=0);
-	void CSoundFile_SetupChannelFilter(CSoundFile *_this, MODCHANNEL *pChn, BOOL bReset, int flt_modifier=256);
+	void CSoundFile_ProcessMidiMacro(CSoundFile *_this, UINT nChn, LPCSTR pszMidiMacro, UINT param);
+	void CSoundFile_SetupChannelFilter(CSoundFile *_this, MODCHANNEL *pChn, BOOL bReset, int flt_modifier);
 	// Low-Level effect processing
 	void CSoundFile_DoFreqSlide(CSoundFile *_this, MODCHANNEL *pChn, LONG nFreqSlide);
 	// Global Effects
@@ -751,34 +743,26 @@ struct MODPLUG_EXPORT CSoundFile
 	// Period/Note functions
 	UINT CSoundFile_GetNoteFromPeriod(CSoundFile *_this, UINT period);
 	UINT CSoundFile_GetPeriodFromNote(CSoundFile *_this, UINT note, int nFineTune, UINT nC4Speed);
-	UINT CSoundFile_GetFreqFromPeriod(CSoundFile *_this, UINT period, UINT nC4Speed, int nPeriodFrac=0);
+	UINT CSoundFile_GetFreqFromPeriod(CSoundFile *_this, UINT period, UINT nC4Speed, int nPeriodFrac);
 	// Misc functions
 	void CSoundFile_ResetMidiCfg(CSoundFile *_this);
 	UINT CSoundFile_MapMidiInstrument(CSoundFile *_this, DWORD dwProgram, UINT nChannel, UINT nNote);
-	BOOL CSoundFile_ITInstrToMPT(CSoundFile *_this, void *p, INSTRUMENTHEADER *penv, UINT trkvers);
+	BOOL CSoundFile_ITInstrToMPT(const void *p, INSTRUMENTHEADER *penv, UINT trkvers);
+
 	UINT CSoundFile_LoadMixPlugins(CSoundFile *_this, const void *pData, UINT nLen);
 #ifndef NO_FILTER
-	DWORD CSoundFile_CutOffToFrequency(CSoundFile *_this, UINT nCutOff, int flt_modifier=256); // [0-255] => [1-10KHz]
+	DWORD CSoundFile_CutOffToFrequency(CSoundFile *_this, UINT nCutOff, int flt_modifier); // [0-255] => [1-10KHz]
 #endif
 
-	// Static helper functions
-//public:
-	DWORD CSoundFile_TransposeToFrequency(int transp, int ftune=0);
+	DWORD CSoundFile_TransposeToFrequency(int transp, int ftune);
 	int CSoundFile_FrequencyToTranspose(DWORD freq);
-	void CSoundFile_FrequencyToTranspose(MODINSTRUMENT *psmp);
+	void CSoundFile_FrequencyToTransposeInstrument(MODINSTRUMENT *psmp);
 
-	// System-Dependant functions
-//public:
 	MODCOMMAND *CSoundFile_AllocatePattern(UINT rows, UINT nchns);
 	signed char* CSoundFile_AllocateSample(UINT nbytes);
 	void CSoundFile_FreePattern(LPVOID pat);
 	void CSoundFile_FreeSample(LPVOID p);
 	UINT CSoundFile_Normalize24BitBuffer(LPBYTE pbuffer, UINT cbsizebytes, DWORD lmax24, DWORD dwByteInc);
-//};
-
-
-// inline DWORD BigEndian(DWORD x) { return ((x & 0xFF) << 24) | ((x & 0xFF00) << 8) | ((x & 0xFF0000) >> 8) | ((x & 0xFF000000) >> 24); }
-// inline WORD BigEndianW(WORD x) { return (WORD)(((x >> 8) & 0xFF) | ((x << 8) & 0xFF00)); }
 
 
 ///////////////////////////////////////////////////////////

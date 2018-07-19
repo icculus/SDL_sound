@@ -221,7 +221,7 @@ BOOL CSoundFile_ReadFAR(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	for (UINT ismp=0; ismp<64; ismp++, pins++) if (samplemap[ismp >> 3] & (1 << (ismp & 7)))
 	{
 		if (dwMemPos + sizeof(FARSAMPLE) > dwMemLength) return TRUE;
-		const FARSAMPLE *pfs = reinterpret_cast<const FARSAMPLE*>(lpStream + dwMemPos);
+		const FARSAMPLE *pfs = (const FARSAMPLE*)(lpStream + dwMemPos);
 		dwMemPos += sizeof(FARSAMPLE);
 		_this->m_nSamples = ismp + 1;
 		const DWORD length = bswapLE32( pfs->length ) ; /* endian fix - Toad */
