@@ -274,7 +274,7 @@ BOOL CSoundFile_ReadMDL(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 				if (!_this->Headers[nins])
 				{
 					UINT note = 12;
-					if ((_this->Headers[nins] = new INSTRUMENTHEADER) == NULL) break;
+					if ((_this->Headers[nins] = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER))) == NULL) break;
 					INSTRUMENTHEADER *penv = _this->Headers[nins];
 					SDL_memset(penv, 0, sizeof(INSTRUMENTHEADER));
 					penv->nGlobalVol = 64;
@@ -318,7 +318,7 @@ BOOL CSoundFile_ReadMDL(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 			}
 			for (j=1; j<=_this->m_nInstruments; j++) if (!_this->Headers[j])
 			{
-				_this->Headers[j] = new INSTRUMENTHEADER;
+				_this->Headers[j] = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER));
 				if (_this->Headers[j]) SDL_memset(_this->Headers[j], 0, sizeof(INSTRUMENTHEADER));
 			}
 			break;
@@ -469,17 +469,19 @@ BOOL CSoundFile_ReadMDL(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 // MDL Sample Unpacking
 
 // MDL Huffman ReadBits compression
-WORD MDLReadBits(DWORD &bitbuf, UINT &bitnum, LPBYTE &ibuf, CHAR n)
+WORD MDLReadBits(DWORD *bitbuf, UINT *bitnum, LPBYTE *_ibuf, CHAR n)
 //-----------------------------------------------------------------
 {
-	WORD v = (WORD)(bitbuf & ((1 << n) - 1) );
-	bitbuf >>= n;
-	bitnum -= n;
-	if (bitnum <= 24)
+    LPBYTE ibuf = *_ibuf;
+	const WORD v = (WORD)(*bitbuf & ((1 << n) - 1) );
+	*bitbuf >>= n;
+	*bitnum -= n;
+	if (*bitnum <= 24)
 	{
-		bitbuf |= (((DWORD)(*ibuf++)) << bitnum);
-		bitnum += 8;
+		*bitbuf |= (((DWORD)(*ibuf++)) << *bitnum);
+		*bitnum += 8;
 	}
+    *_ibuf = ibuf;
 	return v;
 }
 

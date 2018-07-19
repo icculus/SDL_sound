@@ -63,38 +63,38 @@ endif()
 
 if(SDLSOUND_DECODER_MODPLUG)
     set(LIBMODPLUG_SRCS
-        src/libmodplug/fastmix.cpp
-        src/libmodplug/load_669.cpp
-        src/libmodplug/load_abc.cpp
-        src/libmodplug/load_amf.cpp
-        src/libmodplug/load_ams.cpp
-        src/libmodplug/load_dbm.cpp
-        src/libmodplug/load_dmf.cpp
-        src/libmodplug/load_dsm.cpp
-        src/libmodplug/load_far.cpp
-        src/libmodplug/load_it.cpp
-        src/libmodplug/load_mdl.cpp
-        src/libmodplug/load_med.cpp
-        src/libmodplug/load_mid.cpp
-        src/libmodplug/load_mod.cpp
-        src/libmodplug/load_mt2.cpp
-        src/libmodplug/load_mtm.cpp
-        src/libmodplug/load_okt.cpp
-        src/libmodplug/load_pat.cpp
-        src/libmodplug/load_psm.cpp
-        src/libmodplug/load_ptm.cpp
-        src/libmodplug/load_s3m.cpp
-        src/libmodplug/load_stm.cpp
-        src/libmodplug/load_ult.cpp
-        src/libmodplug/load_umx.cpp
-        src/libmodplug/load_xm.cpp
-        src/libmodplug/mmcmp.cpp
-        src/libmodplug/modplug.cpp
-        src/libmodplug/snd_dsp.cpp
-        src/libmodplug/snd_flt.cpp
-        src/libmodplug/snd_fx.cpp
-        src/libmodplug/sndfile.cpp
-        src/libmodplug/sndmix.cpp
+        src/libmodplug/fastmix.c
+        src/libmodplug/load_669.c
+        src/libmodplug/load_abc.c
+        src/libmodplug/load_amf.c
+        src/libmodplug/load_ams.c
+        src/libmodplug/load_dbm.c
+        src/libmodplug/load_dmf.c
+        src/libmodplug/load_dsm.c
+        src/libmodplug/load_far.c
+        src/libmodplug/load_it.c
+        src/libmodplug/load_mdl.c
+        src/libmodplug/load_med.c
+        src/libmodplug/load_mid.c
+        src/libmodplug/load_mod.c
+        src/libmodplug/load_mt2.c
+        src/libmodplug/load_mtm.c
+        src/libmodplug/load_okt.c
+        src/libmodplug/load_pat.c
+        src/libmodplug/load_psm.c
+        src/libmodplug/load_ptm.c
+        src/libmodplug/load_s3m.c
+        src/libmodplug/load_stm.c
+        src/libmodplug/load_ult.c
+        src/libmodplug/load_umx.c
+        src/libmodplug/load_xm.c
+        src/libmodplug/mmcmp.c
+        src/libmodplug/modplug.c
+        src/libmodplug/snd_dsp.c
+        src/libmodplug/snd_flt.c
+        src/libmodplug/snd_fx.c
+        src/libmodplug/sndfile.c
+        src/libmodplug/sndmix.c
     )
 endif()
 

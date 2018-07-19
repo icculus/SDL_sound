@@ -548,7 +548,7 @@ void CSoundFile_NoteChange(CSoundFile *_this, UINT nChn, int note, BOOL bPorta, 
 			pChn->nVolSwing = pChn->nPanSwing = 0;
 		}
 #ifndef NO_FILTER
-		if ((pChn->nCutOff < 0x7F) && (bFlt)) CSoundFile_SetupChannelFilter(_this, pChn, TRUE);
+		if ((pChn->nCutOff < 0x7F) && (bFlt)) CSoundFile_SetupChannelFilter(_this, pChn, TRUE, 256);
 #endif // NO_FILTER
 	}
 }
@@ -733,7 +733,7 @@ BOOL CSoundFile_ProcessEffects(CSoundFile *_this)
 		UINT vol = pChn->nRowVolume;
 		UINT cmd = pChn->nRowCommand;
 		UINT param = pChn->nRowParam;
-		bool bPorta = ((cmd != CMD_TONEPORTAMENTO) && (cmd != CMD_TONEPORTAVOL) && (volcmd != VOLCMD_TONEPORTAMENTO)) ? FALSE : TRUE;
+		int bPorta = ((cmd != CMD_TONEPORTAMENTO) && (cmd != CMD_TONEPORTAVOL) && (volcmd != VOLCMD_TONEPORTAMENTO)) ? FALSE : TRUE;
 		UINT nStartTick = 0;
 
 		pChn->dwFlags &= ~CHN_FASTVOLRAMP;
@@ -814,7 +814,7 @@ BOOL CSoundFile_ProcessEffects(CSoundFile *_this)
 			if (instr)
 			{
 				MODINSTRUMENT *psmp = pChn->pInstrument;
-				CSoundFile_InstrumentChange(_this, pChn, instr, bPorta, TRUE);
+				CSoundFile_InstrumentChange(_this, pChn, instr, bPorta, TRUE, TRUE);
 				pChn->nNewIns = 0;
 				// Special IT case: portamento+note causes sample change -> ignore portamento
 				if ((_this->m_nType & (MOD_TYPE_S3M|MOD_TYPE_IT))
@@ -1869,7 +1869,7 @@ void CSoundFile_ProcessMidiMacro(CSoundFile *_this, UINT nChn, LPCSTR pszMidiMac
 				if (oldcutoff < 0) oldcutoff = -oldcutoff;
 				if ((pChn->nVolume > 0) || (oldcutoff < 0x10)
 				 || (!(pChn->dwFlags & CHN_FILTER)) || (!(pChn->nLeftVol|pChn->nRightVol)))
-					CSoundFile_SetupChannelFilter(_this, pChn, (pChn->dwFlags & CHN_FILTER) ? FALSE : TRUE);
+					CSoundFile_SetupChannelFilter(_this, pChn, (pChn->dwFlags & CHN_FILTER) ? FALSE : TRUE, 256);
 #endif // NO_FILTER
 			}
 			break;
@@ -1878,7 +1878,7 @@ void CSoundFile_ProcessMidiMacro(CSoundFile *_this, UINT nChn, LPCSTR pszMidiMac
 		case '1':
 			if (dwParam < 0x80) pChn->nResonance = (BYTE)dwParam;
 #ifndef NO_FILTER
-			CSoundFile_SetupChannelFilter(_this, pChn, (pChn->dwFlags & CHN_FILTER) ? FALSE : TRUE);
+			CSoundFile_SetupChannelFilter(_this, pChn, (pChn->dwFlags & CHN_FILTER) ? FALSE : TRUE, 256);
 #endif // NO_FILTER
 
 			break;
@@ -1938,7 +1938,7 @@ void CSoundFile_RetrigNote(CSoundFile *_this, UINT nChn, UINT param)
 		BOOL bResetEnv = FALSE;
 		if (_this->m_nType & (MOD_TYPE_XM|MOD_TYPE_MT2))
 		{
-			if ((pChn->nRowInstr) && (param < 0x100)) { CSoundFile_InstrumentChange(_this, pChn, pChn->nRowInstr, FALSE, FALSE); bResetEnv = TRUE; }
+			if ((pChn->nRowInstr) && (param < 0x100)) { CSoundFile_InstrumentChange(_this, pChn, pChn->nRowInstr, FALSE, FALSE, TRUE); bResetEnv = TRUE; }
 			if (param < 0x100) bResetEnv = TRUE;
 		}
 		CSoundFile_NoteChange(_this, nChn, nNote, FALSE, bResetEnv);

@@ -56,24 +56,22 @@ typedef struct MMCMPBITBUFFER
 	DWORD bitbuffer;
 	LPCBYTE pSrc;
 	LPCBYTE pEnd;
-
-	DWORD GetBits(UINT nBits);
 } MMCMPBITBUFFER;
 
 
-DWORD MMCMPBITBUFFER::GetBits(UINT nBits)
+static DWORD MMCMPBITBUFFER_GetBits(MMCMPBITBUFFER *_this, UINT nBits)
 //---------------------------------------
 {
 	DWORD d;
 	if (!nBits) return 0;
-	while (bitcount < 24)
+	while (_this->bitcount < 24)
 	{
-		bitbuffer |= ((pSrc < pEnd) ? *pSrc++ : 0) << bitcount;
-		bitcount += 8;
+		_this->bitbuffer |= ((_this->pSrc < _this->pEnd) ? *_this->pSrc++ : 0) << _this->bitcount;
+		_this->bitcount += 8;
 	}
-	d = bitbuffer & ((1 << nBits) - 1);
-	bitbuffer >>= nBits;
-	bitcount -= nBits;
+	d = _this->bitbuffer & ((1 << nBits) - 1);
+	_this->bitbuffer >>= nBits;
+	_this->bitcount -= nBits;
 	return d;
 }
 
@@ -158,20 +156,20 @@ BOOL MMCMP_Unpack(LPCBYTE *ppMemFile, LPDWORD pdwMemLength)
 			while (subblk < pblk->sub_blk)
 			{
 				UINT newval = 0x10000;
-				DWORD d = bb.GetBits(numbits+1);
+				DWORD d = MMCMPBITBUFFER_GetBits(&bb, numbits+1);
 
 				if (d >= MMCMP16BitCommands[numbits])
 				{
 					UINT nFetch = MMCMP16BitFetch[numbits];
-					UINT newbits = bb.GetBits(nFetch) + ((d - MMCMP16BitCommands[numbits]) << nFetch);
+					UINT newbits = MMCMPBITBUFFER_GetBits(&bb, nFetch) + ((d - MMCMP16BitCommands[numbits]) << nFetch);
 					if (newbits != numbits)
 					{
 						numbits = newbits & 0x0F;
 					} else
 					{
-						if ((d = bb.GetBits(4)) == 0x0F)
+						if ((d = MMCMPBITBUFFER_GetBits(&bb, 4)) == 0x0F)
 						{
-							if (bb.GetBits(1)) break;
+							if (MMCMPBITBUFFER_GetBits(&bb, 1)) break;
 							newval = 0xFFFF;
 						} else
 						{
@@ -222,20 +220,20 @@ BOOL MMCMP_Unpack(LPCBYTE *ppMemFile, LPDWORD pdwMemLength)
 			while (subblk < pblk->sub_blk)
 			{
 				UINT newval = 0x100;
-				DWORD d = bb.GetBits(numbits+1);
+				DWORD d = MMCMPBITBUFFER_GetBits(&bb, numbits+1);
 
 				if (d >= MMCMP8BitCommands[numbits])
 				{
 					UINT nFetch = MMCMP8BitFetch[numbits];
-					UINT newbits = bb.GetBits(nFetch) + ((d - MMCMP8BitCommands[numbits]) << nFetch);
+					UINT newbits = MMCMPBITBUFFER_GetBits(&bb, nFetch) + ((d - MMCMP8BitCommands[numbits]) << nFetch);
 					if (newbits != numbits)
 					{
 						numbits = newbits & 0x07;
 					} else
 					{
-						if ((d = bb.GetBits(3)) == 7)
+						if ((d = MMCMPBITBUFFER_GetBits(&bb, 3)) == 7)
 						{
-							if (bb.GetBits(1)) break;
+							if (MMCMPBITBUFFER_GetBits(&bb, 1)) break;
 							newval = 0xFF;
 						} else
 						{
@@ -286,26 +284,24 @@ typedef struct _PPBITBUFFER
 	ULONG bitbuffer;
 	LPCBYTE pStart;
 	LPCBYTE pSrc;
-
-	ULONG GetBits(UINT n);
 } PPBITBUFFER;
 
 
-ULONG PPBITBUFFER::GetBits(UINT n)
+static ULONG PPBITBUFFER_GetBits(PPBITBUFFER *_this, UINT n)
 {
 	ULONG result = 0;
 
 	for (UINT i=0; i<n; i++)
 	{
-		if (!bitcount)
+		if (!_this->bitcount)
 		{
-			bitcount = 8;
-			if (pSrc != pStart) pSrc--;
-			bitbuffer = *pSrc;
+			_this->bitcount = 8;
+			if (_this->pSrc != _this->pStart) _this->pSrc--;
+			_this->bitbuffer = *_this->pSrc;
 		}
-		result = (result<<1) | (bitbuffer&1);
-		bitbuffer >>= 1;
-		bitcount--;
+		result = (result<<1) | (_this->bitbuffer&1);
+		_this->bitbuffer >>= 1;
+		_this->bitcount--;
     }
     return result;
 }
@@ -320,41 +316,41 @@ VOID PP20_DoUnpack(const BYTE *pSrc, UINT nSrcLen, BYTE *pDst, UINT nDstLen)
 	BitBuffer.pSrc = pSrc + nSrcLen - 4;
 	BitBuffer.bitbuffer = 0;
 	BitBuffer.bitcount = 0;
-	BitBuffer.GetBits(pSrc[nSrcLen-1]);
+	PPBITBUFFER_GetBits(&BitBuffer, pSrc[nSrcLen-1]);
 	nBytesLeft = nDstLen;
 	while (nBytesLeft > 0)
 	{
-		if (!BitBuffer.GetBits(1))
+		if (!PPBITBUFFER_GetBits(&BitBuffer, 1))
 		{
 			UINT n = 1;
 			while (n < nBytesLeft)
 			{
-				UINT code = BitBuffer.GetBits(2);
+				UINT code = PPBITBUFFER_GetBits(&BitBuffer, 2);
 				n += code;
 				if (code != 3) break;
 			}
 			for (UINT i=0; i<n; i++)
 			{
-				pDst[--nBytesLeft] = (BYTE)BitBuffer.GetBits(8);
+				pDst[--nBytesLeft] = (BYTE)PPBITBUFFER_GetBits(&BitBuffer, 8);
 			}
 			if (!nBytesLeft) break;
 		}
 		{
-			UINT n = BitBuffer.GetBits(2)+1;
+			UINT n = PPBITBUFFER_GetBits(&BitBuffer, 2)+1;
 			UINT nbits = pSrc[n-1];
 			UINT nofs;
 			if (n==4)
 			{
-				nofs = BitBuffer.GetBits( (BitBuffer.GetBits(1)) ? nbits : 7 );
+				nofs = PPBITBUFFER_GetBits(&BitBuffer,  (PPBITBUFFER_GetBits(&BitBuffer, 1)) ? nbits : 7 );
 				while (n < nBytesLeft)
 				{
-					UINT code = BitBuffer.GetBits(3);
+					UINT code = PPBITBUFFER_GetBits(&BitBuffer, 3);
 					n += code;
 					if (code != 7) break;
 				}
 			} else
 			{
-				nofs = BitBuffer.GetBits(nbits);
+				nofs = PPBITBUFFER_GetBits(&BitBuffer, nbits);
 			}
 			for (UINT i=0; i<=n; i++)
 			{

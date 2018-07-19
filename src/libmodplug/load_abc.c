@@ -446,10 +446,12 @@ static void abc_new_umacro(ABCHANDLE *h, const char *m)
 // =============================================================================
 {
     ABCMACRO *retval, *mp;
+    char *q;
+
 		char key[256], value[256];
 		abc_extractkeyvalue(key, sizeof(key), value, sizeof(value), m);
 		if( SDL_strlen(key) > 1 || SDL_strchr("~HIJKLMNOPQRSTUVWXY",SDL_toupper(key[0])) == 0 ) return;
-		while( char *q = SDL_strchr(key, '!') )
+		while( (q = SDL_strchr(key, '!')) != NULL )
 			*q = '+'; // translate oldstyle to newstyle
 		if( !SDL_strcmp(key,"+nil+") ) { // delete a macro
 			mp = NULL;

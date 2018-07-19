@@ -7,14 +7,12 @@
 #include "modplug.h"
 #include "libmodplug.h"
 
-struct _ModPlugFile
+typedef struct _ModPlugFile
 {
 	CSoundFile mSoundFile;
-};
+} _ModPlugFile;
 
-namespace ModPlug
-{
-	ModPlug_Settings gSettings =
+	static ModPlug_Settings gSettings =
 	{
 		MODPLUG_ENABLE_OVERSAMPLING | MODPLUG_ENABLE_NOISE_REDUCTION,
 
@@ -34,9 +32,9 @@ namespace ModPlug
 		0
 	};
 
-	int gSampleSize;
+	static int gSampleSize;
 
-	void UpdateSettings(bool updateBasicConfig)
+	static void ModPlug_UpdateSettings(int updateBasicConfig)
 	{
 		if(gSettings.mFlags & MODPLUG_ENABLE_REVERB)
 		{
@@ -72,29 +70,30 @@ namespace ModPlug
 		CSoundFile_SetWaveConfigEx(gSettings.mFlags & MODPLUG_ENABLE_SURROUND,
 		                            !(gSettings.mFlags & MODPLUG_ENABLE_OVERSAMPLING),
 		                            gSettings.mFlags & MODPLUG_ENABLE_REVERB,
-		                            true,
+		                            TRUE,
 		                            gSettings.mFlags & MODPLUG_ENABLE_MEGABASS,
 		                            gSettings.mFlags & MODPLUG_ENABLE_NOISE_REDUCTION,
-		                            false);
+		                            FALSE);
 		CSoundFile_SetResamplingMode(gSettings.mResamplingMode);
 	}
-}
+
 
 ModPlugFile* ModPlug_Load(const void* data, int size)
 {
     extern void init_modplug_filters(void);
     init_modplug_filters();
 
-	ModPlugFile* result = new ModPlugFile;
-	ModPlug::UpdateSettings(true);
+	ModPlugFile* result = (ModPlugFile *) SDL_malloc(sizeof (ModPlugFile));
+    if (!result) return NULL;
+	ModPlug_UpdateSettings(TRUE);
 	if(CSoundFile_Create(&result->mSoundFile, (const BYTE*)data, size))
 	{
-		CSoundFile_SetRepeatCount(&result->mSoundFile, ModPlug::gSettings.mLoopCount);
+		CSoundFile_SetRepeatCount(&result->mSoundFile, gSettings.mLoopCount);
 		return result;
 	}
 	else
 	{
-		delete result;
+		SDL_free(result);
 		return NULL;
 	}
 }
@@ -102,12 +101,12 @@ ModPlugFile* ModPlug_Load(const void* data, int size)
 void ModPlug_Unload(ModPlugFile* file)
 {
 	CSoundFile_Destroy(&file->mSoundFile);
-	delete file;
+	SDL_free(file);
 }
 
 int ModPlug_Read(ModPlugFile* file, void* buffer, int size)
 {
-	return CSoundFile_Read(&file->mSoundFile, buffer, size) * ModPlug::gSampleSize;
+	return CSoundFile_Read(&file->mSoundFile, buffer, size) * gSampleSize;
 }
 
 int ModPlug_GetLength(ModPlugFile* file)
@@ -133,8 +132,8 @@ void ModPlug_Seek(ModPlugFile* file, int millisecond)
 
 void ModPlug_SetSettings(const ModPlug_Settings* settings)
 {
-	SDL_memcpy(&ModPlug::gSettings, settings, sizeof(ModPlug_Settings));
-	ModPlug::UpdateSettings(false); // do not update basic config.
+	SDL_memcpy(&gSettings, settings, sizeof(ModPlug_Settings));
+	ModPlug_UpdateSettings(FALSE); // do not update basic config.
 }
 
 // inefficient, but oh well.
@@ -219,7 +218,7 @@ void mmfclose(MMFILE *mmfile)
 	SDL_free(mmfile);
 }
 
-bool mmfeof(MMFILE *mmfile)
+int mmfeof(MMFILE *mmfile)
 {
 	if( mmfile->pos < 0 ) return TRUE;
 	if( mmfile->pos < mmfile->sz ) return FALSE;

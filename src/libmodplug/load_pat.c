@@ -1018,7 +1018,7 @@ BOOL PAT_Load_Instruments(void *c)
 	of->m_nSamples     = pat_numsmp() + 1; // xmms modplug does not use slot zero
 	of->m_nInstruments = pat_numinstr() + 1;
 	for(t=1; t<of->m_nInstruments; t++) { // xmms modplug doesn't use slot zero
-		if( (of->Headers[t] = new INSTRUMENTHEADER) == NULL ) return FALSE;
+		if( (of->Headers[t] = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER))) == NULL ) return FALSE;
 		SDL_memset(of->Headers[t], 0, sizeof(INSTRUMENTHEADER));
 		PATinst(of->Headers[t], t, pat_smptogm(t));
 	}
@@ -1027,7 +1027,7 @@ BOOL PAT_Load_Instruments(void *c)
 	}
 	// copy last of the mohicans to entry 0 for XMMS modinfo to work....
 	t = of->m_nInstruments - 1;
-	if( (of->Headers[0] = new INSTRUMENTHEADER) == NULL ) return FALSE;
+	if( (of->Headers[0] = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER))) == NULL ) return FALSE;
 	SDL_memcpy(of->Headers[0], of->Headers[t], sizeof(INSTRUMENTHEADER));
 	t = of->m_nSamples - 1;
 	SDL_memcpy(&of->Ins[0], &of->Ins[t], sizeof(MODINSTRUMENT));
@@ -1081,7 +1081,7 @@ BOOL CSoundFile_ReadPAT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	for(t=1; t<(int)_this->m_nInstruments; t++) { // xmms modplug doesn't use slot zero
 		WaveHeader hw;
 		char s[32];
-		if( (d = new INSTRUMENTHEADER) == NULL ) {
+		if( (d = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER))) == NULL ) {
 			avoid_reentry = 0;
 			return FALSE;
 		}
@@ -1118,7 +1118,7 @@ BOOL CSoundFile_ReadPAT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	}
 	// copy last of the mohicans to entry 0 for XMMS modinfo to work....
 	t = _this->m_nInstruments - 1;
-	if( (_this->Headers[0] = new INSTRUMENTHEADER) == NULL ) {
+	if( (_this->Headers[0] = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER))) == NULL ) {
 		avoid_reentry = 0;
 		return FALSE;
 	}

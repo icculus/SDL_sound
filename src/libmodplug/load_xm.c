@@ -84,7 +84,7 @@ BOOL CSoundFile_ReadXM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 	BYTE pattern_map[256];
 	BOOL samples_used[MAX_SAMPLES];
 	UINT unused_samples;
-	tagXMFILEHEADER xmhead;
+	XMFILEHEADER xmhead;
 
 	_this->m_nChannels = 0;
 	if ((!lpStream) || (dwMemLength < 0x200)) return FALSE;
@@ -280,7 +280,7 @@ BOOL CSoundFile_ReadXM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 		if (dwMemPos + sizeof(XMINSTRUMENTHEADER) >= dwMemLength) return TRUE;
 		pih = (XMINSTRUMENTHEADER *)(lpStream+dwMemPos);
 		if (dwMemPos + bswapLE32(pih->size) > dwMemLength) return TRUE;
-		if ((_this->Headers[iIns] = new INSTRUMENTHEADER) == NULL) continue;
+		if ((_this->Headers[iIns] = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER))) == NULL) continue;
 		SDL_memset(_this->Headers[iIns], 0, sizeof(INSTRUMENTHEADER));
 		if ((nsamples = pih->samples) > 0)
 		{
@@ -525,8 +525,7 @@ BOOL CSoundFile_ReadXM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 		dwMemPos += 8;
 		if ((dwMemPos + len <= dwMemLength) && (len <= MAX_PATTERNS*MAX_PATTERNNAME) && (len >= MAX_PATTERNNAME))
 		{
-			_this->m_lpszPatternNames = new char[len];
-
+			_this->m_lpszPatternNames = (char *) SDL_malloc(len);
 			if (_this->m_lpszPatternNames)
 			{
 				_this->m_nPatternNames = len / MAX_PATTERNNAME;

@@ -95,7 +95,7 @@ BOOL CSoundFile_ReadAMS(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 		dwMemPos += tmp;
 	}
 	// Read Pattern Names
-	_this->m_lpszPatternNames = new char[pfh->patterns * 32];  // changed from CHAR
+	_this->m_lpszPatternNames = (char *) SDL_malloc(pfh->patterns * 32);  // changed from CHAR
 	if (!_this->m_lpszPatternNames) return TRUE;
 	_this->m_nPatternNames = pfh->patterns;
 	SDL_memset(_this->m_lpszPatternNames, 0, _this->m_nPatternNames * 32);
@@ -332,7 +332,7 @@ BOOL CSoundFile_ReadAMS2(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 		dwMemPos += 5 + panenv->points*3;
 		pitchenv = (AMS2ENVELOPE *)(lpStream+dwMemPos);
 		dwMemPos += 5 + pitchenv->points*3;
-		INSTRUMENTHEADER *penv = new INSTRUMENTHEADER;
+		INSTRUMENTHEADER *penv = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER));
 		if (!penv) return TRUE;
 		SDL_memset(smpmap, 0, sizeof(smpmap));
 		SDL_memset(penv, 0, sizeof(INSTRUMENTHEADER));
@@ -522,7 +522,7 @@ BOOL CSoundFile_ReadAMS2(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 void AMSUnpack(const char *psrc, UINT inputlen, char *pdest, UINT dmax, char packcharacter)
 {
 	UINT tmplen = dmax;
-	signed char *amstmp = new signed char[tmplen];
+	signed char *amstmp = (signed char *) SDL_malloc(tmplen);
 	
 	if (!amstmp) return;
 	// Unpack Loop
@@ -582,6 +582,6 @@ void AMSUnpack(const char *psrc, UINT inputlen, char *pdest, UINT dmax, char pac
 			pdest[i] = old;
 		}
 	}
-	delete[] amstmp;
+	SDL_free(amstmp);
 }
 
