@@ -44,7 +44,7 @@ DWORD lengthArrayToDWORD(const BYTE length[4]) {
 }
 
 
-BOOL CSoundFile::Read669(const BYTE *lpStream, DWORD dwMemLength)
+BOOL CSoundFile_Read669(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLength)
 //---------------------------------------------------------------
 {
 	BOOL b669Ext;
@@ -57,25 +57,24 @@ BOOL CSoundFile::Read669(const BYTE *lpStream, DWORD dwMemLength)
 	b669Ext = (bswapLE16(pfh->sig) == 0x4E4A) ? TRUE : FALSE;
 	if ((!pfh->samples) || (pfh->samples > 64) || (pfh->restartpos >= 128)
 	 || (!pfh->patterns) || (pfh->patterns > 128)) return FALSE;
-	DWORD dontfuckwithme = 0x1F1 + pfh->samples * sizeof(SAMPLE669) + pfh->patterns * 0x600;
-	if (dontfuckwithme > dwMemLength) return FALSE;
+	DWORD donttouchme = 0x1F1 + pfh->samples * sizeof(SAMPLE669) + pfh->patterns * 0x600;
+	if (donttouchme > dwMemLength) return FALSE;
 	for (UINT ichk=0; ichk<pfh->samples; ichk++)
 	{
 		DWORD len = lengthArrayToDWORD(psmp[ichk].length);
-		dontfuckwithme += len;
+		donttouchme += len;
 	}
-	if (dontfuckwithme > dwMemLength) return FALSE;
+	if (donttouchme > dwMemLength) return FALSE;
 	// That should be enough checking: this must be a 669 module.
-	m_nType = MOD_TYPE_669;
-	m_dwSongFlags |= SONG_LINEARSLIDES;
-	m_nMinPeriod = 28 << 2;
-	m_nMaxPeriod = 1712 << 3;
-	m_nDefaultTempo = 125;
-	m_nDefaultSpeed = 6;
-	m_nChannels = 8;
-	SDL_memcpy(m_szNames[0], pfh->songmessage, 16);
-	m_nSamples = pfh->samples;
-	for (UINT nins=1; nins<=m_nSamples; nins++, psmp++)
+	_this->m_nType = MOD_TYPE_669;
+	_this->m_dwSongFlags |= SONG_LINEARSLIDES;
+	_this->m_nMinPeriod = 28 << 2;
+	_this->m_nMaxPeriod = 1712 << 3;
+	_this->m_nDefaultTempo = 125;
+	_this->m_nDefaultSpeed = 6;
+	_this->m_nChannels = 8;
+	_this->m_nSamples = pfh->samples;
+	for (UINT nins=1; nins<=_this->m_nSamples; nins++, psmp++)
 	{
 		DWORD len = lengthArrayToDWORD(psmp->length);
 		DWORD loopstart = lengthArrayToDWORD(psmp->loopstart);
@@ -84,37 +83,32 @@ BOOL CSoundFile::Read669(const BYTE *lpStream, DWORD dwMemLength)
 		if ((loopend > len) && (!loopstart)) loopend = 0;
 		if (loopend > len) loopend = len;
 		if (loopstart + 4 >= loopend) loopstart = loopend = 0;
-		Ins[nins].nLength = len;
-		Ins[nins].nLoopStart = loopstart;
-		Ins[nins].nLoopEnd = loopend;
-		if (loopend) Ins[nins].uFlags |= CHN_LOOP;
-		SDL_memcpy(m_szNames[nins], psmp->filename, 13);
-		Ins[nins].nVolume = 256;
-		Ins[nins].nGlobalVol = 64;
-		Ins[nins].nPan = 128;
+		_this->Ins[nins].nLength = len;
+		_this->Ins[nins].nLoopStart = loopstart;
+		_this->Ins[nins].nLoopEnd = loopend;
+		if (loopend) _this->Ins[nins].uFlags |= CHN_LOOP;
+		_this->Ins[nins].nVolume = 256;
+		_this->Ins[nins].nGlobalVol = 64;
+		_this->Ins[nins].nPan = 128;
 	}
-	// Song Message
-	m_lpszSongComments = new char[109];
-	SDL_memcpy(m_lpszSongComments, pfh->songmessage, 108);
-	m_lpszSongComments[108] = 0;
 	// Reading Orders
-	SDL_memcpy(Order, pfh->orders, 128);
-	m_nRestartPos = pfh->restartpos;
-	if (Order[m_nRestartPos] >= pfh->patterns) m_nRestartPos = 0;
+	SDL_memcpy(_this->Order, pfh->orders, 128);
+	_this->m_nRestartPos = pfh->restartpos;
+	if (_this->Order[_this->m_nRestartPos] >= pfh->patterns) _this->m_nRestartPos = 0;
 	// Reading Pattern Break Locations
 	for (UINT npan=0; npan<8; npan++)
 	{
-		ChnSettings[npan].nPan = (npan & 1) ? 0x30 : 0xD0;
-		ChnSettings[npan].nVolume = 64;
+		_this->ChnSettings[npan].nPan = (npan & 1) ? 0x30 : 0xD0;
+		_this->ChnSettings[npan].nVolume = 64;
 	}
 	// Reading Patterns
 	dwMemPos = 0x1F1 + pfh->samples * 25;
 	for (UINT npat=0; npat<pfh->patterns; npat++)
 	{
-		Patterns[npat] = AllocatePattern(64, m_nChannels);
-		if (!Patterns[npat]) break;
-		PatternSize[npat] = 64;
-		MODCOMMAND *m = Patterns[npat];
+		_this->Patterns[npat] = CSoundFile_AllocatePattern(64, _this->m_nChannels);
+		if (!_this->Patterns[npat]) break;
+		_this->PatternSize[npat] = 64;
+		MODCOMMAND *m = _this->Patterns[npat];
 		const BYTE *p = lpStream + dwMemPos;
 		for (UINT row=0; row<64; row++)
 		{
@@ -181,11 +175,11 @@ BOOL CSoundFile::Read669(const BYTE *lpStream, DWORD dwMemLength)
 		dwMemPos += 0x600;
 	}
 	// Reading Samples
-	for (UINT n=1; n<=m_nSamples; n++)
+	for (UINT n=1; n<=_this->m_nSamples; n++)
 	{
-		UINT len = Ins[n].nLength;
+		UINT len = _this->Ins[n].nLength;
 		if (dwMemPos >= dwMemLength) break;
-		if (len > 4) ReadSample(&Ins[n], RS_PCM8U, (LPSTR)(lpStream+dwMemPos), dwMemLength - dwMemPos);
+		if (len > 4) CSoundFile_ReadSample(_this, &_this->Ins[n], RS_PCM8U, (LPSTR)(lpStream+dwMemPos), dwMemLength - dwMemPos);
 		dwMemPos += len;
 	}
 	return TRUE;

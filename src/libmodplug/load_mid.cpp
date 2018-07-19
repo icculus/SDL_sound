@@ -635,7 +635,7 @@ static int mid_read_delta(MIDHANDLE *h)
 }
 
 // =====================================================================================
-BOOL CSoundFile::TestMID(const BYTE *lpStream, DWORD dwMemLength)
+BOOL CSoundFile_TestMID(const BYTE *lpStream, DWORD dwMemLength)
 // =====================================================================================
 {
 	char id[5];
@@ -747,7 +747,7 @@ static int MID_ReadPatterns(MODCOMMAND *pattern[], WORD psize[], MIDHANDLE *h, i
 	// initialize start points of event list in tracks
 	for( t = h->track; t; t = t->next ) t->workevent = t->head;
 	for( pat = 0; pat < numpat; pat++ ) {
-		pattern[pat] = CSoundFile::AllocatePattern(64, channels);
+		pattern[pat] = CSoundFile_AllocatePattern(64, channels);
 		if( !pattern[pat] ) return 0;
 		psize[pat] = 64;
 		for( row = 0; row < 64; row++ ) {
@@ -1045,7 +1045,7 @@ ULONG mid_first_noteonevent_tick(MIDEVENT *e)
 }
 
 // =====================================================================================
-BOOL CSoundFile::ReadMID(const BYTE *lpStream, DWORD dwMemLength)
+BOOL CSoundFile_ReadMID(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLength)
 {
 	static int avoid_reentry = 0;
 	MIDHANDLE *h;
@@ -1062,7 +1062,7 @@ BOOL CSoundFile::ReadMID(const BYTE *lpStream, DWORD dwMemLength)
 	BYTE *p;
 	while( avoid_reentry ) SDL_Delay(1);
 	avoid_reentry = 1;
-	if( !TestMID(lpStream, dwMemLength) ) {
+	if( !CSoundFile_TestMID(lpStream, dwMemLength) ) {
 		avoid_reentry = 0;
 		return FALSE;
 	}
@@ -1090,7 +1090,7 @@ BOOL CSoundFile::ReadMID(const BYTE *lpStream, DWORD dwMemLength)
 	h->divider <<= 2; // ticks per quartnote ==> ticks per note
 	if (!h->divider) h->divider = 1;
 	h->tempo = 122;
-	m_nDefaultTempo = 0;
+	_this->m_nDefaultTempo = 0;
 	h->tracktime = 0;
 	h->speed = 6;
 	if (h->miditracks == 0) {
@@ -1119,7 +1119,6 @@ BOOL CSoundFile::ReadMID(const BYTE *lpStream, DWORD dwMemLength)
 	}
 	h->tp = NULL;
 	SDL_memset(buf,0,sizeof(buf));
-	m_szNames[0][0] = 0;
 	maxtempo = 0;
 	panlow   = 64;
 	panhigh  = 64;
@@ -1263,16 +1262,12 @@ BOOL CSoundFile::ReadMID(const BYTE *lpStream, DWORD dwMemLength)
 							}
 							h->deltatime = delta;
 							switch( midibyte[0] ) {
-								case 0x03: // type: track name
-									if( m_szNames[0][0] == '\0' )
-										SDL_strlcpy(m_szNames[0], buf, 32);
-									break;
 								case 0x51: // type: tempo
 									p=(BYTE *)buf;
 									delta = (p[0]<<16)|(p[1]<<8)|p[2];
 									if( delta )
 										h->tempo = 60000000 / delta;
-									if( m_nDefaultTempo == 0 ) m_nDefaultTempo = h->tempo;
+									if( _this->m_nDefaultTempo == 0 ) _this->m_nDefaultTempo = h->tempo;
 									else {
 										ttp = h->track;
 										if( !ttp ) mid_locate_track(h, 0, 0xff);
@@ -1355,52 +1350,52 @@ BOOL CSoundFile::ReadMID(const BYTE *lpStream, DWORD dwMemLength)
 	}
 	// set module variables
 	numtracks = mid_numtracks(h);
-	if( m_nDefaultTempo == 0 ) m_nDefaultTempo = h->tempo;
+	if( _this->m_nDefaultTempo == 0 ) _this->m_nDefaultTempo = h->tempo;
 	if( maxtempo == 0 ) maxtempo = h->tempo;
 	if( maxtempo != 255 ) {
 		mid_adjust_for_optimal_tempo(h, maxtempo);
 	}
-	if( maxtempo > 0 ) m_nDefaultTempo = (255 * m_nDefaultTempo) / maxtempo;
+	if( maxtempo > 0 ) _this->m_nDefaultTempo = (255 * _this->m_nDefaultTempo) / maxtempo;
 
 	numpats = 1 + (modticks(h, h->tracktime) / h->speed / 64 );
 	if (numpats > MAX_PATTERNS) numpats = MAX_PATTERNS;
 
-	m_nType         = MOD_TYPE_MID;
-	m_nDefaultSpeed = h->speed;
-	m_nChannels     = numtracks;
-	m_dwSongFlags   = SONG_LINEARSLIDES;
-	m_nMinPeriod    = 28 << 2;
-	m_nMaxPeriod    = 1712 << 3;
-	if (m_nChannels == 0)
+	_this->m_nType         = MOD_TYPE_MID;
+	_this->m_nDefaultSpeed = h->speed;
+	_this->m_nChannels     = numtracks;
+	_this->m_dwSongFlags   = SONG_LINEARSLIDES;
+	_this->m_nMinPeriod    = 28 << 2;
+	_this->m_nMaxPeriod    = 1712 << 3;
+	if (_this->m_nChannels == 0)
 		return FALSE;
 	// orderlist
 	for(t=0; t < numpats; t++)
-		Order[t] = t;
-	if( !PAT_Load_Instruments(this) ) {
+		_this->Order[t] = t;
+	if( !PAT_Load_Instruments(_this) ) {
 		avoid_reentry = 0;
 		return FALSE;
 	}
 	// ==============================
 	// Load the pattern info now!
-	if( MID_ReadPatterns(Patterns, PatternSize, h, numpats, m_nChannels) ) {
+	if( MID_ReadPatterns(_this->Patterns, _this->PatternSize, h, numpats, _this->m_nChannels) ) {
 		// :^(  need one more channel to handle the global events ;^b
-		m_nChannels++;
+		_this->m_nChannels++;
 		h->tp = mid_new_track(h, h->track->chan, 0xff);
 		for( ttp=h->track; ttp->next; ttp=ttp->next ) ;
 		ttp->next = h->tp;
 		mid_add_sync(h, h->tp);
 		for( t=0; t<numpats; t++ ) {
-			FreePattern(Patterns[t]);
-			Patterns[t] = NULL;
+			CSoundFile_FreePattern(_this->Patterns[t]);
+			_this->Patterns[t] = NULL;
 		}
-		MID_ReadPatterns(Patterns, PatternSize, h, numpats, m_nChannels);
+		MID_ReadPatterns(_this->Patterns, _this->PatternSize, h, numpats, _this->m_nChannels);
 	}
 	// ============================================================
 	// set panning positions
 	t = 0;
 	for( ttp=h->track; ttp; ttp=ttp->next ) {
-		ChnSettings[t].nPan    = modpan(ttp->balance, numchans / 2);
-		ChnSettings[t].nVolume = 64;
+		_this->ChnSettings[t].nPan    = modpan(ttp->balance, numchans / 2);
+		_this->ChnSettings[t].nVolume = 64;
 		t++;
 	}
 	MID_Cleanup(h);	// we dont need it anymore

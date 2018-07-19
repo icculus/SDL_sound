@@ -84,17 +84,11 @@ extern short int gKaiserSinc[]; // 8-taps polyphase
 #define SPLINE_FRACBITS 10
 #define SPLINE_LUTLEN (1L<<SPLINE_FRACBITS)
 
-class CzCUBICSPLINE
-{	public:
-		CzCUBICSPLINE( );
-		~CzCUBICSPLINE( );
-		static signed short lut[4*(1L<<SPLINE_FRACBITS)];
-};
+signed short CzCUBICSPLINE_lut[4*(1L<<SPLINE_FRACBITS)];
 
-signed short CzCUBICSPLINE::lut[4*(1L<<SPLINE_FRACBITS)];
-
-CzCUBICSPLINE::CzCUBICSPLINE( )
-{	int _LIi;
+static void initCzCUBICSPLINE()
+{
+	int _LIi;
 	int _LLen		= (1L<<SPLINE_FRACBITS);
 	float _LFlen	= 1.0f / (float)_LLen;
 	float _LScale	= (float)SPLINE_QUANTSCALE;
@@ -106,28 +100,22 @@ CzCUBICSPLINE::CzCUBICSPLINE( )
 		_LC0 = (float)floor( 0.5 + _LScale*( 1.5*_LX*_LX*_LX - 2.5*_LX*_LX + 1.0 ) );
 		_LC1 = (float)floor( 0.5 + _LScale*(-1.5*_LX*_LX*_LX + 2.0*_LX*_LX + 0.5*_LX ) );
 		_LC2 = (float)floor( 0.5 + _LScale*( 0.5*_LX*_LX*_LX - 0.5*_LX*_LX) );
-		lut[_LIdx+0] = (signed short)( (_LCm1 < -_LScale) ? -_LScale : ((_LCm1 > _LScale) ? _LScale : _LCm1) );
-		lut[_LIdx+1] = (signed short)( (_LC0  < -_LScale) ? -_LScale : ((_LC0  > _LScale) ? _LScale : _LC0 ) );
-		lut[_LIdx+2] = (signed short)( (_LC1  < -_LScale) ? -_LScale : ((_LC1  > _LScale) ? _LScale : _LC1 ) );
-		lut[_LIdx+3] = (signed short)( (_LC2  < -_LScale) ? -_LScale : ((_LC2  > _LScale) ? _LScale : _LC2 ) );
+		CzCUBICSPLINE_lut[_LIdx+0] = (signed short)( (_LCm1 < -_LScale) ? -_LScale : ((_LCm1 > _LScale) ? _LScale : _LCm1) );
+		CzCUBICSPLINE_lut[_LIdx+1] = (signed short)( (_LC0  < -_LScale) ? -_LScale : ((_LC0  > _LScale) ? _LScale : _LC0 ) );
+		CzCUBICSPLINE_lut[_LIdx+2] = (signed short)( (_LC1  < -_LScale) ? -_LScale : ((_LC1  > _LScale) ? _LScale : _LC1 ) );
+		CzCUBICSPLINE_lut[_LIdx+3] = (signed short)( (_LC2  < -_LScale) ? -_LScale : ((_LC2  > _LScale) ? _LScale : _LC2 ) );
 #ifdef SPLINE_CLAMPFORUNITY
-		_LSum = lut[_LIdx+0]+lut[_LIdx+1]+lut[_LIdx+2]+lut[_LIdx+3];
+		_LSum = CzCUBICSPLINE_lut[_LIdx+0]+CzCUBICSPLINE_lut[_LIdx+1]+CzCUBICSPLINE_lut[_LIdx+2]+CzCUBICSPLINE_lut[_LIdx+3];
 		if( _LSum != SPLINE_QUANTSCALE )
 		{	int _LMax = _LIdx;
-			if( lut[_LIdx+1]>lut[_LMax] ) _LMax = _LIdx+1;
-			if( lut[_LIdx+2]>lut[_LMax] ) _LMax = _LIdx+2;
-			if( lut[_LIdx+3]>lut[_LMax] ) _LMax = _LIdx+3;
-			lut[_LMax] += ((signed short)SPLINE_QUANTSCALE-_LSum);
+			if( CzCUBICSPLINE_lut[_LIdx+1]>CzCUBICSPLINE_lut[_LMax] ) _LMax = _LIdx+1;
+			if( CzCUBICSPLINE_lut[_LIdx+2]>CzCUBICSPLINE_lut[_LMax] ) _LMax = _LIdx+2;
+			if( CzCUBICSPLINE_lut[_LIdx+3]>CzCUBICSPLINE_lut[_LMax] ) _LMax = _LIdx+3;
+			CzCUBICSPLINE_lut[_LMax] += ((signed short)SPLINE_QUANTSCALE-_LSum);
 		}
 #endif
 	}
 }
-
-CzCUBICSPLINE::~CzCUBICSPLINE( )
-{	// nothing todo
-}
-
-CzCUBICSPLINE sspline;
 
 /*
   ------------------------------------------------------------------------------
@@ -176,12 +164,7 @@ CzCUBICSPLINE sspline;
 #define M_zEPS		1e-8
 #define M_zBESSELEPS	1e-21
 
-class CzWINDOWEDFIR
-{	
-public:
-	CzWINDOWEDFIR( );
-	~CzWINDOWEDFIR( );
-	float coef( int _PCnr, float _POfs, float _PCut, int _PWidth, int _PType ) 
+    static float CzWINDOWEDFIR_coef( int _PCnr, float _POfs, float _PCut, int _PWidth, int _PType )
 //OLD args to coef: float _PPos, float _PFc, int _PLen )
 	{	
 		double	_LWidthM1       = _PWidth-1;
@@ -238,12 +221,10 @@ public:
 		}
 		return (float)(_LWc*_LSi);
 	}
-	static signed short lut[WFIR_LUTLEN*WFIR_WIDTH];
-};
 
-signed short CzWINDOWEDFIR::lut[WFIR_LUTLEN*WFIR_WIDTH];
+static signed short CzWINDOWEDFIR_lut[WFIR_LUTLEN*WFIR_WIDTH];
 
-CzWINDOWEDFIR::CzWINDOWEDFIR()
+static void initCzWINDOWEDFIR()
 {	
 	int _LPcl;
 	float _LPcllen	= (float)(1L<<WFIR_FRACBITS);	// number of precalculated lines for 0..1 (-1..0)
@@ -256,21 +237,24 @@ CzWINDOWEDFIR::CzWINDOWEDFIR()
 		float _LOfs		= ((float)_LPcl-_LPcllen)*_LNorm;
 		int _LCc,_LIdx	= _LPcl<<WFIR_LOG2WIDTH;
 		for( _LCc=0,_LGain=0.0f;_LCc<WFIR_WIDTH;_LCc++ )
-		{	_LGain	+= (_LCoefs[_LCc] = coef( _LCc, _LOfs, _LCut, WFIR_WIDTH, WFIR_TYPE ));
+		{	_LGain	+= (_LCoefs[_LCc] = CzWINDOWEDFIR_coef( _LCc, _LOfs, _LCut, WFIR_WIDTH, WFIR_TYPE ));
 		}
 		_LGain = 1.0f/_LGain;
 		for( _LCc=0;_LCc<WFIR_WIDTH;_LCc++ )
 		{	float _LCoef = (float)floor( 0.5 + _LScale*_LCoefs[_LCc]*_LGain );
-		lut[_LIdx+_LCc] = (signed short)( (_LCoef<-_LScale)?-_LScale:((_LCoef>_LScale)?_LScale:_LCoef) );
+		CzWINDOWEDFIR_lut[_LIdx+_LCc] = (signed short)( (_LCoef<-_LScale)?-_LScale:((_LCoef>_LScale)?_LScale:_LCoef) );
 		}
 	}
 }
 
-CzWINDOWEDFIR::~CzWINDOWEDFIR()
-{	// nothing todo
+void init_modplug_filters(void)
+{
+    static int inited_filters = 0;
+    if (inited_filters) return;
+    inited_filters = 1;
+    initCzCUBICSPLINE();
+    initCzWINDOWEDFIR();
 }
-
-CzWINDOWEDFIR sfir;
 
 // ----------------------------------------------------------------------------
 // MIXING MACROS
@@ -332,18 +316,18 @@ CzWINDOWEDFIR sfir;
 #define SNDMIX_GETMONOVOL8SPLINE \
 	int poshi	= nPos >> 16; \
 	int poslo	= (nPos >> SPLINE_FRACSHIFT) & SPLINE_FRACMASK; \
-	int vol		= (CzCUBICSPLINE::lut[poslo  ]*(int)p[poshi-1] + \
-	               CzCUBICSPLINE::lut[poslo+1]*(int)p[poshi  ] + \
-	               CzCUBICSPLINE::lut[poslo+3]*(int)p[poshi+2] + \
-	               CzCUBICSPLINE::lut[poslo+2]*(int)p[poshi+1]) >> SPLINE_8SHIFT;
+	int vol		= (CzCUBICSPLINE_lut[poslo  ]*(int)p[poshi-1] + \
+	               CzCUBICSPLINE_lut[poslo+1]*(int)p[poshi  ] + \
+	               CzCUBICSPLINE_lut[poslo+3]*(int)p[poshi+2] + \
+	               CzCUBICSPLINE_lut[poslo+2]*(int)p[poshi+1]) >> SPLINE_8SHIFT;
 	
 #define SNDMIX_GETMONOVOL16SPLINE \
 	int poshi	= nPos >> 16; \
 	int poslo	= (nPos >> SPLINE_FRACSHIFT) & SPLINE_FRACMASK; \
-	int vol		= (CzCUBICSPLINE::lut[poslo  ]*(int)p[poshi-1] + \
-	               CzCUBICSPLINE::lut[poslo+1]*(int)p[poshi  ] + \
-	               CzCUBICSPLINE::lut[poslo+3]*(int)p[poshi+2] + \
-	               CzCUBICSPLINE::lut[poslo+2]*(int)p[poshi+1]) >> SPLINE_16SHIFT;
+	int vol		= (CzCUBICSPLINE_lut[poslo  ]*(int)p[poshi-1] + \
+	               CzCUBICSPLINE_lut[poslo+1]*(int)p[poshi  ] + \
+	               CzCUBICSPLINE_lut[poslo+3]*(int)p[poshi+2] + \
+	               CzCUBICSPLINE_lut[poslo+2]*(int)p[poshi+1]) >> SPLINE_16SHIFT;
 
 
 // fir interpolation
@@ -355,28 +339,28 @@ CzWINDOWEDFIR sfir;
 	int poshi  = nPos >> 16;\
 	int poslo  = (nPos & 0xFFFF);\
 	int firidx = ((poslo+WFIR_FRACHALVE)>>WFIR_FRACSHIFT) & WFIR_FRACMASK; \
-	int vol    = (CzWINDOWEDFIR::lut[firidx+0]*(int)p[poshi+1-4]);	\
-            vol   += (CzWINDOWEDFIR::lut[firidx+1]*(int)p[poshi+2-4]);	\
-            vol   += (CzWINDOWEDFIR::lut[firidx+2]*(int)p[poshi+3-4]);	\
-            vol   += (CzWINDOWEDFIR::lut[firidx+3]*(int)p[poshi+4-4]);	\
-            vol   += (CzWINDOWEDFIR::lut[firidx+4]*(int)p[poshi+5-4]);	\
-            vol   += (CzWINDOWEDFIR::lut[firidx+5]*(int)p[poshi+6-4]);	\
-            vol   += (CzWINDOWEDFIR::lut[firidx+6]*(int)p[poshi+7-4]);	\
-            vol   += (CzWINDOWEDFIR::lut[firidx+7]*(int)p[poshi+8-4]);	\
+	int vol    = (CzWINDOWEDFIR_lut[firidx+0]*(int)p[poshi+1-4]);	\
+            vol   += (CzWINDOWEDFIR_lut[firidx+1]*(int)p[poshi+2-4]);	\
+            vol   += (CzWINDOWEDFIR_lut[firidx+2]*(int)p[poshi+3-4]);	\
+            vol   += (CzWINDOWEDFIR_lut[firidx+3]*(int)p[poshi+4-4]);	\
+            vol   += (CzWINDOWEDFIR_lut[firidx+4]*(int)p[poshi+5-4]);	\
+            vol   += (CzWINDOWEDFIR_lut[firidx+5]*(int)p[poshi+6-4]);	\
+            vol   += (CzWINDOWEDFIR_lut[firidx+6]*(int)p[poshi+7-4]);	\
+            vol   += (CzWINDOWEDFIR_lut[firidx+7]*(int)p[poshi+8-4]);	\
             vol  >>= WFIR_8SHIFT;
 
 #define SNDMIX_GETMONOVOL16FIRFILTER \
     int poshi  = nPos >> 16;\
     int poslo  = (nPos & 0xFFFF);\
     int firidx = ((poslo+WFIR_FRACHALVE)>>WFIR_FRACSHIFT) & WFIR_FRACMASK; \
-    int vol1   = (CzWINDOWEDFIR::lut[firidx+0]*(int)p[poshi+1-4]);	\
-        vol1  += (CzWINDOWEDFIR::lut[firidx+1]*(int)p[poshi+2-4]);	\
-        vol1  += (CzWINDOWEDFIR::lut[firidx+2]*(int)p[poshi+3-4]);	\
-        vol1  += (CzWINDOWEDFIR::lut[firidx+3]*(int)p[poshi+4-4]);	\
-    int vol2   = (CzWINDOWEDFIR::lut[firidx+4]*(int)p[poshi+5-4]);	\
-	vol2  += (CzWINDOWEDFIR::lut[firidx+5]*(int)p[poshi+6-4]);	\
-	vol2  += (CzWINDOWEDFIR::lut[firidx+6]*(int)p[poshi+7-4]);	\
-	vol2  += (CzWINDOWEDFIR::lut[firidx+7]*(int)p[poshi+8-4]);	\
+    int vol1   = (CzWINDOWEDFIR_lut[firidx+0]*(int)p[poshi+1-4]);	\
+        vol1  += (CzWINDOWEDFIR_lut[firidx+1]*(int)p[poshi+2-4]);	\
+        vol1  += (CzWINDOWEDFIR_lut[firidx+2]*(int)p[poshi+3-4]);	\
+        vol1  += (CzWINDOWEDFIR_lut[firidx+3]*(int)p[poshi+4-4]);	\
+    int vol2   = (CzWINDOWEDFIR_lut[firidx+4]*(int)p[poshi+5-4]);	\
+	vol2  += (CzWINDOWEDFIR_lut[firidx+5]*(int)p[poshi+6-4]);	\
+	vol2  += (CzWINDOWEDFIR_lut[firidx+6]*(int)p[poshi+7-4]);	\
+	vol2  += (CzWINDOWEDFIR_lut[firidx+7]*(int)p[poshi+8-4]);	\
     int vol    = ((vol1>>1)+(vol2>>1)) >> (WFIR_16BITSHIFT-1);
 
 /////////////////////////////////////////////////////////////////////////////
@@ -412,72 +396,72 @@ CzWINDOWEDFIR sfir;
 #define SNDMIX_GETSTEREOVOL8SPLINE \
     int poshi	= nPos >> 16; \
     int poslo	= (nPos >> SPLINE_FRACSHIFT) & SPLINE_FRACMASK; \
-    int vol_l	= (CzCUBICSPLINE::lut[poslo  ]*(int)p[(poshi-1)*2  ] + \
-	           CzCUBICSPLINE::lut[poslo+1]*(int)p[(poshi  )*2  ] + \
-	           CzCUBICSPLINE::lut[poslo+2]*(int)p[(poshi+1)*2  ] + \
-	           CzCUBICSPLINE::lut[poslo+3]*(int)p[(poshi+2)*2  ]) >> SPLINE_8SHIFT; \
-    int vol_r	= (CzCUBICSPLINE::lut[poslo  ]*(int)p[(poshi-1)*2+1] + \
-	           CzCUBICSPLINE::lut[poslo+1]*(int)p[(poshi  )*2+1] + \
-	           CzCUBICSPLINE::lut[poslo+2]*(int)p[(poshi+1)*2+1] + \
-	           CzCUBICSPLINE::lut[poslo+3]*(int)p[(poshi+2)*2+1]) >> SPLINE_8SHIFT;
+    int vol_l	= (CzCUBICSPLINE_lut[poslo  ]*(int)p[(poshi-1)*2  ] + \
+	           CzCUBICSPLINE_lut[poslo+1]*(int)p[(poshi  )*2  ] + \
+	           CzCUBICSPLINE_lut[poslo+2]*(int)p[(poshi+1)*2  ] + \
+	           CzCUBICSPLINE_lut[poslo+3]*(int)p[(poshi+2)*2  ]) >> SPLINE_8SHIFT; \
+    int vol_r	= (CzCUBICSPLINE_lut[poslo  ]*(int)p[(poshi-1)*2+1] + \
+	           CzCUBICSPLINE_lut[poslo+1]*(int)p[(poshi  )*2+1] + \
+	           CzCUBICSPLINE_lut[poslo+2]*(int)p[(poshi+1)*2+1] + \
+	           CzCUBICSPLINE_lut[poslo+3]*(int)p[(poshi+2)*2+1]) >> SPLINE_8SHIFT;
 
 #define SNDMIX_GETSTEREOVOL16SPLINE \
     int poshi	= nPos >> 16; \
     int poslo	= (nPos >> SPLINE_FRACSHIFT) & SPLINE_FRACMASK; \
-    int vol_l	= (CzCUBICSPLINE::lut[poslo  ]*(int)p[(poshi-1)*2  ] + \
-	           CzCUBICSPLINE::lut[poslo+1]*(int)p[(poshi  )*2  ] + \
-	           CzCUBICSPLINE::lut[poslo+2]*(int)p[(poshi+1)*2  ] + \
-	           CzCUBICSPLINE::lut[poslo+3]*(int)p[(poshi+2)*2  ]) >> SPLINE_16SHIFT; \
-    int vol_r	= (CzCUBICSPLINE::lut[poslo  ]*(int)p[(poshi-1)*2+1] + \
-	           CzCUBICSPLINE::lut[poslo+1]*(int)p[(poshi  )*2+1] + \
-	           CzCUBICSPLINE::lut[poslo+2]*(int)p[(poshi+1)*2+1] + \
-	           CzCUBICSPLINE::lut[poslo+3]*(int)p[(poshi+2)*2+1]) >> SPLINE_16SHIFT;
+    int vol_l	= (CzCUBICSPLINE_lut[poslo  ]*(int)p[(poshi-1)*2  ] + \
+	           CzCUBICSPLINE_lut[poslo+1]*(int)p[(poshi  )*2  ] + \
+	           CzCUBICSPLINE_lut[poslo+2]*(int)p[(poshi+1)*2  ] + \
+	           CzCUBICSPLINE_lut[poslo+3]*(int)p[(poshi+2)*2  ]) >> SPLINE_16SHIFT; \
+    int vol_r	= (CzCUBICSPLINE_lut[poslo  ]*(int)p[(poshi-1)*2+1] + \
+	           CzCUBICSPLINE_lut[poslo+1]*(int)p[(poshi  )*2+1] + \
+	           CzCUBICSPLINE_lut[poslo+2]*(int)p[(poshi+1)*2+1] + \
+	           CzCUBICSPLINE_lut[poslo+3]*(int)p[(poshi+2)*2+1]) >> SPLINE_16SHIFT;
 
 // fir interpolation
 #define SNDMIX_GETSTEREOVOL8FIRFILTER \
     int poshi   = nPos >> 16;\
     int poslo   = (nPos & 0xFFFF);\
     int firidx  = ((poslo+WFIR_FRACHALVE)>>WFIR_FRACSHIFT) & WFIR_FRACMASK; \
-    int vol_l   = (CzWINDOWEDFIR::lut[firidx+0]*(int)p[(poshi+1-4)*2  ]);   \
-	vol_l  += (CzWINDOWEDFIR::lut[firidx+1]*(int)p[(poshi+2-4)*2  ]);   \
-	vol_l  += (CzWINDOWEDFIR::lut[firidx+2]*(int)p[(poshi+3-4)*2  ]);   \
-        vol_l  += (CzWINDOWEDFIR::lut[firidx+3]*(int)p[(poshi+4-4)*2  ]);   \
-        vol_l  += (CzWINDOWEDFIR::lut[firidx+4]*(int)p[(poshi+5-4)*2  ]);   \
-	vol_l  += (CzWINDOWEDFIR::lut[firidx+5]*(int)p[(poshi+6-4)*2  ]);   \
-	vol_l  += (CzWINDOWEDFIR::lut[firidx+6]*(int)p[(poshi+7-4)*2  ]);   \
-        vol_l  += (CzWINDOWEDFIR::lut[firidx+7]*(int)p[(poshi+8-4)*2  ]);   \
+    int vol_l   = (CzWINDOWEDFIR_lut[firidx+0]*(int)p[(poshi+1-4)*2  ]);   \
+	vol_l  += (CzWINDOWEDFIR_lut[firidx+1]*(int)p[(poshi+2-4)*2  ]);   \
+	vol_l  += (CzWINDOWEDFIR_lut[firidx+2]*(int)p[(poshi+3-4)*2  ]);   \
+        vol_l  += (CzWINDOWEDFIR_lut[firidx+3]*(int)p[(poshi+4-4)*2  ]);   \
+        vol_l  += (CzWINDOWEDFIR_lut[firidx+4]*(int)p[(poshi+5-4)*2  ]);   \
+	vol_l  += (CzWINDOWEDFIR_lut[firidx+5]*(int)p[(poshi+6-4)*2  ]);   \
+	vol_l  += (CzWINDOWEDFIR_lut[firidx+6]*(int)p[(poshi+7-4)*2  ]);   \
+        vol_l  += (CzWINDOWEDFIR_lut[firidx+7]*(int)p[(poshi+8-4)*2  ]);   \
 	vol_l >>= WFIR_8SHIFT; \
-    int vol_r   = (CzWINDOWEDFIR::lut[firidx+0]*(int)p[(poshi+1-4)*2+1]);   \
-	vol_r  += (CzWINDOWEDFIR::lut[firidx+1]*(int)p[(poshi+2-4)*2+1]);   \
-	vol_r  += (CzWINDOWEDFIR::lut[firidx+2]*(int)p[(poshi+3-4)*2+1]);   \
-	vol_r  += (CzWINDOWEDFIR::lut[firidx+3]*(int)p[(poshi+4-4)*2+1]);   \
-	vol_r  += (CzWINDOWEDFIR::lut[firidx+4]*(int)p[(poshi+5-4)*2+1]);   \
-        vol_r  += (CzWINDOWEDFIR::lut[firidx+5]*(int)p[(poshi+6-4)*2+1]);   \
-        vol_r  += (CzWINDOWEDFIR::lut[firidx+6]*(int)p[(poshi+7-4)*2+1]);   \
-        vol_r  += (CzWINDOWEDFIR::lut[firidx+7]*(int)p[(poshi+8-4)*2+1]);   \
+    int vol_r   = (CzWINDOWEDFIR_lut[firidx+0]*(int)p[(poshi+1-4)*2+1]);   \
+	vol_r  += (CzWINDOWEDFIR_lut[firidx+1]*(int)p[(poshi+2-4)*2+1]);   \
+	vol_r  += (CzWINDOWEDFIR_lut[firidx+2]*(int)p[(poshi+3-4)*2+1]);   \
+	vol_r  += (CzWINDOWEDFIR_lut[firidx+3]*(int)p[(poshi+4-4)*2+1]);   \
+	vol_r  += (CzWINDOWEDFIR_lut[firidx+4]*(int)p[(poshi+5-4)*2+1]);   \
+        vol_r  += (CzWINDOWEDFIR_lut[firidx+5]*(int)p[(poshi+6-4)*2+1]);   \
+        vol_r  += (CzWINDOWEDFIR_lut[firidx+6]*(int)p[(poshi+7-4)*2+1]);   \
+        vol_r  += (CzWINDOWEDFIR_lut[firidx+7]*(int)p[(poshi+8-4)*2+1]);   \
         vol_r >>= WFIR_8SHIFT;
 
 #define SNDMIX_GETSTEREOVOL16FIRFILTER \
     int poshi   = nPos >> 16;\
     int poslo   = (nPos & 0xFFFF);\
     int firidx  = ((poslo+WFIR_FRACHALVE)>>WFIR_FRACSHIFT) & WFIR_FRACMASK; \
-    int vol1_l  = (CzWINDOWEDFIR::lut[firidx+0]*(int)p[(poshi+1-4)*2  ]);   \
-	vol1_l += (CzWINDOWEDFIR::lut[firidx+1]*(int)p[(poshi+2-4)*2  ]);   \
-        vol1_l += (CzWINDOWEDFIR::lut[firidx+2]*(int)p[(poshi+3-4)*2  ]);   \
-	vol1_l += (CzWINDOWEDFIR::lut[firidx+3]*(int)p[(poshi+4-4)*2  ]);   \
-   int vol2_l  = (CzWINDOWEDFIR::lut[firidx+4]*(int)p[(poshi+5-4)*2  ]);    \
-       vol2_l += (CzWINDOWEDFIR::lut[firidx+5]*(int)p[(poshi+6-4)*2  ]);    \
-       vol2_l += (CzWINDOWEDFIR::lut[firidx+6]*(int)p[(poshi+7-4)*2  ]);    \
-       vol2_l += (CzWINDOWEDFIR::lut[firidx+7]*(int)p[(poshi+8-4)*2  ]);    \
+    int vol1_l  = (CzWINDOWEDFIR_lut[firidx+0]*(int)p[(poshi+1-4)*2  ]);   \
+	vol1_l += (CzWINDOWEDFIR_lut[firidx+1]*(int)p[(poshi+2-4)*2  ]);   \
+        vol1_l += (CzWINDOWEDFIR_lut[firidx+2]*(int)p[(poshi+3-4)*2  ]);   \
+	vol1_l += (CzWINDOWEDFIR_lut[firidx+3]*(int)p[(poshi+4-4)*2  ]);   \
+   int vol2_l  = (CzWINDOWEDFIR_lut[firidx+4]*(int)p[(poshi+5-4)*2  ]);    \
+       vol2_l += (CzWINDOWEDFIR_lut[firidx+5]*(int)p[(poshi+6-4)*2  ]);    \
+       vol2_l += (CzWINDOWEDFIR_lut[firidx+6]*(int)p[(poshi+7-4)*2  ]);    \
+       vol2_l += (CzWINDOWEDFIR_lut[firidx+7]*(int)p[(poshi+8-4)*2  ]);    \
    int vol_l   = ((vol1_l>>1)+(vol2_l>>1)) >> (WFIR_16BITSHIFT-1); \
-   int vol1_r  = (CzWINDOWEDFIR::lut[firidx+0]*(int)p[(poshi+1-4)*2+1]);    \
-       vol1_r += (CzWINDOWEDFIR::lut[firidx+1]*(int)p[(poshi+2-4)*2+1]);    \
-       vol1_r += (CzWINDOWEDFIR::lut[firidx+2]*(int)p[(poshi+3-4)*2+1]);    \
-       vol1_r += (CzWINDOWEDFIR::lut[firidx+3]*(int)p[(poshi+4-4)*2+1]);    \
-   int vol2_r  = (CzWINDOWEDFIR::lut[firidx+4]*(int)p[(poshi+5-4)*2+1]);    \
-       vol2_r += (CzWINDOWEDFIR::lut[firidx+5]*(int)p[(poshi+6-4)*2+1]);    \
-       vol2_r += (CzWINDOWEDFIR::lut[firidx+6]*(int)p[(poshi+7-4)*2+1]);    \
-       vol2_r += (CzWINDOWEDFIR::lut[firidx+7]*(int)p[(poshi+8-4)*2+1]);    \
+   int vol1_r  = (CzWINDOWEDFIR_lut[firidx+0]*(int)p[(poshi+1-4)*2+1]);    \
+       vol1_r += (CzWINDOWEDFIR_lut[firidx+1]*(int)p[(poshi+2-4)*2+1]);    \
+       vol1_r += (CzWINDOWEDFIR_lut[firidx+2]*(int)p[(poshi+3-4)*2+1]);    \
+       vol1_r += (CzWINDOWEDFIR_lut[firidx+3]*(int)p[(poshi+4-4)*2+1]);    \
+   int vol2_r  = (CzWINDOWEDFIR_lut[firidx+4]*(int)p[(poshi+5-4)*2+1]);    \
+       vol2_r += (CzWINDOWEDFIR_lut[firidx+5]*(int)p[(poshi+6-4)*2+1]);    \
+       vol2_r += (CzWINDOWEDFIR_lut[firidx+6]*(int)p[(poshi+7-4)*2+1]);    \
+       vol2_r += (CzWINDOWEDFIR_lut[firidx+7]*(int)p[(poshi+8-4)*2+1]);    \
    int vol_r   = ((vol1_r>>1)+(vol2_r>>1)) >> (WFIR_16BITSHIFT-1);
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1458,26 +1442,26 @@ static LONG MPPFASTCALL GetSampleCount(MODCHANNEL *pChn, LONG nSamples)
 }
 
 
-UINT CSoundFile::CreateStereoMix(int count)
+UINT CSoundFile_CreateStereoMix(CSoundFile *_this, int count)
 //-----------------------------------------
 {
 	LPLONG pOfsL, pOfsR;
 	DWORD nchused, nchmixed;
 
 	if (!count) return 0;
-	if (gnChannels > 2) X86_InitMixBuffer(MixRearBuffer, count*2);
+	if (CSoundFile_gnChannels > 2) X86_InitMixBuffer(MixRearBuffer, count*2);
 	nchused = nchmixed = 0;
-	for (UINT nChn=0; nChn<m_nMixChannels; nChn++)
+	for (UINT nChn=0; nChn<_this->m_nMixChannels; nChn++)
 	{
 		const LPMIXINTERFACE *pMixFuncTable;
-		MODCHANNEL * const pChannel = &Chn[ChnMix[nChn]];
+		MODCHANNEL * const pChannel = &_this->Chn[_this->ChnMix[nChn]];
 		UINT nFlags, nMasterCh;
 		LONG nSmpCount;
 		int nsamples;
 		int *pbuffer;
 
 		if (!pChannel->pCurrentSample) continue;
-		nMasterCh = (ChnMix[nChn] < m_nChannels) ? ChnMix[nChn]+1 : pChannel->nMasterChn;
+		nMasterCh = (_this->ChnMix[nChn] < _this->m_nChannels) ? _this->ChnMix[nChn]+1 : pChannel->nMasterChn;
 		pOfsR = &gnDryROfsVol;
 		pOfsL = &gnDryLOfsVol;
 		nFlags = 0;
@@ -1489,10 +1473,10 @@ UINT CSoundFile::CreateStereoMix(int count)
 		if (!(pChannel->dwFlags & CHN_NOIDO))
 		{
 			// use hq-fir mixer?
-			if( (gdwSoundSetup & (SNDMIX_HQRESAMPLER|SNDMIX_ULTRAHQSRCMODE)) == 
+			if( (CSoundFile_gdwSoundSetup & (SNDMIX_HQRESAMPLER|SNDMIX_ULTRAHQSRCMODE)) == 
 				(SNDMIX_HQRESAMPLER|SNDMIX_ULTRAHQSRCMODE) )
 				nFlags += MIXNDX_FIRSRC;
-			else if( (gdwSoundSetup & (SNDMIX_HQRESAMPLER)) == SNDMIX_HQRESAMPLER )
+			else if( (CSoundFile_gdwSoundSetup & (SNDMIX_HQRESAMPLER)) == SNDMIX_HQRESAMPLER )
 				nFlags += MIXNDX_SPLINESRC;
 			else
 				nFlags += MIXNDX_LINEARSRC; // use
@@ -1507,7 +1491,7 @@ UINT CSoundFile::CreateStereoMix(int count)
 		}
 		nsamples = count;
 #ifndef MODPLUG_NO_REVERB
-		pbuffer = (gdwSoundSetup & SNDMIX_REVERB) ? MixReverbBuffer : MixSoundBuffer;
+		pbuffer = (CSoundFile_gdwSoundSetup & SNDMIX_REVERB) ? MixReverbBuffer : MixSoundBuffer;
 		if (pChannel->dwFlags & CHN_NOREVERB) pbuffer = MixSoundBuffer;
 		if (pChannel->dwFlags & CHN_REVERB) pbuffer = MixReverbBuffer;
 		if (pbuffer == MixReverbBuffer)
@@ -1543,7 +1527,7 @@ UINT CSoundFile::CreateStereoMix(int count)
 		}
 		// Should we mix this channel ?
 		UINT naddmix;
-		if (((nchmixed >= m_nMaxMixChannels) && (!(gdwSoundSetup & SNDMIX_DIRECTTODISK)))
+		if (((nchmixed >= CSoundFile_m_nMaxMixChannels) && (!(CSoundFile_gdwSoundSetup & SNDMIX_DIRECTTODISK)))
 		 || ((!pChannel->nRampLength) && (!(pChannel->nLeftVol|pChannel->nRightVol))))
 		{
 			LONG delta = (pChannel->nInc * (LONG)nSmpCount) + (LONG)pChannel->nPosLo;

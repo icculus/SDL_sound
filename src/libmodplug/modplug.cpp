@@ -40,53 +40,56 @@ namespace ModPlug
 	{
 		if(gSettings.mFlags & MODPLUG_ENABLE_REVERB)
 		{
-			CSoundFile::SetReverbParameters(gSettings.mReverbDepth,
+			CSoundFile_SetReverbParameters(gSettings.mReverbDepth,
 			                                gSettings.mReverbDelay);
 		}
 
 		if(gSettings.mFlags & MODPLUG_ENABLE_MEGABASS)
 		{
-			CSoundFile::SetXBassParameters(gSettings.mBassAmount,
+			CSoundFile_SetXBassParameters(gSettings.mBassAmount,
 			                               gSettings.mBassRange);
 		}
 		else // modplug seems to ignore the SetWaveConfigEx() setting for bass boost
-			CSoundFile::SetXBassParameters(0, 0);
+			CSoundFile_SetXBassParameters(0, 0);
 
 		if(gSettings.mFlags & MODPLUG_ENABLE_SURROUND)
 		{
-			CSoundFile::SetSurroundParameters(gSettings.mSurroundDepth,
+			CSoundFile_SetSurroundParameters(gSettings.mSurroundDepth,
 			                                  gSettings.mSurroundDelay);
 		}
 
 		if(updateBasicConfig)
 		{
-			CSoundFile::SetWaveConfig(gSettings.mFrequency,
+			CSoundFile_SetWaveConfig(gSettings.mFrequency,
                                                   gSettings.mBits,
 			                          gSettings.mChannels);
-			CSoundFile::SetMixConfig(gSettings.mStereoSeparation,
+			CSoundFile_SetMixConfig(gSettings.mStereoSeparation,
                                                  gSettings.mMaxMixChannels);
 
 			gSampleSize = gSettings.mBits / 8 * gSettings.mChannels;
 		}
 
-		CSoundFile::SetWaveConfigEx(gSettings.mFlags & MODPLUG_ENABLE_SURROUND,
+		CSoundFile_SetWaveConfigEx(gSettings.mFlags & MODPLUG_ENABLE_SURROUND,
 		                            !(gSettings.mFlags & MODPLUG_ENABLE_OVERSAMPLING),
 		                            gSettings.mFlags & MODPLUG_ENABLE_REVERB,
 		                            true,
 		                            gSettings.mFlags & MODPLUG_ENABLE_MEGABASS,
 		                            gSettings.mFlags & MODPLUG_ENABLE_NOISE_REDUCTION,
 		                            false);
-		CSoundFile::SetResamplingMode(gSettings.mResamplingMode);
+		CSoundFile_SetResamplingMode(gSettings.mResamplingMode);
 	}
 }
 
 ModPlugFile* ModPlug_Load(const void* data, int size)
 {
+    extern void init_modplug_filters(void);
+    init_modplug_filters();
+
 	ModPlugFile* result = new ModPlugFile;
 	ModPlug::UpdateSettings(true);
-	if(result->mSoundFile.Create((const BYTE*)data, size))
+	if(CSoundFile_Create(&result->mSoundFile, (const BYTE*)data, size))
 	{
-		result->mSoundFile.SetRepeatCount(ModPlug::gSettings.mLoopCount);
+		CSoundFile_SetRepeatCount(&result->mSoundFile, ModPlug::gSettings.mLoopCount);
 		return result;
 	}
 	else
@@ -98,34 +101,34 @@ ModPlugFile* ModPlug_Load(const void* data, int size)
 
 void ModPlug_Unload(ModPlugFile* file)
 {
-	file->mSoundFile.Destroy();
+	CSoundFile_Destroy(&file->mSoundFile);
 	delete file;
 }
 
 int ModPlug_Read(ModPlugFile* file, void* buffer, int size)
 {
-	return file->mSoundFile.Read(buffer, size) * ModPlug::gSampleSize;
+	return CSoundFile_Read(&file->mSoundFile, buffer, size) * ModPlug::gSampleSize;
 }
 
 int ModPlug_GetLength(ModPlugFile* file)
 {
-	return file->mSoundFile.GetSongTime() * 1000;
+	return CSoundFile_GetLength(&file->mSoundFile, FALSE, TRUE) * 1000;
 }
 
 void ModPlug_Seek(ModPlugFile* file, int millisecond)
 {
 	int maxpos;
-	int maxtime = file->mSoundFile.GetSongTime() * 1000;
+	int maxtime = CSoundFile_GetLength(&file->mSoundFile, FALSE, TRUE) * 1000;
 	float postime;
 
 	if(millisecond > maxtime)
 		millisecond = maxtime;
-	maxpos = file->mSoundFile.GetMaxPosition();
+	maxpos = CSoundFile_GetMaxPosition(&file->mSoundFile);
 	postime = 0.0f;
 	if (maxtime != 0.0f)
 		postime = (float)maxpos / (float)maxtime;
 
-	file->mSoundFile.SetCurrentPos((int)(millisecond * postime));
+	CSoundFile_SetCurrentPos(&file->mSoundFile, (int)(millisecond * postime));
 }
 
 void ModPlug_SetSettings(const ModPlug_Settings* settings)

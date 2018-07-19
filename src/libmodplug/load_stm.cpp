@@ -53,7 +53,7 @@ typedef struct tagSTMHEADER
 
 
 
-BOOL CSoundFile::ReadSTM(const BYTE *lpStream, DWORD dwMemLength)
+BOOL CSoundFile_ReadSTM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLength)
 //---------------------------------------------------------------
 {
 	const STMHEADER *phdr = (STMHEADER *)lpStream;
@@ -63,34 +63,31 @@ BOOL CSoundFile::ReadSTM(const BYTE *lpStream, DWORD dwMemLength)
 	if ((phdr->filetype != 2) || (phdr->unused != 0x1A)
 	 || ((SDL_strncasecmp(phdr->trackername, "!SCREAM!", 8))
 	  && (SDL_strncasecmp(phdr->trackername, "BMOD2STM", 8)))) return FALSE;
-	SDL_memcpy(m_szNames[0], phdr->songname, 20);
 	// Read STM header
-	m_nType = MOD_TYPE_STM;
-	m_nSamples = 31;
-	m_nChannels = 4;
-	m_nInstruments = 0;
-	m_nMinPeriod = 64;
-	m_nMaxPeriod = 0x7FFF;
-	m_nDefaultSpeed = phdr->inittempo >> 4;
-	if (m_nDefaultSpeed < 1) m_nDefaultSpeed = 1;
-	m_nDefaultTempo = 125;
-	m_nDefaultGlobalVolume = phdr->globalvol << 2;
-	if (m_nDefaultGlobalVolume > 256) m_nDefaultGlobalVolume = 256;
-	SDL_memcpy(Order, phdr->patorder, 128);
+	_this->m_nType = MOD_TYPE_STM;
+	_this->m_nSamples = 31;
+	_this->m_nChannels = 4;
+	_this->m_nInstruments = 0;
+	_this->m_nMinPeriod = 64;
+	_this->m_nMaxPeriod = 0x7FFF;
+	_this->m_nDefaultSpeed = phdr->inittempo >> 4;
+	if (_this->m_nDefaultSpeed < 1) _this->m_nDefaultSpeed = 1;
+	_this->m_nDefaultTempo = 125;
+	_this->m_nDefaultGlobalVolume = phdr->globalvol << 2;
+	if (_this->m_nDefaultGlobalVolume > 256) _this->m_nDefaultGlobalVolume = 256;
+	SDL_memcpy(_this->Order, phdr->patorder, 128);
 	// Setting up channels
 	for (UINT nSet=0; nSet<4; nSet++)
 	{
-		ChnSettings[nSet].dwFlags = 0;
-		ChnSettings[nSet].nVolume = 64;
-		ChnSettings[nSet].nPan = (nSet & 1) ? 0x40 : 0xC0;
+		_this->ChnSettings[nSet].dwFlags = 0;
+		_this->ChnSettings[nSet].nVolume = 64;
+		_this->ChnSettings[nSet].nPan = (nSet & 1) ? 0x40 : 0xC0;
 	}
 	// Reading samples
 	for (UINT nIns=0; nIns<31; nIns++)
 	{
-		MODINSTRUMENT *pIns = &Ins[nIns+1];
+		MODINSTRUMENT *pIns = &_this->Ins[nIns+1];
 		const STMSAMPLE *pStm = &phdr->sample[nIns];  // STM sample data
-		SDL_memcpy(pIns->name, pStm->filename, 13);
-		SDL_memcpy(m_szNames[nIns+1], pStm->filename, 12);
 		pIns->nC4Speed = bswapLE16(pStm->c2spd);
 		pIns->nGlobalVol = 64;
 		pIns->nVolume = pStm->volume << 2;
@@ -102,14 +99,14 @@ BOOL CSoundFile::ReadSTM(const BYTE *lpStream, DWORD dwMemLength)
 		if ((pIns->nLoopEnd > pIns->nLoopStart) && (pIns->nLoopEnd != 0xFFFF)) pIns->uFlags |= CHN_LOOP;
 	}
 	dwMemPos = sizeof(STMHEADER);
-	for (UINT nOrd=0; nOrd<MAX_ORDERS; nOrd++) if (Order[nOrd] >= 99) Order[nOrd] = 0xFF;
+	for (UINT nOrd=0; nOrd<MAX_ORDERS; nOrd++) if (_this->Order[nOrd] >= 99) _this->Order[nOrd] = 0xFF;
 	UINT nPatterns = phdr->numpat;
 	for (UINT nPat=0; nPat<nPatterns; nPat++)
 	{
 		if (dwMemPos + 64*4*4 > dwMemLength) return TRUE;
-		PatternSize[nPat] = 64;
-		if ((Patterns[nPat] = AllocatePattern(64, m_nChannels)) == NULL) return TRUE;
-		MODCOMMAND *m = Patterns[nPat];
+		_this->PatternSize[nPat] = 64;
+		if ((_this->Patterns[nPat] = CSoundFile_AllocatePattern(64, _this->m_nChannels)) == NULL) return TRUE;
+		MODCOMMAND *m = _this->Patterns[nPat];
 		const STMNOTE *p = (const STMNOTE *)(lpStream + dwMemPos);
 		for (UINT n=0; n<64*4; n++, p++, m++)
 		{
@@ -166,7 +163,7 @@ BOOL CSoundFile::ReadSTM(const BYTE *lpStream, DWORD dwMemLength)
 	// Reading Samples
 	for (UINT nSmp=1; nSmp<=31; nSmp++)
 	{
-		MODINSTRUMENT *pIns = &Ins[nSmp];
+		MODINSTRUMENT *pIns = &_this->Ins[nSmp];
 		dwMemPos = (dwMemPos + 15) & (~15);
 		if (pIns->nLength)
 		{
@@ -174,7 +171,7 @@ BOOL CSoundFile::ReadSTM(const BYTE *lpStream, DWORD dwMemLength)
 			if ((nPos >= sizeof(STMHEADER)) && (nPos+pIns->nLength <= dwMemLength)) dwMemPos = nPos;
 			if (dwMemPos < dwMemLength)
 			{
-				dwMemPos += ReadSample(pIns, RS_PCM8S, (LPSTR)(lpStream+dwMemPos),dwMemLength-dwMemPos);
+				dwMemPos += CSoundFile_ReadSample(_this, pIns, RS_PCM8S, (LPSTR)(lpStream+dwMemPos),dwMemLength-dwMemPos);
 			}
 		}
 	}

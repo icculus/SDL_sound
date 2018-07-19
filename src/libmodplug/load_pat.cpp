@@ -295,7 +295,7 @@ void pat_init_patnames(void)
 	p = SDL_getenv(PAT_ENV_PATH2CFG);
 	if( p ) {
         SDL_snprintf(timiditycfg, sizeof (timiditycfg), "%s/timidity.cfg", p);
-		SDL_snprintf(pathforpat, sizeof (pathforpat), "%s/instruments", p);
+		SDL_snprintf(pathforpat, sizeof (pathforpat), "%s", p);
 	}
 	SDL_strlcpy(cfgsources[0], timiditycfg, PATH_MAX - 1);
 	nsources = 1;
@@ -673,7 +673,7 @@ static BOOL dec_pat_Decompress8Bit(short int *dest, int cbcount, int samplenum)
 	return cbcount;
 }
 
-BOOL CSoundFile::TestPAT(const BYTE *lpStream, DWORD dwMemLength)
+BOOL CSoundFile_TestPAT(const BYTE *lpStream, DWORD dwMemLength)
 // =====================================================================================
 {
 	PatchHeader ph;
@@ -745,7 +745,7 @@ static void PAT_ReadPatterns(MODCOMMAND *pattern[], WORD psize[], PATHANDLE *h, 
 
 	tt2 = (h->samples - 1) * 16 + 128;
 	for( pat = 0; pat < numpat; pat++ ) {
-		pattern[pat] = CSoundFile::AllocatePattern(64, h->samples);
+		pattern[pat] = CSoundFile_AllocatePattern(64, h->samples);
 		if( !pattern[pat] ) return;
 		psize[pat] = 64;
 		for( row = 0; row < 64; row++ ) {
@@ -917,7 +917,6 @@ static void PATinst(INSTRUMENTHEADER *d, int smp, int gm)
 {
 	WaveHeader hw;
 	char s[32];
-	SDL_memset(s,0,32);
 	if( pat_readpat_attr(gm-1, &hw, 0) ) {
 		pat_setpat_inst(&hw, d, smp);
 	}
@@ -942,13 +941,6 @@ static void PATinst(INSTRUMENTHEADER *d, int smp, int gm)
 		SDL_strlcpy(hw.reserved, midipat[gm-1], sizeof(hw.reserved));
 		pat_setpat_inst(&hw, d, smp);
 	}
-	if( hw.reserved[0] )
-		SDL_strlcpy(s, hw.reserved, 32);
-	else
-		SDL_strlcpy(s, midipat[gm-1], 32);
-	s[31] = '\0';
-	SDL_memset(d->name, 0, 32);
-	SDL_strlcpy((char *)d->name, s, sizeof (d->name));
 	SDL_strlcpy(s, midipat[gm-1], 12);
 	SDL_memset(d->filename, 0, 12);
 	SDL_strlcpy((char *)d->filename, s, sizeof (d->filename));
@@ -978,11 +970,6 @@ static void pat_setpat_attr(WaveHeader *hw, MODINSTRUMENT *q)
 static void PATsample(CSoundFile *cs, MODINSTRUMENT *q, int smp, int gm)
 {
 	WaveHeader hw;
-	char s[256];
-	SDL_snprintf(s, sizeof (s), "%d:%s", smp-1, midipat[gm-1]);
-	s[31] = '\0';
-	SDL_memset(cs->m_szNames[smp], 0, 32);
-	SDL_strlcpy(cs->m_szNames[smp], s, 32-1);
 	q->nGlobalVol = 64;
 	q->nPan       = 128;
 	q->uFlags     = CHN_16BIT;
@@ -995,11 +982,11 @@ static void PATsample(CSoundFile *cs, MODINSTRUMENT *q, int smp, int gm)
 		if( p ) {
 			if( hw.modes & PAT_16BIT ) {
 				dec_pat_Decompress16Bit((short int *)p, hw.wave_size>>1, gm - 1);
-				cs->ReadSample(q, (hw.modes&PAT_UNSIGNED)?RS_PCM16U:RS_PCM16S, (LPSTR)p, hw.wave_size);
+				CSoundFile_ReadSample(cs, q, (hw.modes&PAT_UNSIGNED)?RS_PCM16U:RS_PCM16S, (LPSTR)p, hw.wave_size);
 			}
 			else {
 				dec_pat_Decompress8Bit((short int *)p, hw.wave_size, gm - 1);
-				cs->ReadSample(q, (hw.modes&PAT_UNSIGNED)?RS_PCM16U:RS_PCM16S, (LPSTR)p, hw.wave_size * sizeof(short int));
+				CSoundFile_ReadSample(cs, q, (hw.modes&PAT_UNSIGNED)?RS_PCM16U:RS_PCM16S, (LPSTR)p, hw.wave_size * sizeof(short int));
 			}
 			SDL_free(p);
 		}
@@ -1016,7 +1003,7 @@ static void PATsample(CSoundFile *cs, MODINSTRUMENT *q, int smp, int gm)
 		p = (char *)SDL_malloc(q->nLength*sizeof(char)*2);
 		if( p ) {
 			dec_pat_Decompress8Bit((short int *)p, q->nLength, smp + MAXSMP - 1);
-			cs->ReadSample(q, RS_PCM16S, (LPSTR)p, q->nLength*2);
+			CSoundFile_ReadSample(cs, q, RS_PCM16S, (LPSTR)p, q->nLength*2);
 			SDL_free(p);
 		}
 	}
@@ -1042,14 +1029,12 @@ BOOL PAT_Load_Instruments(void *c)
 	t = of->m_nInstruments - 1;
 	if( (of->Headers[0] = new INSTRUMENTHEADER) == NULL ) return FALSE;
 	SDL_memcpy(of->Headers[0], of->Headers[t], sizeof(INSTRUMENTHEADER));
-	SDL_memset(of->Headers[0]->name, 0, 32);
-	SDL_strlcpy((char *)of->Headers[0]->name, "Timidity GM patches", 32);
 	t = of->m_nSamples - 1;
 	SDL_memcpy(&of->Ins[0], &of->Ins[t], sizeof(MODINSTRUMENT));
 	return TRUE;
 }
 // =====================================================================================
-BOOL CSoundFile::ReadPAT(const BYTE *lpStream, DWORD dwMemLength)
+BOOL CSoundFile_ReadPAT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLength)
 {
 	static int avoid_reentry = 0;
 	char buf[60];
@@ -1059,7 +1044,7 @@ BOOL CSoundFile::ReadPAT(const BYTE *lpStream, DWORD dwMemLength)
 	MMFILE mm, *mmfile;
 	MODINSTRUMENT *q;
 	INSTRUMENTHEADER *d;
-	if( !TestPAT(lpStream, dwMemLength) ) return FALSE;
+	if( !CSoundFile_TestPAT(lpStream, dwMemLength) ) return FALSE;
 	h = PAT_Init();
 	if( !h ) return FALSE;
 	mmfile = &mm;
@@ -1076,25 +1061,24 @@ BOOL CSoundFile::ReadPAT(const BYTE *lpStream, DWORD dwMemLength)
 	else
 		SDL_snprintf(buf,sizeof (buf),"%d-voice canon (Fr. Jacques)", h->samples);
 	if( SDL_strlen(buf) > 31 ) buf[31] = '\0'; // chop it of
-	SDL_strlcpy(m_szNames[0], buf, 32);
-	m_nDefaultTempo = 60; // 120 / 2
+	_this->m_nDefaultTempo = 60; // 120 / 2
 	t = (h->samples - 1) * 16 + 128;
 	if( t % 64 ) t += 64;
 	t = t / 64;
-	m_nType         = MOD_TYPE_PAT;
-	m_nInstruments  = h->samples >= MAX_INSTRUMENTS-1 ? MAX_INSTRUMENTS-1 : h->samples + 1; // we know better but use each sample in the pat...
-	m_nSamples      = h->samples >= MAX_SAMPLES-1 ? MAX_SAMPLES-1 : h->samples + 1; // xmms modplug does not use slot zero
-	m_nDefaultSpeed = 6;
-	m_nChannels     = h->samples;
+	_this->m_nType         = MOD_TYPE_PAT;
+	_this->m_nInstruments  = h->samples >= MAX_INSTRUMENTS-1 ? MAX_INSTRUMENTS-1 : h->samples + 1; // we know better but use each sample in the pat...
+	_this->m_nSamples      = h->samples >= MAX_SAMPLES-1 ? MAX_SAMPLES-1 : h->samples + 1; // xmms modplug does not use slot zero
+	_this->m_nDefaultSpeed = 6;
+	_this->m_nChannels     = h->samples;
 	numpat          = t;
 
-	m_dwSongFlags   = SONG_LINEARSLIDES;
-	m_nMinPeriod    = 28 << 2;
-	m_nMaxPeriod    = 1712 << 3;
+	_this->m_dwSongFlags   = SONG_LINEARSLIDES;
+	_this->m_nMinPeriod    = 28 << 2;
+	_this->m_nMaxPeriod    = 1712 << 3;
 	// orderlist
 	for(t=0; t < numpat; t++)
-		Order[t] = t;
-	for(t=1; t<(int)m_nInstruments; t++) { // xmms modplug doesn't use slot zero
+		_this->Order[t] = t;
+	for(t=1; t<(int)_this->m_nInstruments; t++) { // xmms modplug doesn't use slot zero
 		WaveHeader hw;
 		char s[32];
 		if( (d = new INSTRUMENTHEADER) == NULL ) {
@@ -1102,76 +1086,53 @@ BOOL CSoundFile::ReadPAT(const BYTE *lpStream, DWORD dwMemLength)
 			return FALSE;
 		}
 		SDL_memset(d, 0, sizeof(INSTRUMENTHEADER));
-		Headers[t] = d;
-		SDL_snprintf(s, sizeof (s), "%s", h->patname);
-		s[31] = '\0';
-		SDL_memset(d->name, 0, 32);
-		SDL_strlcpy((char *)d->name, s, 32);
-		s[11] = '\0';
+		_this->Headers[t] = d;
 		SDL_memset(d->filename, 0, 12);
 		SDL_strlcpy((char *)d->filename, s, 12);
 		pat_get_waveheader(mmfile, &hw, t);
 		pat_setpat_inst(&hw, d, t);
 	}
-	for(t=1; t<(int)m_nSamples; t++) { // xmms modplug doesn't use slot zero
+	for(t=1; t<(int)_this->m_nSamples; t++) { // xmms modplug doesn't use slot zero
 		WaveHeader hw;
-		char s[32];
 		char *p;
-		q = &Ins[t];	// we do not use slot zero
+		q = &_this->Ins[t];	// we do not use slot zero
 		q->nGlobalVol = 64;
 		q->nPan       = 128;
 		q->uFlags     = CHN_16BIT;
 		pat_get_waveheader(mmfile, &hw, t);
 		pat_setpat_attr(&hw, q);
-		SDL_memset(s,0,32);
-		if( hw.wave_name[0] )
-			SDL_snprintf(s, sizeof (s), "%d:%s", t, hw.wave_name);
-		else {
-			if( h->patname[0] )
-				SDL_snprintf(s, sizeof (s), "%d:%s", t, h->patname);
-			else
-				SDL_snprintf(s, sizeof (s), "%d:Untitled GM patch", t);
-		}
-		s[31] = '\0';
-		SDL_memset(m_szNames[t], 0, 32);
-		SDL_strlcpy(m_szNames[t], s, 32);
 		if ( hw.wave_size == 0 ) p = NULL;
 		else if( hw.modes & PAT_16BIT ) p = (char *)SDL_malloc(hw.wave_size);
 		else p = (char *)SDL_malloc(hw.wave_size * sizeof(char) * 2);
 		if( p ) {
 			mmreadSBYTES(p, hw.wave_size, mmfile);
 			if( hw.modes & PAT_16BIT ) {
-				ReadSample(q, (hw.modes&PAT_UNSIGNED)?RS_PCM16U:RS_PCM16S, (LPSTR)p, hw.wave_size);
+				CSoundFile_ReadSample(_this, q, (hw.modes&PAT_UNSIGNED)?RS_PCM16U:RS_PCM16S, (LPSTR)p, hw.wave_size);
 			}
 			else {
 				pat_blowup_to16bit((short int *)p, hw.wave_size);
-				ReadSample(q, (hw.modes&PAT_UNSIGNED)?RS_PCM16U:RS_PCM16S, (LPSTR)p, hw.wave_size * sizeof(short int));
+				CSoundFile_ReadSample(_this, q, (hw.modes&PAT_UNSIGNED)?RS_PCM16U:RS_PCM16S, (LPSTR)p, hw.wave_size * sizeof(short int));
 			}
 			SDL_free(p);
 		}
 	}
 	// copy last of the mohicans to entry 0 for XMMS modinfo to work....
-	t = m_nInstruments - 1;
-	if( (Headers[0] = new INSTRUMENTHEADER) == NULL ) {
+	t = _this->m_nInstruments - 1;
+	if( (_this->Headers[0] = new INSTRUMENTHEADER) == NULL ) {
 		avoid_reentry = 0;
 		return FALSE;
 	}
-	SDL_memcpy(Headers[0], Headers[t], sizeof(INSTRUMENTHEADER));
-	SDL_memset(Headers[0]->name, 0, 32);
-	if( h->patname[0] )
-		SDL_strlcpy((char *)Headers[0]->name, h->patname, 32);
-	else
-		SDL_strlcpy((char *)Headers[0]->name, "Timidity GM patch", 32);
-	t = m_nSamples - 1;
-	SDL_memcpy(&Ins[0], &Ins[t], sizeof(MODINSTRUMENT));
+	SDL_memcpy(_this->Headers[0], _this->Headers[t], sizeof(INSTRUMENTHEADER));
+	t = _this->m_nSamples - 1;
+	SDL_memcpy(&_this->Ins[0], &_this->Ins[t], sizeof(MODINSTRUMENT));
 	// ==============================
 	// Load the pattern info now!
-	PAT_ReadPatterns(Patterns, PatternSize, h, numpat);
+	PAT_ReadPatterns(_this->Patterns, _this->PatternSize, h, numpat);
 	// ============================================================
 	// set panning positions
-	for(t=0; t<(int)m_nChannels; t++) {
-		ChnSettings[t].nPan = 0x30+((t+2)%5)*((0xD0 - 0x30)/5);     // 0x30 = std s3m val
-		ChnSettings[t].nVolume = 64;
+	for(t=0; t<(int)_this->m_nChannels; t++) {
+		_this->ChnSettings[t].nPan = 0x30+((t+2)%5)*((0xD0 - 0x30)/5);     // 0x30 = std s3m val
+		_this->ChnSettings[t].nVolume = 64;
 	}
 	avoid_reentry = 0; // it is safe now, I'm finished
 	PAT_Cleanup(h);	// we dont need it anymore

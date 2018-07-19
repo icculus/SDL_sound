@@ -52,7 +52,7 @@ typedef struct FARSAMPLE
 #pragma pack()
 
 
-BOOL CSoundFile::ReadFAR(const BYTE *lpStream, DWORD dwMemLength)
+BOOL CSoundFile_ReadFAR(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLength)
 //---------------------------------------------------------------
 {
 	const FARHEADER1 *pmh1 = (const FARHEADER1 *)lpStream;
@@ -67,33 +67,25 @@ BOOL CSoundFile::ReadFAR(const BYTE *lpStream, DWORD dwMemLength)
 	stlen = bswapLE16( pmh1->stlen );
 	if ((headerlen >= dwMemLength) || (dwMemPos + stlen + sizeof(FARHEADER2) >= dwMemLength)) return FALSE;
 	// Globals
-	m_nType = MOD_TYPE_FAR;
-	m_nChannels = 16;
-	m_nInstruments = 0;
-	m_nSamples = 0;
-	m_nSongPreAmp = 0x20;
-	m_nDefaultSpeed = pmh1->speed;
-	m_nDefaultTempo = 80;
-	m_nDefaultGlobalVolume = 256;
+	_this->m_nType = MOD_TYPE_FAR;
+	_this->m_nChannels = 16;
+	_this->m_nInstruments = 0;
+	_this->m_nSamples = 0;
+	_this->m_nSongPreAmp = 0x20;
+	_this->m_nDefaultSpeed = pmh1->speed;
+	_this->m_nDefaultTempo = 80;
+	_this->m_nDefaultGlobalVolume = 256;
 
-	SDL_memcpy(m_szNames[0], pmh1->songname, 32);
 	// Channel Setting
 	for (UINT nchpan=0; nchpan<16; nchpan++)
 	{
-		ChnSettings[nchpan].dwFlags = 0;
-		ChnSettings[nchpan].nPan = ((pmh1->panning[nchpan] & 0x0F) << 4) + 8;
-		ChnSettings[nchpan].nVolume = 64;
+		_this->ChnSettings[nchpan].dwFlags = 0;
+		_this->ChnSettings[nchpan].nPan = ((pmh1->panning[nchpan] & 0x0F) << 4) + 8;
+		_this->ChnSettings[nchpan].nVolume = 64;
 	}
 	// Reading comment
 	if (stlen)
 	{
-		UINT szLen = stlen;
-		if (szLen > dwMemLength - dwMemPos) szLen = dwMemLength - dwMemPos;
-		if ((m_lpszSongComments = new char[szLen + 1]) != NULL)
-		{
-			SDL_memcpy(m_lpszSongComments, lpStream+dwMemPos, szLen);
-			m_lpszSongComments[szLen] = 0;
-		}
 		dwMemPos += stlen;
 	}
 	// Reading orders
@@ -103,9 +95,9 @@ BOOL CSoundFile::ReadFAR(const BYTE *lpStream, DWORD dwMemLength)
 	if (dwMemPos >= dwMemLength) return TRUE;
 	for (UINT iorder=0; iorder<MAX_ORDERS; iorder++)
 	{
-		Order[iorder] = (iorder <= pmh2->snglen) ? pmh2->orders[iorder] : 0xFF;
+		_this->Order[iorder] = (iorder <= pmh2->snglen) ? pmh2->orders[iorder] : 0xFF;
 	}
-	m_nRestartPos = pmh2->loopto;
+	_this->m_nRestartPos = pmh2->loopto;
 	// Reading Patterns	
 	dwMemPos += headerlen - (869 + stlen);
 	if (dwMemPos >= dwMemLength) return TRUE;
@@ -130,9 +122,9 @@ BOOL CSoundFile::ReadFAR(const BYTE *lpStream, DWORD dwMemLength)
 		}
 		if (rows > 256) rows = 256;
 		if (rows < 16) rows = 16;
-		PatternSize[ipat] = rows;
-		if ((Patterns[ipat] = AllocatePattern(rows, m_nChannels)) == NULL) return TRUE;
-		MODCOMMAND *m = Patterns[ipat];
+		_this->PatternSize[ipat] = rows;
+		if ((_this->Patterns[ipat] = CSoundFile_AllocatePattern(rows, _this->m_nChannels)) == NULL) return TRUE;
+		MODCOMMAND *m = _this->Patterns[ipat];
 		UINT patbrk = lpStream[dwMemPos];
 		const BYTE *p = lpStream + dwMemPos + 2;
 		UINT max = rows*16*4;
@@ -225,14 +217,13 @@ BOOL CSoundFile::ReadFAR(const BYTE *lpStream, DWORD dwMemLength)
 	if (dwMemPos + 8 >= dwMemLength) return TRUE;
 	SDL_memcpy(samplemap, lpStream+dwMemPos, 8);
 	dwMemPos += 8;
-	MODINSTRUMENT *pins = &Ins[1];
+	MODINSTRUMENT *pins = &_this->Ins[1];
 	for (UINT ismp=0; ismp<64; ismp++, pins++) if (samplemap[ismp >> 3] & (1 << (ismp & 7)))
 	{
 		if (dwMemPos + sizeof(FARSAMPLE) > dwMemLength) return TRUE;
 		const FARSAMPLE *pfs = reinterpret_cast<const FARSAMPLE*>(lpStream + dwMemPos);
 		dwMemPos += sizeof(FARSAMPLE);
-		m_nSamples = ismp + 1;
-		SDL_memcpy(m_szNames[ismp+1], pfs->samplename, 32);
+		_this->m_nSamples = ismp + 1;
 		const DWORD length = bswapLE32( pfs->length ) ; /* endian fix - Toad */
 		pins->nLength = length ;
 		pins->nLoopStart = bswapLE32(pfs->reppos) ;
@@ -252,7 +243,7 @@ BOOL CSoundFile::ReadFAR(const BYTE *lpStream, DWORD dwMemLength)
 				pins->nLoopEnd >>= 1;
 			}
 			if ((pfs->loop & 8) && (pins->nLoopEnd > 4)) pins->uFlags |= CHN_LOOP;
-			ReadSample(pins, (pins->uFlags & CHN_16BIT) ? RS_PCM16S : RS_PCM8S,
+			CSoundFile_ReadSample(_this, pins, (pins->uFlags & CHN_16BIT) ? RS_PCM16S : RS_PCM8S,
 						(LPSTR)(lpStream+dwMemPos), dwMemLength - dwMemPos);
 		}
 		dwMemPos += length;

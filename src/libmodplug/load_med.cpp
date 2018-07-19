@@ -458,7 +458,7 @@ static void MedConvert(MODCOMMAND *p, const MMD0SONGHEADER *pmsh)
 }
 
 
-BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
+BOOL CSoundFile_ReadMed(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLength)
 //---------------------------------------------------------------
 {
 	const MEDMODULEHEADER *pmmh;
@@ -479,8 +479,8 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 	if ((dwSong >= dwMemLength) || (dwSong + sizeof(MMD0SONGHEADER) >= dwMemLength)) return FALSE;
 	version = (signed char)((pmmh->id >> 24) & 0xFF);
 	if ((version < '0') || (version > '3')) return FALSE;
-	m_nType = MOD_TYPE_MED;
-	m_nSongPreAmp = 0x20;
+	_this->m_nType = MOD_TYPE_MED;
+	_this->m_nSongPreAmp = 0x20;
 	dwBlockArr = bswapBE32(pmmh->blockarr);
 	dwSmplArr = bswapBE32(pmmh->smplarr);
 	dwExpData = bswapBE32(pmmh->expdata);
@@ -491,11 +491,11 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 	pmsh = (MMD0SONGHEADER *)(lpStream + dwSong);
 	pmsh2 = (MMD2SONGHEADER *)pmsh;
 	wNumBlocks = bswapBE16(pmsh->numblocks);
-	m_nChannels = 4;
-	m_nSamples = pmsh->numsamples;
-	if (m_nSamples > 63) m_nSamples = 63;
+	_this->m_nChannels = 4;
+	_this->m_nSamples = pmsh->numsamples;
+	if (_this->m_nSamples > 63) _this->m_nSamples = 63;
 	// Tempo
-	m_nDefaultTempo = 125;
+	_this->m_nDefaultTempo = 125;
 	deftempo = bswapBE16(pmsh->deftempo);
 	if (!deftempo) deftempo = 125;
 	if (pmsh->flags2 & MMD_FLAG2_BPM)
@@ -514,23 +514,23 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 		}
 	}
 	// Speed
-	m_nDefaultSpeed = pmsh->tempo2;
-	if (!m_nDefaultSpeed) m_nDefaultSpeed = 6;
+	_this->m_nDefaultSpeed = pmsh->tempo2;
+	if (!_this->m_nDefaultSpeed) _this->m_nDefaultSpeed = 6;
 	if (deftempo < 0x21) deftempo = 0x21;
 	if (deftempo > 255)
 	{
-		while ((m_nDefaultSpeed > 3) && (deftempo > 260))
+		while ((_this->m_nDefaultSpeed > 3) && (deftempo > 260))
 		{
-			deftempo = (deftempo * (m_nDefaultSpeed - 1)) / m_nDefaultSpeed;
-			m_nDefaultSpeed--;
+			deftempo = (deftempo * (_this->m_nDefaultSpeed - 1)) / _this->m_nDefaultSpeed;
+			_this->m_nDefaultSpeed--;
 		}
 		if (deftempo > 255) deftempo = 255;
 	}
-	m_nDefaultTempo = deftempo;
+	_this->m_nDefaultTempo = deftempo;
 	// Reading Samples
-	for (UINT iSHdr=0; iSHdr<m_nSamples; iSHdr++)
+	for (UINT iSHdr=0; iSHdr<_this->m_nSamples; iSHdr++)
 	{
-		MODINSTRUMENT *pins = &Ins[iSHdr+1];
+		MODINSTRUMENT *pins = &_this->Ins[iSHdr+1];
 		pins->nLoopStart = bswapBE16(pmsh->sample[iSHdr].rep) << 1;
 		pins->nLoopEnd = pins->nLoopStart + (bswapBE16(pmsh->sample[iSHdr].replen) << 1);
 		pins->nVolume = (pmsh->sample[iSHdr].svol << 2);
@@ -541,20 +541,20 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 		if (pins->nLoopEnd) pins->uFlags |= CHN_LOOP;
 	}
 	// Common Flags
-	if (!(pmsh->flags & 0x20)) m_dwSongFlags |= SONG_FASTVOLSLIDES;
+	if (!(pmsh->flags & 0x20)) _this->m_dwSongFlags |= SONG_FASTVOLSLIDES;
 	// Reading play sequence
 	if (version < '2')
 	{
 		UINT nbo = pmsh->songlen >> 8;
 		if (nbo >= MAX_ORDERS) nbo = MAX_ORDERS-1;
 		if (!nbo) nbo = 1;
-		SDL_memcpy(Order, pmsh->playseq, nbo);
+		SDL_memcpy(_this->Order, pmsh->playseq, nbo);
 		playtransp = pmsh->playtransp;
 	} else
 	{
 		UINT nOrders, nSections;
 		UINT nTrks = bswapBE16(pmsh2->numtracks);
-		if ((nTrks >= 4) && (nTrks <= 32)) m_nChannels = nTrks;
+		if ((nTrks >= 4) && (nTrks <= 32)) _this->m_nChannels = nTrks;
 		DWORD playseqtable = bswapBE32(pmsh2->playseqtable);
 		UINT numplayseqs = bswapBE16(pmsh2->numpseqs);
 		if (!numplayseqs) numplayseqs = 1;
@@ -583,7 +583,6 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 			if ((pseq) && (pseq < dwMemLength - sizeof(MMD2PLAYSEQ)))
 			{
 				const MMD2PLAYSEQ *pmps = (MMD2PLAYSEQ *)(lpStream + pseq);
-				if (!m_szNames[0][0]) SDL_memcpy(m_szNames[0], pmps->name, 31);
 				UINT n = bswapBE16(pmps->length);
 				if (n < (dwMemLength - (pseq + sizeof(*pmps)) + sizeof(pmps->seq)) / sizeof(pmps->seq[0]))
 				{
@@ -592,106 +591,31 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 						UINT seqval = pmps->seq[i] >> 8;
 						if ((seqval < wNumBlocks) && (nOrders < MAX_ORDERS-1))
 						{
-							Order[nOrders++] = seqval;
+							_this->Order[nOrders++] = seqval;
 						}
 					}
 				}
 			}
 		}
 		playtransp = pmsh2->playtransp;
-		while (nOrders < MAX_ORDERS) Order[nOrders++] = 0xFF;
+		while (nOrders < MAX_ORDERS) _this->Order[nOrders++] = 0xFF;
 	}
 	// Reading Expansion structure
 	if (pmex)
 	{
 		// Channel Split
-		if ((m_nChannels == 4) && (pmsh->flags & MMD_FLAG_8CHANNEL))
+		if ((_this->m_nChannels == 4) && (pmsh->flags & MMD_FLAG_8CHANNEL))
 		{
 			for (UINT i8ch=0; i8ch<4; i8ch++)
 			{
-				if (pmex->channelsplit[i8ch]) m_nChannels++;
-			}
-		}
-		// Song Comments
-		uint32_t annotxt = bswapBE32(pmex->annotxt);
-		uint32_t annolen = bswapBE32(pmex->annolen);
-		if ((annotxt) && (annolen) && (annotxt + annolen > annotxt) // overflow checks.
-				&& (annotxt+annolen <= dwMemLength))
-		{
-			m_lpszSongComments = new char[annolen+1];
-			SDL_memcpy(m_lpszSongComments, lpStream+annotxt, annolen);
-			m_lpszSongComments[annolen] = 0;
-		}
-		// Song Name
-		uint32_t songname = bswapBE32(pmex->songname);
-		uint32_t songnamelen = bswapBE32(pmex->songnamelen);
-		if ((songname) && (songnamelen) && (songname+songnamelen > songname)
-				&& (songname+songnamelen <= dwMemLength))
-		{
-			if (songnamelen > 31) songnamelen = 31;
-			SDL_memcpy(m_szNames[0], lpStream+songname, songnamelen);
-			m_szNames[0][31] = '\0';
-		}
-		// Sample Names
-		DWORD smpinfoex = bswapBE32(pmex->iinfo);
-		if (smpinfoex)
-		{
-			DWORD iinfoptr = bswapBE32(pmex->iinfo);
-			UINT ientries = bswapBE16(pmex->i_ext_entries);
-			UINT ientrysz = bswapBE16(pmex->i_ext_entrsz);
-
-			if ((iinfoptr) && (ientrysz < 256) && 
-			 (ientries*ientrysz < dwMemLength) && 
-			 (iinfoptr < dwMemLength - (ientries*ientrysz)))
-			{
-				LPCSTR psznames = (LPCSTR)(lpStream + iinfoptr);
-				UINT maxnamelen = ientrysz;
-				// copy a max of 32 bytes.
-				if (maxnamelen > 32) maxnamelen = 32;
-				for (UINT i=0; i<ientries; i++) if (i < m_nSamples)
-				{
-					SDL_strlcpy(m_szNames[i+1], psznames + i*ientrysz, maxnamelen);
-					m_szNames[i+1][31] = '\0';
-				}
-			}
-		}
-		// Track Names
-		DWORD trackinfo_ofs = bswapBE32(pmex->trackinfo_ofs);
-		if ((trackinfo_ofs) && (trackinfo_ofs < dwMemLength) && (m_nChannels * 4 < dwMemLength - trackinfo_ofs))
-		{
-			DWORD *ptrktags = (DWORD *)(lpStream + trackinfo_ofs);
-			for (UINT i=0; i<m_nChannels; i++)
-			{
-				DWORD trknameofs = 0, trknamelen = 0;
-				DWORD trktagofs = bswapBE32(ptrktags[i]);
-				if (trktagofs)
-				{
-					while (trktagofs < dwMemLength - 8)
-					{
-						DWORD ntag = bswapBE32(*(DWORD *)(lpStream + trktagofs));
-						if (ntag == MMDTAG_END) break;
-						DWORD tagdata = bswapBE32(*(DWORD *)(lpStream + trktagofs + 4));
-						switch(ntag)
-						{
-						case MMDTAG_TRK_NAMELEN:	trknamelen = tagdata; break;
-						case MMDTAG_TRK_NAME:		trknameofs = tagdata; break;
-						}
-						trktagofs += 8;
-					}
-					if (trknamelen > MAX_CHANNELNAME) trknamelen = MAX_CHANNELNAME;
-					if ((trknameofs) && (trknamelen < dwMemLength) && (trknameofs < dwMemLength - trknamelen))
-					{
-						SDL_strlcpy(ChnSettings[i].szName, (LPCSTR)(lpStream+trknameofs), MAX_CHANNELNAME);
-						ChnSettings[i].szName[MAX_CHANNELNAME-1] = '\0';
-					}
-				}
+				if (pmex->channelsplit[i8ch]) _this->m_nChannels++;
 			}
 		}
 	}
 	// Reading samples
-	if (dwSmplArr > dwMemLength - 4*m_nSamples) return TRUE;
+	if (dwSmplArr > dwMemLength - 4*_this->m_nSamples) return TRUE;
 	pdwTable = (LPDWORD)(lpStream + dwSmplArr);
-	for (UINT iSmp=0; iSmp<m_nSamples; iSmp++) if (pdwTable[iSmp])
+	for (UINT iSmp=0; iSmp<_this->m_nSamples; iSmp++) if (pdwTable[iSmp])
 	{
 		UINT dwPos = bswapBE32(pdwTable[iSmp]);
 		if ((dwPos >= dwMemLength) || (dwPos + sizeof(MMDSAMPLEHEADER) >= dwMemLength)) continue;
@@ -707,7 +631,7 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 		{
 			if (stype & 0x10)
 			{
-				Ins[iSmp+1].uFlags |= CHN_16BIT;
+				_this->Ins[iSmp+1].uFlags |= CHN_16BIT;
 				len /= 2;
 				flags = (stype & 0x20) ? RS_STPCM16M : RS_PCM16M;
 			} else
@@ -716,8 +640,8 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 			}
 			if (stype & 0x20) len /= 2;
 		}
-		Ins[iSmp+1].nLength = len;
-		ReadSample(&Ins[iSmp+1], flags, psdata, dwMemLength - dwPos - 6);
+		_this->Ins[iSmp+1].nLength = len;
+		CSoundFile_ReadSample(_this, &_this->Ins[iSmp+1], flags, psdata, dwMemLength - dwPos - 6);
 	}
 	// Reading patterns (blocks)
 	if (wNumBlocks > MAX_PATTERNS) wNumBlocks = MAX_PATTERNS;
@@ -734,16 +658,16 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 			const MMD0BLOCK *pmb = (const MMD0BLOCK *)(lpStream + dwPos);
 			lines = pmb->lines + 1;
 			tracks = pmb->numtracks;
-			if (!tracks) tracks = m_nChannels;
-			if ((Patterns[iBlk] = AllocatePattern(lines, m_nChannels)) == NULL) continue;
-			PatternSize[iBlk] = lines;
-			MODCOMMAND *p = Patterns[iBlk];
+			if (!tracks) tracks = _this->m_nChannels;
+			if ((_this->Patterns[iBlk] = CSoundFile_AllocatePattern(lines, _this->m_nChannels)) == NULL) continue;
+			_this->PatternSize[iBlk] = lines;
+			MODCOMMAND *p = _this->Patterns[iBlk];
 			LPBYTE s = (LPBYTE)(lpStream + dwPos + 2);
 			UINT maxlen = tracks*lines*3;
 			if (maxlen + dwPos > dwMemLength - 2) break;
 			for (UINT y=0; y<lines; y++)
 			{
-				for (UINT x=0; x<tracks; x++, s+=3) if (x < m_nChannels)
+				for (UINT x=0; x<tracks; x++, s+=3) if (x < _this->m_nChannels)
 				{
 					BYTE note = s[0] & 0x3F;
 					BYTE instr = s[1] >> 4;
@@ -766,9 +690,9 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 			BYTE *pcmdext = NULL;
 			lines = (pmb->lines >> 8) + 1;
 			tracks = pmb->numtracks >> 8;
-			if (!tracks) tracks = m_nChannels;
-			if ((Patterns[iBlk] = AllocatePattern(lines, m_nChannels)) == NULL) continue;
-			PatternSize[iBlk] = (WORD)lines;
+			if (!tracks) tracks = _this->m_nChannels;
+			if ((_this->Patterns[iBlk] = CSoundFile_AllocatePattern(lines, _this->m_nChannels)) == NULL) continue;
+			_this->PatternSize[iBlk] = (WORD)lines;
 			DWORD dwBlockInfo = bswapBE32(pmb->info);
 			if ((dwBlockInfo) && (dwBlockInfo < dwMemLength - sizeof(MMD1BLOCKINFO)))
 			{
@@ -779,7 +703,7 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 					UINT namelen = bswapBE32(pbi->blocknamelen);
 					if ((nameofs < dwMemLength) && (namelen < dwMemLength + nameofs))
 					{
-						SetPatternName(iBlk, (LPCSTR)(lpStream+nameofs));
+						CSoundFile_SetPatternName(_this, iBlk, (LPCSTR)(lpStream+nameofs));
 					}
 				}
 				if (pbi->cmdexttable)
@@ -795,13 +719,13 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 					}
 				}
 			}
-			MODCOMMAND *p = Patterns[iBlk];
+			MODCOMMAND *p = _this->Patterns[iBlk];
 			LPBYTE s = (LPBYTE)(lpStream + dwPos + 8);
 			UINT maxlen = tracks*lines*4;
 			if (maxlen + dwPos > dwMemLength - 8) break;
 			for (UINT y=0; y<lines; y++)
 			{
-				for (UINT x=0; x<tracks; x++, s+=4) if (x < m_nChannels)
+				for (UINT x=0; x<tracks; x++, s+=4) if (x < _this->m_nChannels)
 				{
 					BYTE note = s[0];
 					if ((note) && (note <= 132))
@@ -823,10 +747,10 @@ BOOL CSoundFile::ReadMed(const BYTE *lpStream, DWORD dwMemLength)
 		}
 	}
 	// Setup channel pan positions
-	for (UINT iCh=0; iCh<m_nChannels; iCh++)
+	for (UINT iCh=0; iCh<_this->m_nChannels; iCh++)
 	{
-		ChnSettings[iCh].nPan = (((iCh&3) == 1) || ((iCh&3) == 2)) ? 0xC0 : 0x40;
-		ChnSettings[iCh].nVolume = 64;
+		_this->ChnSettings[iCh].nPan = (((iCh&3) == 1) || ((iCh&3) == 2)) ? 0xC0 : 0x40;
+		_this->ChnSettings[iCh].nVolume = 64;
 	}
 	return TRUE;
 }

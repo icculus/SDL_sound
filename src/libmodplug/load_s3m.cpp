@@ -60,7 +60,7 @@ typedef struct tagS3MFILEHEADER
 } S3MFILEHEADER;
 
 
-void CSoundFile::S3MConvert(MODCOMMAND *m, BOOL bIT) const
+void CSoundFile_S3MConvert(MODCOMMAND *m, BOOL bIT)
 //--------------------------------------------------------
 {
 	UINT command = m->command;
@@ -107,7 +107,7 @@ static DWORD boundInput(DWORD input, DWORD smin, DWORD smax)
 }
 
 
-BOOL CSoundFile::ReadS3M(const BYTE *lpStream, DWORD dwMemLength)
+BOOL CSoundFile_ReadS3M(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLength)
 //---------------------------------------------------------------
 {
 	UINT insnum,patnum,nins,npat;
@@ -132,53 +132,51 @@ BOOL CSoundFile::ReadS3M(const BYTE *lpStream, DWORD dwMemLength)
 
 	if (psfh.scrm != 0x4D524353) return FALSE;
 	dwMemPos = 0x60;
-	m_nType = MOD_TYPE_S3M;
-	SDL_memset(m_szNames,0,sizeof(m_szNames));
-	SDL_memcpy(m_szNames[0], psfh.name, 28);
+	_this->m_nType = MOD_TYPE_S3M;
 	// Speed
-	m_nDefaultSpeed = psfh.speed;
-	if (m_nDefaultSpeed < 1) m_nDefaultSpeed = 6;
-	if (m_nDefaultSpeed > 0x1F) m_nDefaultSpeed = 0x1F;
+	_this->m_nDefaultSpeed = psfh.speed;
+	if (_this->m_nDefaultSpeed < 1) _this->m_nDefaultSpeed = 6;
+	if (_this->m_nDefaultSpeed > 0x1F) _this->m_nDefaultSpeed = 0x1F;
 	// Tempo
-	m_nDefaultTempo = psfh.tempo;
-	if (m_nDefaultTempo < 40) m_nDefaultTempo = 40;
-	if (m_nDefaultTempo > 240) m_nDefaultTempo = 240;
+	_this->m_nDefaultTempo = psfh.tempo;
+	if (_this->m_nDefaultTempo < 40) _this->m_nDefaultTempo = 40;
+	if (_this->m_nDefaultTempo > 240) _this->m_nDefaultTempo = 240;
 	// Global Volume
-	m_nDefaultGlobalVolume = psfh.globalvol << 2;
-	if ((!m_nDefaultGlobalVolume) || (m_nDefaultGlobalVolume > 256)) m_nDefaultGlobalVolume = 256;
-	m_nSongPreAmp = psfh.mastervol & 0x7F;
+	_this->m_nDefaultGlobalVolume = psfh.globalvol << 2;
+	if ((!_this->m_nDefaultGlobalVolume) || (_this->m_nDefaultGlobalVolume > 256)) _this->m_nDefaultGlobalVolume = 256;
+	_this->m_nSongPreAmp = psfh.mastervol & 0x7F;
 	// Channels
-	m_nChannels = 4;
+	_this->m_nChannels = 4;
 	for (UINT ich=0; ich<32; ich++)
 	{
-		ChnSettings[ich].nPan = 128;
-		ChnSettings[ich].nVolume = 64;
+		_this->ChnSettings[ich].nPan = 128;
+		_this->ChnSettings[ich].nVolume = 64;
 
-		ChnSettings[ich].dwFlags = CHN_MUTE;
+		_this->ChnSettings[ich].dwFlags = CHN_MUTE;
 		if (psfh.channels[ich] != 0xFF)
 		{
-			m_nChannels = ich+1;
+			_this->m_nChannels = ich+1;
 			UINT b = psfh.channels[ich] & 0x0F;
-			ChnSettings[ich].nPan = (b & 8) ? 0xC0 : 0x40;
-			ChnSettings[ich].dwFlags = 0;
+			_this->ChnSettings[ich].nPan = (b & 8) ? 0xC0 : 0x40;
+			_this->ChnSettings[ich].dwFlags = 0;
 		}
 	}
-	if (m_nChannels < 4) m_nChannels = 4;
-	if ((psfh.cwtv < 0x1320) || (psfh.flags & 0x40)) m_dwSongFlags |= SONG_FASTVOLSLIDES;
+	if (_this->m_nChannels < 4) _this->m_nChannels = 4;
+	if ((psfh.cwtv < 0x1320) || (psfh.flags & 0x40)) _this->m_dwSongFlags |= SONG_FASTVOLSLIDES;
 	// Reading pattern order
 	UINT iord = psfh.ordnum;
 	if (iord<1) iord = 1;
 	if (iord > MAX_ORDERS) iord = MAX_ORDERS;
 	if (iord)
 	{
-		SDL_memcpy(Order, lpStream+dwMemPos, iord);
+		SDL_memcpy(_this->Order, lpStream+dwMemPos, iord);
 		dwMemPos += iord;
 	}
 	if ((iord & 1) && (lpStream[dwMemPos] == 0xFF)) dwMemPos++;
 	// Reading file pointers
 	insnum = nins = psfh.insnum;
 	if (insnum >= MAX_SAMPLES) insnum = MAX_SAMPLES-1;
-	m_nSamples = insnum;
+	_this->m_nSamples = insnum;
 	patnum = npat = psfh.patnum;
 	if (patnum > MAX_PATTERNS) patnum = MAX_PATTERNS;
 	SDL_memset(ptr, 0, sizeof(ptr));
@@ -198,11 +196,11 @@ BOOL CSoundFile::ReadS3M(const BYTE *lpStream, DWORD dwMemLength)
 			const BYTE *chnpan = lpStream+dwMemPos;
 			for (UINT i=0; i<32; i++) if (chnpan[i] & 0x20)
 			{
-				ChnSettings[i].nPan = ((chnpan[i] & 0x0F) << 4) + 8;
+				_this->ChnSettings[i].nPan = ((chnpan[i] & 0x0F) << 4) + 8;
 			}
 		}
 	}
-	if (!m_nChannels) return TRUE;
+	if (!_this->m_nChannels) return TRUE;
 	// Reading instrument headers
 	SDL_memset(insfile, 0, sizeof(insfile));
 	for (UINT iSmp=1; iSmp<=insnum; iSmp++)
@@ -216,23 +214,20 @@ BOOL CSoundFile::ReadS3M(const BYTE *lpStream, DWORD dwMemLength)
 		}
 		S3MSAMPLESTRUCT pSmp;
 		SDL_memcpy(&pSmp, lpStream+nInd, 0x50);
-		SDL_memcpy(Ins[iSmp].name, &pSmp.dosname, 12);
 		insflags[iSmp-1] = pSmp.flags;
 		inspack[iSmp-1] = pSmp.pack;
-		SDL_memcpy(m_szNames[iSmp], pSmp.name, 28);
-		m_szNames[iSmp][28] = 0;
 		if ((pSmp.type==1) && (pSmp.scrs[2]=='R') && (pSmp.scrs[3]=='S'))
 		{
-			Ins[iSmp].nLength = boundInput(bswapLE32(pSmp.length), 4, MAX_SAMPLE_LENGTH);
-			Ins[iSmp].nLoopStart = boundInput(bswapLE32(pSmp.loopbegin), 4, Ins[iSmp].nLength - 1);
-			Ins[iSmp].nLoopEnd = boundInput(bswapLE32(pSmp.loopend), 4, Ins[iSmp].nLength);
-			Ins[iSmp].nVolume = boundInput(pSmp.vol, 0, 64) << 2;
-			Ins[iSmp].nGlobalVol = 64;
-			if (pSmp.flags&1) Ins[iSmp].uFlags |= CHN_LOOP;
+			_this->Ins[iSmp].nLength = boundInput(bswapLE32(pSmp.length), 4, MAX_SAMPLE_LENGTH);
+			_this->Ins[iSmp].nLoopStart = boundInput(bswapLE32(pSmp.loopbegin), 4, _this->Ins[iSmp].nLength - 1);
+			_this->Ins[iSmp].nLoopEnd = boundInput(bswapLE32(pSmp.loopend), 4, _this->Ins[iSmp].nLength);
+			_this->Ins[iSmp].nVolume = boundInput(pSmp.vol, 0, 64) << 2;
+			_this->Ins[iSmp].nGlobalVol = 64;
+			if (pSmp.flags&1) _this->Ins[iSmp].uFlags |= CHN_LOOP;
 			UINT j = bswapLE32(pSmp.finetune);
 			if (!j) j = 8363;
 			if (j < 1024) j = 1024;
-			Ins[iSmp].nC4Speed = j;
+			_this->Ins[iSmp].nC4Speed = j;
 			insfile[iSmp] = (pSmp.hmem << 20) + (bswapLE16(pSmp.memseg) << 4);
 			// offset is invalid - ignore this sample.
 			if (insfile[iSmp] > dwMemLength) insfile[iSmp] = 0;
@@ -242,9 +237,9 @@ BOOL CSoundFile::ReadS3M(const BYTE *lpStream, DWORD dwMemLength)
 					if (insfile[iSmp] == insfile[z])
 						insfile[iSmp] = 0;
 			}
-			if ((Ins[iSmp].nLoopStart >= Ins[iSmp].nLoopEnd) || (Ins[iSmp].nLoopEnd - Ins[iSmp].nLoopStart < 8))
-				Ins[iSmp].nLoopStart = Ins[iSmp].nLoopEnd = 0;
-			Ins[iSmp].nPan = 0x80;
+			if ((_this->Ins[iSmp].nLoopStart >= _this->Ins[iSmp].nLoopEnd) || (_this->Ins[iSmp].nLoopEnd - _this->Ins[iSmp].nLoopStart < 8))
+				_this->Ins[iSmp].nLoopStart = _this->Ins[iSmp].nLoopEnd = 0;
+			_this->Ins[iSmp].nPan = 0x80;
 		}
 	}
 	// Reading patterns
@@ -254,12 +249,12 @@ BOOL CSoundFile::ReadS3M(const BYTE *lpStream, DWORD dwMemLength)
 		if (nInd + 0x40 > dwMemLength) continue;
 		WORD len = bswapLE16(*((WORD *)(lpStream+nInd)));
 		nInd += 2;
-		PatternSize[iPat] = 64;
+		_this->PatternSize[iPat] = 64;
 		if ((!len) || (nInd + len > dwMemLength - 6)
-		 || ((Patterns[iPat] = AllocatePattern(64, m_nChannels)) == NULL)) continue;
+		 || ((_this->Patterns[iPat] = CSoundFile_AllocatePattern(64, _this->m_nChannels)) == NULL)) continue;
 		LPBYTE src = (LPBYTE)(lpStream+nInd);
 		// Unpacking pattern
-		MODCOMMAND *p = Patterns[iPat];
+		MODCOMMAND *p = _this->Patterns[iPat];
 		UINT row = 0;
 		UINT j = 0;
 		while (j < len)
@@ -271,9 +266,9 @@ BOOL CSoundFile::ReadS3M(const BYTE *lpStream, DWORD dwMemLength)
 			} else
 			{
 				UINT chn = b & 0x1F;
-				if (chn < m_nChannels)
+				if (chn < _this->m_nChannels)
 				{
-					MODCOMMAND *m = &p[row*m_nChannels+chn];
+					MODCOMMAND *m = &p[row*_this->m_nChannels+chn];
 					if (b & 0x20)
 					{
 						m->note = src[j++];
@@ -299,7 +294,7 @@ BOOL CSoundFile::ReadS3M(const BYTE *lpStream, DWORD dwMemLength)
 					{
 						m->command = src[j++];
 						m->param = src[j++];
-						if (m->command) S3MConvert(m, FALSE);
+						if (m->command) CSoundFile_S3MConvert(m, FALSE);
 					}
 				} else
 				{
@@ -312,7 +307,7 @@ BOOL CSoundFile::ReadS3M(const BYTE *lpStream, DWORD dwMemLength)
 		}
 	}
 	// Reading samples
-	for (UINT iRaw=1; iRaw<=insnum; iRaw++) if ((Ins[iRaw].nLength) && (insfile[iRaw]))
+	for (UINT iRaw=1; iRaw<=insnum; iRaw++) if ((_this->Ins[iRaw].nLength) && (insfile[iRaw]))
 	{
 		UINT flags = (psfh.version == 1) ? RS_PCM8S : RS_PCM8U;
 		if (insflags[iRaw-1] & 4) flags += 5;
@@ -320,11 +315,11 @@ BOOL CSoundFile::ReadS3M(const BYTE *lpStream, DWORD dwMemLength)
 		if (inspack[iRaw-1] == 4) flags = RS_ADPCM4;
 		dwMemPos = insfile[iRaw];
 		if (dwMemPos < dwMemLength)
-			dwMemPos += ReadSample(&Ins[iRaw], flags, (LPSTR)(lpStream + dwMemPos), dwMemLength - dwMemPos);
+			dwMemPos += CSoundFile_ReadSample(_this, &_this->Ins[iRaw], flags, (LPSTR)(lpStream + dwMemPos), dwMemLength - dwMemPos);
 	}
-	m_nMinPeriod = 64;
-	m_nMaxPeriod = 32767;
-	if (psfh.flags & 0x10) m_dwSongFlags |= SONG_AMIGALIMITS;
+	_this->m_nMinPeriod = 64;
+	_this->m_nMaxPeriod = 32767;
+	if (psfh.flags & 0x10) _this->m_dwSongFlags |= SONG_AMIGALIMITS;
 	return TRUE;
 }
 
