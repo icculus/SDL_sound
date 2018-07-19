@@ -2185,7 +2185,7 @@ static int abc_parse_decorations(ABCHANDLE *h, ABCTRACK *tp, const char *p)
 }
 
 // =====================================================================================
-BOOL CSoundFile::TestABC(const BYTE *lpStream, DWORD dwMemLength)
+BOOL CSoundFile_TestABC(const BYTE *lpStream, DWORD dwMemLength)
 // =====================================================================================
 {
     char id[128];
@@ -2356,7 +2356,7 @@ static int ABC_ReadPatterns(MODCOMMAND *pattern[], WORD psize[], ABCHANDLE *h, i
 	for( t = h->track; t; t = t->next ) t->capostart = t->head;
 	trillbits = 0; // trill effect admininstration: one bit per channel, max 32 channnels
 	for( pat = 0; pat < numpat; pat++ ) {
-		pattern[pat] = CSoundFile::AllocatePattern(64, channels);
+		pattern[pat] = CSoundFile_AllocatePattern(64, channels);
 		if( !pattern[pat] ) return 0;
 		psize[pat] = 64;
 		for( row = 0; row < 64; row++ ) {
@@ -3430,7 +3430,7 @@ static char *abc_continuated(ABCHANDLE *h, MMFILE *mmf, char *p) {
 }
 
 // =====================================================================================
-BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
+BOOL CSoundFile_ReadABC(CSoundFile *_this, const uint8_t *lpStream, DWORD dwMemLength)
 {
 	static int avoid_reentry = 0;
 	ABCHANDLE *h;
@@ -3458,7 +3458,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 	ABCMACRO *mp;
 	int mmsp;
 	MMFILE *mmstack[MAXABCINCLUDES];
-	if( !TestABC(lpStream, dwMemLength) ) return FALSE;
+	if( !CSoundFile_TestABC(lpStream, dwMemLength) ) return FALSE;
 	h = ABC_Init();
 	if( !h ) return FALSE;
 	mmfile = &mm;
@@ -3469,7 +3469,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 	avoid_reentry = 1;
 	pat_resetsmp();
 	pat_init_patnames();
-	m_nDefaultTempo = 0;
+	_this->m_nDefaultTempo = 0;
 	global_voiceno = 0;
 	abckey = 0;
 	h->tracktime = 0;
@@ -3566,7 +3566,6 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 				case INBETWEEN:
 					if( !SDL_strncmp(p,"X:",2) ) {
 						abcstate = INHEAD;
-						SDL_memset(m_szNames[0], 0, 32);
 						for( p+=2; SDL_isspace(*p); p++ ) ;
 						abcxnumber = SDL_atoi(p);
 						abchornpipe = 0;
@@ -3630,21 +3629,10 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 							abc_add_partbreak(h, h->track, h->tracktime);
 							abc_add_tempo_event(h, h->track, h->tracktime, abctempo);
 						}
-						if( m_nDefaultTempo == 0 ) m_nDefaultTempo = abctempo;
+						if( _this->m_nDefaultTempo == 0 ) _this->m_nDefaultTempo = abctempo;
 						break;
 					}
 					if( !SDL_strncmp(p,"T:",2) ) {
-						char buf[200];
-						if( SDL_strchr(p,'%') ) *SDL_strchr(p,'%') = '\0';
-						for( t=SDL_strlen(p)-1; SDL_isspace(p[t]); t-- )
-							p[t]='\0';
-						for( t=2; SDL_isspace(p[t]); t++ ) ;
-						SDL_strlcpy(buf,m_szNames[0], sizeof (buf));
-						if( SDL_strlen(buf) + SDL_strlen(p+t) > 199 ) p[t+199-SDL_strlen(buf)] = '\0'; // chop it off
-						if( buf[0] ) SDL_strlcat(buf," ", sizeof (buf)); // add a space
-						SDL_strlcat(buf, p+t, sizeof (buf));
-						if( SDL_strlen(buf) > 31 ) buf[31] = '\0'; // chop it of
-						SDL_strlcpy(m_szNames[0], buf, 32);
 						break;
 					}
 					if( !SDL_strncmp(p,"R:",2) ) {
@@ -3699,7 +3687,7 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 								abc_add_partbreak(h, h->track, h->tracktime);
 								abc_add_tempo_event(h, h->track, h->tracktime, abcrate);
 							}
-							if( m_nDefaultTempo == 0 ) m_nDefaultTempo = abcrate;
+							if( _this->m_nDefaultTempo == 0 ) _this->m_nDefaultTempo = abcrate;
 						}
 						abc_init_partpat(partpat);
 						partpat[26][0] = abc_patno(h, h->tracktime);
@@ -3781,17 +3769,6 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 						*p = '%';	// make me skip the rest of the line....
 					}
 					if( !SDL_strncmp(p,"T:",2) ) {
-						char buf[200];
-						if( SDL_strchr(p,'%') ) *SDL_strchr(p,'%') = '\0';
-						for( t=SDL_strlen(p)-1; SDL_isspace(p[t]); t-- )
-							p[t]='\0';
-						for( t=2; SDL_isspace(p[t]); t++ ) ;
-						SDL_strlcpy(buf,m_szNames[0],sizeof (buf));
-						if( SDL_strlen(buf) + SDL_strlen(p+t) > 198 ) p[t+198-SDL_strlen(buf)] = '\0'; // chop it of
-						if( SDL_strlen(buf) ) SDL_strlcat(buf," ",sizeof (buf)); // add a space
-						SDL_strlcat(buf, p+t, sizeof (buf));
-						if( SDL_strlen(buf) > 31 ) buf[31] = '\0'; // chop it of
-						SDL_strlcpy(m_szNames[0], buf, 32);
 						*p = '%';	// make me skip the rest of the line....
 					}
 					break;
@@ -4694,48 +4671,48 @@ BOOL CSoundFile::ReadABC(const uint8_t *lpStream, DWORD dwMemLength)
 
 	// set module variables
 	if( abctempo == 0 ) abctempo = abcrate;
-	if( m_nDefaultTempo == 0 ) m_nDefaultTempo = abctempo;
-	m_nType         = MOD_TYPE_ABC;
+	if( _this->m_nDefaultTempo == 0 ) _this->m_nDefaultTempo = abctempo;
+	_this->m_nType         = MOD_TYPE_ABC;
 	numpat          = 1+(modticks(h->tracktime) / h->speed / 64);
 	if( numpat > MAX_PATTERNS )
 		numpat = MAX_PATTERNS;
-	m_nDefaultSpeed = h->speed;
-	m_nChannels     = abc_numtracks(h);
-	m_dwSongFlags   = SONG_LINEARSLIDES;
-	m_nMinPeriod    = 28 << 2;
-	m_nMaxPeriod    = 1712 << 3;
+	_this->m_nDefaultSpeed = h->speed;
+	_this->m_nChannels     = abc_numtracks(h);
+	_this->m_dwSongFlags   = SONG_LINEARSLIDES;
+	_this->m_nMinPeriod    = 28 << 2;
+	_this->m_nMaxPeriod    = 1712 << 3;
 	// orderlist
 	for(t=0; t < (uint32_t)orderlen; t++){
 		if( t >= MAX_ORDERS )
 			break;
-		Order[t] = orderlist[t];
+		_this->Order[t] = orderlist[t];
 	}
 	SDL_free(orderlist);	// get rid of orderlist memory
 	// ==============================
 	// Load the pattern info now!
-	if( ABC_ReadPatterns(Patterns, PatternSize, h, numpat, m_nChannels) ) {
+	if( ABC_ReadPatterns(_this->Patterns, _this->PatternSize, h, numpat, _this->m_nChannels) ) {
 		// :^(  need one more channel to handle the global events ;^b
-		m_nChannels++;
+		_this->m_nChannels++;
 		h->tp = abc_locate_track(h, "", 99);
 		abc_add_sync(h, h->tp, h->tracktime);
 		for( t=0; t<numpat; t++ ) {
-			FreePattern(Patterns[t]);
-			Patterns[t] = NULL;
+			CSoundFile_FreePattern(_this->Patterns[t]);
+			_this->Patterns[t] = NULL;
 		}
-		ABC_ReadPatterns(Patterns, PatternSize, h, numpat, m_nChannels);
+		ABC_ReadPatterns(_this->Patterns, _this->PatternSize, h, numpat, _this->m_nChannels);
 	}
 	// load instruments after building the patterns (chan == 10 track handling)
-	if( !PAT_Load_Instruments(this) ) {
+	if( !PAT_Load_Instruments(_this) ) {
 		avoid_reentry = 0;
 		return FALSE;
 	}
 	// ============================================================
 	// set panning positions
-	if( m_nChannels > MAX_BASECHANNELS )
-		m_nChannels = MAX_BASECHANNELS;
-	for(t=0; t<m_nChannels; t++) {
-		ChnSettings[t].nPan = 0x30+((t+2)%5)*((0xD0 - 0x30)/5);     // 0x30 = std s3m val
-		ChnSettings[t].nVolume = 64;
+	if( _this->m_nChannels > MAX_BASECHANNELS )
+		_this->m_nChannels = MAX_BASECHANNELS;
+	for(t=0; t<_this->m_nChannels; t++) {
+		_this->ChnSettings[t].nPan = 0x30+((t+2)%5)*((0xD0 - 0x30)/5);     // 0x30 = std s3m val
+		_this->ChnSettings[t].nVolume = 64;
 	}
 	avoid_reentry = 0; // it is safe now, I'm finished
 	abc_set_parts(&abcparts, 0);	// free the parts array

@@ -55,7 +55,6 @@ typedef struct _MT2AUTOMATION
 
 typedef struct _MT2INSTRUMENT
 {
-	CHAR szName[32];
 	DWORD dwDataLen;
 	WORD wSamples;
 	BYTE GroupsMapping[96];
@@ -94,7 +93,6 @@ typedef struct _MT2SYNTH
 
 typedef struct _MT2SAMPLE
 {
-	CHAR szName[32];
 	DWORD dwDataLen;
 	DWORD dwLength;
 	DWORD dwFrequency;
@@ -168,7 +166,7 @@ static VOID ConvertMT2Command(CSoundFile *that, MODCOMMAND *m, const MT2COMMAND 
 		{
 			m->command = p->fxparam2;
 			m->param = p->fxparam1;
-			that->ConvertModCommand(m);
+			CSoundFile_ConvertModCommand(that, m);
 		} else
 		{
 			// TODO: MT2 Effects
@@ -177,7 +175,7 @@ static VOID ConvertMT2Command(CSoundFile *that, MODCOMMAND *m, const MT2COMMAND 
 }
 
 
-BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
+BOOL CSoundFile_ReadMT2(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 //-----------------------------------------------------------
 {
 	const MT2FILEHEADER *pfh = (MT2FILEHEADER *)lpStream;
@@ -192,21 +190,19 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 	 || (pfh->wVersion < 0x0200) || (pfh->wVersion >= 0x0300)
 	 || (pfh->wChannels < 4) || (pfh->wChannels > 64)) return FALSE;
 	pdd = NULL;
-	m_nType = MOD_TYPE_MT2;
-	m_nChannels = pfh->wChannels;
-	m_nRestartPos = pfh->wRestart;
-	m_nDefaultSpeed = pfh->bTicksPerLine;
-	m_nDefaultTempo = 125;
+	_this->m_nType = MOD_TYPE_MT2;
+	_this->m_nChannels = pfh->wChannels;
+	_this->m_nRestartPos = pfh->wRestart;
+	_this->m_nDefaultSpeed = pfh->bTicksPerLine;
+	_this->m_nDefaultTempo = 125;
 	if ((pfh->wSamplesPerTick > 100) && (pfh->wSamplesPerTick < 5000))
 	{
-		m_nDefaultTempo = 110250 / pfh->wSamplesPerTick;
+		_this->m_nDefaultTempo = 110250 / pfh->wSamplesPerTick;
 	}
 	for (UINT iOrd=0; iOrd<MAX_ORDERS; iOrd++)
 	{
-		Order[iOrd] = (BYTE)((iOrd < pfh->nOrders) ? pfh->Orders[iOrd] : 0xFF);
+		_this->Order[iOrd] = (BYTE)((iOrd < pfh->nOrders) ? pfh->Orders[iOrd] : 0xFF);
 	}
-	SDL_memcpy(m_szNames[0], pfh->szSongName, 32);
-	m_szNames[0][31] = 0;
 	dwMemPos = sizeof(MT2FILEHEADER);
 	nDrumDataLen = *(WORD *)(lpStream + dwMemPos);
 	dwDrumDataPos = dwMemPos + 2;
@@ -229,17 +225,6 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 		{
 		// MSG
 		case 0x0047534D:
-			if ((dwLen > 3) && (!m_lpszSongComments))
-			{
-				DWORD nTxtLen = dwLen;
-				if (nTxtLen > 32000) nTxtLen = 32000;
-				m_lpszSongComments = new char[nTxtLen];  // changed from CHAR
-				if (m_lpszSongComments)
-				{
-					SDL_memcpy(m_lpszSongComments, lpStream+dwMemPos+1, nTxtLen-1);
-					m_lpszSongComments[nTxtLen-1] = 0;
-				}
-			}
 			break;
 		// SUM -> author name (or "Unregistered")
 		// TMAP
@@ -260,10 +245,10 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 		UINT nLines = pmp->wLines;
 		if ((iPat < MAX_PATTERNS) && (nLines > 0) && (nLines <= 256))
 		{
-			PatternSize[iPat] = nLines;
-			Patterns[iPat] = AllocatePattern(nLines, m_nChannels);
-			if (!Patterns[iPat]) return TRUE;
-			MODCOMMAND *m = Patterns[iPat];
+			_this->PatternSize[iPat] = nLines;
+			_this->Patterns[iPat] = CSoundFile_AllocatePattern(nLines, _this->m_nChannels);
+			if (!_this->Patterns[iPat]) return TRUE;
+			MODCOMMAND *m = _this->Patterns[iPat];
 			UINT len = wDataLen;
 			if (pfh->fulFlags & 1) // Packed Patterns
 			{
@@ -281,7 +266,7 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 					}
 					if (infobyte & 0x7f)
 					{
-						UINT patpos = row*m_nChannels+ch;
+						UINT patpos = row*_this->m_nChannels+ch;
 						cmd.note = cmd.instr = cmd.vol = cmd.pan = cmd.fxcmd = cmd.fxparam1 = cmd.fxparam2 = 0;
 						if (infobyte & 1) cmd.note = p[pos++];
 						if (infobyte & 2) cmd.instr = p[pos++];
@@ -290,19 +275,19 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 						if (infobyte & 16) cmd.fxcmd = p[pos++];
 						if (infobyte & 32) cmd.fxparam1 = p[pos++];
 						if (infobyte & 64) cmd.fxparam2 = p[pos++];
-						ConvertMT2Command(this, &m[patpos], &cmd);
+						ConvertMT2Command(_this, &m[patpos], &cmd);
 					}
 					row += rptcount+1;
 					while (row >= nLines) { row-=nLines; ch++; }
-					if (ch >= m_nChannels) break;
+					if (ch >= _this->m_nChannels) break;
 				}
 			} else
 			{
 				const MT2COMMAND *p = (MT2COMMAND *)(lpStream+dwMemPos);
 				UINT n = 0;
-				while ((len > sizeof(MT2COMMAND)) && (n < m_nChannels*nLines))
+				while ((len > sizeof(MT2COMMAND)) && (n < _this->m_nChannels*nLines))
 				{
-					ConvertMT2Command(this, m, p);
+					ConvertMT2Command(_this, m, p);
 					len -= sizeof(MT2COMMAND);
 					n++;
 					p++;
@@ -325,7 +310,7 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 	// Automation
 	if (pfh->fulFlags & 2)
 	{
-		UINT nAutoCount = m_nChannels;
+		UINT nAutoCount = _this->m_nChannels;
 		if (pfh->fulFlags & 0x10) nAutoCount++; // Master Automation
 		if ((pfh->fulFlags & 0x08) && (pdd)) nAutoCount += 8; // Drums Automation
 		nAutoCount *= pfh->wPatterns;
@@ -345,20 +330,19 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 	}
 	// Load Instruments
 	SDL_memset(InstrMap, 0, sizeof(InstrMap));
-	m_nInstruments = (pfh->wInstruments < MAX_INSTRUMENTS) ? pfh->wInstruments : MAX_INSTRUMENTS-1;
+	_this->m_nInstruments = (pfh->wInstruments < MAX_INSTRUMENTS) ? pfh->wInstruments : MAX_INSTRUMENTS-1;
 	for (UINT iIns=1; iIns<=255; iIns++)
 	{
 		if (dwMemPos+36 > dwMemLength) return TRUE;
 		const MT2INSTRUMENT *pmi = (MT2INSTRUMENT *)(lpStream+dwMemPos);
 		INSTRUMENTHEADER *penv = NULL;
-		if (iIns <= m_nInstruments)
+		if (iIns <= _this->m_nInstruments)
 		{
 			penv = new INSTRUMENTHEADER;
-			Headers[iIns] = penv;
+			_this->Headers[iIns] = penv;
 			if (penv)
 			{
 				SDL_memset(penv, 0, sizeof(INSTRUMENTHEADER));
-				SDL_memcpy(penv->name, pmi->szName, 32);
 				penv->nGlobalVol = 64;
 				penv->nPan = 128;
 				for (UINT i=0; i<NOTE_MAX; i++)
@@ -470,21 +454,17 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 		}
 	}
 	SDL_memset(SampleMap, 0, sizeof(SampleMap));
-	m_nSamples = (pfh->wSamples < MAX_SAMPLES) ? pfh->wSamples : MAX_SAMPLES-1;
+	_this->m_nSamples = (pfh->wSamples < MAX_SAMPLES) ? pfh->wSamples : MAX_SAMPLES-1;
 	for (UINT iSmp=1; iSmp<=256; iSmp++)
 	{
 		if (dwMemPos+36 > dwMemLength) return TRUE;
 		const MT2SAMPLE *pms = (MT2SAMPLE *)(lpStream+dwMemPos);
-		if (iSmp < MAX_SAMPLES)
-		{
-			SDL_memcpy(m_szNames[iSmp], pms->szName, 32);
-		}
 		if (pms->dwDataLen > 0)
 		{
 			SampleMap[iSmp-1] = pms;
 			if (iSmp < MAX_SAMPLES)
 			{
-				MODINSTRUMENT *psmp = &Ins[iSmp];
+				MODINSTRUMENT *psmp = &_this->Ins[iSmp];
 				psmp->nGlobalVol = 64;
 				psmp->nVolume = (pms->wVolume >> 7);
 				psmp->nPan = (pms->nPan == 0x80) ? 128 : (pms->nPan^0x80);
@@ -492,9 +472,9 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 				psmp->nC4Speed = pms->dwFrequency;
 				psmp->nLoopStart = pms->dwLoopStart;
 				psmp->nLoopEnd = pms->dwLoopEnd;
-				FrequencyToTranspose(psmp);
+				CSoundFile_FrequencyToTranspose(psmp);
 				psmp->RelativeTone -= pms->nBaseNote - 49;
-				psmp->nC4Speed = TransposeToFrequency(psmp->RelativeTone, psmp->nFineTune);
+				psmp->nC4Speed = CSoundFile_TransposeToFrequency(psmp->RelativeTone, psmp->nFineTune);
 				if (pms->nQuality == 2) { psmp->uFlags |= CHN_16BIT; psmp->nLength >>= 1; }
 				if (pms->nChannels == 2) { psmp->nLength >>= 1; }
 				if (pms->nLoop == 1) psmp->uFlags |= CHN_LOOP;
@@ -511,7 +491,7 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 		if (dwMemPos+8 > dwMemLength) return TRUE;
 		const MT2INSTRUMENT *pmi = InstrMap[iMap];
 		INSTRUMENTHEADER *penv = NULL;
-		if (iMap<m_nInstruments) penv = Headers[iMap+1];
+		if (iMap<_this->m_nInstruments) penv = _this->Headers[iMap+1];
 		for (UINT iGrp=0; iGrp<pmi->wSamples; iGrp++)
 		{
 			if (penv)
@@ -523,12 +503,12 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 					{
 						UINT nSmp = pmg->nSmpNo+1;
 						penv->Keyboard[i+12] = (BYTE)nSmp;
-						if (nSmp <= m_nSamples)
+						if (nSmp <= _this->m_nSamples)
 						{
-							Ins[nSmp].nVibType = pmi->bVibType;
-							Ins[nSmp].nVibSweep = pmi->bVibSweep;
-							Ins[nSmp].nVibDepth = pmi->bVibDepth;
-							Ins[nSmp].nVibRate = pmi->bVibRate;
+							_this->Ins[nSmp].nVibType = pmi->bVibType;
+							_this->Ins[nSmp].nVibSweep = pmi->bVibSweep;
+							_this->Ins[nSmp].nVibDepth = pmi->bVibDepth;
+							_this->Ins[nSmp].nVibRate = pmi->bVibRate;
 						}
 					}
 				}
@@ -536,10 +516,10 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 			dwMemPos += 8;
 		}
 	}
-	for (UINT iData=0; iData<256; iData++) if ((iData < m_nSamples) && (SampleMap[iData]))
+	for (UINT iData=0; iData<256; iData++) if ((iData < _this->m_nSamples) && (SampleMap[iData]))
 	{
 		const MT2SAMPLE *pms = SampleMap[iData];
-		MODINSTRUMENT *psmp = &Ins[iData+1];
+		MODINSTRUMENT *psmp = &_this->Ins[iData+1];
 		if (!(pms->nFlags & 5))
 		{
 			if (psmp->nLength > 0) 
@@ -551,7 +531,7 @@ BOOL CSoundFile::ReadMT2(LPCBYTE lpStream, DWORD dwMemLength)
 				else
 					rsflags = (psmp->uFlags & CHN_16BIT) ? RS_PCM16D : RS_PCM8D;
 
-				dwMemPos += ReadSample(psmp, rsflags, (LPCSTR)(lpStream+dwMemPos), dwMemLength-dwMemPos);
+				dwMemPos += CSoundFile_ReadSample(_this, psmp, rsflags, (LPCSTR)(lpStream+dwMemPos), dwMemLength-dwMemPos);
 			}
 		} else
 		if (dwMemPos+4 < dwMemLength)

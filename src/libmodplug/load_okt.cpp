@@ -35,7 +35,7 @@ typedef struct OKTSAMPLE
 } OKTSAMPLE;
 
 
-BOOL CSoundFile::ReadOKT(const BYTE *lpStream, DWORD dwMemLength)
+BOOL CSoundFile_ReadOKT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLength)
 //---------------------------------------------------------------
 {
 	const OKTFILEHEADER *pfh = (OKTFILEHEADER *)lpStream;
@@ -47,12 +47,12 @@ BOOL CSoundFile::ReadOKT(const BYTE *lpStream, DWORD dwMemLength)
 	 || (pfh->cmod != 0x444F4D43) || (pfh->chnsetup[0]) || (pfh->chnsetup[2])
 	 || (pfh->chnsetup[4]) || (pfh->chnsetup[6]) || (pfh->fixed8 != 0x08000000)
 	 || (pfh->samp != 0x504D4153)) return FALSE;
-	m_nType = MOD_TYPE_OKT;
-	m_nChannels = 4 + pfh->chnsetup[1] + pfh->chnsetup[3] + pfh->chnsetup[5] + pfh->chnsetup[7];
-	if (m_nChannels > MAX_CHANNELS) m_nChannels = MAX_CHANNELS;
+	_this->m_nType = MOD_TYPE_OKT;
+	_this->m_nChannels = 4 + pfh->chnsetup[1] + pfh->chnsetup[3] + pfh->chnsetup[5] + pfh->chnsetup[7];
+	if (_this->m_nChannels > MAX_CHANNELS) _this->m_nChannels = MAX_CHANNELS;
 	nsamples = bswapBE32(pfh->samplen) >> 5;
-	m_nSamples = nsamples;
-	if (m_nSamples >= MAX_SAMPLES) m_nSamples = MAX_SAMPLES-1;
+	_this->m_nSamples = nsamples;
+	if (_this->m_nSamples >= MAX_SAMPLES) _this->m_nSamples = MAX_SAMPLES-1;
 	// Reading samples
 	for (UINT smp=1; smp <= nsamples; smp++)
 	{
@@ -60,9 +60,7 @@ BOOL CSoundFile::ReadOKT(const BYTE *lpStream, DWORD dwMemLength)
 		if (smp < MAX_SAMPLES)
 		{
 			OKTSAMPLE *psmp = (OKTSAMPLE *)(lpStream + dwMemPos);
-			MODINSTRUMENT *pins = &Ins[smp];
-
-			SDL_memcpy(m_szNames[smp], psmp->name, 20);
+			MODINSTRUMENT *pins = &_this->Ins[smp];
 			pins->uFlags = 0;
 			pins->nLength = bswapBE32(psmp->length) & ~1;
 			pins->nLoopStart = bswapBE16(psmp->loopstart);
@@ -78,7 +76,7 @@ BOOL CSoundFile::ReadOKT(const BYTE *lpStream, DWORD dwMemLength)
 	if (dwMemPos >= dwMemLength) return TRUE;
 	if (*((DWORD *)(lpStream + dwMemPos)) == 0x45455053)
 	{
-		m_nDefaultSpeed = lpStream[dwMemPos+9];
+		_this->m_nDefaultSpeed = lpStream[dwMemPos+9];
 		dwMemPos += bswapBE32(*((DWORD *)(lpStream + dwMemPos + 4))) + 8;
 	}
 	// SLEN
@@ -101,8 +99,8 @@ BOOL CSoundFile::ReadOKT(const BYTE *lpStream, DWORD dwMemLength)
 	{
 		UINT orderlen = norders;
 		if (orderlen >= MAX_ORDERS) orderlen = MAX_ORDERS-1;
-		for (UINT i=0; i<orderlen; i++) Order[i] = lpStream[dwMemPos+10+i];
-		for (UINT j=orderlen; j>1; j--) { if (Order[j-1]) break; Order[j-1] = 0xFF; }
+		for (UINT i=0; i<orderlen; i++) _this->Order[i] = lpStream[dwMemPos+10+i];
+		for (UINT j=orderlen; j>1; j--) { if (_this->Order[j-1]) break; _this->Order[j-1] = 0xFF; }
 		dwMemPos += bswapBE32(*((DWORD *)(lpStream + dwMemPos + 4))) + 8;
 	}
 	// PBOD
@@ -114,10 +112,10 @@ BOOL CSoundFile::ReadOKT(const BYTE *lpStream, DWORD dwMemLength)
 		if (!rows) rows = 64;
 		if (npat < MAX_PATTERNS)
 		{
-			if ((Patterns[npat] = AllocatePattern(rows, m_nChannels)) == NULL) return TRUE;
-			MODCOMMAND *m = Patterns[npat];
-			PatternSize[npat] = rows;
-			UINT imax = m_nChannels*rows;
+			if ((_this->Patterns[npat] = CSoundFile_AllocatePattern(rows, _this->m_nChannels)) == NULL) return TRUE;
+			MODCOMMAND *m = _this->Patterns[npat];
+			_this->PatternSize[npat] = rows;
+			UINT imax = _this->m_nChannels*rows;
 			for (UINT i=0; i<imax; i++, m++, dwPos+=4)
 			{
 				if (dwPos+4 > dwMemLength) break;
@@ -185,7 +183,7 @@ BOOL CSoundFile::ReadOKT(const BYTE *lpStream, DWORD dwMemLength)
 	UINT nsmp = 1;
 	while ((dwMemPos+10 < dwMemLength) && (*((DWORD *)(lpStream + dwMemPos)) == 0x444F4253))
 	{
-		if (nsmp < MAX_SAMPLES) ReadSample(&Ins[nsmp], RS_PCM8S, (LPSTR)(lpStream+dwMemPos+8), dwMemLength-dwMemPos-8);
+		if (nsmp < MAX_SAMPLES) CSoundFile_ReadSample(_this, &_this->Ins[nsmp], RS_PCM8S, (LPSTR)(lpStream+dwMemPos+8), dwMemLength-dwMemPos-8);
 		dwMemPos += bswapBE32(*((DWORD *)(lpStream + dwMemPos + 4))) + 8;
 		nsmp++;
 	}

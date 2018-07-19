@@ -25,12 +25,12 @@
 
 
 // DSP Effects: PUBLIC members
-UINT CSoundFile::m_nXBassDepth = 6;
-UINT CSoundFile::m_nXBassRange = XBASS_DELAY;
-UINT CSoundFile::m_nReverbDepth = 1;
-UINT CSoundFile::m_nReverbDelay = 100;
-UINT CSoundFile::m_nProLogicDepth = 12;
-UINT CSoundFile::m_nProLogicDelay = 20;
+UINT CSoundFile_m_nXBassDepth = 6;
+UINT CSoundFile_m_nXBassRange = XBASS_DELAY;
+UINT CSoundFile_m_nReverbDepth = 1;
+UINT CSoundFile_m_nReverbDelay = 100;
+UINT CSoundFile_m_nProLogicDepth = 12;
+UINT CSoundFile_m_nProLogicDelay = 20;
 
 ////////////////////////////////////////////////////////////////////
 // DSP Effects internal state
@@ -100,14 +100,14 @@ static UINT GetMaskFromSize(UINT len)
 }
 
 
-void CSoundFile::InitializeDSP(BOOL bReset)
+void CSoundFile_InitializeDSP(BOOL bReset)
 //-----------------------------------------
 {
-	if (!m_nReverbDelay) m_nReverbDelay = 100;
-	if (!m_nXBassRange) m_nXBassRange = XBASS_DELAY;
-	if (!m_nProLogicDelay) m_nProLogicDelay = 20;
-	if (m_nXBassDepth > 8) m_nXBassDepth = 8;
-	if (m_nXBassDepth < 2) m_nXBassDepth = 2;
+	if (!CSoundFile_m_nReverbDelay) CSoundFile_m_nReverbDelay = 100;
+	if (!CSoundFile_m_nXBassRange) CSoundFile_m_nXBassRange = XBASS_DELAY;
+	if (!CSoundFile_m_nProLogicDelay) CSoundFile_m_nProLogicDelay = 20;
+	if (CSoundFile_m_nXBassDepth > 8) CSoundFile_m_nXBassDepth = 8;
+	if (CSoundFile_m_nXBassDepth < 2) CSoundFile_m_nXBassDepth = 2;
 	if (bReset)
 	{
 		// Noise Reduction
@@ -117,24 +117,24 @@ void CSoundFile::InitializeDSP(BOOL bReset)
 	nSurroundPos = nSurroundSize = 0;
 	nDolbyLoFltPos = nDolbyLoFltSum = nDolbyLoDlyPos = 0;
 	nDolbyHiFltPos = nDolbyHiFltSum = 0;
-	if (gdwSoundSetup & SNDMIX_SURROUND)
+	if (CSoundFile_gdwSoundSetup & SNDMIX_SURROUND)
 	{
 		SDL_memset(DolbyLoFilterBuffer, 0, sizeof(DolbyLoFilterBuffer));
 		SDL_memset(DolbyHiFilterBuffer, 0, sizeof(DolbyHiFilterBuffer));
 		SDL_memset(DolbyLoFilterDelay, 0, sizeof(DolbyLoFilterDelay));
 		SDL_memset(SurroundBuffer, 0, sizeof(SurroundBuffer));
-		nSurroundSize = (gdwMixingFreq * m_nProLogicDelay) / 1000;
+		nSurroundSize = (CSoundFile_gdwMixingFreq * CSoundFile_m_nProLogicDelay) / 1000;
 		if (nSurroundSize > SURROUNDBUFFERSIZE) nSurroundSize = SURROUNDBUFFERSIZE;
-		if (m_nProLogicDepth < 8) nDolbyDepth = (32 >> m_nProLogicDepth) + 32;
-		else nDolbyDepth = (m_nProLogicDepth < 16) ? (8 + (m_nProLogicDepth - 8) * 7) : 64;
+		if (CSoundFile_m_nProLogicDepth < 8) nDolbyDepth = (32 >> CSoundFile_m_nProLogicDepth) + 32;
+		else nDolbyDepth = (CSoundFile_m_nProLogicDepth < 16) ? (8 + (CSoundFile_m_nProLogicDepth - 8) * 7) : 64;
 		nDolbyDepth >>= 2;
 	}
 	// Reverb Setup
 #ifndef MODPLUG_NO_REVERB
-	if (gdwSoundSetup & SNDMIX_REVERB)
+	if (CSoundFile_gdwSoundSetup & SNDMIX_REVERB)
 	{
-		UINT nrs = (gdwMixingFreq * m_nReverbDelay) / 1000;
-		UINT nfa = m_nReverbDepth+1;
+		UINT nrs = (CSoundFile_gdwMixingFreq * CSoundFile_m_nReverbDelay) / 1000;
+		UINT nfa = CSoundFile_m_nReverbDepth+1;
 		if (nrs > REVERBBUFFERSIZE) nrs = REVERBBUFFERSIZE;
 		if ((bReset) || (nrs != (UINT)nReverbSize) || (nfa != (UINT)nFilterAttn))
 		{
@@ -161,9 +161,9 @@ void CSoundFile::InitializeDSP(BOOL bReset)
 #endif
 	BOOL bResetBass = FALSE;
 	// Bass Expansion Reset
-	if (gdwSoundSetup & SNDMIX_MEGABASS)
+	if (CSoundFile_gdwSoundSetup & SNDMIX_MEGABASS)
 	{
-		UINT nXBassSamples = (gdwMixingFreq * m_nXBassRange) / 10000;
+		UINT nXBassSamples = (CSoundFile_gdwMixingFreq * CSoundFile_m_nXBassRange) / 10000;
 		if (nXBassSamples > XBASSBUFFERSIZE) nXBassSamples = XBASSBUFFERSIZE;
 		UINT mask = GetMaskFromSize(nXBassSamples);
 		if ((bReset) || (mask != (UINT)nXBassMask))
@@ -185,12 +185,12 @@ void CSoundFile::InitializeDSP(BOOL bReset)
 }
 
 
-void CSoundFile::ProcessStereoDSP(int count)
+void CSoundFile_ProcessStereoDSP(int count)
 //------------------------------------------
 {
 #ifndef MODPLUG_NO_REVERB
 	// Reverb
-	if (gdwSoundSetup & SNDMIX_REVERB)
+	if (CSoundFile_gdwSoundSetup & SNDMIX_REVERB)
 	{
 		int *pr = MixSoundBuffer, *pin = MixReverbBuffer, rvbcount = count;
 		do
@@ -236,7 +236,7 @@ void CSoundFile::ProcessStereoDSP(int count)
 	}
 #endif
 	// Dolby Pro-Logic Surround
-	if (gdwSoundSetup & SNDMIX_SURROUND)
+	if (CSoundFile_gdwSoundSetup & SNDMIX_SURROUND)
 	{
 		int *pr = MixSoundBuffer, n = nDolbyLoFltPos;
 		for (int r=count; r; r--)
@@ -274,10 +274,10 @@ void CSoundFile::ProcessStereoDSP(int count)
 		nDolbyLoFltPos = n;
 	}
 	// Bass Expansion
-	if (gdwSoundSetup & SNDMIX_MEGABASS)
+	if (CSoundFile_gdwSoundSetup & SNDMIX_MEGABASS)
 	{
 		int *px = MixSoundBuffer;
-		int xba = m_nXBassDepth+1, xbamask = (1 << xba) - 1;
+		int xba = CSoundFile_m_nXBassDepth+1, xbamask = (1 << xba) - 1;
 		int n = nXBassBufferPos;
 		for (int x=count; x; x--)
 		{
@@ -300,7 +300,7 @@ void CSoundFile::ProcessStereoDSP(int count)
 		nXBassBufferPos = n;
 	}
 	// Noise Reduction
-	if (gdwSoundSetup & SNDMIX_NOISEREDUCTION)
+	if (CSoundFile_gdwSoundSetup & SNDMIX_NOISEREDUCTION)
 	{
 		int n1 = nLeftNR, n2 = nRightNR;
 		int *pnr = MixSoundBuffer;
@@ -324,54 +324,54 @@ void CSoundFile::ProcessStereoDSP(int count)
 // Clean DSP Effects interface
 
 // [Reverb level 0(quiet)-100(loud)], [delay in ms, usually 40-200ms]
-BOOL CSoundFile::SetReverbParameters(UINT nDepth, UINT nDelay)
+BOOL CSoundFile_SetReverbParameters(UINT nDepth, UINT nDelay)
 //------------------------------------------------------------
 {
 	if (nDepth > 100) nDepth = 100;
 	UINT gain = nDepth / 20;
 	if (gain > 4) gain = 4;
-	m_nReverbDepth = 4 - gain;
+	CSoundFile_m_nReverbDepth = 4 - gain;
 	if (nDelay < 40) nDelay = 40;
 	if (nDelay > 250) nDelay = 250;
-	m_nReverbDelay = nDelay;
+	CSoundFile_m_nReverbDelay = nDelay;
 	return TRUE;
 }
 
 
 // [XBass level 0(quiet)-100(loud)], [cutoff in Hz 20-100]
-BOOL CSoundFile::SetXBassParameters(UINT nDepth, UINT nRange)
+BOOL CSoundFile_SetXBassParameters(UINT nDepth, UINT nRange)
 //-----------------------------------------------------------
 {
 	if (nDepth > 100) nDepth = 100;
 	UINT gain = nDepth / 20;
 	if (gain > 4) gain = 4;
-	m_nXBassDepth = 8 - gain;	// filter attenuation 1/256 .. 1/16
+	CSoundFile_m_nXBassDepth = 8 - gain;	// filter attenuation 1/256 .. 1/16
 	UINT range = nRange / 5;
 	if (range > 5) range -= 5; else range = 0;
 	if (nRange > 16) nRange = 16;
-	m_nXBassRange = 21 - range;	// filter average on 0.5-1.6ms
+	CSoundFile_m_nXBassRange = 21 - range;	// filter average on 0.5-1.6ms
 	return TRUE;
 }
 
 
 // [Surround level 0(quiet)-100(heavy)] [delay in ms, usually 5-50ms]
-BOOL CSoundFile::SetSurroundParameters(UINT nDepth, UINT nDelay)
+BOOL CSoundFile_SetSurroundParameters(UINT nDepth, UINT nDelay)
 //--------------------------------------------------------------
 {
 	UINT gain = (nDepth * 16) / 100;
 	if (gain > 16) gain = 16;
 	if (gain < 1) gain = 1;
-	m_nProLogicDepth = gain;
+	CSoundFile_m_nProLogicDepth = gain;
 	if (nDelay < 4) nDelay = 4;
 	if (nDelay > 50) nDelay = 50;
-	m_nProLogicDelay = nDelay;
+	CSoundFile_m_nProLogicDelay = nDelay;
 	return TRUE;
 }
 
-BOOL CSoundFile::SetWaveConfigEx(BOOL bSurround,BOOL bNoOverSampling,BOOL bReverb,BOOL hqido,BOOL bMegaBass,BOOL bNR,BOOL bEQ)
+BOOL CSoundFile_SetWaveConfigEx(BOOL bSurround,BOOL bNoOverSampling,BOOL bReverb,BOOL hqido,BOOL bMegaBass,BOOL bNR,BOOL bEQ)
 //----------------------------------------------------------------------------------------------------------------------------
 {
-	DWORD d = gdwSoundSetup & ~(SNDMIX_SURROUND | SNDMIX_NORESAMPLING | SNDMIX_REVERB | SNDMIX_HQRESAMPLER | SNDMIX_MEGABASS | SNDMIX_NOISEREDUCTION | SNDMIX_EQ);
+	DWORD d = CSoundFile_gdwSoundSetup & ~(SNDMIX_SURROUND | SNDMIX_NORESAMPLING | SNDMIX_REVERB | SNDMIX_HQRESAMPLER | SNDMIX_MEGABASS | SNDMIX_NOISEREDUCTION | SNDMIX_EQ);
 	if (bSurround) d |= SNDMIX_SURROUND;
 	if (bNoOverSampling) d |= SNDMIX_NORESAMPLING;
 	if (bReverb) d |= SNDMIX_REVERB;
@@ -379,7 +379,7 @@ BOOL CSoundFile::SetWaveConfigEx(BOOL bSurround,BOOL bNoOverSampling,BOOL bRever
 	if (bMegaBass) d |= SNDMIX_MEGABASS;
 	if (bNR) d |= SNDMIX_NOISEREDUCTION;
 	if (bEQ) d |= SNDMIX_EQ;
-	gdwSoundSetup = d;
-	InitPlayer(FALSE);
+	CSoundFile_gdwSoundSetup = d;
+	CSoundFile_InitPlayer(FALSE);
 	return TRUE;
 }

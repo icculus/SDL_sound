@@ -12,29 +12,29 @@
 
 #ifndef NO_FILTER
 
-DWORD CSoundFile::CutOffToFrequency(UINT nCutOff, int flt_modifier) const
+DWORD CSoundFile_CutOffToFrequency(CSoundFile *_this, UINT nCutOff, int flt_modifier)
 //-----------------------------------------------------------------------
 {
 	float Fc;
 
-	if (m_dwSongFlags & SONG_EXFILTERRANGE)
+	if (_this->m_dwSongFlags & SONG_EXFILTERRANGE)
 		Fc = 110.0f * SDL_pow(2.0f, 0.25f + ((float)(nCutOff*(flt_modifier+256)))/(21.0f*512.0f));
 	else
 		Fc = 110.0f * SDL_pow(2.0f, 0.25f + ((float)(nCutOff*(flt_modifier+256)))/(24.0f*512.0f));
 	LONG freq = (LONG)Fc;
 	if (freq < 120) return 120;
 	if (freq > 10000) return 10000;
-	if (freq*2 > (LONG)gdwMixingFreq) freq = gdwMixingFreq>>1;
+	if (freq*2 > (LONG)CSoundFile_gdwMixingFreq) freq = CSoundFile_gdwMixingFreq>>1;
 	return (DWORD)freq;
 }
 
 
 // Simple 2-poles resonant filter
-void CSoundFile::SetupChannelFilter(MODCHANNEL *pChn, BOOL bReset, int flt_modifier) const
+void CSoundFile_SetupChannelFilter(CSoundFile *_this, MODCHANNEL *pChn, BOOL bReset, int flt_modifier)
 //----------------------------------------------------------------------------------------
 {
-	float fc = (float)CutOffToFrequency(pChn->nCutOff, flt_modifier);
-	float fs = (float)gdwMixingFreq;
+	float fc = (float)CSoundFile_CutOffToFrequency(_this, pChn->nCutOff, flt_modifier);
+	float fs = (float)CSoundFile_gdwMixingFreq;
 	float fg, fb0, fb1;
 
 	fc *= (float)(2.0*3.14159265358/fs);

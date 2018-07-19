@@ -81,7 +81,7 @@ typedef struct DSMPATT
 #pragma pack()
 
 
-BOOL CSoundFile::ReadDSM(LPCBYTE lpStream, DWORD dwMemLength)
+BOOL CSoundFile_ReadDSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 //-----------------------------------------------------------
 {
 	DSMFILEHEADER *pfh = (DSMFILEHEADER *)lpStream;
@@ -95,30 +95,29 @@ BOOL CSoundFile::ReadDSM(LPCBYTE lpStream, DWORD dwMemLength)
 	 || (pfh->song_len > dwMemLength)) return FALSE;
 	psong = (DSMSONG *)(lpStream + sizeof(DSMFILEHEADER));
 	dwMemPos = sizeof(DSMFILEHEADER) + pfh->song_len;
-	m_nType = MOD_TYPE_DSM;
-	m_nChannels = psong->numtrk;
-	if (m_nChannels < 4) m_nChannels = 4;
-	if (m_nChannels > 16) m_nChannels = 16;
-	m_nSamples = psong->numsmp;
-	if (m_nSamples >= MAX_SAMPLES) m_nSamples = MAX_SAMPLES - 1;
-	m_nDefaultSpeed = psong->speed;
-	m_nDefaultTempo = psong->bpm;
-	m_nDefaultGlobalVolume = psong->globalvol << 2;
-	if ((!m_nDefaultGlobalVolume) || (m_nDefaultGlobalVolume > 256)) m_nDefaultGlobalVolume = 256;
-	m_nSongPreAmp = psong->mastervol & 0x7F;
+	_this->m_nType = MOD_TYPE_DSM;
+	_this->m_nChannels = psong->numtrk;
+	if (_this->m_nChannels < 4) _this->m_nChannels = 4;
+	if (_this->m_nChannels > 16) _this->m_nChannels = 16;
+	_this->m_nSamples = psong->numsmp;
+	if (_this->m_nSamples >= MAX_SAMPLES) _this->m_nSamples = MAX_SAMPLES - 1;
+	_this->m_nDefaultSpeed = psong->speed;
+	_this->m_nDefaultTempo = psong->bpm;
+	_this->m_nDefaultGlobalVolume = psong->globalvol << 2;
+	if ((!_this->m_nDefaultGlobalVolume) || (_this->m_nDefaultGlobalVolume > 256)) _this->m_nDefaultGlobalVolume = 256;
+	_this->m_nSongPreAmp = psong->mastervol & 0x7F;
 	for (UINT iOrd=0; iOrd<sizeof(psong->orders); iOrd++)
 	{
-		Order[iOrd] = (BYTE)((iOrd < psong->numord) ? psong->orders[iOrd] : 0xFF);
+		_this->Order[iOrd] = (BYTE)((iOrd < psong->numord) ? psong->orders[iOrd] : 0xFF);
 	}
 	for (UINT iPan=0; iPan<16; iPan++)
 	{
-		ChnSettings[iPan].nPan = 0x80;
+		_this->ChnSettings[iPan].nPan = 0x80;
 		if (psong->panpos[iPan] <= 0x80)
 		{
-			ChnSettings[iPan].nPan = psong->panpos[iPan] << 1;
+			_this->ChnSettings[iPan].nPan = psong->panpos[iPan] << 1;
 		}
 	}
-	SDL_memcpy(m_szNames[0], psong->songname, 28);
 	nPat = 0;
 	nSmp = 1;
 	while (dwMemPos < dwMemLength - 8)
@@ -132,17 +131,17 @@ BOOL CSoundFile::ReadDSM(LPCBYTE lpStream, DWORD dwMemLength)
 			if (dwMemPos + ppatt->patt_len >= dwMemLength) break;
 			DWORD dwPos = dwMemPos;
 			dwMemPos += ppatt->patt_len;
-			MODCOMMAND *m = AllocatePattern(64, m_nChannels);
+			MODCOMMAND *m = CSoundFile_AllocatePattern(64, _this->m_nChannels);
 			if (!m) break;
-			PatternSize[nPat] = 64;
-			Patterns[nPat] = m;
+			_this->PatternSize[nPat] = 64;
+			_this->Patterns[nPat] = m;
 			UINT row = 0;
 			while ((row < 64) && (dwPos + 2 <= dwMemPos))
 			{
 				UINT flag = lpStream[dwPos++];
 				if (flag)
 				{
-					UINT ch = (flag & 0x0F) % m_nChannels;
+					UINT ch = (flag & 0x0F) % _this->m_nChannels;
 					if (flag & 0x80)
 					{
 						UINT note = lpStream[dwPos++];
@@ -195,25 +194,23 @@ BOOL CSoundFile::ReadDSM(LPCBYTE lpStream, DWORD dwMemLength)
 						}
 						m[ch].command = (BYTE)command;
 						m[ch].param = (BYTE)param;
-						if (command) ConvertModCommand(&m[ch]);
+						if (command) CSoundFile_ConvertModCommand(_this, &m[ch]);
 					}
 				} else
 				{
-					m += m_nChannels;
+					m += _this->m_nChannels;
 					row++;
 				}
 			}
 			nPat++;
 		} else
 		// Reading Samples
-		if ((nSmp <= m_nSamples) && (pins->id_INST == DSMID_INST))
+		if ((nSmp <= _this->m_nSamples) && (pins->id_INST == DSMID_INST))
 		{
 			if (dwMemPos + pins->inst_len >= dwMemLength - 8) break;
 			DWORD dwPos = dwMemPos + sizeof(DSMINST);
 			dwMemPos += 8 + pins->inst_len;
-			SDL_memcpy(m_szNames[nSmp], pins->samplename, 28);
-			MODINSTRUMENT *psmp = &Ins[nSmp];
-			SDL_memcpy(psmp->name, pins->filename, 13);
+			MODINSTRUMENT *psmp = &_this->Ins[nSmp];
 			psmp->nGlobalVol = 64;
 			psmp->nC4Speed = pins->c2spd;
 			psmp->uFlags = (WORD)((pins->flags & 1) ? CHN_LOOP : 0);
@@ -223,7 +220,7 @@ BOOL CSoundFile::ReadDSM(LPCBYTE lpStream, DWORD dwMemLength)
 			psmp->nVolume = (WORD)(pins->volume << 2);
 			if (psmp->nVolume > 256) psmp->nVolume = 256;
 			UINT smptype = (pins->flags & 2) ? RS_PCM8S : RS_PCM8U;
-			ReadSample(psmp, smptype, (LPCSTR)(lpStream+dwPos), dwMemLength - dwPos);
+			CSoundFile_ReadSample(_this, psmp, smptype, (LPCSTR)(lpStream+dwPos), dwMemLength - dwPos);
 			nSmp++;
 		} else
 		{

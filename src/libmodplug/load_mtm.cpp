@@ -43,7 +43,7 @@ typedef struct tagMTMHEADER
 #pragma pack()
 
 
-BOOL CSoundFile::ReadMTM(LPCBYTE lpStream, DWORD dwMemLength)
+BOOL CSoundFile_ReadMTM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 //-----------------------------------------------------------
 {
 	MTMHEADER *pmh = (MTMHEADER *)lpStream;
@@ -55,53 +55,49 @@ BOOL CSoundFile::ReadMTM(LPCBYTE lpStream, DWORD dwMemLength)
 	 || (!pmh->numtracks) || (!pmh->numchannels)
 	 || (!pmh->lastpattern) || (pmh->lastpattern >= MAX_PATTERNS))
 		return FALSE;
-	SDL_strlcpy(m_szNames[0], pmh->songname, 20);
-	m_szNames[0][20] = 0;
 	if (dwMemPos + 37*pmh->numsamples + 128 + 192*pmh->numtracks
 	 + 64 * (pmh->lastpattern+1) + pmh->commentsize >= dwMemLength) 
 		return FALSE;
-	m_nType = MOD_TYPE_MTM;
-	m_nSamples = pmh->numsamples;
-	m_nChannels = pmh->numchannels;
+	_this->m_nType = MOD_TYPE_MTM;
+	_this->m_nSamples = pmh->numsamples;
+	_this->m_nChannels = pmh->numchannels;
 	// Reading instruments
-	for	(UINT i=1; i<=m_nSamples; i++)
+	for	(UINT i=1; i<=_this->m_nSamples; i++)
 	{
 		MTMSAMPLE *pms = (MTMSAMPLE *)(lpStream + dwMemPos);
-		SDL_strlcpy(m_szNames[i], pms->samplename, 22);
-		m_szNames[i][22] = 0;
-		Ins[i].nVolume = pms->volume << 2;
-		Ins[i].nGlobalVol = 64;
+		_this->Ins[i].nVolume = pms->volume << 2;
+		_this->Ins[i].nGlobalVol = 64;
 		DWORD len = pms->length;
 		if ((len > 4) && (len <= MAX_SAMPLE_LENGTH))
 		{
-			Ins[i].nLength = len;
-			Ins[i].nLoopStart = pms->reppos;
-			Ins[i].nLoopEnd = pms->repend;
-			if (Ins[i].nLoopEnd > Ins[i].nLength) 
-				Ins[i].nLoopEnd = Ins[i].nLength;
-			if (Ins[i].nLoopStart + 4 >= Ins[i].nLoopEnd) 
-				Ins[i].nLoopStart = Ins[i].nLoopEnd = 0;
-			if (Ins[i].nLoopEnd) Ins[i].uFlags |= CHN_LOOP;
-			Ins[i].nFineTune = MOD2XMFineTune(pms->finetune);
+			_this->Ins[i].nLength = len;
+			_this->Ins[i].nLoopStart = pms->reppos;
+			_this->Ins[i].nLoopEnd = pms->repend;
+			if (_this->Ins[i].nLoopEnd > _this->Ins[i].nLength) 
+				_this->Ins[i].nLoopEnd = _this->Ins[i].nLength;
+			if (_this->Ins[i].nLoopStart + 4 >= _this->Ins[i].nLoopEnd) 
+				_this->Ins[i].nLoopStart = _this->Ins[i].nLoopEnd = 0;
+			if (_this->Ins[i].nLoopEnd) _this->Ins[i].uFlags |= CHN_LOOP;
+			_this->Ins[i].nFineTune = MOD2XMFineTune(pms->finetune);
 			if (pms->attribute & 0x01)
 			{
-				Ins[i].uFlags |= CHN_16BIT;
-				Ins[i].nLength >>= 1;
-				Ins[i].nLoopStart >>= 1;
-				Ins[i].nLoopEnd >>= 1;
+				_this->Ins[i].uFlags |= CHN_16BIT;
+				_this->Ins[i].nLength >>= 1;
+				_this->Ins[i].nLoopStart >>= 1;
+				_this->Ins[i].nLoopEnd >>= 1;
 			}
-			Ins[i].nPan = 128;
+			_this->Ins[i].nPan = 128;
 		}
 		dwMemPos += 37;
 	}
 	// Setting Channel Pan Position
-	for (UINT ich=0; ich<m_nChannels; ich++)
+	for (UINT ich=0; ich<_this->m_nChannels; ich++)
 	{
-		ChnSettings[ich].nPan = ((pmh->panpos[ich] & 0x0F) << 4) + 8;
-		ChnSettings[ich].nVolume = 64;
+		_this->ChnSettings[ich].nPan = ((pmh->panpos[ich] & 0x0F) << 4) + 8;
+		_this->ChnSettings[ich].nVolume = 64;
 	}
 	// Reading pattern order
-	SDL_memcpy(Order, lpStream + dwMemPos, pmh->lastorder+1);
+	SDL_memcpy(_this->Order, lpStream + dwMemPos, pmh->lastorder+1);
 	dwMemPos += 128;
 	// Reading Patterns
 	LPCBYTE pTracks = lpStream + dwMemPos;
@@ -109,13 +105,13 @@ BOOL CSoundFile::ReadMTM(LPCBYTE lpStream, DWORD dwMemLength)
 	LPWORD pSeq = (LPWORD)(lpStream + dwMemPos);
 	for (UINT pat=0; pat<=pmh->lastpattern; pat++)
 	{
-		PatternSize[pat] = 64;
-		if ((Patterns[pat] = AllocatePattern(64, m_nChannels)) == NULL) break;
-		for (UINT n=0; n<32; n++) if ((pSeq[n]) && (pSeq[n] <= pmh->numtracks) && (n < m_nChannels))
+		_this->PatternSize[pat] = 64;
+		if ((_this->Patterns[pat] = CSoundFile_AllocatePattern(64, _this->m_nChannels)) == NULL) break;
+		for (UINT n=0; n<32; n++) if ((pSeq[n]) && (pSeq[n] <= pmh->numtracks) && (n < _this->m_nChannels))
 		{
 			LPCBYTE p = pTracks + 192 * (pSeq[n]-1);
-			MODCOMMAND *m = Patterns[pat] + n;
-			for (UINT i=0; i<64; i++, m+=m_nChannels, p+=3)
+			MODCOMMAND *m = _this->Patterns[pat] + n;
+			for (UINT i=0; i<64; i++, m+=_this->m_nChannels, p+=3)
 			{
 				if (p[0] & 0xFC) m->note = (p[0] >> 2) + 37;
 				m->instr = ((p[0] & 0x03) << 4) | (p[1] >> 4);
@@ -127,39 +123,22 @@ BOOL CSoundFile::ReadMTM(LPCBYTE lpStream, DWORD dwMemLength)
 				}
 				m->command = cmd;
 				m->param = param;
-				if ((cmd) || (param)) ConvertModCommand(m);
+				if ((cmd) || (param)) CSoundFile_ConvertModCommand(_this, m);
 			}
 		}
 		pSeq += 32;
 	}
 	dwMemPos += 64*(pmh->lastpattern+1);
-	if ((pmh->commentsize) && (dwMemPos + pmh->commentsize < dwMemLength))
-	{
-		UINT n = pmh->commentsize;
-		m_lpszSongComments = new char[n+1];
-		if (m_lpszSongComments)
-		{
-			SDL_memcpy(m_lpszSongComments, lpStream+dwMemPos, n);
-			m_lpszSongComments[n] = 0;
-			for (UINT i=0; i<n; i++)
-			{
-				if (!m_lpszSongComments[i])
-				{
-					m_lpszSongComments[i] = ((i+1) % 40) ? 0x20 : 0x0D;
-				}
-			}
-		}
-	}
 	dwMemPos += pmh->commentsize;
 	// Reading Samples
-	for (UINT ismp=1; ismp<=m_nSamples; ismp++)
+	for (UINT ismp=1; ismp<=_this->m_nSamples; ismp++)
 	{
 		if (dwMemPos >= dwMemLength) break;
-		dwMemPos += ReadSample(&Ins[ismp], (Ins[ismp].uFlags & CHN_16BIT) ? RS_PCM16U : RS_PCM8U,
+		dwMemPos += CSoundFile_ReadSample(_this, &_this->Ins[ismp], (_this->Ins[ismp].uFlags & CHN_16BIT) ? RS_PCM16U : RS_PCM8U,
 								(LPSTR)(lpStream + dwMemPos), dwMemLength - dwMemPos);
 	}
-	m_nMinPeriod = 64;
-	m_nMaxPeriod = 32767;
+	_this->m_nMinPeriod = 64;
+	_this->m_nMaxPeriod = 32767;
 	return TRUE;
 }
 

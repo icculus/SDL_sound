@@ -11,7 +11,7 @@
 //////////////////////////////////////////////////////////
 // ProTracker / NoiseTracker MOD/NST file support
 
-void CSoundFile::ConvertModCommand(MODCOMMAND *m) const
+void CSoundFile_ConvertModCommand(CSoundFile *_this, MODCOMMAND *m)
 //-----------------------------------------------------
 {
 	UINT command = m->command, param = m->param;
@@ -33,8 +33,8 @@ void CSoundFile::ConvertModCommand(MODCOMMAND *m) const
 	case 0x0C:	command = CMD_VOLUME; break;
 	case 0x0D:	command = CMD_PATTERNBREAK; param = ((param >> 4) * 10) + (param & 0x0F); break;
 	case 0x0E:	command = CMD_MODCMDEX; break;
-	case 0x0F:	command = (param <= (UINT)((m_nType & (MOD_TYPE_XM|MOD_TYPE_MT2)) ? 0x1F : 0x20)) ? CMD_SPEED : CMD_TEMPO;
-				if ((param == 0xFF) && (m_nSamples == 15)) command = 0; break;
+	case 0x0F:	command = (param <= (UINT)((_this->m_nType & (MOD_TYPE_XM|MOD_TYPE_MT2)) ? 0x1F : 0x20)) ? CMD_SPEED : CMD_TEMPO;
+				if ((param == 0xFF) && (_this->m_nSamples == 15)) command = 0; break;
 	// Extension for XM extended effects
 	case 'G' - 55:	command = CMD_GLOBALVOLUME; break;
 	case 'H' - 55:	command = CMD_GLOBALVOLSLIDE; if (param & 0xF0) param &= 0xF0; break;
@@ -83,7 +83,7 @@ static BOOL IsMagic(LPCSTR s1, LPCSTR s2)
 }
 
 
-BOOL CSoundFile::ReadMod(const BYTE *lpStream, DWORD dwMemLength)
+BOOL CSoundFile_ReadMod(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLength)
 //---------------------------------------------------------------
 {
     char s[1024];          // changed from CHAR
@@ -93,33 +93,31 @@ BOOL CSoundFile::ReadMod(const BYTE *lpStream, DWORD dwMemLength)
 
 	if ((!lpStream) || (dwMemLength < 0x600)) return FALSE;
 	dwMemPos = 20;
-	m_nSamples = 31;
-	m_nChannels = 4;
+	_this->m_nSamples = 31;
+	_this->m_nChannels = 4;
 	pMagic = (PMODMAGIC)(lpStream+dwMemPos+sizeof(MODSAMPLE)*31);
 	// Check Mod Magic
 	SDL_memcpy(s, pMagic->Magic, 4);
 	if ((IsMagic(s, "M.K.")) || (IsMagic(s, "M!K!"))
-	 || (IsMagic(s, "M&K!")) || (IsMagic(s, "N.T."))) m_nChannels = 4; else
-	if ((IsMagic(s, "CD81")) || (IsMagic(s, "OKTA"))) m_nChannels = 8; else
-	if ((s[0]=='F') && (s[1]=='L') && (s[2]=='T') && (s[3]>='4') && (s[3]<='9')) m_nChannels = s[3] - '0'; else
-	if ((s[0]>='2') && (s[0]<='9') && (s[1]=='C') && (s[2]=='H') && (s[3]=='N')) m_nChannels = s[0] - '0'; else
-	if ((s[0]=='1') && (s[1]>='0') && (s[1]<='9') && (s[2]=='C') && (s[3]=='H')) m_nChannels = s[1] - '0' + 10; else
-	if ((s[0]=='2') && (s[1]>='0') && (s[1]<='9') && (s[2]=='C') && (s[3]=='H')) m_nChannels = s[1] - '0' + 20; else
-	if ((s[0]=='3') && (s[1]>='0') && (s[1]<='2') && (s[2]=='C') && (s[3]=='H')) m_nChannels = s[1] - '0' + 30; else
-	if ((s[0]=='T') && (s[1]=='D') && (s[2]=='Z') && (s[3]>='4') && (s[3]<='9')) m_nChannels = s[3] - '0'; else
-	if (IsMagic(s,"16CN")) m_nChannels = 16; else
-	if (IsMagic(s,"32CN")) m_nChannels = 32; else m_nSamples = 15;
+	 || (IsMagic(s, "M&K!")) || (IsMagic(s, "N.T."))) _this->m_nChannels = 4; else
+	if ((IsMagic(s, "CD81")) || (IsMagic(s, "OKTA"))) _this->m_nChannels = 8; else
+	if ((s[0]=='F') && (s[1]=='L') && (s[2]=='T') && (s[3]>='4') && (s[3]<='9')) _this->m_nChannels = s[3] - '0'; else
+	if ((s[0]>='2') && (s[0]<='9') && (s[1]=='C') && (s[2]=='H') && (s[3]=='N')) _this->m_nChannels = s[0] - '0'; else
+	if ((s[0]=='1') && (s[1]>='0') && (s[1]<='9') && (s[2]=='C') && (s[3]=='H')) _this->m_nChannels = s[1] - '0' + 10; else
+	if ((s[0]=='2') && (s[1]>='0') && (s[1]<='9') && (s[2]=='C') && (s[3]=='H')) _this->m_nChannels = s[1] - '0' + 20; else
+	if ((s[0]=='3') && (s[1]>='0') && (s[1]<='2') && (s[2]=='C') && (s[3]=='H')) _this->m_nChannels = s[1] - '0' + 30; else
+	if ((s[0]=='T') && (s[1]=='D') && (s[2]=='Z') && (s[3]>='4') && (s[3]<='9')) _this->m_nChannels = s[3] - '0'; else
+	if (IsMagic(s,"16CN")) _this->m_nChannels = 16; else
+	if (IsMagic(s,"32CN")) _this->m_nChannels = 32; else _this->m_nSamples = 15;
 	// Load Samples
 	nErr = 0;
 	dwTotalSampleLen = 0;
-	for	(UINT i=1; i<=m_nSamples; i++)
+	for	(UINT i=1; i<=_this->m_nSamples; i++)
 	{
 		PMODSAMPLE pms = (PMODSAMPLE)(lpStream+dwMemPos);
-		MODINSTRUMENT *psmp = &Ins[i];
+		MODINSTRUMENT *psmp = &_this->Ins[i];
 		UINT loopstart, looplen;
 
-		SDL_memcpy(m_szNames[i], pms->name, 22);
-		m_szNames[i][22] = 0;
 		psmp->uFlags = 0;
 		psmp->nLength = bswapBE16(pms->length)*2;
 		dwTotalSampleLen += psmp->nLength;
@@ -157,12 +155,12 @@ BOOL CSoundFile::ReadMod(const BYTE *lpStream, DWORD dwMemLength)
 		}
 		dwMemPos += sizeof(MODSAMPLE);
 	}
-	if ((m_nSamples == 15) && (dwTotalSampleLen > dwMemLength * 4)) return FALSE;
+	if ((_this->m_nSamples == 15) && (dwTotalSampleLen > dwMemLength * 4)) return FALSE;
 	pMagic = (PMODMAGIC)(lpStream+dwMemPos);
 	dwMemPos += sizeof(MODMAGIC);
-	if (m_nSamples == 15) dwMemPos -= 4;
-	SDL_memset(Order, 0,sizeof(Order));
-	SDL_memcpy(Order, pMagic->Orders, 128);
+	if (_this->m_nSamples == 15) dwMemPos -= 4;
+	SDL_memset(_this->Order, 0,sizeof(_this->Order));
+	SDL_memcpy(_this->Order, pMagic->Orders, 128);
 
 	UINT nbp, nbpbuggy, nbpbuggy2, norders;
 
@@ -170,14 +168,14 @@ BOOL CSoundFile::ReadMod(const BYTE *lpStream, DWORD dwMemLength)
 	if ((!norders) || (norders > 0x80))
 	{
 		norders = 0x80;
-		while ((norders > 1) && (!Order[norders-1])) norders--;
+		while ((norders > 1) && (!_this->Order[norders-1])) norders--;
 	}
 	nbpbuggy = 0;
 	nbpbuggy2 = 0;
 	nbp = 0;
 	for (UINT iord=0; iord<128; iord++)
 	{
-		UINT i = Order[iord];
+		UINT i = _this->Order[iord];
 		if ((i < 0x80) && (nbp <= i))
 		{
 			nbp = i+1;
@@ -185,67 +183,66 @@ BOOL CSoundFile::ReadMod(const BYTE *lpStream, DWORD dwMemLength)
 		}
 		if (i >= nbpbuggy2) nbpbuggy2 = i+1;
 	}
-	for (UINT iend=norders; iend<MAX_ORDERS; iend++) Order[iend] = 0xFF;
+	for (UINT iend=norders; iend<MAX_ORDERS; iend++) _this->Order[iend] = 0xFF;
 	norders--;
-	m_nRestartPos = pMagic->nRestartPos;
-	if (m_nRestartPos >= 0x78) m_nRestartPos = 0;
-	if (m_nRestartPos + 1 >= (UINT)norders) m_nRestartPos = 0;
+	_this->m_nRestartPos = pMagic->nRestartPos;
+	if (_this->m_nRestartPos >= 0x78) _this->m_nRestartPos = 0;
+	if (_this->m_nRestartPos + 1 >= (UINT)norders) _this->m_nRestartPos = 0;
 	if (!nbp) return FALSE;
 	DWORD dwWowTest = dwTotalSampleLen+dwMemPos;
-	if ((IsMagic(pMagic->Magic, "M.K.")) && (dwWowTest + nbp*8*256 == dwMemLength)) m_nChannels = 8;
-	if ((nbp != nbpbuggy) && (dwWowTest + nbp*m_nChannels*256 != dwMemLength))
+	if ((IsMagic(pMagic->Magic, "M.K.")) && (dwWowTest + nbp*8*256 == dwMemLength)) _this->m_nChannels = 8;
+	if ((nbp != nbpbuggy) && (dwWowTest + nbp*_this->m_nChannels*256 != dwMemLength))
 	{
-		if (dwWowTest + nbpbuggy*m_nChannels*256 == dwMemLength) nbp = nbpbuggy;
+		if (dwWowTest + nbpbuggy*_this->m_nChannels*256 == dwMemLength) nbp = nbpbuggy;
 		else nErr += 8;
 	} else
-	if ((nbpbuggy2 > nbp) && (dwWowTest + nbpbuggy2*m_nChannels*256 == dwMemLength))
+	if ((nbpbuggy2 > nbp) && (dwWowTest + nbpbuggy2*_this->m_nChannels*256 == dwMemLength))
 	{
 		nbp = nbpbuggy2;
 	}
 	if ((dwWowTest < 0x600) || (dwWowTest > dwMemLength)) nErr += 8;
-	if ((m_nSamples == 15) && (nErr >= 16)) return FALSE;
+	if ((_this->m_nSamples == 15) && (nErr >= 16)) return FALSE;
 	// Default settings	
-	m_nType = MOD_TYPE_MOD;
-	m_nDefaultSpeed = 6;
-	m_nDefaultTempo = 125;
-	m_nMinPeriod = 14 << 2;
-	m_nMaxPeriod = 3424 << 2;
-	SDL_memcpy(m_szNames, lpStream, 20);
+	_this->m_nType = MOD_TYPE_MOD;
+	_this->m_nDefaultSpeed = 6;
+	_this->m_nDefaultTempo = 125;
+	_this->m_nMinPeriod = 14 << 2;
+	_this->m_nMaxPeriod = 3424 << 2;
 	// Setting channels pan
-	for (UINT ich=0; ich<m_nChannels; ich++)
+	for (UINT ich=0; ich<_this->m_nChannels; ich++)
 	{
-		ChnSettings[ich].nVolume = 64;
-		if (gdwSoundSetup & SNDMIX_MAXDEFAULTPAN)
-			ChnSettings[ich].nPan = (((ich&3)==1) || ((ich&3)==2)) ? 256 : 0;
+		_this->ChnSettings[ich].nVolume = 64;
+		if (CSoundFile_gdwSoundSetup & SNDMIX_MAXDEFAULTPAN)
+			_this->ChnSettings[ich].nPan = (((ich&3)==1) || ((ich&3)==2)) ? 256 : 0;
 		else
-			ChnSettings[ich].nPan = (((ich&3)==1) || ((ich&3)==2)) ? 0xC0 : 0x40;
+			_this->ChnSettings[ich].nPan = (((ich&3)==1) || ((ich&3)==2)) ? 0xC0 : 0x40;
 	}
 	// Reading channels
 	for (UINT ipat=0; ipat<nbp; ipat++)
 	{
 		if (ipat < MAX_PATTERNS)
 		{
-			if ((Patterns[ipat] = AllocatePattern(64, m_nChannels)) == NULL) break;
-			PatternSize[ipat] = 64;
-			if (dwMemPos + m_nChannels*256 >= dwMemLength) break;
-			MODCOMMAND *m = Patterns[ipat];
+			if ((_this->Patterns[ipat] = CSoundFile_AllocatePattern(64, _this->m_nChannels)) == NULL) break;
+			_this->PatternSize[ipat] = 64;
+			if (dwMemPos + _this->m_nChannels*256 >= dwMemLength) break;
+			MODCOMMAND *m = _this->Patterns[ipat];
 			LPCBYTE p = lpStream + dwMemPos;
-			for (UINT j=m_nChannels*64; j; m++,p+=4,j--)
+			for (UINT j=_this->m_nChannels*64; j; m++,p+=4,j--)
 			{
 				BYTE A0=p[0], A1=p[1], A2=p[2], A3=p[3];
 				UINT n = ((((UINT)A0 & 0x0F) << 8) | (A1));
-				if ((n) && (n != 0xFFF)) m->note = GetNoteFromPeriod(n << 2);
+				if ((n) && (n != 0xFFF)) m->note = CSoundFile_GetNoteFromPeriod(_this, n << 2);
 				m->instr = ((UINT)A2 >> 4) | (A0 & 0x10);
 				m->command = A2 & 0x0F;
 				m->param = A3;
-				if ((m->command) || (m->param)) ConvertModCommand(m);
+				if ((m->command) || (m->param)) CSoundFile_ConvertModCommand(_this, m);
 			}
 		}
-		dwMemPos += m_nChannels*256;
+		dwMemPos += _this->m_nChannels*256;
 	}
 	// Reading instruments
 	DWORD dwErrCheck = 0;
-	for (UINT ismp=1; ismp<=m_nSamples; ismp++) if (Ins[ismp].nLength)
+	for (UINT ismp=1; ismp<=_this->m_nSamples; ismp++) if (_this->Ins[ismp].nLength)
 	{
 		LPSTR p = (LPSTR)(lpStream+dwMemPos);
 		UINT flags = 0;
@@ -256,7 +253,7 @@ BOOL CSoundFile::ReadMod(const BYTE *lpStream, DWORD dwMemLength)
 			p += 5;
 			dwMemPos += 5;
 		}
-		DWORD dwSize = ReadSample(&Ins[ismp], flags, p, dwMemLength - dwMemPos);
+		DWORD dwSize = CSoundFile_ReadSample(_this, &_this->Ins[ismp], flags, p, dwMemLength - dwMemPos);
 		if (dwSize)
 		{
 			dwMemPos += dwSize;
