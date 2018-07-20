@@ -22,59 +22,6 @@ typedef struct CoreAudioFileContainer
 	AudioStreamBasicDescription* outputFormat;
 } CoreAudioFileContainer;
 
-static int CoreAudio_init(void);
-static void CoreAudio_quit(void);
-static int CoreAudio_open(Sound_Sample *sample, const char *ext);
-static void CoreAudio_close(Sound_Sample *sample);
-static Uint32 CoreAudio_read(Sound_Sample *sample);
-static int CoreAudio_rewind(Sound_Sample *sample);
-static int CoreAudio_seek(Sound_Sample *sample, Uint32 ms);
-
-static const char *extensions_coreaudio[] = 
-{
-	"aif",
-	"aiff",
-	"aifc",
-	"wav",
-	"wave",
-	"mp3",
-	"mp4",
-	"m4a",
-	"aac",
-	"caf",
-	"Sd2f",
-	"Sd2",
-	"au",
-	"next",
-	"mp2",
-	"mp1",
-	"ac3",
-	"3gpp",
-	"3gp2",
-	"amrf",
-	"amr",
-	"ima4",
-	"ima",
-	NULL 
-};
-const Sound_DecoderFunctions __Sound_DecoderFunctions_CoreAudio =
-{
-    {
-        extensions_coreaudio,
-        "Decode audio through Core Audio through",
-        "Eric Wing <ewing . public @ playcontrol.net>",
-        "https://playcontrol.net"
-    },
-	
-    CoreAudio_init,       /*   init() method */
-    CoreAudio_quit,       /*   quit() method */
-    CoreAudio_open,       /*   open() method */
-    CoreAudio_close,      /*  close() method */
-    CoreAudio_read,       /*   read() method */
-    CoreAudio_rewind,     /* rewind() method */
-    CoreAudio_seek        /*   seek() method */
-};
-
 
 static int CoreAudio_init(void)
 {
@@ -748,8 +695,53 @@ static int CoreAudio_seek(Sound_Sample *sample, Uint32 ms)
 	return 1;
 } /* CoreAudio_seek */
 
-#endif /* SOUND_SUPPORTS_COREAUDIO */
 
+static const char *extensions_coreaudio[] =
+{
+	"aif",
+	"aiff",
+	"aifc",
+	"wav",
+	"wave",
+	"mp3",
+	"mp4",
+	"m4a",
+	"aac",
+	"caf",
+	"Sd2f",
+	"Sd2",
+	"au",
+	"next",
+	"mp2",
+	"mp1",
+	"ac3",
+	"3gpp",
+	"3gp2",
+	"amrf",
+	"amr",
+	"ima4",
+	"ima",
+	NULL 
+};
+const Sound_DecoderFunctions __Sound_DecoderFunctions_CoreAudio =
+{
+    {
+        extensions_coreaudio,
+        "Decode audio through Core Audio through",
+        "Eric Wing <ewing . public @ playcontrol.net>",
+        "https://playcontrol.net"
+    },
+	
+    CoreAudio_init,       /*   init() method */
+    CoreAudio_quit,       /*   quit() method */
+    CoreAudio_open,       /*   open() method */
+    CoreAudio_close,      /*  close() method */
+    CoreAudio_read,       /*   read() method */
+    CoreAudio_rewind,     /* rewind() method */
+    CoreAudio_seek        /*   seek() method */
+};
+
+#endif /* SOUND_SUPPORTS_COREAUDIO */
 
 /* end of SDL_sound_coreaudio.c ... */
 

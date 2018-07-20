@@ -66,34 +66,6 @@
 #endif
 #include "stb_vorbis.h"
 
-
-static int VORBIS_init(void);
-static void VORBIS_quit(void);
-static int VORBIS_open(Sound_Sample *sample, const char *ext);
-static void VORBIS_close(Sound_Sample *sample);
-static Uint32 VORBIS_read(Sound_Sample *sample);
-static int VORBIS_rewind(Sound_Sample *sample);
-static int VORBIS_seek(Sound_Sample *sample, Uint32 ms);
-
-static const char *extensions_vorbis[] = { "OGG", NULL };
-const Sound_DecoderFunctions __Sound_DecoderFunctions_VORBIS =
-{
-    {
-        extensions_vorbis,
-        "Ogg Vorbis audio",
-        "Ryan C. Gordon <icculus@icculus.org>",
-        "https://icculus.org/SDL_sound/"
-    },
-
-    VORBIS_init,       /*   init() method */
-    VORBIS_quit,       /*   quit() method */
-    VORBIS_open,       /*   open() method */
-    VORBIS_close,      /*  close() method */
-    VORBIS_read,       /*   read() method */
-    VORBIS_rewind,     /* rewind() method */
-    VORBIS_seek        /*   seek() method */
-};
-
 static const char *vorbis_error_string(const int err)
 {
     switch (err)
@@ -224,6 +196,26 @@ static int VORBIS_seek(Sound_Sample *sample, Uint32 ms)
     BAIL_IF_MACRO(!stb_vorbis_seek(stb, sampnum), vorbis_error_string(stb_vorbis_get_error(stb)), 0);
     return 1;
 } /* VORBIS_seek */
+
+
+static const char *extensions_vorbis[] = { "OGG", NULL };
+const Sound_DecoderFunctions __Sound_DecoderFunctions_VORBIS =
+{
+    {
+        extensions_vorbis,
+        "Ogg Vorbis audio",
+        "Ryan C. Gordon <icculus@icculus.org>",
+        "https://icculus.org/SDL_sound/"
+    },
+
+    VORBIS_init,       /*   init() method */
+    VORBIS_quit,       /*   quit() method */
+    VORBIS_open,       /*   open() method */
+    VORBIS_close,      /*  close() method */
+    VORBIS_read,       /*   read() method */
+    VORBIS_rewind,     /* rewind() method */
+    VORBIS_seek        /*   seek() method */
+};
 
 #endif /* SOUND_SUPPORTS_VORBIS */
 

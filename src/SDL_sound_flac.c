@@ -38,34 +38,6 @@
 #define DRFLAC_ZERO_MEMORY(p, sz) SDL_memset((p), 0, (sz))
 #include "dr_flac.h"
 
-static int FLAC_init(void);
-static void FLAC_quit(void);
-static int FLAC_open(Sound_Sample *sample, const char *ext);
-static void FLAC_close(Sound_Sample *sample);
-static Uint32 FLAC_read(Sound_Sample *sample);
-static int FLAC_rewind(Sound_Sample *sample);
-static int FLAC_seek(Sound_Sample *sample, Uint32 ms);
-
-static const char *extensions_flac[] = { "FLAC", "FLA", NULL };
-
-const Sound_DecoderFunctions __Sound_DecoderFunctions_FLAC =
-{
-    {
-        extensions_flac,
-        "Free Lossless Audio Codec",
-        "Ryan C. Gordon <icculus@icculus.org>",
-        "https://icculus.org/SDL_sound/"
-    },
-
-    FLAC_init,       /*   init() method */
-    FLAC_quit,       /*   quit() method */
-    FLAC_open,       /*   open() method */
-    FLAC_close,      /*  close() method */
-    FLAC_read,       /*   read() method */
-    FLAC_rewind,     /* rewind() method */
-    FLAC_seek        /*   seek() method */
-};
-
 static size_t flac_read(void* pUserData, void* pBufferOut, size_t bytesToRead)
 {
     Uint8 *ptr = (Uint8 *) pBufferOut;
@@ -184,6 +156,25 @@ static int FLAC_seek(Sound_Sample *sample, Uint32 ms)
     const drflac_uint64 sampnum = frame_offset * sample->actual.channels;
     return (drflac_seek_to_sample(dr, sampnum) == DRFLAC_TRUE);
 } /* FLAC_seek */
+
+static const char *extensions_flac[] = { "FLAC", "FLA", NULL };
+const Sound_DecoderFunctions __Sound_DecoderFunctions_FLAC =
+{
+    {
+        extensions_flac,
+        "Free Lossless Audio Codec",
+        "Ryan C. Gordon <icculus@icculus.org>",
+        "https://icculus.org/SDL_sound/"
+    },
+
+    FLAC_init,       /*   init() method */
+    FLAC_quit,       /*   quit() method */
+    FLAC_open,       /*   open() method */
+    FLAC_close,      /*  close() method */
+    FLAC_read,       /*   read() method */
+    FLAC_rewind,     /* rewind() method */
+    FLAC_seek        /*   seek() method */
+};
 
 #endif /* SOUND_SUPPORTS_FLAC */
 

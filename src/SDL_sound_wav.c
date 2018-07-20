@@ -18,34 +18,6 @@
 
 #if SOUND_SUPPORTS_WAV
 
-static int WAV_init(void);
-static void WAV_quit(void);
-static int WAV_open(Sound_Sample *sample, const char *ext);
-static void WAV_close(Sound_Sample *sample);
-static Uint32 WAV_read(Sound_Sample *sample);
-static int WAV_rewind(Sound_Sample *sample);
-static int WAV_seek(Sound_Sample *sample, Uint32 ms);
-
-static const char *extensions_wav[] = { "WAV", NULL };
-const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV =
-{
-    {
-        extensions_wav,
-        "Microsoft WAVE audio format",
-        "Ryan C. Gordon <icculus@icculus.org>",
-        "https://icculus.org/SDL_sound/"
-    },
-
-    WAV_init,       /*   init() method */
-    WAV_quit,       /*   quit() method */
-    WAV_open,       /*   open() method */
-    WAV_close,      /*  close() method */
-    WAV_read,       /*   read() method */
-    WAV_rewind,     /* rewind() method */
-    WAV_seek        /*   seek() method */
-};
-
-
 /* Better than SDL_ReadLE16, since you can detect i/o errors... */
 static SDL_INLINE int read_le16(SDL_RWops *rw, Uint16 *ui16)
 {
@@ -784,6 +756,26 @@ static int WAV_seek(Sound_Sample *sample, Uint32 ms)
     wav_t *w = (wav_t *) internal->decoder_private;
     return w->fmt->seek_sample(sample, ms);
 } /* WAV_seek */
+
+
+static const char *extensions_wav[] = { "WAV", NULL };
+const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV =
+{
+    {
+        extensions_wav,
+        "Microsoft WAVE audio format",
+        "Ryan C. Gordon <icculus@icculus.org>",
+        "https://icculus.org/SDL_sound/"
+    },
+
+    WAV_init,       /*   init() method */
+    WAV_quit,       /*   quit() method */
+    WAV_open,       /*   open() method */
+    WAV_close,      /*  close() method */
+    WAV_read,       /*   read() method */
+    WAV_rewind,     /* rewind() method */
+    WAV_seek        /*   seek() method */
+};
 
 #endif /* SOUND_SUPPORTS_WAV */
 

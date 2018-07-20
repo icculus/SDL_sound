@@ -24,14 +24,6 @@
 
 #include "libmodplug/modplug.h"
 
-static int MODPLUG_init(void);
-static void MODPLUG_quit(void);
-static int MODPLUG_open(Sound_Sample *sample, const char *ext);
-static void MODPLUG_close(Sound_Sample *sample);
-static Uint32 MODPLUG_read(Sound_Sample *sample);
-static int MODPLUG_rewind(Sound_Sample *sample);
-static int MODPLUG_seek(Sound_Sample *sample, Uint32 ms);
-
 static const char *extensions_modplug[] =
 {
         /* The XMMS plugin is apparently able to load compressed modules as
@@ -64,23 +56,6 @@ static const char *extensions_modplug[] =
     NULL
 };
 
-const Sound_DecoderFunctions __Sound_DecoderFunctions_MODPLUG =
-{
-    {
-        extensions_modplug,
-        "Play modules through ModPlug",
-        "Torbjörn Andersson <d91tan@Update.UU.SE>",
-        "http://modplug-xmms.sourceforge.net/"
-    },
-
-    MODPLUG_init,       /*   init() method */
-    MODPLUG_quit,       /*   quit() method */
-    MODPLUG_open,       /*   open() method */
-    MODPLUG_close,      /*  close() method */
-    MODPLUG_read,       /*   read() method */
-    MODPLUG_rewind,     /* rewind() method */
-    MODPLUG_seek        /*   seek() method */
-};
 
 
 static int MODPLUG_init(void)
@@ -227,6 +202,25 @@ static int MODPLUG_seek(Sound_Sample *sample, Uint32 ms)
     ModPlug_Seek(module, ms);
     return 1;
 } /* MODPLUG_seek */
+
+
+const Sound_DecoderFunctions __Sound_DecoderFunctions_MODPLUG =
+{
+    {
+        extensions_modplug,
+        "Play modules through ModPlug",
+        "Torbjörn Andersson <d91tan@Update.UU.SE>",
+        "http://modplug-xmms.sourceforge.net/"
+    },
+
+    MODPLUG_init,       /*   init() method */
+    MODPLUG_quit,       /*   quit() method */
+    MODPLUG_open,       /*   open() method */
+    MODPLUG_close,      /*  close() method */
+    MODPLUG_read,       /*   read() method */
+    MODPLUG_rewind,     /* rewind() method */
+    MODPLUG_seek        /*   seek() method */
+};
 
 #endif /* SOUND_SUPPORTS_MODPLUG */
 
