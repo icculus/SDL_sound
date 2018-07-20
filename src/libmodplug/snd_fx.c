@@ -8,13 +8,6 @@
 #include <stdlib.h>
 #include "tables.h"
 
-#ifdef MSC_VER
-#pragma warning(disable:4244)
-#endif
-
-////////////////////////////////////////////////////////////
-// Length
-
 DWORD CSoundFile_GetLength(CSoundFile *_this, BOOL bAdjust, BOOL bTotal)
 //----------------------------------------------------
 {
@@ -1213,7 +1206,7 @@ BOOL CSoundFile_ProcessEffects(CSoundFile *_this)
 					} else
 					{
 					#ifdef MODPLUG_TRACKER
-						if (CSoundFile_gdwSoundSetup & SNDMIX_NOBACKWARDJUMPS)
+						if (_this->gdwSoundSetup & SNDMIX_NOBACKWARDJUMPS)
 					#endif
 						// Backward jump disabled
 						bNoLoop = TRUE;

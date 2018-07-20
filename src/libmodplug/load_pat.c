@@ -56,6 +56,7 @@
 
 #define PAT_ENV_PATH2CFG			"MMPAT_PATH_TO_CFG"
 
+/* !!! FIXME: global state */
 // 128 gm and 63 drum
 #define MAXSMP				191
 static char midipat[MAXSMP][PATH_MAX];
@@ -137,6 +138,7 @@ typedef struct {
 
 /**************************************************************************
 **************************************************************************/
+/* !!! FIXME: global state */
 static BYTE pat_gm_used[MAXSMP];
 static BYTE pat_loops[MAXSMP];
 

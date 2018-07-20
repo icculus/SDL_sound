@@ -10,22 +10,6 @@
 // Volume ramp length, in 1/10 ms
 #define VOLUMERAMPLEN	146	// 1.46ms = 64 samples at 44.1kHz
 
-// SNDMIX: These are global flags for playback control (first two configurable via SetMixConfig)
-UINT CSoundFile_m_nStereoSeparation = 128;
-UINT CSoundFile_m_nMaxMixChannels = 32;
-// Mixing Configuration (SetWaveConfig)
-DWORD CSoundFile_gnChannels = 1;
-DWORD CSoundFile_gdwSoundSetup = 0;
-DWORD CSoundFile_gdwMixingFreq = 44100;
-DWORD CSoundFile_gnBitsPerSample = 16;
-// Mixing data initialized in
-UINT CSoundFile_gnVolumeRampSamples = 64;
-LONG gnDryROfsVol = 0;
-LONG gnDryLOfsVol = 0;
-LONG gnRvbROfsVol = 0;
-LONG gnRvbLOfsVol = 0;
-int gbInitPlugins = 0;
-
 typedef DWORD (MPPASMCALL * LPCONVERTPROC)(LPVOID, int *, DWORD, LPLONG, LPLONG);
 
 extern DWORD MPPASMCALL X86_Convert32To8(LPVOID lpBuffer, int *, DWORD nSamples, LPLONG, LPLONG);
@@ -37,10 +21,6 @@ extern VOID MPPASMCALL X86_Dither(int *pBuffer, UINT nSamples, UINT nBits);
 extern VOID MPPASMCALL X86_InterleaveFrontRear(int *pFrontBuf, int *pRearBuf, DWORD nSamples);
 extern VOID MPPASMCALL X86_StereoFill(int *pBuffer, UINT nSamples, LPLONG lpROfs, LPLONG lpLOfs);
 extern VOID MPPASMCALL X86_MonoFromStereo(int *pMixBuf, UINT nSamples);
-
-extern int MixSoundBuffer[MIXBUFFERSIZE*4];
-extern int MixRearBuffer[MIXBUFFERSIZE*2];
-UINT gnReverbSend;
 
 
 // Log tables for pre-amp
@@ -76,18 +56,18 @@ int _muldivr(long a, long b, long c)
 }
 
 
-BOOL CSoundFile_InitPlayer(BOOL bReset)
+BOOL CSoundFile_InitPlayer(CSoundFile *_this, BOOL bReset)
 //--------------------------------------
 {
-	if (CSoundFile_m_nMaxMixChannels > MAX_CHANNELS) CSoundFile_m_nMaxMixChannels = MAX_CHANNELS;
-	if (CSoundFile_gdwMixingFreq < 4000) CSoundFile_gdwMixingFreq = 4000;
-	if (CSoundFile_gdwMixingFreq > MAX_SAMPLE_RATE) CSoundFile_gdwMixingFreq = MAX_SAMPLE_RATE;
-	CSoundFile_gnVolumeRampSamples = (CSoundFile_gdwMixingFreq * VOLUMERAMPLEN) / 100000;
-	if (CSoundFile_gnVolumeRampSamples < 8) CSoundFile_gnVolumeRampSamples = 8;
-	gnDryROfsVol = gnDryLOfsVol = 0;
-	gnRvbROfsVol = gnRvbLOfsVol = 0;
-	gbInitPlugins = (bReset) ? 3 : 1;
-	CSoundFile_InitializeDSP(bReset);
+	if (_this->m_nMaxMixChannels > MAX_CHANNELS) _this->m_nMaxMixChannels = MAX_CHANNELS;
+	if (_this->gdwMixingFreq < 4000) _this->gdwMixingFreq = 4000;
+	if (_this->gdwMixingFreq > MAX_SAMPLE_RATE) _this->gdwMixingFreq = MAX_SAMPLE_RATE;
+	_this->gnVolumeRampSamples = (_this->gdwMixingFreq * VOLUMERAMPLEN) / 100000;
+	if (_this->gnVolumeRampSamples < 8) _this->gnVolumeRampSamples = 8;
+	_this->gnDryROfsVol = _this->gnDryLOfsVol = 0;
+	_this->gnRvbROfsVol = _this->gnRvbLOfsVol = 0;
+	_this->gbInitPlugins = (bReset) ? 3 : 1;
+	CSoundFile_InitializeDSP(_this, bReset);
 	return TRUE;
 }
 
@@ -95,7 +75,7 @@ BOOL CSoundFile_InitPlayer(BOOL bReset)
 BOOL CSoundFile_FadeSong(CSoundFile *_this, UINT msec)
 //----------------------------------
 {
-	LONG nsamples = _muldiv(msec, CSoundFile_gdwMixingFreq, 1000);
+	LONG nsamples = _muldiv(msec, _this->gdwMixingFreq, 1000);
 	if (nsamples <= 0) return FALSE;
 	if (nsamples > 0x100000) nsamples = 0x100000;
 	_this->m_nBufferCount = nsamples;
@@ -122,7 +102,7 @@ BOOL CSoundFile_GlobalFadeSong(CSoundFile *_this, UINT msec)
 //----------------------------------------
 {
 	if (_this->m_dwSongFlags & SONG_GLOBALFADE) return FALSE;
-	_this->m_nGlobalFadeMaxSamples = _muldiv(msec, CSoundFile_gdwMixingFreq, 1000);
+	_this->m_nGlobalFadeMaxSamples = _muldiv(msec, _this->gdwMixingFreq, 1000);
 	_this->m_nGlobalFadeSamples = _this->m_nGlobalFadeMaxSamples;
 	_this->m_dwSongFlags |= SONG_GLOBALFADE;
 	return TRUE;
@@ -138,10 +118,10 @@ UINT CSoundFile_Read(CSoundFile *_this, LPVOID lpDestBuffer, UINT cbBuffer)
 	LONG nVUMeterMin = 0x7FFFFFFF, nVUMeterMax = -0x7FFFFFFF;
 
 	_this->m_nMixStat = 0;
-	lSampleSize = CSoundFile_gnChannels;
-	if (CSoundFile_gnBitsPerSample == 16) { lSampleSize *= 2; pCvt = X86_Convert32To16; }
-	else if (CSoundFile_gnBitsPerSample == 24) { lSampleSize *= 3; pCvt = X86_Convert32To24; }
-	else if (CSoundFile_gnBitsPerSample == 32) { lSampleSize *= 4; pCvt = X86_Convert32To32; }
+	lSampleSize = _this->gnChannels;
+	if (_this->gnBitsPerSample == 16) { lSampleSize *= 2; pCvt = X86_Convert32To16; }
+	else if (_this->gnBitsPerSample == 24) { lSampleSize *= 3; pCvt = X86_Convert32To24; }
+	else if (_this->gnBitsPerSample == 32) { lSampleSize *= 4; pCvt = X86_Convert32To32; }
 	lMax = cbBuffer / lSampleSize;
 	if ((!lMax) || (!lpBuffer) || (!_this->m_nChannels)) return 0;
 	lRead = lMax;
@@ -172,37 +152,37 @@ UINT CSoundFile_Read(CSoundFile *_this, LPVOID lpDestBuffer, UINT cbBuffer)
 		if (!lCount) break;
 		lSampleCount = lCount;
 #ifndef MODPLUG_NO_REVERB
-		gnReverbSend = 0;
+		_this->gnReverbSend = 0;
 #endif
 		// Resetting sound buffer
-		X86_StereoFill(MixSoundBuffer, lSampleCount, &gnDryROfsVol, &gnDryLOfsVol);
-		if (CSoundFile_gnChannels >= 2)
+		X86_StereoFill(_this->MixSoundBuffer, lSampleCount, &_this->gnDryROfsVol, &_this->gnDryLOfsVol);
+		if (_this->gnChannels >= 2)
 		{
 			lSampleCount *= 2;
 			_this->m_nMixStat += CSoundFile_CreateStereoMix(_this, lCount);
-			CSoundFile_ProcessStereoDSP(lCount);
+			CSoundFile_ProcessStereoDSP(_this, lCount);
 		} else
 		{
 			_this->m_nMixStat += CSoundFile_CreateStereoMix(_this, lCount);
-			CSoundFile_ProcessStereoDSP(lCount);
-			X86_MonoFromStereo(MixSoundBuffer, lCount);
+			CSoundFile_ProcessStereoDSP(_this, lCount);
+			X86_MonoFromStereo(_this->MixSoundBuffer, lCount);
 		}
 		nStat++;
 		UINT lTotalSampleCount = lSampleCount;
 		// Multichannel
-		if (CSoundFile_gnChannels > 2)
+		if (_this->gnChannels > 2)
 		{
-			X86_InterleaveFrontRear(MixSoundBuffer, MixRearBuffer, lSampleCount);
+			X86_InterleaveFrontRear(_this->MixSoundBuffer, _this->MixRearBuffer, lSampleCount);
 			lTotalSampleCount *= 2;
 		}
 		// Perform clipping + VU-Meter
-		lpBuffer += pCvt(lpBuffer, MixSoundBuffer, lTotalSampleCount, &nVUMeterMin, &nVUMeterMax);
+		lpBuffer += pCvt(lpBuffer, _this->MixSoundBuffer, lTotalSampleCount, &nVUMeterMin, &nVUMeterMax);
 		// Buffer ready
 		lRead -= lCount;
 		_this->m_nBufferCount -= lCount;
 	}
 MixDone:
-	if (lRead) SDL_memset(lpBuffer, (CSoundFile_gnBitsPerSample == 8) ? 0x80 : 0, lRead * lSampleSize);
+	if (lRead) SDL_memset(lpBuffer, (_this->gnBitsPerSample == 8) ? 0x80 : 0, lRead * lSampleSize);
 	if (nStat) { _this->m_nMixStat += nStat-1; _this->m_nMixStat /= nStat; }
 	return lMax - lRead;
 }
@@ -334,7 +314,7 @@ BOOL CSoundFile_ReadNote(CSoundFile *_this)
 	////////////////////////////////////////////////////////////////////////////////////
 	_this->m_nTotalCount++;
 	if (!_this->m_nMusicTempo) return FALSE;
-	_this->m_nBufferCount = (CSoundFile_gdwMixingFreq * 5 * _this->m_nTempoFactor) / (_this->m_nMusicTempo << 8);
+	_this->m_nBufferCount = (_this->gdwMixingFreq * 5 * _this->m_nTempoFactor) / (_this->m_nMusicTempo << 8);
 	// Master Volume + Pre-Amplification / Attenuation setup
 	DWORD nMasterVol;
 	{
@@ -345,7 +325,7 @@ BOOL CSoundFile_ReadNote(CSoundFile *_this)
 		{
 			realmastervol = 0x80 + ((realmastervol - 0x80) * (nchn32+4)) / 16;
 		}
-		UINT attenuation = (CSoundFile_gdwSoundSetup & SNDMIX_AGC) ? PreAmpAGCTable[nchn32>>1] : PreAmpTable[nchn32>>1];
+		UINT attenuation = (_this->gdwSoundSetup & SNDMIX_AGC) ? PreAmpAGCTable[nchn32>>1] : PreAmpTable[nchn32>>1];
 		DWORD mastervol = (realmastervol * (_this->m_nSongPreAmp + 0x10)) >> 6;
 		if (mastervol > 0x200) mastervol = 0x200;
 		if ((_this->m_dwSongFlags & SONG_GLOBALFADE) && (_this->m_nGlobalFadeMaxSamples))
@@ -802,7 +782,7 @@ BOOL CSoundFile_ReadNote(CSoundFile *_this)
 				pChn->dwFlags |= CHN_NOTEFADE;
 				pChn->nRealVolume = 0;
 			}
-			UINT ninc = _muldiv(freq, 0x10000, CSoundFile_gdwMixingFreq);
+			UINT ninc = _muldiv(freq, 0x10000, _this->gdwMixingFreq);
 			if ((ninc >= 0xFFB0) && (ninc <= 0x10090)) ninc = 0x10000;
 			if (_this->m_nFreqFactor != 128) ninc = (ninc * _this->m_nFreqFactor) >> 7;
 			if (ninc > 0xFF0000) ninc = 0xFF0000;
@@ -916,18 +896,18 @@ BOOL CSoundFile_ReadNote(CSoundFile *_this)
 #define		kChnMasterVol	nMasterVol
 #endif // MODPLUG_TRACKER
 			// Adjusting volumes
-			if (CSoundFile_gnChannels >= 2)
+			if (_this->gnChannels >= 2)
 			{
 				int pan = ((int)pChn->nRealPan) - 128;
-				pan *= (int)CSoundFile_m_nStereoSeparation;
+				pan *= (int)_this->m_nStereoSeparation;
 				pan /= 128;
 				pan += 128;
 
 				if (pan < 0) pan = 0;
 				if (pan > 256) pan = 256;
-				if (CSoundFile_gdwSoundSetup & SNDMIX_REVERSESTEREO) pan = 256 - pan;
+				if (_this->gdwSoundSetup & SNDMIX_REVERSESTEREO) pan = 256 - pan;
 				LONG realvol = (pChn->nRealVolume * kChnMasterVol) >> (8-1);
-				if (CSoundFile_gdwSoundSetup & SNDMIX_SOFTPANNING)
+				if (_this->gdwSoundSetup & SNDMIX_SOFTPANNING)
 				{
 					if (pan < 128)
 					{
@@ -952,7 +932,7 @@ BOOL CSoundFile_ReadNote(CSoundFile *_this)
 			if (pChn->nNewRightVol > 0xFFFF) pChn->nNewRightVol = 0xFFFF;
 			if (pChn->nNewLeftVol > 0xFFFF) pChn->nNewLeftVol = 0xFFFF;
 			// Check IDO
-			if (CSoundFile_gdwSoundSetup & SNDMIX_NORESAMPLING)
+			if (_this->gdwSoundSetup & SNDMIX_NORESAMPLING)
 			{
 				pChn->dwFlags |= CHN_NOIDO;
 			} else
@@ -962,7 +942,7 @@ BOOL CSoundFile_ReadNote(CSoundFile *_this)
 				{	pChn->dwFlags |= CHN_NOIDO;
 				}
 				else
-				{	if( ((CSoundFile_gdwSoundSetup & SNDMIX_HQRESAMPLER) == 0) && ((CSoundFile_gdwSoundSetup & SNDMIX_ULTRAHQSRCMODE) == 0) )
+				{	if( ((_this->gdwSoundSetup & SNDMIX_HQRESAMPLER) == 0) && ((_this->gdwSoundSetup & SNDMIX_ULTRAHQSRCMODE) == 0) )
 					{	if (pChn->nInc >= 0xFF00) pChn->dwFlags |= CHN_NOIDO;
 					}
 				}
@@ -971,7 +951,7 @@ BOOL CSoundFile_ReadNote(CSoundFile *_this)
 			pChn->nNewLeftVol >>= MIXING_ATTENUATION;
 			pChn->nRightRamp = pChn->nLeftRamp = 0;
 			// Dolby Pro-Logic Surround
-			if ((pChn->dwFlags & CHN_SURROUND) && (CSoundFile_gnChannels <= 2)) pChn->nNewLeftVol = - pChn->nNewLeftVol;
+			if ((pChn->dwFlags & CHN_SURROUND) && (_this->gnChannels <= 2)) pChn->nNewLeftVol = - pChn->nNewLeftVol;
 			// Checking Ping-Pong Loops
 			if (pChn->dwFlags & CHN_PINGPONGFLAG) pChn->nInc = -pChn->nInc;
 			// Setting up volume ramp
@@ -979,16 +959,16 @@ BOOL CSoundFile_ReadNote(CSoundFile *_this)
 			 && ((pChn->nRightVol != pChn->nNewRightVol)
 			  || (pChn->nLeftVol != pChn->nNewLeftVol)))
 			{
-				LONG nRampLength = CSoundFile_gnVolumeRampSamples;
+				LONG nRampLength = _this->gnVolumeRampSamples;
 				LONG nRightDelta = ((pChn->nNewRightVol - pChn->nRightVol) << VOLUMERAMPPRECISION);
 				LONG nLeftDelta = ((pChn->nNewLeftVol - pChn->nLeftVol) << VOLUMERAMPPRECISION);
-				if ((CSoundFile_gdwSoundSetup & SNDMIX_DIRECTTODISK) || (CSoundFile_gdwSoundSetup & SNDMIX_HQRESAMPLER))
+				if ((_this->gdwSoundSetup & SNDMIX_DIRECTTODISK) || (_this->gdwSoundSetup & SNDMIX_HQRESAMPLER))
 				{
 					if ((pChn->nRightVol|pChn->nLeftVol) && (pChn->nNewRightVol|pChn->nNewLeftVol) && (!(pChn->dwFlags & CHN_FASTVOLRAMP)))
 					{
 						nRampLength = _this->m_nBufferCount;
 						if (nRampLength > (1 << (VOLUMERAMPPRECISION-1))) nRampLength = (1 << (VOLUMERAMPPRECISION-1));
-						if (nRampLength < (LONG)CSoundFile_gnVolumeRampSamples) nRampLength = CSoundFile_gnVolumeRampSamples;
+						if (nRampLength < (LONG)_this->gnVolumeRampSamples) nRampLength = _this->gnVolumeRampSamples;
 					}
 				}
 				pChn->nRightRamp = nRightDelta / nRampLength;
@@ -1022,7 +1002,7 @@ BOOL CSoundFile_ReadNote(CSoundFile *_this)
 		}
 	}
 	// Checking Max Mix Channels reached: ordering by volume
-	if ((_this->m_nMixChannels >= CSoundFile_m_nMaxMixChannels) && (!(CSoundFile_gdwSoundSetup & SNDMIX_DIRECTTODISK)))
+	if ((_this->m_nMixChannels >= _this->m_nMaxMixChannels) && (!(_this->gdwSoundSetup & SNDMIX_DIRECTTODISK)))
 	{
 		for (UINT i=0; i<_this->m_nMixChannels; i++)
 		{

@@ -212,7 +212,7 @@ BOOL CSoundFile_ReadMod(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	for (UINT ich=0; ich<_this->m_nChannels; ich++)
 	{
 		_this->ChnSettings[ich].nVolume = 64;
-		if (CSoundFile_gdwSoundSetup & SNDMIX_MAXDEFAULTPAN)
+		if (_this->gdwSoundSetup & SNDMIX_MAXDEFAULTPAN)
 			_this->ChnSettings[ich].nPan = (((ich&3)==1) || ((ich&3)==2)) ? 256 : 0;
 		else
 			_this->ChnSettings[ich].nPan = (((ich&3)==1) || ((ich&3)==2)) ? 0xC0 : 0x40;
