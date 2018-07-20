@@ -12,41 +12,32 @@ SDL_sound is a library that handles the decoding of several popular sound file
  desires.
 
 Please check the website for the most up-to-date information about SDL_sound:
-   http://icculus.org/SDL_sound/
+   https://icculus.org/SDL_sound/
 
-SDL_sound _REQUIRES_ Simple Directmedia Layer (SDL) to function, and cannot
- be built without it. You can get SDL from http://www.libsdl.org/. SDL_sound
- has only been tried with the SDL 1.2 series, but may work on older versions.
+SDL_sound _REQUIRES_ Simple Directmedia Layer (SDL) 2.x to function, and cannot
+ be built without it. You can get SDL from https://www.libsdl.org/. SDL_sound
+ 2.x only works with SDL2, and SDL_sound 1.x only works with SDL 1.x.
  Reports of success or failure are welcome.
 
-Some optional external libraries that SDL_sound can use and where to find them:
- SMPEG (used to decode MP3s): http://icculus.org/smpeg/
- libvorbisfile (used to decode OGGs): http://www.xiph.org/ogg/vorbis/
- libSpeex (used to decode SPXs): http://speex.org/
- libFLAC (used to decode FLACs): http://flac.sourceforge.net/
- libModPlug (used to decode MODs, etc): http://modplug-xmms.sourceforge.net/
- libMikMod (used to decode MODs, etc, too): http://www.mikmod.org/
+ Unless explicitly disabled during initial build configuration, SDL_sound
+ always supports these file formats internally:
 
- Experimental QuickTime support for the Mac is included, but has not been 
- integrated with the build system, and probably doesn't work with 
- QuickTime for Windows.
-
-These external libraries are OPTIONAL. SDL_sound will build and function
- without them, but various sound file formats are not supported unless these
- libraries are available. Unless explicitly disabled during initial build
- configuration, SDL_sound always supports these file formats internally:
-
- - Microsoft .WAV files (uncompressed and MS-ADPCM encoded).
- - Creative Labs .VOC files
+ - Wave (.WAV) files
+ - MPEG-1 layers I-III (.MP3, .MP2, .MP1)
+ - Ogg Vorbis (.OGG) files
+ - Free Lossless Audio Codec (.FLAC) files
+ - Audio Interchange format (.AIFF) files
+ - Sun/NeXT Audio (.AU) files
  - Shorten (.SHN) files
- - Audio Interchange format (AIFF) files
- - Sun Audio (.AU) files
- - MIDI files
- - MP3 files (internal decoder, different than the one SMPEG uses)
- - Raw waveform data
+ - Creative Labs Voice (.VOC) files
+ - Various "module" formats (.MOD, .669, .AMF, .XM, .IT, .S3M, .STM, etc)
+ - MIDI (.mid) files
+ - ABC (.abc) files
+ - Raw PCM data
+ - (macOS/iOS only) anything that CoreAudio can decode.
 
 Building/Installing:
-  Please read the INSTALL document.
+  Please read the docs/INSTALL.txt document.
 
 Reporting bugs/commenting:
  There is a mailing list available. Subscription and mailing list archives
@@ -57,5 +48,4 @@ Reporting bugs/commenting:
  The mailing list is the best way to get in touch with SDL_sound developers.
 
 --ryan. (icculus@icculus.org)
-
 
