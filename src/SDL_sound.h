@@ -33,7 +33,6 @@
  *   - .MID  (MIDI music converted to Waveform data, internal.)
  *   - .MOD  (MOD files, via internal copy of libModPlug.)
  *   - .OGG  (Ogg files, via internal copy of stb_vorbis.)
- *   - .SPX  (Speex files, via libspeex.)
  *   - .SHN  (Shorten files, internal.)
  *   - .RAW  (Raw sound data in any format, internal.)
  *   - .AU   (Sun's Audio format, internal.)
