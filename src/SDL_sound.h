@@ -440,7 +440,7 @@ SNDDECLSPEC Sound_Sample * SDLCALL Sound_NewSample(SDL_RWops *rw,
                                                    Uint32 bufferSize);
 
 /**
- * \fn Sound_Sample *Sound_NewSampleFromMem(const Uint8 *data, Sound_AudioInfo *desired, Uint32 bufferSize)
+ * \fn Sound_Sample *Sound_NewSampleFromMem(const Uint8 *data, Uint32 size, const char *ext, Sound_AudioInfo *desired, Uint32 bufferSize)
  * \brief Start decoding a new sound sample from a file on disk.
  *
  * This is identical to Sound_NewSample(), but it creates an SDL_RWops for you
@@ -449,7 +449,10 @@ SNDDECLSPEC Sound_Sample * SDLCALL Sound_NewSample(SDL_RWops *rw,
  * This can pool RWops structures, so it may fragment the heap less over time
  *  than using SDL_RWFromMem().
  *
- *    \param filename file containing sound data.
+ *    \param data Buffer of data holding contents of an audio file to decode.
+ *    \param size Size, in bytes, of buffer pointed to by (data).
+ *    \param ext File extension normally associated with a data format.
+ *               Can usually be NULL.
  *    \param desired Format to convert sound data into. Can usually be NULL,
  *                   if you don't need conversion.
  *    \param bufferSize size, in bytes, of initial read buffer.
