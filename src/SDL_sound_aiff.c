@@ -31,37 +31,6 @@
 
 #if SOUND_SUPPORTS_AIFF
 
-static Uint32 SANE_to_Uint32 (Uint8 *sanebuf);
-
-
-static int AIFF_init(void);
-static void AIFF_quit(void);
-static int AIFF_open(Sound_Sample *sample, const char *ext);
-static void AIFF_close(Sound_Sample *sample);
-static Uint32 AIFF_read(Sound_Sample *sample);
-static int AIFF_rewind(Sound_Sample *sample);
-static int AIFF_seek(Sound_Sample *sample, Uint32 ms);
-
-static const char *extensions_aiff[] = { "AIFF", NULL };
-const Sound_DecoderFunctions __Sound_DecoderFunctions_AIFF =
-{
-    {
-        extensions_aiff,
-        "Audio Interchange File Format",
-        "Torbjörn Andersson <d91tan@Update.UU.SE>",
-        "https://icculus.org/SDL_sound/"
-    },
-
-    AIFF_init,      /*   init() method */
-    AIFF_quit,      /*   quit() method */
-    AIFF_open,      /*   open() method */
-    AIFF_close,     /*  close() method */
-    AIFF_read,      /*   read() method */
-    AIFF_rewind,    /* rewind() method */
-    AIFF_seek       /*   seek() method */
-};
-
-
 /*****************************************************************************
  * aiff_t is what we store in our internal->decoder_private field...         *
  *****************************************************************************/
@@ -166,11 +135,33 @@ typedef struct
 } comm_t;
 
 
+/* 
+ * Sample rate is encoded as an "80 bit IEEE Standard 754 floating point
+ * number (Standard Apple Numeric Environment [SANE] data type Extended)".
+ * Whose bright idea was that?
+ *
+ * This function was adapted from libsndfile, and while I do know a little
+ * bit about the IEEE floating point standard I don't pretend to fully
+ * understand this.
+ */
+static Uint32 SANE_to_Uint32 (Uint8 *sanebuf)
+{
+    /* Is the frequency outside of what we can represent with Uint32? */
+    if ( (sanebuf[0] & 0x80)
+      || (sanebuf[0] <= 0x3F)
+      || (sanebuf[0] > 0x40)
+      || (sanebuf[0] == 0x40 && sanebuf[1] > 0x1C) )
+        return 0;
+
+    return ((sanebuf[2] << 23) | (sanebuf[3] << 15) | (sanebuf[4] << 7)
+        | (sanebuf[5] >> 1)) >> (29 - sanebuf[1]);
+} /* SANE_to_Uint32 */
+
+
 /*
  * Read in a comm_t from disk. This makes this process safe regardless of
  *  the processor's byte order or how the comm_t structure is packed.
  */
-
 static int read_comm_chunk(SDL_RWops *rw, comm_t *comm)
 {
     Uint8 sampleRate[10];
@@ -355,29 +346,6 @@ static void AIFF_quit(void)
 } /* AIFF_quit */
 
 
-/* 
- * Sample rate is encoded as an "80 bit IEEE Standard 754 floating point
- * number (Standard Apple Numeric Environment [SANE] data type Extended)".
- * Whose bright idea was that?
- *
- * This function was adapted from libsndfile, and while I do know a little
- * bit about the IEEE floating point standard I don't pretend to fully
- * understand this.
- */
-static Uint32 SANE_to_Uint32 (Uint8 *sanebuf)
-{
-    /* Is the frequency outside of what we can represent with Uint32? */
-    if ( (sanebuf[0] & 0x80)
-      || (sanebuf[0] <= 0x3F)
-      || (sanebuf[0] > 0x40)
-      || (sanebuf[0] == 0x40 && sanebuf[1] > 0x1C) )
-        return 0;
-
-    return ((sanebuf[2] << 23) | (sanebuf[3] << 15) | (sanebuf[4] << 7)
-        | (sanebuf[5] >> 1)) >> (29 - sanebuf[1]);
-} /* SANE_to_Uint32 */
-
-
 static int find_chunk(SDL_RWops *rw, Uint32 id)
 {
     Sint32 siz = 0;
@@ -542,6 +510,26 @@ static int AIFF_seek(Sound_Sample *sample, Uint32 ms)
     aiff_t *a = (aiff_t *) internal->decoder_private;
     return a->fmt.seek_sample(sample, ms);
 } /* AIFF_seek */
+
+static const char *extensions_aiff[] = { "AIFF", "AIF", NULL };
+const Sound_DecoderFunctions __Sound_DecoderFunctions_AIFF =
+{
+    {
+        extensions_aiff,
+        "Audio Interchange File Format",
+        "TorbjÃ¶rn Andersson <d91tan@Update.UU.SE>",
+        "https://icculus.org/SDL_sound/"
+    },
+
+    AIFF_init,      /*   init() method */
+    AIFF_quit,      /*   quit() method */
+    AIFF_open,      /*   open() method */
+    AIFF_close,     /*  close() method */
+    AIFF_read,      /*   read() method */
+    AIFF_rewind,    /* rewind() method */
+    AIFF_seek       /*   seek() method */
+};
+
 
 #endif /* SOUND_SUPPORTS_AIFF */
 

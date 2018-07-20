@@ -27,34 +27,6 @@
 
 #if SOUND_SUPPORTS_FMT
 
-static int FMT_init(void);
-static void FMT_quit(void);
-static int FMT_open(Sound_Sample *sample, const char *ext);
-static void FMT_close(Sound_Sample *sample);
-static Uint32 FMT_read(Sound_Sample *sample);
-static int FMT_rewind(Sound_Sample *sample);
-static int FMT_seek(Sound_Sample *sample, Uint32 ms);
-
-static const char *extensions_fmt[] = { "FMT", NULL };
-const Sound_DecoderFunctions __Sound_DecoderFunctions_FMT =
-{
-    {
-        extensions_fmt,
-        "FMT audio format description",
-        "Ryan C. Gordon <icculus@icculus.org>",
-        "https://icculus.org/SDL_sound/"
-    },
-
-    FMT_init,       /*   init() method */
-    FMT_quit,       /*   quit() method */
-    FMT_open,       /*   open() method */
-    FMT_close,      /*  close() method */
-    FMT_read,       /*   read() method */
-    FMT_rewind,     /* rewind() method */
-    FMT_seek        /*   seek() method */
-};
-
-
 static int FMT_init(void)
 {
     /* do any global decoder/library initialization you need here. */
@@ -147,6 +119,24 @@ static int FMT_seek(Sound_Sample *sample, Uint32 ms)
     return 1;  /* success. */
 } /* FMT_seek */
 
+static const char *extensions_fmt[] = { "FMT", NULL };
+const Sound_DecoderFunctions __Sound_DecoderFunctions_FMT =
+{
+    {
+        extensions_fmt,
+        "FMT audio format description",
+        "Ryan C. Gordon <icculus@icculus.org>",
+        "https://icculus.org/SDL_sound/"
+    },
+
+    FMT_init,       /*   init() method */
+    FMT_quit,       /*   quit() method */
+    FMT_open,       /*   open() method */
+    FMT_close,      /*  close() method */
+    FMT_read,       /*   read() method */
+    FMT_rewind,     /* rewind() method */
+    FMT_seek        /*   seek() method */
+};
 
 #endif /* SOUND_SUPPORTS_FMT */
 

@@ -33,33 +33,6 @@
 #include <speex/speex.h>
 #include <speex/speex_header.h>
 
-static int SPEEX_init(void);
-static void SPEEX_quit(void);
-static int SPEEX_open(Sound_Sample *sample, const char *ext);
-static void SPEEX_close(Sound_Sample *sample);
-static Uint32 SPEEX_read(Sound_Sample *sample);
-static int SPEEX_rewind(Sound_Sample *sample);
-static int SPEEX_seek(Sound_Sample *sample, Uint32 ms);
-
-static const char *extensions_speex[] = { "SPX", NULL };
-const Sound_DecoderFunctions __Sound_DecoderFunctions_SPEEX =
-{
-    {
-        extensions_speex,
-        "SPEEX speech compression format",
-        "Ryan C. Gordon <icculus@icculus.org>",
-        "https://icculus.org/SDL_sound/"
-    },
-
-    SPEEX_init,       /*   init() method */
-    SPEEX_quit,       /*   quit() method */
-    SPEEX_open,       /*   open() method */
-    SPEEX_close,      /*  close() method */
-    SPEEX_read,       /*   read() method */
-    SPEEX_rewind,     /* rewind() method */
-    SPEEX_seek        /*   seek() method */
-};
-
 #define SPEEX_USE_PERCEPTUAL_ENHANCER 1
 #define SPEEX_MAGIC  0x5367674F  /* "OggS" in ASCII (littleendian) */
 #define SPEEX_OGG_BUFSIZE 200
@@ -410,6 +383,25 @@ static int SPEEX_seek(Sound_Sample *sample, Uint32 ms)
 {
     /* !!! FIXME */ return 0;
 } /* SPEEX_seek */
+
+static const char *extensions_speex[] = { "SPX", NULL };
+const Sound_DecoderFunctions __Sound_DecoderFunctions_SPEEX =
+{
+    {
+        extensions_speex,
+        "SPEEX speech compression format",
+        "Ryan C. Gordon <icculus@icculus.org>",
+        "https://icculus.org/SDL_sound/"
+    },
+
+    SPEEX_init,       /*   init() method */
+    SPEEX_quit,       /*   quit() method */
+    SPEEX_open,       /*   open() method */
+    SPEEX_close,      /*  close() method */
+    SPEEX_read,       /*   read() method */
+    SPEEX_rewind,     /* rewind() method */
+    SPEEX_seek        /*   seek() method */
+};
 
 
 #endif /* SOUND_SUPPORTS_SPEEX */

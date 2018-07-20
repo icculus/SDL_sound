@@ -27,34 +27,6 @@
 
 #if SOUND_SUPPORTS_VOC
 
-static int VOC_init(void);
-static void VOC_quit(void);
-static int VOC_open(Sound_Sample *sample, const char *ext);
-static void VOC_close(Sound_Sample *sample);
-static Uint32 VOC_read(Sound_Sample *sample);
-static int VOC_rewind(Sound_Sample *sample);
-static int VOC_seek(Sound_Sample *sample, Uint32 ms);
-
-static const char *extensions_voc[] = { "VOC", NULL };
-const Sound_DecoderFunctions __Sound_DecoderFunctions_VOC =
-{
-    {
-        extensions_voc,
-        "Creative Labs Voice format",
-        "Ryan C. Gordon <icculus@icculus.org>",
-        "https://icculus.org/SDL_sound/"
-    },
-
-    VOC_init,       /*   init() method */
-    VOC_quit,       /*   quit() method */
-    VOC_open,       /*   open() method */
-    VOC_close,      /*  close() method */
-    VOC_read,       /*   read() method */
-    VOC_rewind,     /* rewind() method */
-    VOC_seek        /*   seek() method */
-};
-
-
 /* Private data for VOC file */
 typedef struct vocstuff {
     Uint32  rest;           /* bytes remaining in current block */
@@ -552,6 +524,26 @@ static int VOC_seek(Sound_Sample *sample, Uint32 ms)
 
     return 1;
 } /* VOC_seek */
+
+
+static const char *extensions_voc[] = { "VOC", NULL };
+const Sound_DecoderFunctions __Sound_DecoderFunctions_VOC =
+{
+    {
+        extensions_voc,
+        "Creative Labs Voice format",
+        "Ryan C. Gordon <icculus@icculus.org>",
+        "https://icculus.org/SDL_sound/"
+    },
+
+    VOC_init,       /*   init() method */
+    VOC_quit,       /*   quit() method */
+    VOC_open,       /*   open() method */
+    VOC_close,      /*  close() method */
+    VOC_read,       /*   read() method */
+    VOC_rewind,     /* rewind() method */
+    VOC_seek        /*   seek() method */
+};
 
 #endif /* SOUND_SUPPORTS_VOC */
 

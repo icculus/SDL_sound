@@ -28,34 +28,6 @@
 
 #if SOUND_SUPPORTS_RAW
 
-static int RAW_init(void);
-static void RAW_quit(void);
-static int RAW_open(Sound_Sample *sample, const char *ext);
-static void RAW_close(Sound_Sample *sample);
-static Uint32 RAW_read(Sound_Sample *sample);
-static int RAW_rewind(Sound_Sample *sample);
-static int RAW_seek(Sound_Sample *sample, Uint32 ms);
-
-static const char *extensions_raw[] = { "RAW", NULL };
-const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW =
-{
-    {
-        extensions_raw,
-        "Raw audio",
-        "Ryan C. Gordon <icculus@icculus.org>",
-        "https://icculus.org/SDL_sound/"
-    },
-
-    RAW_init,       /*   init() method */
-    RAW_quit,       /*   quit() method */
-    RAW_open,       /*   open() method */
-    RAW_close,      /*  close() method */
-    RAW_read,       /*   read() method */
-    RAW_rewind,     /* rewind() method */
-    RAW_seek        /*   seek() method */
-};
-
-
 static int RAW_init(void)
 {
     return 1;  /* always succeeds. */
@@ -167,6 +139,24 @@ static int RAW_seek(Sound_Sample *sample, Uint32 ms)
     return 1;
 } /* RAW_seek */
 
+static const char *extensions_raw[] = { "RAW", NULL };
+const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW =
+{
+    {
+        extensions_raw,
+        "Raw audio",
+        "Ryan C. Gordon <icculus@icculus.org>",
+        "https://icculus.org/SDL_sound/"
+    },
+
+    RAW_init,       /*   init() method */
+    RAW_quit,       /*   quit() method */
+    RAW_open,       /*   open() method */
+    RAW_close,      /*  close() method */
+    RAW_read,       /*   read() method */
+    RAW_rewind,     /* rewind() method */
+    RAW_seek        /*   seek() method */
+};
 
 #endif /* SOUND_SUPPORTS_RAW */
 

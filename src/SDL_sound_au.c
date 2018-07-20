@@ -17,38 +17,6 @@
 
 #if SOUND_SUPPORTS_AU
 
-static int AU_init(void);
-static void AU_quit(void);
-static int AU_open(Sound_Sample *sample, const char *ext);
-static void AU_close(Sound_Sample *sample);
-static Uint32 AU_read(Sound_Sample *sample);
-static int AU_rewind(Sound_Sample *sample);
-static int AU_seek(Sound_Sample *sample, Uint32 ms);
-
-/*
- * Sometimes the extension ".snd" is used for these files (mostly on the NeXT),
- * and the magic number comes from this. However it may clash with other
- * formats and is somewhat of an anachronism, so only .au is used here.
- */
-static const char *extensions_au[] = { "AU", NULL };
-const Sound_DecoderFunctions __Sound_DecoderFunctions_AU =
-{
-    {
-        extensions_au,
-        "Sun/NeXT audio file format",
-        "Mattias Engdegård <f91-men@nada.kth.se>",
-        "https://icculus.org/SDL_sound/"
-    },
-
-    AU_init,        /*   init() method */
-    AU_quit,        /*   quit() method */
-    AU_open,        /*   open() method */
-    AU_close,       /*  close() method */
-    AU_read,        /*   read() method */
-    AU_rewind,      /* rewind() method */
-    AU_seek         /*   seek() method */
-};
-
 /* no init/deinit needed */
 static int AU_init(void)
 {
@@ -353,6 +321,30 @@ static int AU_seek(Sound_Sample *sample, Uint32 ms)
     dec->remaining = dec->total - offset;
     return 1;
 } /* AU_seek */
+
+/*
+ * Sometimes the extension ".snd" is used for these files (mostly on the NeXT),
+ * and the magic number comes from this. However it may clash with other
+ * formats and is somewhat of an anachronism, so only .au is used here.
+ */
+static const char *extensions_au[] = { "AU", NULL };
+const Sound_DecoderFunctions __Sound_DecoderFunctions_AU =
+{
+    {
+        extensions_au,
+        "Sun/NeXT audio file format",
+        "Mattias EngdegÃ¥rd <f91-men@nada.kth.se>",
+        "https://icculus.org/SDL_sound/"
+    },
+
+    AU_init,        /*   init() method */
+    AU_quit,        /*   quit() method */
+    AU_open,        /*   open() method */
+    AU_close,       /*  close() method */
+    AU_read,        /*   read() method */
+    AU_rewind,      /* rewind() method */
+    AU_seek         /*   seek() method */
+};
 
 #endif /* SOUND_SUPPORTS_AU */
 

@@ -45,35 +45,6 @@
 
 #include "dr_mp3.h"
 
-static int MP3_init(void);
-static void MP3_quit(void);
-static int MP3_open(Sound_Sample *sample, const char *ext);
-static void MP3_close(Sound_Sample *sample);
-static Uint32 MP3_read(Sound_Sample *sample);
-static int MP3_rewind(Sound_Sample *sample);
-static int MP3_seek(Sound_Sample *sample, Uint32 ms);
-
-/* dr_mp3 will play layer 1 and 2 files, too */
-static const char *extensions_mp3[] = { "MP3", "MP2", "MP1", NULL };
-
-const Sound_DecoderFunctions __Sound_DecoderFunctions_MP3 =
-{
-    {
-        extensions_mp3,
-        "MPEG-1 Audio Layer I-III",
-        "Ryan C. Gordon <icculus@icculus.org>",
-        "https://icculus.org/SDL_sound/"
-    },
-
-    MP3_init,       /*   init() method */
-    MP3_quit,       /*   quit() method */
-    MP3_open,       /*   open() method */
-    MP3_close,      /*  close() method */
-    MP3_read,       /*   read() method */
-    MP3_rewind,     /* rewind() method */
-    MP3_seek        /*   seek() method */
-};
-
 static size_t mp3_read(void* pUserData, void* pBufferOut, size_t bytesToRead)
 {
     Uint8 *ptr = (Uint8 *) pBufferOut;
@@ -186,6 +157,26 @@ static int MP3_seek(Sound_Sample *sample, Uint32 ms)
     const drmp3_uint64 frame_offset = (drmp3_uint64) (frames_per_ms * ((float) ms));
     return (drmp3_seek_to_frame(dr, frame_offset) == DRMP3_TRUE);
 } /* MP3_seek */
+
+/* dr_mp3 will play layer 1 and 2 files, too */
+static const char *extensions_mp3[] = { "MP3", "MP2", "MP1", NULL };
+const Sound_DecoderFunctions __Sound_DecoderFunctions_MP3 =
+{
+    {
+        extensions_mp3,
+        "MPEG-1 Audio Layer I-III",
+        "Ryan C. Gordon <icculus@icculus.org>",
+        "https://icculus.org/SDL_sound/"
+    },
+
+    MP3_init,       /*   init() method */
+    MP3_quit,       /*   quit() method */
+    MP3_open,       /*   open() method */
+    MP3_close,      /*  close() method */
+    MP3_read,       /*   read() method */
+    MP3_rewind,     /* rewind() method */
+    MP3_seek        /*   seek() method */
+};
 
 #endif /* SOUND_SUPPORTS_MP3 */
 
