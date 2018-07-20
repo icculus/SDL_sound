@@ -50,7 +50,6 @@ sdlsound_decoder_option(FLAC "Free Lossless Audio Codec" ".FLAC")
 sdlsound_decoder_option(VORBIS "Ogg Vorbis" ".OGG")
 sdlsound_decoder_option(RAW "raw PCM audio" ".RAW")
 sdlsound_decoder_option(SHN "Shorten" ".SHN")
-sdlsound_decoder_option(SPEEX "Speex" ".SPEEX")
 sdlsound_decoder_option(MODPLUG "ModPlug" "various tracker formats")
 sdlsound_decoder_option(MP3 "MPEG-1 Layers I-III" ".MP3, .MP2, .MP1")
 
@@ -112,7 +111,6 @@ set(SDLSOUND_SRCS
     src/SDL_sound_mp3.c
     src/SDL_sound_raw.c
     src/SDL_sound_shn.c
-    src/SDL_sound_speex.c
     src/SDL_sound_voc.c
     src/SDL_sound_vorbis.c
     src/SDL_sound_wav.c
@@ -231,7 +229,6 @@ message_bool_option("FLAC support" SDLSOUND_DECODER_FLAC)
 message_bool_option("VORBIS support" SDLSOUND_DECODER_VORBIS)
 message_bool_option("RAW support" SDLSOUND_DECODER_RAW)
 message_bool_option("SHN support" SDLSOUND_DECODER_SHN)
-message_bool_option("SPEEX support" SDLSOUND_DECODER_SPEEX)
 message_bool_option("MODPLUG support" SDLSOUND_DECODER_MODPLUG)
 message_bool_option("MP3 support" SDLSOUND_DECODER_MP3)
 message_bool_option("COREAUDIO support" SDLSOUND_DECODER_COREAUDIO)

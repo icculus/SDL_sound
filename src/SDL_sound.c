@@ -30,7 +30,6 @@ extern const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_SHN;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_FLAC;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_QuickTime;
-extern const Sound_DecoderFunctions __Sound_DecoderFunctions_SPEEX;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_CoreAudio;
 
 typedef struct
@@ -70,9 +69,6 @@ static decoder_element decoders[] =
 #endif
 #if SOUND_SUPPORTS_FLAC
     { 0, &__Sound_DecoderFunctions_FLAC },
-#endif
-#if SOUND_SUPPORTS_SPEEX
-    { 0, &__Sound_DecoderFunctions_SPEEX },
 #endif
 #if SOUND_SUPPORTS_COREAUDIO
     { 0, &__Sound_DecoderFunctions_CoreAudio },
