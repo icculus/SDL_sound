@@ -83,57 +83,15 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MODPLUG =
 };
 
 
-static ModPlug_Settings settings;
-static Sound_AudioInfo current_audioinfo;
-static unsigned int total_mods_decoding = 0;
-static SDL_mutex *modplug_mutex = NULL;
-
 static int MODPLUG_init(void)
 {
-    SDL_assert(modplug_mutex == NULL);
-
-        /*
-         * The settings will require some experimenting. I've borrowed some
-         *  of them from the XMMS ModPlug plugin.
-         */
-    settings.mFlags = MODPLUG_ENABLE_OVERSAMPLING;
-    settings.mFlags |= MODPLUG_ENABLE_NOISE_REDUCTION |
-                       MODPLUG_ENABLE_MEGABASS |
-                       MODPLUG_ENABLE_SURROUND;
-
-    settings.mReverbDepth = 30;
-    settings.mReverbDelay = 100;
-    settings.mBassAmount = 40;
-    settings.mBassRange = 30;
-    settings.mSurroundDepth = 20;
-    settings.mSurroundDelay = 20;
-    settings.mChannels = 2;
-    settings.mBits = 16;
-    settings.mFrequency = 44100;
-    settings.mResamplingMode = MODPLUG_RESAMPLE_FIR;
-    settings.mLoopCount = 0;
-
-    current_audioinfo.channels = 2;
-    current_audioinfo.rate = 44100;
-    current_audioinfo.format = AUDIO_S16SYS;
-    total_mods_decoding = 0;
-
-    modplug_mutex = SDL_CreateMutex();
-
-    ModPlug_SetSettings(&settings);
-    return 1;  /* success. */
+    return ModPlug_Init();  /* success. */
 } /* MODPLUG_init */
 
 
 static void MODPLUG_quit(void)
 {
-    SDL_assert(total_mods_decoding == 0);
-
-    if (modplug_mutex != NULL)
-    {
-        SDL_DestroyMutex(modplug_mutex);
-        modplug_mutex = NULL;
-    } /* if */
+    /* it's a no-op. */
 } /* MODPLUG_quit */
 
 
@@ -145,6 +103,7 @@ static void MODPLUG_quit(void)
 
 static int MODPLUG_open(Sound_Sample *sample, const char *ext)
 {
+    ModPlug_Settings settings;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     ModPlugFile *module;
     Uint8 *data;
@@ -172,10 +131,8 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
         BAIL_MACRO("MODPLUG: Not a module file.", 0);
     } /* if */
     
-        /*
-         * ModPlug needs the entire stream in one big chunk. I don't like it,
-         *  but I don't think there's any way around it.
-         */
+    /* ModPlug needs the entire stream in one big chunk. I don't like it,
+       but I don't think there's any way around it.  !!! FIXME: rework modplug? */
     data = (Uint8 *) SDL_malloc(CHUNK_SIZE);
     BAIL_IF_MACRO(data == NULL, ERR_OUT_OF_MEMORY, 0);
     size = 0;
@@ -191,54 +148,39 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
         } /* if */
     } while (retval > 0);
 
-        /*
-         * It's only safe to change these settings when there're
-         *  no other mods being decoded...
-         */
-    if (modplug_mutex != NULL)
-        SDL_LockMutex(modplug_mutex);
+    SDL_memcpy(&sample->actual, &sample->desired, sizeof (Sound_AudioInfo));
+    if (sample->actual.rate == 0) sample->actual.rate = 44100;
+    if (sample->actual.channels == 0) sample->actual.channels = 2;
+    if (sample->actual.format == 0) sample->actual.format = AUDIO_S16SYS;
 
-    if (total_mods_decoding > 0)
-    {
-        /* other mods decoding: use the same settings they are. */
-        SDL_memcpy(&sample->actual, &current_audioinfo, sizeof (Sound_AudioInfo));
-    } /* if */
-    else
-    {
-        /* no other mods decoding: define the new ModPlug output settings. */
-        SDL_memcpy(&sample->actual, &sample->desired, sizeof (Sound_AudioInfo));
-        if (sample->actual.rate == 0)
-            sample->actual.rate = 44100;
-        if (sample->actual.channels == 0)
-            sample->actual.channels = 2;
-        if (sample->actual.format == 0)
-            sample->actual.format = AUDIO_S16SYS;
+    settings.mChannels=sample->actual.channels;
+    settings.mFrequency=sample->actual.rate;
+    settings.mBits = sample->actual.format & 0xFF;
 
-        SDL_memcpy(&current_audioinfo, &sample->actual, sizeof (Sound_AudioInfo));
-        settings.mChannels=sample->actual.channels;
-        settings.mFrequency=sample->actual.rate;
-        settings.mBits = sample->actual.format & 0xFF;
-        ModPlug_SetSettings(&settings);
-    } /* else */
+    /* The settings will require some experimenting. I've borrowed some
+        of them from the XMMS ModPlug plugin. */
+    settings.mFlags = MODPLUG_ENABLE_OVERSAMPLING;
+    settings.mFlags |= MODPLUG_ENABLE_NOISE_REDUCTION |
+                       MODPLUG_ENABLE_MEGABASS |
+                       MODPLUG_ENABLE_SURROUND;
 
-        /*
-         * The buffer may be a bit too large, but that doesn't matter. I think
-         *  it's safe to free it as soon as ModPlug_Load() is finished anyway.
-         */
-    module = ModPlug_Load((void *) data, size);
+    settings.mReverbDepth = 30;
+    settings.mReverbDelay = 100;
+    settings.mBassAmount = 40;
+    settings.mBassRange = 30;
+    settings.mSurroundDepth = 20;
+    settings.mSurroundDelay = 20;
+    settings.mChannels = 2;
+    settings.mBits = 16;
+    settings.mFrequency = 44100;
+    settings.mResamplingMode = MODPLUG_RESAMPLE_FIR;
+    settings.mLoopCount = 0;
+
+    /* The buffer may be a bit too large, but that doesn't matter. I think
+       it's safe to free it as soon as ModPlug_Load() is finished anyway. */
+    module = ModPlug_Load((void *) data, size, &settings);
     SDL_free(data);
-    if (module == NULL)
-    {
-        if (modplug_mutex != NULL)
-            SDL_UnlockMutex(modplug_mutex);
-
-        BAIL_MACRO("MODPLUG: Not a module file.", 0);
-    } /* if */
-
-    total_mods_decoding++;
-
-    if (modplug_mutex != NULL)
-        SDL_UnlockMutex(modplug_mutex);
+    BAIL_IF_MACRO(module == NULL, "MODPLUG: Not a module file.", 0);
 
     internal->total_time = ModPlug_GetLength(module);
     internal->decoder_private = (void *) module;
@@ -253,15 +195,6 @@ static void MODPLUG_close(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     ModPlugFile *module = (ModPlugFile *) internal->decoder_private;
-
-    if (modplug_mutex != NULL)
-        SDL_LockMutex(modplug_mutex);
-
-    total_mods_decoding--;
-
-    if (modplug_mutex != NULL)
-        SDL_UnlockMutex(modplug_mutex);
-
     ModPlug_Unload(module);
 } /* MODPLUG_close */
 
@@ -271,7 +204,6 @@ static Uint32 MODPLUG_read(Sound_Sample *sample)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     ModPlugFile *module = (ModPlugFile *) internal->decoder_private;
     int retval;
-
     retval = ModPlug_Read(module, internal->buffer, internal->buffer_size);
     if (retval == 0)
         sample->flags |= SOUND_SAMPLEFLAG_EOF;
@@ -283,7 +215,6 @@ static int MODPLUG_rewind(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     ModPlugFile *module = (ModPlugFile *) internal->decoder_private;
-
     ModPlug_Seek(module, 0);
     return 1;
 } /* MODPLUG_rewind */
@@ -293,8 +224,6 @@ static int MODPLUG_seek(Sound_Sample *sample, Uint32 ms)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     ModPlugFile *module = (ModPlugFile *) internal->decoder_private;
-
-        /* Assume that this will work. */
     ModPlug_Seek(module, ms);
     return 1;
 } /* MODPLUG_seek */

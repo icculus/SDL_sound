@@ -24,7 +24,7 @@ DWORD CSoundFile_CutOffToFrequency(CSoundFile *_this, UINT nCutOff, int flt_modi
 	LONG freq = (LONG)Fc;
 	if (freq < 120) return 120;
 	if (freq > 10000) return 10000;
-	if (freq*2 > (LONG)CSoundFile_gdwMixingFreq) freq = CSoundFile_gdwMixingFreq>>1;
+	if (freq*2 > (LONG)_this->gdwMixingFreq) freq = _this->gdwMixingFreq>>1;
 	return (DWORD)freq;
 }
 
@@ -34,7 +34,7 @@ void CSoundFile_SetupChannelFilter(CSoundFile *_this, MODCHANNEL *pChn, BOOL bRe
 //----------------------------------------------------------------------------------------
 {
 	float fc = (float)CSoundFile_CutOffToFrequency(_this, pChn->nCutOff, flt_modifier);
-	float fs = (float)CSoundFile_gdwMixingFreq;
+	float fs = (float)_this->gdwMixingFreq;
 	float fg, fb0, fb1;
 
 	fc *= (float)(2.0*3.14159265358/fs);

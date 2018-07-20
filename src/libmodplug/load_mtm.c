@@ -11,7 +11,6 @@
 
 #pragma pack(1)
 
-
 typedef struct tagMTMSAMPLE
 {
         char samplename[22];      // changed from CHAR
@@ -38,7 +37,6 @@ typedef struct tagMTMHEADER
 	BYTE numchannels;   // number of channels used
 	BYTE panpos[32];    // voice pan positions
 } MTMHEADER;
-
 
 #pragma pack()
 

@@ -386,6 +386,46 @@ typedef const BYTE * LPCBYTE;
 #define SNDMIX_NOBACKWARDJUMPS	0x40000
 #define SNDMIX_MAXDEFAULTPAN	0x80000	// Used by the MOD loader
 
+// Delayed Surround Filters
+#define nDolbyHiFltAttn		6
+#define nDolbyHiFltMask		3
+#define DOLBYATTNROUNDUP	31
+
+// Bass Expansion
+#define XBASS_DELAY			14	// 2.5 ms
+
+// Buffer Sizes
+#define XBASSBUFFERSIZE		64		// 2 ms at 50KHz
+#define FILTERBUFFERSIZE	64		// 1.25 ms
+#define SURROUNDBUFFERSIZE	((MAX_SAMPLE_RATE * 50) / 1000)
+#define REVERBBUFFERSIZE	((MAX_SAMPLE_RATE * 200) / 1000)
+#define REVERBBUFFERSIZE2	((REVERBBUFFERSIZE*13) / 17)
+#define REVERBBUFFERSIZE3	((REVERBBUFFERSIZE*7) / 13)
+#define REVERBBUFFERSIZE4	((REVERBBUFFERSIZE*7) / 19)
+
+#define MIXBUFFERSIZE		512
+#define MIXING_ATTENUATION	4
+#define MIXING_CLIPMIN		(-0x08000000)
+#define MIXING_CLIPMAX		(0x07FFFFFF)
+#define VOLUMERAMPPRECISION	12
+#define FADESONGDELAY		100
+#define EQ_BUFFERSIZE		(MIXBUFFERSIZE)
+#define AGC_PRECISION		9
+#define AGC_UNITY			(1 << AGC_PRECISION)
+
+#define MPPASMCALL
+#define MPPFASTCALL
+
+#define MOD2XMFineTune(k)	((int)( (signed char)((k)<<4) ))
+#define XM2MODFineTune(k)	((int)( (k>>4)&0x0f ))
+
+int _muldiv(long a, long b, long c);
+int _muldivr(long a, long b, long c);
+
+#define bswapLE16(X) SDL_SwapLE16((X))
+#define bswapLE32(X) SDL_SwapLE32((X))
+#define bswapBE16(X) SDL_SwapBE16((X))
+#define bswapBE32(X) SDL_SwapBE32((X))
 
 // Reverb Types (GM2 Presets)
 enum {
@@ -580,16 +620,6 @@ typedef struct MODMIDICFG
 
 #define NOTE_MAX                        120 //Defines maximum notevalue as well as maximum number of notes.
 
-
-//public:	// Static Members
-extern UINT CSoundFile_m_nXBassDepth, CSoundFile_m_nXBassRange;
-extern UINT CSoundFile_m_nReverbDepth, CSoundFile_m_nReverbDelay;
-extern UINT CSoundFile_m_nProLogicDepth, CSoundFile_m_nProLogicDelay;
-extern UINT CSoundFile_m_nStereoSeparation;
-extern UINT CSoundFile_m_nMaxMixChannels;
-extern DWORD CSoundFile_gdwSoundSetup, CSoundFile_gdwMixingFreq, CSoundFile_gnBitsPerSample, CSoundFile_gnChannels;
-extern UINT CSoundFile_gnVolumeRampSamples;
-
 typedef struct CSoundFile
 {
 	MODCHANNEL Chn[MAX_CHANNELS];					// Channels
@@ -617,10 +647,84 @@ typedef struct CSoundFile
 	UINT m_nPatternNames;
 	LPSTR m_lpszPatternNames;
 	CHAR CompressionTable[16];
+	UINT m_nXBassDepth, m_nXBassRange;
+	UINT m_nReverbDepth, m_nReverbDelay;
+	UINT m_nProLogicDepth, m_nProLogicDelay;
+	UINT m_nStereoSeparation;
+	UINT m_nMaxMixChannels;
+	DWORD gdwSoundSetup, gdwMixingFreq, gnBitsPerSample, gnChannels;
+	UINT gnVolumeRampSamples;
+    UINT gSampleSize;
+    int MixSoundBuffer[MIXBUFFERSIZE*4];
+    #ifndef MODPLUG_NO_REVERB
+    int MixReverbBuffer[MIXBUFFERSIZE*2];
+    UINT gnReverbSend;
+    #endif
+    int MixRearBuffer[MIXBUFFERSIZE*2];
+    float MixFloatBuffer[MIXBUFFERSIZE*2];
+
+    // Bass Expansion: low-pass filter
+    LONG nXBassSum;
+    LONG nXBassBufferPos;
+    LONG nXBassDlyPos;
+    LONG nXBassMask;
+
+    // Noise Reduction: simple low-pass filter
+    LONG nLeftNR;
+    LONG nRightNR;
+
+    // Surround Encoding: 1 delay line + low-pass filter + high-pass filter
+    LONG nSurroundSize;
+    LONG nSurroundPos;
+    LONG nDolbyDepth;
+    LONG nDolbyLoDlyPos;
+    LONG nDolbyLoFltPos;
+    LONG nDolbyLoFltSum;
+    LONG nDolbyHiFltPos;
+    LONG nDolbyHiFltSum;
+
+    // Reverb: 4 delay lines + high-pass filter + low-pass filter
+    #ifndef MODPLUG_NO_REVERB
+    LONG nReverbSize;
+    LONG nReverbBufferPos;
+    LONG nReverbSize2;
+    LONG nReverbBufferPos2;
+    LONG nReverbSize3;
+    LONG nReverbBufferPos3;
+    LONG nReverbSize4;
+    LONG nReverbBufferPos4;
+    LONG nReverbLoFltSum;
+    LONG nReverbLoFltPos;
+    LONG nReverbLoDlyPos;
+    LONG nFilterAttn;
+    LONG gRvbLowPass[8];
+    LONG gRvbLPPos;
+    LONG gRvbLPSum;
+    LONG ReverbLoFilterBuffer[XBASSBUFFERSIZE];
+    LONG ReverbLoFilterDelay[XBASSBUFFERSIZE];
+    LONG ReverbBuffer[REVERBBUFFERSIZE];
+    LONG ReverbBuffer2[REVERBBUFFERSIZE2];
+    LONG ReverbBuffer3[REVERBBUFFERSIZE3];
+    LONG ReverbBuffer4[REVERBBUFFERSIZE4];
+    #endif
+
+    LONG XBassBuffer[XBASSBUFFERSIZE];
+    LONG XBassDelay[XBASSBUFFERSIZE];
+    LONG DolbyLoFilterBuffer[XBASSBUFFERSIZE];
+    LONG DolbyLoFilterDelay[XBASSBUFFERSIZE];
+    LONG DolbyHiFilterBuffer[FILTERBUFFERSIZE];
+    LONG SurroundBuffer[SURROUNDBUFFERSIZE];
+    LONG gnDryROfsVol;
+    LONG gnDryLOfsVol;
+    LONG gnRvbROfsVol;
+    LONG gnRvbLOfsVol;
+    int gbInitPlugins;
 } CSoundFile;
 
-	CSoundFile *CSoundFile_Create(CSoundFile *retval, LPCBYTE lpStream, DWORD dwMemLength);
-	void CSoundFile_Destroy(CSoundFile *_this);
+typedef struct _ModPlug_Settings ModPlug_Settings;
+CSoundFile *new_CSoundFile(LPCBYTE lpStream, DWORD dwMemLength, const ModPlug_Settings *settings);
+void delete_CSoundFile(CSoundFile *_this);
+
 	UINT CSoundFile_GetMaxPosition(CSoundFile *_this);
 	void CSoundFile_SetCurrentPos(CSoundFile *_this, UINT nPos);
 	DWORD CSoundFile_GetLength(CSoundFile *_this, BOOL bAdjust, BOOL bTotal);
@@ -669,23 +773,23 @@ typedef struct CSoundFile
 	BOOL CSoundFile_GlobalFadeSong(CSoundFile *_this, UINT msec);
 
 	// Mixer Config
-	BOOL CSoundFile_InitPlayer(BOOL bReset);
-	BOOL CSoundFile_SetMixConfig(UINT nStereoSeparation, UINT nMaxMixChannels);
-	BOOL CSoundFile_SetWaveConfig(UINT nRate,UINT nBits,UINT nChannels);
-	BOOL CSoundFile_SetResamplingMode(UINT nMode); // SRCMODE_XXXX
+	BOOL CSoundFile_InitPlayer(CSoundFile *_this, BOOL bReset);
+	BOOL CSoundFile_SetMixConfig(CSoundFile *_this, UINT nStereoSeparation, UINT nMaxMixChannels);
+	BOOL CSoundFile_SetWaveConfig(CSoundFile *_this, UINT nRate,UINT nBits,UINT nChannels);
+	BOOL CSoundFile_SetResamplingMode(CSoundFile *_this, UINT nMode); // SRCMODE_XXXX
 	DWORD CSoundFile_InitSysInfo(CSoundFile *_this);
 
 	//GCCFIX -- added these functions back in!
-	BOOL CSoundFile_SetWaveConfigEx(BOOL bSurround,BOOL bNoOverSampling,BOOL bReverb,BOOL hqido,BOOL bMegaBass,BOOL bNR,BOOL bEQ);
+	BOOL CSoundFile_SetWaveConfigEx(CSoundFile *_this, BOOL bSurround,BOOL bNoOverSampling,BOOL bReverb,BOOL hqido,BOOL bMegaBass,BOOL bNR,BOOL bEQ);
 	// DSP Effects
-	void CSoundFile_InitializeDSP(BOOL bReset);
-	void CSoundFile_ProcessStereoDSP(int count);
+	void CSoundFile_InitializeDSP(CSoundFile *_this, BOOL bReset);
+	void CSoundFile_ProcessStereoDSP(CSoundFile *_this, int count);
 	// [Reverb level 0(quiet)-100(loud)], [delay in ms, usually 40-200ms]
-	BOOL CSoundFile_SetReverbParameters(UINT nDepth, UINT nDelay);
+	BOOL CSoundFile_SetReverbParameters(CSoundFile *_this, UINT nDepth, UINT nDelay);
 	// [XBass level 0(quiet)-100(loud)], [cutoff in Hz 10-100]
-	BOOL CSoundFile_SetXBassParameters(UINT nDepth, UINT nRange);
+	BOOL CSoundFile_SetXBassParameters(CSoundFile *_this, UINT nDepth, UINT nRange);
 	// [Surround level 0(quiet)-100(heavy)] [delay in ms, usually 5-40ms]
-	BOOL CSoundFile_SetSurroundParameters(UINT nDepth, UINT nDelay);
+	BOOL CSoundFile_SetSurroundParameters(CSoundFile *_this, UINT nDepth, UINT nDelay);
 
 	BOOL CSoundFile_ReadNote(CSoundFile *_this);
 	BOOL CSoundFile_ProcessRow(CSoundFile *_this);
@@ -765,38 +869,6 @@ typedef struct CSoundFile
 	UINT CSoundFile_Normalize24BitBuffer(LPBYTE pbuffer, UINT cbsizebytes, DWORD lmax24, DWORD dwByteInc);
 
 
-///////////////////////////////////////////////////////////
-// Low-level Mixing functions
-
-#define MIXBUFFERSIZE		512
-#define MIXING_ATTENUATION	4
-#define MIXING_CLIPMIN		(-0x08000000)
-#define MIXING_CLIPMAX		(0x07FFFFFF)
-#define VOLUMERAMPPRECISION	12
-#define FADESONGDELAY		100
-#define EQ_BUFFERSIZE		(MIXBUFFERSIZE)
-#define AGC_PRECISION		9
-#define AGC_UNITY			(1 << AGC_PRECISION)
-
-// Calling conventions
-#ifdef MSC_VER
-#define MPPASMCALL	__cdecl
-#define MPPFASTCALL	__fastcall
-#else
-#define MPPASMCALL
-#define MPPFASTCALL
-#endif
-
-#define MOD2XMFineTune(k)	((int)( (signed char)((k)<<4) ))
-#define XM2MODFineTune(k)	((int)( (k>>4)&0x0f ))
-
-int _muldiv(long a, long b, long c);
-int _muldivr(long a, long b, long c);
-
-#define bswapLE16(X) SDL_SwapLE16((X))
-#define bswapLE32(X) SDL_SwapLE32((X))
-#define bswapBE16(X) SDL_SwapBE16((X))
-#define bswapBE32(X) SDL_SwapBE32((X))
 
 #pragma pack(1)
 

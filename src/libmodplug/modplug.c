@@ -7,133 +7,50 @@
 #include "modplug.h"
 #include "libmodplug.h"
 
-typedef struct _ModPlugFile
-{
-	CSoundFile mSoundFile;
-} _ModPlugFile;
+void ModPlug_Quit(void) { /* does nothing. */ }
 
-	static ModPlug_Settings gSettings =
-	{
-		MODPLUG_ENABLE_OVERSAMPLING | MODPLUG_ENABLE_NOISE_REDUCTION,
-
-		2, // mChannels
-		16, // mBits
-		44100, // mFrequency
-		MODPLUG_RESAMPLE_LINEAR, //mResamplingMode
-
-		128, // mStereoSeparation
-		32, // mMaxMixChannels
-		0,
-		0,
-		0,
-		0,
-		0,
-		0,
-		0
-	};
-
-	static int gSampleSize;
-
-	static void ModPlug_UpdateSettings(int updateBasicConfig)
-	{
-		if(gSettings.mFlags & MODPLUG_ENABLE_REVERB)
-		{
-			CSoundFile_SetReverbParameters(gSettings.mReverbDepth,
-			                                gSettings.mReverbDelay);
-		}
-
-		if(gSettings.mFlags & MODPLUG_ENABLE_MEGABASS)
-		{
-			CSoundFile_SetXBassParameters(gSettings.mBassAmount,
-			                               gSettings.mBassRange);
-		}
-		else // modplug seems to ignore the SetWaveConfigEx() setting for bass boost
-			CSoundFile_SetXBassParameters(0, 0);
-
-		if(gSettings.mFlags & MODPLUG_ENABLE_SURROUND)
-		{
-			CSoundFile_SetSurroundParameters(gSettings.mSurroundDepth,
-			                                  gSettings.mSurroundDelay);
-		}
-
-		if(updateBasicConfig)
-		{
-			CSoundFile_SetWaveConfig(gSettings.mFrequency,
-                                                  gSettings.mBits,
-			                          gSettings.mChannels);
-			CSoundFile_SetMixConfig(gSettings.mStereoSeparation,
-                                                 gSettings.mMaxMixChannels);
-
-			gSampleSize = gSettings.mBits / 8 * gSettings.mChannels;
-		}
-
-		CSoundFile_SetWaveConfigEx(gSettings.mFlags & MODPLUG_ENABLE_SURROUND,
-		                            !(gSettings.mFlags & MODPLUG_ENABLE_OVERSAMPLING),
-		                            gSettings.mFlags & MODPLUG_ENABLE_REVERB,
-		                            TRUE,
-		                            gSettings.mFlags & MODPLUG_ENABLE_MEGABASS,
-		                            gSettings.mFlags & MODPLUG_ENABLE_NOISE_REDUCTION,
-		                            FALSE);
-		CSoundFile_SetResamplingMode(gSettings.mResamplingMode);
-	}
-
-
-ModPlugFile* ModPlug_Load(const void* data, int size)
+int ModPlug_Init(void)
 {
     extern void init_modplug_filters(void);
     init_modplug_filters();
+    return 1;
+}
 
-	ModPlugFile* result = (ModPlugFile *) SDL_malloc(sizeof (ModPlugFile));
-    if (!result) return NULL;
-	ModPlug_UpdateSettings(TRUE);
-	if(CSoundFile_Create(&result->mSoundFile, (const BYTE*)data, size))
-	{
-		CSoundFile_SetRepeatCount(&result->mSoundFile, gSettings.mLoopCount);
-		return result;
-	}
-	else
-	{
-		SDL_free(result);
-		return NULL;
-	}
+ModPlugFile* ModPlug_Load(const void* data, int size, const ModPlug_Settings *settings)
+{
+	return (ModPlugFile *) new_CSoundFile((const BYTE*)data, size, settings);
 }
 
 void ModPlug_Unload(ModPlugFile* file)
 {
-	CSoundFile_Destroy(&file->mSoundFile);
-	SDL_free(file);
+	delete_CSoundFile((CSoundFile *) file);
 }
 
 int ModPlug_Read(ModPlugFile* file, void* buffer, int size)
 {
-	return CSoundFile_Read(&file->mSoundFile, buffer, size) * gSampleSize;
+    CSoundFile *sndfile = (CSoundFile *) file;
+	return CSoundFile_Read(sndfile, buffer, size) * sndfile->gSampleSize;
 }
 
 int ModPlug_GetLength(ModPlugFile* file)
 {
-	return CSoundFile_GetLength(&file->mSoundFile, FALSE, TRUE) * 1000;
+	return CSoundFile_GetLength((CSoundFile *) file, FALSE, TRUE) * 1000;
 }
 
 void ModPlug_Seek(ModPlugFile* file, int millisecond)
 {
 	int maxpos;
-	int maxtime = CSoundFile_GetLength(&file->mSoundFile, FALSE, TRUE) * 1000;
+	int maxtime = CSoundFile_GetLength((CSoundFile *) file, FALSE, TRUE) * 1000;
 	float postime;
 
 	if(millisecond > maxtime)
 		millisecond = maxtime;
-	maxpos = CSoundFile_GetMaxPosition(&file->mSoundFile);
+	maxpos = CSoundFile_GetMaxPosition((CSoundFile *) file);
 	postime = 0.0f;
 	if (maxtime != 0.0f)
 		postime = (float)maxpos / (float)maxtime;
 
-	CSoundFile_SetCurrentPos(&file->mSoundFile, (int)(millisecond * postime));
-}
-
-void ModPlug_SetSettings(const ModPlug_Settings* settings)
-{
-	SDL_memcpy(&gSettings, settings, sizeof(ModPlug_Settings));
-	ModPlug_UpdateSettings(FALSE); // do not update basic config.
+	CSoundFile_SetCurrentPos((CSoundFile *) file, (int)(millisecond * postime));
 }
 
 // inefficient, but oh well.

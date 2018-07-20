@@ -16,29 +16,6 @@ extern "C" {
 struct _ModPlugFile;
 typedef struct _ModPlugFile ModPlugFile;
 
-/* Load a mod file.  [data] should point to a block of memory containing the complete
- * file, and [size] should be the size of that block.
- * Return the loaded mod file on success, or NULL on failure. */
-MODPLUG_EXPORT ModPlugFile* ModPlug_Load(const void* data, int size);
-/* Unload a mod file. */
-MODPLUG_EXPORT void ModPlug_Unload(ModPlugFile* file);
-
-/* Read sample data into the buffer.  Returns the number of bytes read.  If the end
- * of the mod has been reached, zero is returned. */
-MODPLUG_EXPORT int  ModPlug_Read(ModPlugFile* file, void* buffer, int size);
-
-/* Get the length of the mod, in milliseconds.  Note that this result is not always
- * accurate, especially in the case of mods with loops. */
-MODPLUG_EXPORT int ModPlug_GetLength(ModPlugFile* file);
-
-/* Seek to a particular position in the song.  Note that seeking and MODs don't mix very
- * well.  Some mods will be missing instruments for a short time after a seek, as ModPlug
- * does not scan the sequence backwards to find out which instruments were supposed to be
- * playing at that time.  (Doing so would be difficult and not very reliable.)  Also,
- * note that seeking is not very exact in some mods -- especially those for which
- * ModPlug_GetLength() does not report the full length. */
-MODPLUG_EXPORT void ModPlug_Seek(ModPlugFile* file, int millisecond);
-
 enum _ModPlug_Flags
 {
 	MODPLUG_ENABLE_OVERSAMPLING     = 1 << 0,  /* Enable oversampling (*highly* recommended) */
@@ -80,10 +57,31 @@ typedef struct _ModPlug_Settings
 	                        -1 loops forever. */
 } ModPlug_Settings;
 
-/* Get and set the mod decoder settings.  All options, except for channels, bits-per-sample,
- * sampling rate, and loop count, will take effect immediately.  Those options which don't
- * take effect immediately will take effect the next time you load a mod. */
-MODPLUG_EXPORT void ModPlug_SetSettings(const ModPlug_Settings* settings);
+int ModPlug_Init(void);
+void ModPlug_Quit(void);
+
+/* Load a mod file.  [data] should point to a block of memory containing the complete
+ * file, and [size] should be the size of that block.
+ * Return the loaded mod file on success, or NULL on failure. */
+MODPLUG_EXPORT ModPlugFile* ModPlug_Load(const void* data, int size, const ModPlug_Settings *settings);
+/* Unload a mod file. */
+MODPLUG_EXPORT void ModPlug_Unload(ModPlugFile* file);
+
+/* Read sample data into the buffer.  Returns the number of bytes read.  If the end
+ * of the mod has been reached, zero is returned. */
+MODPLUG_EXPORT int  ModPlug_Read(ModPlugFile* file, void* buffer, int size);
+
+/* Get the length of the mod, in milliseconds.  Note that this result is not always
+ * accurate, especially in the case of mods with loops. */
+MODPLUG_EXPORT int ModPlug_GetLength(ModPlugFile* file);
+
+/* Seek to a particular position in the song.  Note that seeking and MODs don't mix very
+ * well.  Some mods will be missing instruments for a short time after a seek, as ModPlug
+ * does not scan the sequence backwards to find out which instruments were supposed to be
+ * playing at that time.  (Doing so would be difficult and not very reliable.)  Also,
+ * note that seeking is not very exact in some mods -- especially those for which
+ * ModPlug_GetLength() does not report the full length. */
+MODPLUG_EXPORT void ModPlug_Seek(ModPlugFile* file, int millisecond);
 
 #ifdef __cplusplus
 } /* extern "C" */

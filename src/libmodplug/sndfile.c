@@ -6,6 +6,7 @@
 */
 
 #include <math.h> //for GCCFIX
+#include "modplug.h"
 #include "libmodplug.h"
 
 extern BOOL MMCMP_Unpack(LPCBYTE *ppMemFile, LPDWORD pdwMemLength);
@@ -36,12 +37,53 @@ static const signed char UnpackTable[MAX_PACK_TABLES][16] =
 };
 
 
-CSoundFile *CSoundFile_Create(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
+static void CSoundFile_UpdateSettings(CSoundFile *_this, const ModPlug_Settings *settings)
+{
+	if(settings->mFlags & MODPLUG_ENABLE_REVERB)
+		CSoundFile_SetReverbParameters(_this, settings->mReverbDepth, settings->mReverbDelay);
+
+	if(settings->mFlags & MODPLUG_ENABLE_MEGABASS)
+		CSoundFile_SetXBassParameters(_this, settings->mBassAmount, settings->mBassRange);
+	else // modplug seems to ignore the SetWaveConfigEx() setting for bass boost
+		CSoundFile_SetXBassParameters(_this, 0, 0);
+
+	if(settings->mFlags & MODPLUG_ENABLE_SURROUND)
+		CSoundFile_SetSurroundParameters(_this, settings->mSurroundDepth, settings->mSurroundDelay);
+
+	CSoundFile_SetWaveConfig(_this, settings->mFrequency, settings->mBits, settings->mChannels);
+	CSoundFile_SetMixConfig(_this, settings->mStereoSeparation, settings->mMaxMixChannels);
+	_this->gSampleSize = settings->mBits / 8 * settings->mChannels;
+
+	CSoundFile_SetWaveConfigEx(_this, settings->mFlags & MODPLUG_ENABLE_SURROUND,
+	                            !(settings->mFlags & MODPLUG_ENABLE_OVERSAMPLING),
+	                            settings->mFlags & MODPLUG_ENABLE_REVERB,
+	                            TRUE,
+	                            settings->mFlags & MODPLUG_ENABLE_MEGABASS,
+	                            settings->mFlags & MODPLUG_ENABLE_NOISE_REDUCTION,
+	                            FALSE);
+	CSoundFile_SetResamplingMode(_this, settings->mResamplingMode);
+}
+
+CSoundFile *new_CSoundFile(LPCBYTE lpStream, DWORD dwMemLength, const ModPlug_Settings *settings)
 //----------------------------------------------------------
 {
-    //CSoundFile *retval = (CSoundFile *) SDL_calloc(1, sizeof (CSoundFile));
-    //if (!retval) return NULL;
+    CSoundFile *_this = (CSoundFile *) SDL_calloc(1, sizeof (CSoundFile));
+    if (!_this) return NULL;
 	int i;
+
+    _this->m_nXBassDepth = 6;
+    _this->m_nXBassRange = XBASS_DELAY;
+    _this->m_nReverbDepth = 1;
+    _this->m_nReverbDelay = 100;
+    _this->m_nProLogicDepth = 12;
+    _this->m_nProLogicDelay = 20;
+    _this->m_nStereoSeparation = 128;
+    _this->m_nMaxMixChannels = 32;
+    _this->gnChannels = 1;
+    _this->gdwSoundSetup = 0;
+    _this->gdwMixingFreq = 44100;
+    _this->gnBitsPerSample = 16;
+    _this->gnVolumeRampSamples = 64;
 
 	_this->m_nFreqFactor = _this->m_nTempoFactor = 128;
 	_this->m_nMasterVolume = 128;
@@ -161,13 +203,15 @@ CSoundFile *CSoundFile_Create(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLe
 		UINT maxpreamp = 0x10+(_this->m_nChannels*8);
 		if (maxpreamp > 100) maxpreamp = 100;
 		if (_this->m_nSongPreAmp > maxpreamp) _this->m_nSongPreAmp = maxpreamp;
+        CSoundFile_UpdateSettings(_this, settings);
 		return _this;
 	}
+    SDL_free(_this);
 	return NULL;
 }
 
 
-void CSoundFile_Destroy(CSoundFile *_this)
+void delete_CSoundFile(CSoundFile *_this)
 {
 	int i;
 	for (i=0; i<MAX_PATTERNS; i++) if (_this->Patterns[i])
@@ -200,6 +244,8 @@ void CSoundFile_Destroy(CSoundFile *_this)
 	}
 	_this->m_nType = MOD_TYPE_NONE;
 	_this->m_nChannels = _this->m_nSamples = _this->m_nInstruments = 0;
+
+    SDL_free(_this);
 }
 
 
@@ -258,35 +304,35 @@ void CSoundFile_ResetMidiCfg(CSoundFile *_this)
 
 
 
-BOOL CSoundFile_SetWaveConfig(UINT nRate,UINT nBits,UINT nChannels)
+BOOL CSoundFile_SetWaveConfig(CSoundFile *_this, UINT nRate,UINT nBits,UINT nChannels)
 //----------------------------------------------------------------------------
 {
 	BOOL bReset = FALSE;
-	DWORD d = CSoundFile_gdwSoundSetup;
-	if ((CSoundFile_gdwMixingFreq != nRate) || (CSoundFile_gnBitsPerSample != nBits) || (CSoundFile_gnChannels != nChannels) || (d != CSoundFile_gdwSoundSetup)) bReset = TRUE;
-	CSoundFile_gnChannels = nChannels;
-	CSoundFile_gdwSoundSetup = d;
-	CSoundFile_gdwMixingFreq = nRate;
-	CSoundFile_gnBitsPerSample = nBits;
-	CSoundFile_InitPlayer(bReset);
+	DWORD d = _this->gdwSoundSetup;
+	if ((_this->gdwMixingFreq != nRate) || (_this->gnBitsPerSample != nBits) || (_this->gnChannels != nChannels) || (d != _this->gdwSoundSetup)) bReset = TRUE;
+	_this->gnChannels = nChannels;
+	_this->gdwSoundSetup = d;
+	_this->gdwMixingFreq = nRate;
+	_this->gnBitsPerSample = nBits;
+	CSoundFile_InitPlayer(_this, bReset);
 	return TRUE;
 }
 
-BOOL CSoundFile_SetMixConfig(UINT nStereoSeparation, UINT nMaxMixChannels)
+BOOL CSoundFile_SetMixConfig(CSoundFile *_this, UINT nStereoSeparation, UINT nMaxMixChannels)
 //-------------------------------------------------------------------------
 {
 	if (nMaxMixChannels < 2) return FALSE;
 
-	CSoundFile_m_nMaxMixChannels = nMaxMixChannels;
-	CSoundFile_m_nStereoSeparation = nStereoSeparation;
+	_this->m_nMaxMixChannels = nMaxMixChannels;
+	_this->m_nStereoSeparation = nStereoSeparation;
 	return TRUE;
 }
 
 
-BOOL CSoundFile_SetResamplingMode(UINT nMode)
+BOOL CSoundFile_SetResamplingMode(CSoundFile *_this, UINT nMode)
 //--------------------------------------------
 {
-	DWORD d = CSoundFile_gdwSoundSetup & ~(SNDMIX_NORESAMPLING|SNDMIX_HQRESAMPLER|SNDMIX_ULTRAHQSRCMODE);
+	DWORD d = _this->gdwSoundSetup & ~(SNDMIX_NORESAMPLING|SNDMIX_HQRESAMPLER|SNDMIX_ULTRAHQSRCMODE);
 	switch(nMode)
 	{
 	case SRCMODE_NEAREST:	d |= SNDMIX_NORESAMPLING; break;
@@ -296,7 +342,7 @@ BOOL CSoundFile_SetResamplingMode(UINT nMode)
 	default:
 		return FALSE;
 	}
-	CSoundFile_gdwSoundSetup = d;
+	_this->gdwSoundSetup = d;
 	return TRUE;
 }
 

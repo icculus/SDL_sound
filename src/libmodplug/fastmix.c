@@ -8,23 +8,6 @@
 #include "libmodplug.h"
 #include <math.h>
 
-// Front Mix Buffer (Also room for interleaved rear mix)
-int MixSoundBuffer[MIXBUFFERSIZE*4];
-
-// Reverb Mix Buffer
-#ifndef MODPLUG_NO_REVERB
-int MixReverbBuffer[MIXBUFFERSIZE*2];
-extern UINT gnReverbSend;
-#endif
-
-int MixRearBuffer[MIXBUFFERSIZE*2];
-float MixFloatBuffer[MIXBUFFERSIZE*2];
-
-extern LONG gnDryROfsVol;
-extern LONG gnDryLOfsVol;
-extern LONG gnRvbROfsVol;
-extern LONG gnRvbLOfsVol;
-
 // 4x256 taps polyphase FIR resampling filter
 extern short int gFastSinc[];
 extern short int gKaiserSinc[]; // 8-taps polyphase
@@ -1450,7 +1433,7 @@ UINT CSoundFile_CreateStereoMix(CSoundFile *_this, int count)
     UINT nrampsamples;
 
 	if (!count) return 0;
-	if (CSoundFile_gnChannels > 2) X86_InitMixBuffer(MixRearBuffer, count*2);
+	if (_this->gnChannels > 2) X86_InitMixBuffer(_this->MixRearBuffer, count*2);
 	nchused = nchmixed = 0;
 	for (UINT nChn=0; nChn<_this->m_nMixChannels; nChn++)
 	{
@@ -1463,8 +1446,8 @@ UINT CSoundFile_CreateStereoMix(CSoundFile *_this, int count)
 
 		if (!pChannel->pCurrentSample) continue;
 		nMasterCh = (_this->ChnMix[nChn] < _this->m_nChannels) ? _this->ChnMix[nChn]+1 : pChannel->nMasterChn;
-		pOfsR = &gnDryROfsVol;
-		pOfsL = &gnDryLOfsVol;
+		pOfsR = &_this->gnDryROfsVol;
+		pOfsL = &_this->gnDryLOfsVol;
 		nFlags = 0;
 		if (pChannel->dwFlags & CHN_16BIT) nFlags |= MIXNDX_16BIT;
 		if (pChannel->dwFlags & CHN_STEREO) nFlags |= MIXNDX_STEREO;
@@ -1474,10 +1457,10 @@ UINT CSoundFile_CreateStereoMix(CSoundFile *_this, int count)
 		if (!(pChannel->dwFlags & CHN_NOIDO))
 		{
 			// use hq-fir mixer?
-			if( (CSoundFile_gdwSoundSetup & (SNDMIX_HQRESAMPLER|SNDMIX_ULTRAHQSRCMODE)) == 
+			if( (_this->gdwSoundSetup & (SNDMIX_HQRESAMPLER|SNDMIX_ULTRAHQSRCMODE)) == 
 				(SNDMIX_HQRESAMPLER|SNDMIX_ULTRAHQSRCMODE) )
 				nFlags += MIXNDX_FIRSRC;
-			else if( (CSoundFile_gdwSoundSetup & (SNDMIX_HQRESAMPLER)) == SNDMIX_HQRESAMPLER )
+			else if( (_this->gdwSoundSetup & (SNDMIX_HQRESAMPLER)) == SNDMIX_HQRESAMPLER )
 				nFlags += MIXNDX_SPLINESRC;
 			else
 				nFlags += MIXNDX_LINEARSRC; // use
@@ -1492,16 +1475,16 @@ UINT CSoundFile_CreateStereoMix(CSoundFile *_this, int count)
 		}
 		nsamples = count;
 #ifndef MODPLUG_NO_REVERB
-		pbuffer = (CSoundFile_gdwSoundSetup & SNDMIX_REVERB) ? MixReverbBuffer : MixSoundBuffer;
-		if (pChannel->dwFlags & CHN_NOREVERB) pbuffer = MixSoundBuffer;
-		if (pChannel->dwFlags & CHN_REVERB) pbuffer = MixReverbBuffer;
-		if (pbuffer == MixReverbBuffer)
+		pbuffer = (_this->gdwSoundSetup & SNDMIX_REVERB) ? _this->MixReverbBuffer : _this->MixSoundBuffer;
+		if (pChannel->dwFlags & CHN_NOREVERB) pbuffer = _this->MixSoundBuffer;
+		if (pChannel->dwFlags & CHN_REVERB) pbuffer = _this->MixReverbBuffer;
+		if (pbuffer == _this->MixReverbBuffer)
 		{
-			if (!gnReverbSend) SDL_memset(MixReverbBuffer, 0, count * 8);
-			gnReverbSend += count;
+			if (!_this->gnReverbSend) SDL_memset(_this->MixReverbBuffer, 0, count * 8);
+			_this->gnReverbSend += count;
 		}
 #else
-		pbuffer = MixSoundBuffer;
+		pbuffer = _this->MixSoundBuffer;
 #endif
 		nchused++;
 		////////////////////////////////////////////////////
@@ -1528,7 +1511,7 @@ UINT CSoundFile_CreateStereoMix(CSoundFile *_this, int count)
 		}
 		// Should we mix this channel ?
 		UINT naddmix;
-		if (((nchmixed >= CSoundFile_m_nMaxMixChannels) && (!(CSoundFile_gdwSoundSetup & SNDMIX_DIRECTTODISK)))
+		if (((nchmixed >= _this->m_nMaxMixChannels) && (!(_this->gdwSoundSetup & SNDMIX_DIRECTTODISK)))
 		 || ((!pChannel->nRampLength) && (!(pChannel->nLeftVol|pChannel->nRightVol))))
 		{
 			LONG delta = (pChannel->nInc * (LONG)nSmpCount) + (LONG)pChannel->nPosLo;
@@ -1714,10 +1697,6 @@ VOID MPPASMCALL X86_MonoFromStereo(int *pMixBuf, UINT nSamples)
 		pMixBuf[i] = (pMixBuf[j] + pMixBuf[j + 1]) >> 1;
 	}
 }
-
-#define OFSDECAYSHIFT	8
-#define OFSDECAYMASK	0xFF
-
 
 //---GCCFIX: Asm replaced with C function
 #define OFSDECAYSHIFT    8
