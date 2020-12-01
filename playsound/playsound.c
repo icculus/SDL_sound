@@ -651,17 +651,13 @@ static int valid_cmdline(int argc, char **argv)
 static void report_filename(const char *filename)
 {
     const char *icon = "playsound";
-    size_t len = 0;
-    char *buf = NULL;
     char *ptr = NULL;
 
     fprintf(stdout, "%s: Now playing [%s]...\n", icon, filename);
 
-#if SDL_MAJOR_VERSION < 2
     /*
-     * Bleeding edge versions of SDL 1.2 can use this to set the
-     *  PulseAudio application name. It's a harmless no-op elsewhere,
-     *  and 2.0 will probably have a formal API for this.
+     * Some versions of SDL can set the PulseAudio application name.
+     *  It's a harmless no-op elsewhere.
      */
     ptr = strrchr(filename, '/');
     if (ptr != NULL)
@@ -670,8 +666,10 @@ static void report_filename(const char *filename)
     if (ptr != NULL)
         filename = ptr + 1;
 
-    len = strlen(filename) + strlen(icon) + 3;
-    buf = (char *) SDL_malloc(len);
+#if SDL_MAJOR_VERSION < 2
+    {
+    const size_t len = strlen(filename) + strlen(icon) + 3;
+    char *buf = (char *) SDL_malloc(len);
     if (buf == NULL)
         SDL_WM_SetCaption(icon, icon);
     else
@@ -680,6 +678,11 @@ static void report_filename(const char *filename)
         SDL_WM_SetCaption(buf, icon);
         SDL_free(buf);
     } /* else */
+    }
+#else
+    /* SDL2's PulseAudio backend picks up these hints. */
+    SDL_SetHint("SDL_AUDIO_DEVICE_APP_NAME", icon);
+    SDL_SetHint("SDL_AUDIO_DEVICE_STREAM_NAME", filename);
 #endif
 } /* report_filename */
 
