@@ -713,7 +713,7 @@ int main(int argc, char **argv)
         return(42);
 
     /* Handle some command lines upfront. */
-    for (i = 0; i < argc; i++)
+    for (i = 1; i < argc; i++)
     {
         if (SDL_strncmp(argv[i], "--", 2) != 0)
             continue;
@@ -884,6 +884,7 @@ int main(int argc, char **argv)
 
         else
         {
+            filename = argv[i];
             sample = Sound_NewSampleFromFile(filename,
                             use_specific_audiofmt ? &sound_desired : NULL,
                             decode_buffersize);
