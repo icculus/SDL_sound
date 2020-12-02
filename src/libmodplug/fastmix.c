@@ -8,9 +8,6 @@
 #include "libmodplug.h"
 #include <math.h>
 
-// 4x256 taps polyphase FIR resampling filter
-extern short int gFastSinc[];
-extern short int gKaiserSinc[]; // 8-taps polyphase
 /*
  *-----------------------------------------------------------------------------
  cubic spline interpolation doc,
@@ -67,7 +64,7 @@ extern short int gKaiserSinc[]; // 8-taps polyphase
 #define SPLINE_FRACBITS 10
 #define SPLINE_LUTLEN (1L<<SPLINE_FRACBITS)
 
-signed short CzCUBICSPLINE_lut[4*(1L<<SPLINE_FRACBITS)];
+static signed short CzCUBICSPLINE_lut[4*(1L<<SPLINE_FRACBITS)];
 
 static void initCzCUBICSPLINE()
 {
@@ -620,11 +617,9 @@ typedef VOID (MPPASMCALL * LPMIXINTERFACE)(MODCHANNEL *, int *, int *);
 /////////////////////////////////////////////////////
 //
 
-void MPPASMCALL X86_InitMixBuffer(int *pBuffer, UINT nSamples);
-void MPPASMCALL X86_EndChannelOfs(MODCHANNEL *pChannel, int *pBuffer, UINT nSamples);
+static void MPPASMCALL X86_InitMixBuffer(int *pBuffer, UINT nSamples);
+static void MPPASMCALL X86_EndChannelOfs(MODCHANNEL *pChannel, int *pBuffer, UINT nSamples);
 void MPPASMCALL X86_StereoFill(int *pBuffer, UINT nSamples, LPLONG lpROfs, LPLONG lpLOfs);
-void X86_StereoMixToFloat(const int *, float *, float *, UINT nCount);
-void X86_FloatToStereoMix(const float *pIn1, const float *pIn2, int *pOut, UINT nCount);
 
 /////////////////////////////////////////////////////
 // Mono samples functions
@@ -1226,7 +1221,7 @@ END_RAMPMIX_STFLT_INTERFACE()
 #define MIXNDX_SPLINESRC    0x20
 #define MIXNDX_FIRSRC       0x30
 
-const LPMIXINTERFACE gpMixFunctionTable[2*2*16] =
+static const LPMIXINTERFACE gpMixFunctionTable[2*2*16] =
 {
 	// No SRC
 	Mono8BitMix, Mono16BitMix, Stereo8BitMix, Stereo16BitMix,
@@ -1268,7 +1263,7 @@ const LPMIXINTERFACE gpMixFunctionTable[2*2*16] =
         FilterStereo8BitFirFilterRampMix, FilterStereo16BitFirFilterRampMix
 };
 
-const LPMIXINTERFACE gpFastMixFunctionTable[2*2*16] =
+static const LPMIXINTERFACE gpFastMixFunctionTable[2*2*16] =
 {
 	// No SRC
 	FastMono8BitMix, FastMono16BitMix, Stereo8BitMix, Stereo16BitMix,
@@ -1675,7 +1670,7 @@ DWORD MPPASMCALL X86_Convert32To32(LPVOID lp16, int *pBuffer, DWORD lSampleCount
 
 //---GCCFIX: Asm replaced with C function
 // Will fill in later.
-void MPPASMCALL X86_InitMixBuffer(int *pBuffer, UINT nSamples)
+static void MPPASMCALL X86_InitMixBuffer(int *pBuffer, UINT nSamples)
 {
 	SDL_memset(pBuffer, 0, nSamples * sizeof(int));
 }
@@ -1727,7 +1722,7 @@ void MPPASMCALL X86_StereoFill(int *pBuffer, UINT nSamples, LPLONG lpROfs, LPLON
 
 //---GCCFIX: Asm replaced with C function
 // Will fill in later.
-void MPPASMCALL X86_EndChannelOfs(MODCHANNEL *pChannel, int *pBuffer, UINT nSamples)
+static void MPPASMCALL X86_EndChannelOfs(MODCHANNEL *pChannel, int *pBuffer, UINT nSamples)
 {
 	int rofs = pChannel->nROfs;
 	int lofs = pChannel->nLOfs;

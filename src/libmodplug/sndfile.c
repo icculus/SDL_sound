@@ -5,7 +5,6 @@
  *          Adam Goode       <adam@evdebs.org> (endian and char fixes for PPC)
 */
 
-#include <math.h> //for GCCFIX
 #include "modplug.h"
 #include "libmodplug.h"
 
@@ -818,88 +817,6 @@ UINT CSoundFile_ReadSample(CSoundFile *_this, MODINSTRUMENT *pIns, UINT nFlags, 
 			len = DMFUnpack((LPBYTE)pIns->pSample, ibuf, ibufmax, maxlen);
 		}
 		break;
-
-#ifdef MODPLUG_TRACKER
-	// PCM 24-bit signed -> load sample, and normalize it to 16-bit
-	case RS_PCM24S:
-	case RS_PCM32S:
-		len = pIns->nLength * 3;
-		if (nFlags == RS_PCM32S) len += pIns->nLength;
-		if (len > dwMemLength) break;
-		if (len > 4*8)
-		{
-			UINT slsize = (nFlags == RS_PCM32S) ? 4 : 3;
-			LPBYTE pSrc = (LPBYTE)lpMemFile;
-			LONG max = 255;
-			if (nFlags == RS_PCM32S) pSrc++;
-			for (UINT j=0; j<len; j+=slsize)
-			{
-				LONG l = ((((pSrc[j+2] << 8) + pSrc[j+1]) << 8) + pSrc[j]) << 8;
-				l /= 256;
-				if (l > max) max = l;
-				if (-l > max) max = -l;
-			}
-			max = (max / 128) + 1;
-			int16_t *pDest = (int16_t *)pIns->pSample;
-			for (UINT k=0; k<len; k+=slsize)
-			{
-				LONG l = ((((pSrc[k+2] << 8) + pSrc[k+1]) << 8) + pSrc[k]) << 8;
-				*pDest++ = (uint16_t)(l / max);
-			}
-		}
-		break;
-
-	// Stereo PCM 24-bit signed -> load sample, and normalize it to 16-bit
-	case RS_STIPCM24S:
-	case RS_STIPCM32S:
-		len = pIns->nLength * 6;
-		if (nFlags == RS_STIPCM32S) len += pIns->nLength * 2;
-		if (len > dwMemLength) break;
-		if (len > 8*8)
-		{
-			UINT slsize = (nFlags == RS_STIPCM32S) ? 4 : 3;
-			LPBYTE pSrc = (LPBYTE)lpMemFile;
-			LONG max = 255;
-			if (nFlags == RS_STIPCM32S) pSrc++;
-			for (UINT j=0; j<len; j+=slsize)
-			{
-				LONG l = ((((pSrc[j+2] << 8) + pSrc[j+1]) << 8) + pSrc[j]) << 8;
-				l /= 256;
-				if (l > max) max = l;
-				if (-l > max) max = -l;
-			}
-			max = (max / 128) + 1;
-			int16_t *pDest = (int16_t *)pIns->pSample;
-			for (UINT k=0; k<len; k+=slsize)
-			{
-				LONG lr = ((((pSrc[k+2] << 8) + pSrc[k+1]) << 8) + pSrc[k]) << 8;
-				k += slsize;
-				LONG ll = ((((pSrc[k+2] << 8) + pSrc[k+1]) << 8) + pSrc[k]) << 8;
-				pDest[0] = (int16_t)ll;
-				pDest[1] = (int16_t)lr;
-				pDest += 2;
-			}
-		}
-		break;
-
-	// 16-bit signed big endian interleaved stereo
-	case RS_STIPCM16M:
-		{
-			len = pIns->nLength;
-			if (len*4 > dwMemLength) len = dwMemLength >> 2;
-			LPCBYTE psrc = (LPCBYTE)lpMemFile;
-			int16_t *pSample = (int16_t *)pIns->pSample;
-			for (UINT j=0; j<len; j++)
-			{
-				pSample[j*2] = (int16_t)(((UINT)psrc[0] << 8) | (psrc[1]));
-				pSample[j*2+1] = (int16_t)(((UINT)psrc[2] << 8) | (psrc[3]));
-				psrc += 4;
-			}
-			len *= 4;
-		}
-		break;
-
-#endif // MODPLUG_TRACKER
 #endif // !MODPLUG_BASIC_SUPPORT
 
 	// Default: 8-bit signed PCM data

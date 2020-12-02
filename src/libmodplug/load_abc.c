@@ -2209,7 +2209,7 @@ static int abc_parse_decorations(ABCHANDLE *h, ABCTRACK *tp, const char *p)
 }
 
 // =====================================================================================
-BOOL CSoundFile_TestABC(const BYTE *lpStream, DWORD dwMemLength)
+static BOOL TestABC(const BYTE *lpStream, DWORD dwMemLength)
 // =====================================================================================
 {
     char id[128];
@@ -3491,7 +3491,7 @@ BOOL CSoundFile_ReadABC(CSoundFile *_this, const uint8_t *lpStream, DWORD dwMemL
 	ABCMACRO *mp;
 	int mmsp;
 	MMFILE *mmstack[MAXABCINCLUDES];
-	if( !CSoundFile_TestABC(lpStream, dwMemLength) ) return FALSE;
+	if( !TestABC(lpStream, dwMemLength) ) return FALSE;
 	h = ABC_Init();
 	if( !h ) return FALSE;
 	mmfile = &mm;

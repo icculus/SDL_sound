@@ -635,7 +635,7 @@ static int mid_read_delta(MIDHANDLE *h)
 }
 
 // =====================================================================================
-BOOL CSoundFile_TestMID(const BYTE *lpStream, DWORD dwMemLength)
+static BOOL TestMID(const BYTE *lpStream, DWORD dwMemLength)
 // =====================================================================================
 {
 	char id[5];
@@ -1038,7 +1038,7 @@ static int midishort(BYTE *b)
 	return midiword(b) - 0x2000;
 }
 
-ULONG mid_first_noteonevent_tick(MIDEVENT *e)
+static ULONG mid_first_noteonevent_tick(MIDEVENT *e)
 {
 	while( e && (e->flg == 0 || e->volume == 0) ) e=e->next;
 	if( !e ) return 0x7fffffff;
@@ -1063,7 +1063,7 @@ BOOL CSoundFile_ReadMID(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	BYTE *p;
 	while( avoid_reentry ) SDL_Delay(1);
 	avoid_reentry = 1;
-	if( !CSoundFile_TestMID(lpStream, dwMemLength) ) {
+	if( !TestMID(lpStream, dwMemLength) ) {
 		avoid_reentry = 0;
 		return FALSE;
 	}

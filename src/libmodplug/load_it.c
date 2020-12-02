@@ -11,10 +11,6 @@
 
 static const BYTE autovibit2xm[8] =
 { 0, 3, 1, 4, 2, 0, 0, 0 };
-#if 0
-static const BYTE autovibxm2it[8] =
-{ 0, 2, 4, 1, 3, 0, 0, 0 };
-#endif
 
 //////////////////////////////////////////////////////////
 // Impulse Tracker IT file support
@@ -26,7 +22,7 @@ static inline UINT ConvertVolParam(UINT value)
 }
 
 
-BOOL CSoundFile_ITInstrToMPT(const void *p, INSTRUMENTHEADER *penv, UINT trkvers)
+static BOOL ITInstrToMPT(const void *p, INSTRUMENTHEADER *penv, UINT trkvers)
 //--------------------------------------------------------------------------------
 {
 	if (trkvers < 0x0200)
@@ -352,7 +348,7 @@ BOOL CSoundFile_ReadIT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 			if (!penv) continue;
 			_this->Headers[nins+1] = penv;
 			SDL_memset(penv, 0, sizeof(INSTRUMENTHEADER));
-			CSoundFile_ITInstrToMPT(lpStream + inspos[nins], penv, pifh.cmwt);
+			ITInstrToMPT(lpStream + inspos[nins], penv, pifh.cmwt);
 		}
 	}
 	// Reading Samples
@@ -361,7 +357,7 @@ BOOL CSoundFile_ReadIT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 	for (UINT nsmp=0; nsmp<pifh.smpnum; nsmp++) if ((smppos[nsmp]) && (smppos[nsmp] <= dwMemLength - sizeof(ITSAMPLESTRUCT)))
 	{
 		ITSAMPLESTRUCT pis;
-        SDL_memcpy(&pis, lpStream+smppos[nsmp], sizeof (pis));
+		SDL_memcpy(&pis, lpStream+smppos[nsmp], sizeof (pis));
 		pis.id = bswapLE32(pis.id);
 		pis.length = bswapLE32(pis.length);
 		pis.loopbegin = bswapLE32(pis.loopbegin);
@@ -570,7 +566,7 @@ BOOL CSoundFile_ReadIT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 static DWORD ITReadBits(DWORD *bitbuf, UINT *bitnum, LPBYTE *_ibuf, CHAR n)
 //-----------------------------------------------------------------
 {
-    LPBYTE ibuf = *_ibuf;
+	LPBYTE ibuf = *_ibuf;
 	DWORD retval = 0;
 	UINT i = n;
 
@@ -595,7 +591,7 @@ static DWORD ITReadBits(DWORD *bitbuf, UINT *bitnum, LPBYTE *_ibuf, CHAR n)
 		} while (i);
 		i = n;
 	}
-    *_ibuf = ibuf;
+	*_ibuf = ibuf;
 	return (retval >> (32-i));
 }
 

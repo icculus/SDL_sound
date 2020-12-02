@@ -276,7 +276,7 @@ typedef float (*PAT_SAMPLE_FUN)(int);
 
 static PAT_SAMPLE_FUN pat_fun[] = { pat_sinus, pat_square, pat_sawtooth };
 
-long _mm_getfsize(MMSTREAM *mmpat) {
+static long _mm_getfsize(MMSTREAM *mmpat) {
 	long fsize;
 	_mm_fseek(mmpat, 0L, SEEK_END);
 	fsize = _mm_ftell(mmpat);
@@ -681,7 +681,7 @@ static BOOL dec_pat_Decompress8Bit(short int *dest, int cbcount, int samplenum)
 	return cbcount;
 }
 
-BOOL CSoundFile_TestPAT(const BYTE *lpStream, DWORD dwMemLength)
+static BOOL TestPAT(const BYTE *lpStream, DWORD dwMemLength)
 // =====================================================================================
 {
 	PatchHeader ph;
@@ -1049,7 +1049,7 @@ BOOL CSoundFile_ReadPAT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	MMFILE mm, *mmfile;
 	MODINSTRUMENT *q;
 	INSTRUMENTHEADER *d;
-	if( !CSoundFile_TestPAT(lpStream, dwMemLength) ) return FALSE;
+	if( !TestPAT(lpStream, dwMemLength) ) return FALSE;
 	h = PAT_Init();
 	if( !h ) return FALSE;
 	mmfile = &mm;

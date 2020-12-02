@@ -25,7 +25,7 @@ extern VOID MPPASMCALL X86_MonoFromStereo(int *pMixBuf, UINT nSamples);
 
 // Log tables for pre-amp
 // We don't want the tracker to get too loud
-const UINT PreAmpTable[16] =
+static const UINT PreAmpTable[16] =
 {
 	0x60, 0x60, 0x60, 0x70,	// 0-7
 	0x80, 0x88, 0x90, 0x98,	// 8-15
@@ -33,7 +33,7 @@ const UINT PreAmpTable[16] =
 	0xB4, 0xB8, 0xBC, 0xC0,	// 24-31
 };
 
-const UINT PreAmpAGCTable[16] =
+static const UINT PreAmpAGCTable[16] =
 {
 	0x60, 0x60, 0x60, 0x60,
 	0x68, 0x70, 0x78, 0x80,
@@ -607,7 +607,7 @@ BOOL CSoundFile_ReadNote(CSoundFile *_this)
 				{
 #ifndef NO_FILTER
 					CSoundFile_SetupChannelFilter(_this, pChn, (pChn->dwFlags & CHN_FILTER) ? FALSE : TRUE, envpitch);
-#endif // NO_FILTER
+#endif
 				} else
 				// Pitch Envelope
 				{
@@ -892,11 +892,7 @@ BOOL CSoundFile_ReadNote(CSoundFile *_this)
 		pChn->pCurrentSample = ((pChn->pSample) && (pChn->nLength) && (pChn->nInc)) ? pChn->pSample : NULL;
 		if (pChn->pCurrentSample)
 		{
-#ifdef MODPLUG_TRACKER
-			UINT kChnMasterVol = (pChn->dwFlags & CHN_EXTRALOUD) ? 0x100 : nMasterVol;
-#else
 #define		kChnMasterVol	nMasterVol
-#endif // MODPLUG_TRACKER
 			// Adjusting volumes
 			if (_this->gnChannels >= 2)
 			{
@@ -1032,5 +1028,3 @@ BOOL CSoundFile_ReadNote(CSoundFile *_this)
 	}
 	return TRUE;
 }
-
-
