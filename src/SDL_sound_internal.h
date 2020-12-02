@@ -25,7 +25,7 @@
 
 #include "SDL_sound.h"
 
-#if (defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__)
+#if ((defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__)) && !defined(_WIN32)
 #define SOUND_HAVE_PRAGMA_VISIBILITY 1
 #endif
 

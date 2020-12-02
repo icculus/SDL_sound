@@ -30,6 +30,16 @@ endif()
 
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
+if(WIN32)
+    # -lmingw32: gcc adds it automatically.
+    # -mwindows: doesn't make sense.
+    # -lSDL2main: the dll doesn't need it, the test apps are console-only
+    #  and specifically define SDL_MAIN_HANDLED.  it will be ignored.
+    string(REGEX REPLACE "-mwindows" "" SDL2_LIBRARIES "${SDL2_LIBRARIES}")
+    string(REGEX REPLACE "-lmingw32" "" SDL2_LIBRARIES "${SDL2_LIBRARIES}")
+#   string(REGEX REPLACE "-lSDL2main" "" SDL2_LIBRARIES "${SDL2_LIBRARIES}")
+    string(STRIP "${SDL2_LIBRARIES}" SDL2_LIBRARIES)
+endif()
 
 
 # Decoders ...
@@ -137,6 +147,9 @@ if(SDLSOUND_BUILD_SHARED)
     set_target_properties(SDL2_sound PROPERTIES MACOSX_RPATH 1)
     set_target_properties(SDL2_sound PROPERTIES VERSION ${SDLSOUND_VERSION})
     set_target_properties(SDL2_sound PROPERTIES SOVERSION ${SDLSOUND_SOVERSION})
+    if(WIN32)
+        SET_TARGET_PROPERTIES(SDL2_sound PROPERTIES DEFINE_SYMBOL SDL_SOUND_DLL_EXPORTS)
+    endif()
     target_link_libraries(SDL2_sound ${SDL2_LIBRARIES} ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
     set(SDLSOUND_LIB_TARGET SDL2_sound)
     set(SDLSOUND_INSTALL_TARGETS ${SDLSOUND_INSTALL_TARGETS} ";SDL2_sound")
@@ -161,6 +174,16 @@ if(SDLSOUND_BUILD_TEST)
     add_executable(playsound_simple playsound/playsound_simple.c)
     target_link_libraries(playsound_simple ${SDLSOUND_LIB_TARGET} ${OTHER_LDFLAGS})
     #set(SDLSOUND_INSTALL_TARGETS ${SDLSOUND_INSTALL_TARGETS} ";playsound_simple")
+    IF (WIN32 AND MSVC)
+        SET_TARGET_PROPERTIES(playsound PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE")
+        SET_TARGET_PROPERTIES(playsound_simple PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE")
+        SET_TARGET_PROPERTIES(playsound PROPERTIES COMPILE_DEFINITIONS _CONSOLE)
+        SET_TARGET_PROPERTIES(playsound_simple PROPERTIES COMPILE_DEFINITIONS _CONSOLE)
+    ENDIF ()
+    IF (CMAKE_COMPILER_IS_MINGW)
+        SET_TARGET_PROPERTIES(playsound PROPERTIES LINK_FLAGS "-mconsole")
+        SET_TARGET_PROPERTIES(playsound_simple PROPERTIES LINK_FLAGS "-mconsole")
+    ENDIF ()
     if(NOT SDLSOUND_BUILD_SHARED)
         target_link_libraries(playsound ${SDL2_LIBRARIES} ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
         target_link_libraries(playsound_simple ${SDL2_LIBRARIES} ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})

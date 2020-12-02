@@ -11,7 +11,7 @@
 
 #include "SDL.h"
 
-#if (defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__)
+#if ((defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__)) && !defined(_WIN32)
 #pragma GCC visibility push(hidden)
 #endif
 
@@ -109,6 +109,10 @@ char *rwops_fgets(char *buf, int buflen, SDL_RWops *rwops);
 #define _mm_feof(f)					(SDL_RWtell(f) >= SDL_RWsize(f))
 #define _mm_fclose(f)				SDL_RWclose(f)
 #define DupStr(h,buf,sz)			SDL_strdup(buf)
+/* _mm_malloc and _mm_free clash with Windows malloc.h */
+#undef _mm_malloc
+#undef _mm_realloc
+#undef _mm_free
 #define _mm_calloc(h,n,sz)			SDL_calloc(n,sz)
 #define _mm_recalloc(h,buf,sz,elsz)	SDL_realloc(buf,sz)
 #define _mm_free(h,p)				SDL_free(p)

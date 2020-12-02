@@ -584,7 +584,7 @@ enum STBVorbisError
 
 #include <limits.h>
 
-#ifdef __MINGW32__
+#if defined(__MINGW32__) && !defined(alloca)
    #define alloca __builtin_alloca
 #endif
 
