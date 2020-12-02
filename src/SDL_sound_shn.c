@@ -331,7 +331,7 @@ static SDL_INLINE int determine_shn_version(Sound_Sample *sample,
      *  check the whole stream, though.
      */
 
-    if (SDL_strcasecmp(ext, "shn") == 0)
+    if (ext != NULL && SDL_strcasecmp(ext, "shn") == 0)
         return extended_shn_magic_search(sample);
 
     BAIL_IF_MACRO(SDL_RWread(rw, &magic, sizeof (magic), 1) != 1, NULL, -1);

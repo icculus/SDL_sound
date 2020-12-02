@@ -50,7 +50,7 @@ static int RAW_open(Sound_Sample *sample, const char *ext)
          * We check this explicitly, since we have no other way to
          *  determine whether we should handle this data or not.
          */
-    if (SDL_strcasecmp(ext, "RAW") != 0)
+    if (!ext || SDL_strcasecmp(ext, "RAW") != 0)
         BAIL_MACRO("RAW: extension isn't explicitly \"RAW\".", 0);
 
         /*

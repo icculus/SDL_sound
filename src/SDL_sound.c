@@ -517,7 +517,7 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
                 /* skip if we would have tried decoder above... */
             while (*decoderExt)
             {
-                if (SDL_strcasecmp(*decoderExt, ext) == 0)
+                if (ext && SDL_strcasecmp(*decoderExt, ext) == 0)
                 {
                     should_try = 0;
                     break;
