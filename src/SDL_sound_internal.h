@@ -294,10 +294,6 @@ Uint32 __Sound_convertMsToBytePos(Sound_AudioInfo *info, Uint32 ms);
 #define BAIL_MACRO(e, r) { __Sound_SetError(e); return r; }
 #define BAIL_IF_MACRO(c, e, r) if (c) { __Sound_SetError(e); return r; }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #endif /* defined _INCLUDE_SDL_SOUND_INTERNAL_H_ */
 
 /* end of SDL_sound_internal.h ... */
