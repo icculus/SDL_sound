@@ -88,7 +88,7 @@ BOOL CSoundFile_ReadXM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 
 	_this->m_nChannels = 0;
 	if ((!lpStream) || (dwMemLength < 0x200)) return FALSE;
-	if (SDL_strncasecmp((LPCSTR)lpStream, "Extended Module", 15)) return FALSE;
+	if (SDL_strncmp((LPCSTR)lpStream, "Extended Module:", 16)) return FALSE;
 
 	SDL_memcpy(&xmhead, lpStream+60, sizeof (xmhead));
 	dwHdrSize = bswapLE32(xmhead.size);
