@@ -94,7 +94,7 @@ void swap_PSMSAMPLE(PSMSAMPLE* p){
 BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 //-----------------------------------------------------------
 {
-	PSMCHUNK *pfh = (PSMCHUNK *)lpStream;
+	PSMCHUNK pfh;
 	DWORD dwMemPos, dwSongPos;
 	DWORD smpnames[MAX_SAMPLES];
 	DWORD patptrs[MAX_PATTERNS];
@@ -103,15 +103,16 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 	
 	if (dwMemLength < 256) return FALSE;
 
+	SDL_memcpy(&pfh, lpStream, sizeof(PSMCHUNK));
 	// Swap chunk
-	swap_PSMCHUNK(pfh);
+	swap_PSMCHUNK(&pfh);
 	
 	// Chunk0: "PSM ",filesize,"FILE"
-	if (pfh->id == PSM_ID_OLD)
+	if (pfh.id == PSM_ID_OLD)
 	{
 		return FALSE;
 	}
-	if ((pfh->id != PSM_ID_NEW) || (pfh->len+12 > dwMemLength) || (pfh->listid != IFFID_FILE)) return FALSE;
+	if ((pfh.id != PSM_ID_NEW) || (pfh.len+12 > dwMemLength) || (pfh.listid != IFFID_FILE)) return FALSE;
 	_this->m_nType = MOD_TYPE_PSM;
 	_this->m_nChannels = 16;
 	_this->m_nSamples = 0;
@@ -125,13 +126,14 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 	}
 	while (dwMemPos+8 < dwMemLength)
 	{
-		PSMCHUNK *pchunk = (PSMCHUNK *)(lpStream+dwMemPos);
-		swap_PSMCHUNK(pchunk);
-		if ((pchunk->len >= dwMemLength - 8) || (dwMemPos + pchunk->len + 8 > dwMemLength)) break;
+		PSMCHUNK pchunk;
+		SDL_memcpy(&pchunk, lpStream+dwMemPos, sizeof(PSMCHUNK));
+		swap_PSMCHUNK(&pchunk);
+		if ((pchunk.len >= dwMemLength - 8) || (dwMemPos + pchunk.len + 8 > dwMemLength)) break;
 		dwMemPos += 8;
 		PUCHAR pdata = (PUCHAR)(lpStream+dwMemPos);
-		ULONG len = pchunk->len;
-		if (len) switch(pchunk->id)
+		ULONG len = pchunk.len;
+		if (len) switch(pchunk.id)
 		{
 		// "PBOD": Pattern
 		case IFFID_PBOD:
@@ -153,19 +155,20 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 			{
 				_this->m_nSamples++;
 				MODINSTRUMENT *pins = &_this->Ins[_this->m_nSamples];
-				PSMSAMPLE *psmp = (PSMSAMPLE *)pdata;
-				swap_PSMSAMPLE(psmp);
-				smpnames[_this->m_nSamples] = psmp->smpid;
+				PSMSAMPLE psmp;
+				SDL_memcpy(&psmp, pdata, sizeof(PSMSAMPLE));
+				swap_PSMSAMPLE(&psmp);
+				smpnames[_this->m_nSamples] = psmp.smpid;
 				samplemap[_this->m_nSamples-1] = (BYTE)_this->m_nSamples;
 				// Init sample
 				pins->nGlobalVol = 0x40;
-				pins->nC4Speed = psmp->samplerate;
-				pins->nLength = psmp->length;
-				pins->nLoopStart = psmp->loopstart;
-				pins->nLoopEnd = psmp->loopend;
+				pins->nC4Speed = psmp.samplerate;
+				pins->nLength = psmp.length;
+				pins->nLoopStart = psmp.loopstart;
+				pins->nLoopEnd = psmp.loopend;
 				pins->nPan = 128;
-				pins->nVolume = (psmp->defvol+1) * 2;
-				pins->uFlags = (psmp->flags & 0x80) ? CHN_LOOP : 0;
+				pins->nVolume = (psmp.defvol+1) * 2;
+				pins->uFlags = (psmp.flags & 0x80) ? CHN_LOOP : 0;
 				if (pins->nLoopStart > 0) pins->nLoopStart--;
 				// Point to sample data
 				pdata += 0x60;
@@ -181,10 +184,10 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 			}
 			break;
 		}
-		dwMemPos += pchunk->len;
+		dwMemPos += pchunk.len;
 	}
 	// Step #1: convert song structure
-	PSMSONGHDR *pSong = (PSMSONGHDR *)(lpStream+dwSongPos+8);
+	const PSMSONGHDR *pSong = (const PSMSONGHDR *)(lpStream+dwSongPos+8);
 	if ((!dwSongPos) || (pSong->channels < 2) || (pSong->channels > 32)) return TRUE;
 	_this->m_nChannels = pSong->channels;
 	// Valid song header -> convert attached chunks
@@ -193,13 +196,14 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 		dwMemPos = dwSongPos + 8 + 11; // sizeof(PSMCHUNK)+sizeof(PSMSONGHDR)
 		while (dwMemPos + 8 < dwSongEnd)
 		{
-			PSMCHUNK *pchunk = (PSMCHUNK *)(lpStream+dwMemPos);
-			swap_PSMCHUNK(pchunk);
+			PSMCHUNK pchunk;
+			SDL_memcpy(&pchunk, lpStream+dwMemPos, sizeof(PSMCHUNK));
+			swap_PSMCHUNK(&pchunk);
 			dwMemPos += 8;
-			if ((pchunk->len > dwSongEnd) || (dwMemPos + pchunk->len > dwSongEnd)) break;
+			if ((pchunk.len > dwSongEnd) || (dwMemPos + pchunk.len > dwSongEnd)) break;
 			PUCHAR pdata = (PUCHAR)(lpStream+dwMemPos);
-			ULONG len = pchunk->len;
-			switch(pchunk->id)
+			ULONG len = pchunk.len;
+			switch(pchunk.id)
 			{
 			case IFFID_OPLH:
 				if (len >= 0x20)
@@ -212,7 +216,7 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 						DWORD dwName = *(DWORD *)(pdata+pos);
 						for (UINT i=0; i<nPatterns; i++)
 						{
-							DWORD dwPatName = ((PSMPATTERN *)(lpStream+patptrs[i]+8))->name;
+							DWORD dwPatName = ((const PSMPATTERN *)(lpStream+patptrs[i]+8))->name;
 							if (dwName == dwPatName)
 							{
 								bFound = TRUE;
@@ -233,7 +237,7 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 						DWORD dwName = *(DWORD *)(pdata+pos);
 						for (UINT i=0; i<nPatterns; i++)
 						{
-							DWORD dwPatName = ((PSMPATTERN *)(lpStream+patptrs[i]+8))->name;
+							DWORD dwPatName = ((const PSMPATTERN *)(lpStream+patptrs[i]+8))->name;
 							if (dwName == dwPatName)
 							{
 								_this->Order[iOrd++] = i;
@@ -245,29 +249,30 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 				}
 				break;
 			}
-			dwMemPos += pchunk->len;
+			dwMemPos += pchunk.len;
 		}
 	}
 
 	// Step #2: convert patterns
 	for (UINT nPat=0; nPat<nPatterns; nPat++)
 	{
-		PSMPATTERN *pPsmPat = (PSMPATTERN *)(lpStream+patptrs[nPat]+8);
-		swap_PSMPATTERN(pPsmPat);
+		PSMPATTERN pPsmPat;
+		SDL_memcpy(&pPsmPat, lpStream+patptrs[nPat]+8, sizeof(PSMPATTERN));
+		swap_PSMPATTERN(&pPsmPat);
 		ULONG len = *(DWORD *)(lpStream+patptrs[nPat]+4) - 12;
-		UINT nRows = pPsmPat->rows;
-		if (len > pPsmPat->size) len = pPsmPat->size;
+		UINT nRows = pPsmPat.rows;
+		if (len > pPsmPat.size) len = pPsmPat.size;
 		if ((nRows < 64) || (nRows > 256)) nRows = 64;
 		_this->PatternSize[nPat] = nRows;
 		if ((_this->Patterns[nPat] = CSoundFile_AllocatePattern(nRows, _this->m_nChannels)) == NULL) break;
 		MODCOMMAND *m = _this->Patterns[nPat];
-		BYTE *p = pPsmPat->data;
+		BYTE *p = pPsmPat.data;
 		MODCOMMAND *sp, dummy;
 		UINT pos = 0;
 		UINT row = 0;
 		UINT rowlim;
 		UINT flags, ch;
-		rowlim = bswapLE16(pPsmPat->reserved1)-2;
+		rowlim = bswapLE16(pPsmPat.reserved1)-2;
 		while ((row < nRows) && (pos+3 < len))
 		{
 			if ((pos+1) >= rowlim) {
