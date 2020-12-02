@@ -61,8 +61,8 @@ BOOL CSoundFile_ReadSTM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	
 	if ((!lpStream) || (dwMemLength < sizeof(STMHEADER))) return FALSE;
 	if ((phdr->filetype != 2) || (phdr->unused != 0x1A)
-	 || ((SDL_strncasecmp(phdr->trackername, "!SCREAM!", 8))
-	  && (SDL_strncasecmp(phdr->trackername, "BMOD2STM", 8)))) return FALSE;
+	 || ((SDL_strncmp(phdr->trackername, "!Scream!", 8))
+	  && (SDL_strncmp(phdr->trackername, "BMOD2STM", 8)))) return FALSE;
 	// Read STM header
 	_this->m_nType = MOD_TYPE_STM;
 	_this->m_nSamples = 31;
