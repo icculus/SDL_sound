@@ -243,7 +243,7 @@ void CSoundFile_FreePattern(LPVOID pat)
 signed char* CSoundFile_AllocateSample(UINT nbytes)
 //-------------------------------------------
 {
-	signed char * p = (signed char *)GlobalAllocPtr(GHND, (nbytes+39) & ~7);
+	signed char * p = (signed char *) SDL_calloc(1, (nbytes+39) & ~7);
 	if (p) p += 16;
 	return p;
 }
@@ -252,9 +252,8 @@ signed char* CSoundFile_AllocateSample(UINT nbytes)
 void CSoundFile_FreeSample(LPVOID p)
 //-----------------------------------
 {
-	if (p)
-	{
-		GlobalFreePtr(((LPSTR)p)-16);
+	if (p) {
+		SDL_free((char*)p - 16);
 	}
 }
 

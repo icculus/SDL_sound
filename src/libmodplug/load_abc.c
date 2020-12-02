@@ -2266,8 +2266,8 @@ static ABCHANDLE *ABC_Init(void)
 		}
 	}
 	else {
-		srandom((uint32_t)time(0));	// initialize random generator with seed
-		retval->pickrandom = 1+(int)(10000.0*random()/(RAND_MAX+1.0));
+		srand((unsigned int)time(0));	// initialize random generator with seed
+		retval->pickrandom = 1+(int)(10000.0*rand()/(RAND_MAX+1.0));
 		// can handle pickin' from songbooks with 10.000 songs
 		SDL_snprintf(buf,sizeof(buf),"-%ld",retval->pickrandom); // xmms preloads the file
 		SDL_setenv(ABC_ENV_NORANDOMPICK, buf, 1);
