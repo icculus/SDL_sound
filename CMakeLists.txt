@@ -196,7 +196,7 @@ install(TARGETS ${SDLSOUND_INSTALL_TARGETS}
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib${LIB_SUFFIX}
         ARCHIVE DESTINATION lib${LIB_SUFFIX})
-install(FILES SDL_sound.h DESTINATION include)
+install(FILES src/SDL_sound.h DESTINATION include/SDL2)
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
