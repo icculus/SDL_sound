@@ -189,6 +189,10 @@ typedef struct _ABCHANDLE
 	uint32_t tracktime;
 } ABCHANDLE;
 
+#pragma pack()
+
+/**********************************************************************/
+
 /* !!! FIXME: global state */
 static int global_voiceno, global_octave_shift, global_tempo_factor, global_tempo_divider;
 static char global_part;
