@@ -703,7 +703,7 @@ BOOL CSoundFile_ReadMed(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 				{
 					DWORD nameofs = bswapBE32(pbi->blockname);
 					UINT namelen = bswapBE32(pbi->blocknamelen);
-					if ((nameofs < dwMemLength) && (namelen < dwMemLength + nameofs))
+					if ((nameofs < dwMemLength) && (namelen < dwMemLength - nameofs))
 					{
 						CSoundFile_SetPatternName(_this, iBlk, (LPCSTR)(lpStream+nameofs));
 					}
