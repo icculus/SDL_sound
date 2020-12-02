@@ -292,10 +292,6 @@ BOOL CSoundFile_ReadMod(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 			dwErrCheck++;
 		}
 	}
-#ifdef MODPLUG_TRACKER
-	return TRUE;
-#else
 	return (dwErrCheck) ? TRUE : FALSE;
-#endif
 }
 

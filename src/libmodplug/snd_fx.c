@@ -1214,9 +1214,6 @@ BOOL CSoundFile_ProcessEffects(CSoundFile *_this)
 						if (_this->m_nRepeatCount > 0) _this->m_nRepeatCount--;
 					} else
 					{
-					#ifdef MODPLUG_TRACKER
-						if (_this->gdwSoundSetup & SNDMIX_NOBACKWARDJUMPS)
-					#endif
 						// Backward jump disabled
 						bNoLoop = TRUE;
 						//reset repeat count incase there are multiple loops.
@@ -2048,8 +2045,6 @@ void CSoundFile_SetSpeed(CSoundFile *_this, UINT param)
 //-----------------------------------
 {
 	UINT max = (_this->m_nType == MOD_TYPE_IT) ? 256 : 128;
-	// Modplug Tracker and Mod-Plugin don't do this check
-#ifndef MODPLUG_TRACKER
 	// Big Hack!!!
 	if ((!param) || (param >= 0x80) || ((_this->m_nType & (MOD_TYPE_MOD|MOD_TYPE_XM|MOD_TYPE_MT2)) && (param >= 0x1E)))
 	{
@@ -2058,7 +2053,6 @@ void CSoundFile_SetSpeed(CSoundFile *_this, UINT param)
 			CSoundFile_GlobalFadeSong(_this, 1000);
 		}
 	}
-#endif // MODPLUG_TRACKER
 	if ((_this->m_nType & MOD_TYPE_S3M) && (param > 0x80)) param -= 0x80;
 	if ((param) && (param <= max)) _this->m_nMusicSpeed = param;
 }

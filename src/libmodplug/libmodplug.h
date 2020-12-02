@@ -17,7 +17,7 @@
 
 #ifdef _WIN32
 
-#ifdef MSC_VER
+#ifdef _MSC_VER
 #pragma warning (disable:4201)
 #pragma warning (disable:4514)
 #endif
@@ -752,10 +752,6 @@ void delete_CSoundFile(CSoundFile *_this);
 	BOOL CSoundFile_ReadMID(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength);
 	BOOL CSoundFile_ReadPAT(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength);
 
-	BOOL CSoundFile_TestABC(LPCBYTE lpStream, DWORD dwMemLength);
-	BOOL CSoundFile_TestMID(LPCBYTE lpStream, DWORD dwMemLength);
-	BOOL CSoundFile_TestPAT(LPCBYTE lpStream, DWORD dwMemLength);
-
 	// MOD Convert function
 	void CSoundFile_ConvertModCommand(CSoundFile *_this, MODCOMMAND *);
 	void CSoundFile_S3MConvert(MODCOMMAND *m, BOOL bIT);
@@ -848,9 +844,6 @@ void delete_CSoundFile(CSoundFile *_this);
 	BOOL CSoundFile_ITInstrToMPT(const void *p, INSTRUMENTHEADER *penv, UINT trkvers);
 
 	UINT CSoundFile_LoadMixPlugins(CSoundFile *_this, const void *pData, UINT nLen);
-#ifndef NO_FILTER
-	DWORD CSoundFile_CutOffToFrequency(CSoundFile *_this, UINT nCutOff, int flt_modifier); // [0-255] => [1-10KHz]
-#endif
 
 	DWORD CSoundFile_TransposeToFrequency(int transp, int ftune);
 	int CSoundFile_FrequencyToTranspose(DWORD freq);

@@ -158,7 +158,7 @@ int mmfgetc(MMFILE *mmfile)
 void mmfgets(char buf[], unsigned int bufsz, MMFILE *mmfile)
 {
 	int i = 0;
-    int b;
+	int b;
 	for( i=0; i<(int)bufsz-1; i++ ) {
 		b = mmfgetc(mmfile);
 		if( b==EOF ) break;
