@@ -34,7 +34,9 @@ void CSoundFile_ConvertModCommand(CSoundFile *_this, MODCOMMAND *m)
 	case 0x0D:	command = CMD_PATTERNBREAK; param = ((param >> 4) * 10) + (param & 0x0F); break;
 	case 0x0E:	command = CMD_MODCMDEX; break;
 	case 0x0F:	command = (param <= (UINT)((_this->m_nType & (MOD_TYPE_XM|MOD_TYPE_MT2)) ? 0x1F : 0x20)) ? CMD_SPEED : CMD_TEMPO;
-				if ((param == 0xFF) && (_this->m_nSamples == 15)) command = 0; break;
+			if((param == 0xFF) && (_this->m_nSamples == 15))
+			    command = 0;
+			break;
 	// Extension for XM extended effects
 	case 'G' - 55:	command = CMD_GLOBALVOLUME; break;
 	case 'H' - 55:	command = CMD_GLOBALVOLSLIDE; if (param & 0xF0) param &= 0xF0; break;
@@ -54,9 +56,7 @@ void CSoundFile_ConvertModCommand(CSoundFile *_this, MODCOMMAND *m)
 	m->param = param;
 }
 
-
 #pragma pack(1)
-
 typedef struct _MODSAMPLE
 {
 	CHAR name[22];
@@ -74,7 +74,6 @@ typedef struct _MODMAGIC
 	BYTE Orders[128];
         char Magic[4];          // changed from CHAR
 } MODMAGIC, *PMODMAGIC;
-
 #pragma pack()
 
 static BOOL IsValidName(LPCSTR s, int length, CHAR minChar)

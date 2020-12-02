@@ -240,7 +240,8 @@ BOOL CSoundFile_ReadDMF(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 								case 8: cmd.command = CMD_VIBRATO; cmd.param = eval; break;
 								// 12: Note cut
 								case 12: if (eval & 0xe0) { cmd.command = CMD_S3MCMDEX; cmd.param = (eval>>5)|0xc0; }
-										else if (!cmd.note) { cmd.note = 0xfe; } break;
+									 else if (!cmd.note) { cmd.note = 0xfe; }
+									 break;
 								}
 							}
 							// Effect 3
