@@ -81,10 +81,9 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
     ModPlug_Settings settings;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     ModPlugFile *module;
-    Uint8 *data;
-    size_t size;
-    Uint32 retval;
-    int has_extension = 0;
+    void *data;
+    Sint64 size;
+    size_t retval;
     int i;
 
     /*
@@ -95,12 +94,11 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
     {
         if (SDL_strcasecmp(ext, extensions_modplug[i]) == 0)
         {
-            has_extension = 1;
             break;
         } /* if */
     } /* for */
 
-    if (!has_extension)
+    if (extensions_modplug[i] == NULL)
     {
         SNDDBG(("MODPLUG: Unrecognized file type: %s\n", ext));
         BAIL_MACRO("MODPLUG: Not a module file.", 0);
@@ -108,20 +106,22 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
 
     /* ModPlug needs the entire stream in one big chunk. I don't like it,
        but I don't think there's any way around it.  !!! FIXME: rework modplug? */
-    data = (Uint8 *) SDL_malloc(CHUNK_SIZE);
-    BAIL_IF_MACRO(data == NULL, ERR_OUT_OF_MEMORY, 0);
-    size = 0;
+    size = SDL_RWsize(internal->rw);
+    BAIL_IF_MACRO(size <= 0 || size > (Sint64)0x7fffffff, "MODPLUG: Not a module file.", 0);
 
-    do
+    if (internal->rw->type == SDL_RWOPS_MEMORY || internal->rw->type == SDL_RWOPS_MEMORY_RO)
     {
-        retval = SDL_RWread(internal->rw, &data[size], 1, CHUNK_SIZE);
-        size += retval;
-        if (retval == CHUNK_SIZE)
-        {
-            data = (Uint8 *) SDL_realloc(data, size + CHUNK_SIZE);
-            BAIL_IF_MACRO(data == NULL, ERR_OUT_OF_MEMORY, 0);
-        } /* if */
-    } while (retval > 0);
+        data = internal->rw->hidden.mem.base;
+        retval = 0;
+    }
+    else
+    {
+        data = SDL_malloc((size_t) size);
+        BAIL_IF_MACRO(data == NULL, ERR_OUT_OF_MEMORY, 0);
+        retval = SDL_RWread(internal->rw, data, 1, size);
+        if (retval != (size_t)size) SDL_free(data);
+        BAIL_IF_MACRO(retval != (size_t)size, ERR_IO_ERROR, 0);
+    }
 
     SDL_memcpy(&sample->actual, &sample->desired, sizeof (Sound_AudioInfo));
     if (sample->actual.rate == 0) sample->actual.rate = 44100;
@@ -155,8 +155,8 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
 
     /* The buffer may be a bit too large, but that doesn't matter. I think
        it's safe to free it as soon as ModPlug_Load() is finished anyway. */
-    module = ModPlug_Load((void *) data, size, &settings);
-    SDL_free(data);
+    module = ModPlug_Load(data, (int) size, &settings);
+    if (retval) SDL_free(data);
     BAIL_IF_MACRO(module == NULL, "MODPLUG: Not a module file.", 0);
 
     internal->total_time = ModPlug_GetLength(module);
