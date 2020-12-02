@@ -163,7 +163,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
         } /* for */
     } /* if */
 
-    else if (SDL_strcasecmp(ext, "au") == 0)
+    else if (ext && SDL_strcasecmp(ext, "au") == 0)
     {
         /*
          * A number of files in the wild have the .au extension but no valid

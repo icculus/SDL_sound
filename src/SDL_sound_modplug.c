@@ -90,15 +90,13 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
      * Apparently ModPlug's loaders are too forgiving. They gladly accept
      *  streams that they shouldn't. For now, rely on file extension instead.
      */
-    for (i = 0; extensions_modplug[i] != NULL; i++)
+    for (i = 0; ext != NULL && extensions_modplug[i] != NULL; i++)
     {
         if (SDL_strcasecmp(ext, extensions_modplug[i]) == 0)
-        {
             break;
-        } /* if */
     } /* for */
 
-    if (extensions_modplug[i] == NULL)
+    if (ext == NULL || extensions_modplug[i] == NULL)
     {
         SNDDBG(("MODPLUG: Unrecognized file type: %s\n", ext));
         BAIL_MACRO("MODPLUG: Not a module file.", 0);
