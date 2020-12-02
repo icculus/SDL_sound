@@ -462,7 +462,7 @@ static void memcpy_with_volume(Sound_Sample *sample,
 } /* memcpy_with_volume */
 
 
-static void audio_callback(void *userdata, Uint8 *stream, int len)
+static void SDLCALL audio_callback(void *userdata, Uint8 *stream, int len)
 {
     Sound_Sample *sample = (Sound_Sample *) userdata;
     int bw = 0; /* bytes written to stream this time through the callback */
