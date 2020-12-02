@@ -580,7 +580,8 @@ BOOL CSoundFile_ReadMed(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 			{
 				pseq = bswapBE32(((LPDWORD)(lpStream+playseqtable))[nplayseq]);
 			}
-			if ((pseq) && (pseq < dwMemLength - sizeof(MMD2PLAYSEQ)))
+			if ((pseq) && dwMemLength > sizeof(MMD2PLAYSEQ) &&
+				(pseq < dwMemLength - sizeof(MMD2PLAYSEQ)))
 			{
 				const MMD2PLAYSEQ *pmps = (MMD2PLAYSEQ *)(lpStream + pseq);
 				UINT n = bswapBE16(pmps->length);
@@ -645,7 +646,8 @@ BOOL CSoundFile_ReadMed(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	}
 	// Reading patterns (blocks)
 	if (wNumBlocks > MAX_PATTERNS) wNumBlocks = MAX_PATTERNS;
-	if ((!dwBlockArr) || (dwBlockArr > dwMemLength - 4*wNumBlocks)) return TRUE;
+	if ((!dwBlockArr) || (dwMemLength < 4*wNumBlocks) ||
+		(dwBlockArr > dwMemLength - 4*wNumBlocks)) return TRUE;
 	pdwTable = (LPDWORD)(lpStream + dwBlockArr);
 	playtransp += (version == '3') ? 24 : 48;
 	for (UINT iBlk=0; iBlk<wNumBlocks; iBlk++)

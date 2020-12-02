@@ -47,7 +47,7 @@ void ModPlug_Seek(ModPlugFile* file, int millisecond)
 		millisecond = maxtime;
 	maxpos = CSoundFile_GetMaxPosition((CSoundFile *) file);
 	postime = 0.0f;
-	if (maxtime != 0.0f)
+	if (maxtime != 0)
 		postime = (float)maxpos / (float)maxtime;
 
 	CSoundFile_SetCurrentPos((CSoundFile *) file, (int)(millisecond * postime));

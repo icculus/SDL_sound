@@ -644,6 +644,7 @@ BOOL CSoundFile_TestMID(const BYTE *lpStream, DWORD dwMemLength)
 	mm.mm = (char *)lpStream;
 	mm.sz = dwMemLength;
 	h.mmf = &mm;
+	if (h.mmf->sz < 4) return FALSE;
 	mmfseek(h.mmf,0,SEEK_SET);
 	mmreadSBYTES(id, 4, h.mmf);
 	id[4] = '\0';
@@ -1132,6 +1133,7 @@ BOOL CSoundFile_ReadMID(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 			return FALSE;
 		}
 		miditracklen = mid_read_long(h);
+		if (mm.sz < miditracklen) continue;
 		runningstatus = 0;
 		if( t && h->midiformat == 1 ) mid_rewind_tracks(h); // tracks sound simultaneously
 		while( miditracklen > 0 ) {

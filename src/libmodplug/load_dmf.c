@@ -88,7 +88,7 @@ BOOL CSoundFile_ReadDMF(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	dwMemPos = 66;
 	_this->m_nType = MOD_TYPE_DMF;
 	_this->m_nChannels = 0;
-	while (dwMemPos + 7 < dwMemLength)
+	while (dwMemPos < dwMemLength - 7)
 	{
 		DWORD id = *((LPDWORD)(lpStream+dwMemPos));
 

@@ -93,9 +93,11 @@ BOOL CSoundFile_ReadXM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 	SDL_memcpy(&xmhead, lpStream+60, sizeof (xmhead));
 	dwHdrSize = bswapLE32(xmhead.size);
 	norders = bswapLE16(xmhead.norder);
-	if ((!norders) || (norders > MAX_ORDERS)) return FALSE;
 	restartpos = bswapLE16(xmhead.restartpos);
 	channels = bswapLE16(xmhead.channels);
+
+	if ((!dwHdrSize) || dwHdrSize > dwMemLength - 60) return FALSE;
+	if ((!norders) || (norders > MAX_ORDERS)) return FALSE;
 	if ((!channels) || (channels > 64)) return FALSE;
 	_this->m_nType = MOD_TYPE_XM;
 	_this->m_nMinPeriod = 27;
@@ -162,6 +164,7 @@ BOOL CSoundFile_ReadXM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 			dwMemPos++;
 			dwSize = bswapLE32(*((DWORD *)(lpStream+dwMemPos)));
 		}
+		if (dwMemPos + 9 > dwMemLength) return TRUE;		
 		rows = bswapLE16(*((WORD *)(lpStream+dwMemPos+5)));
 		if ((!rows) || (rows > 256)) rows = 64;
 		packsize = bswapLE16(*((WORD *)(lpStream+dwMemPos+7)));
