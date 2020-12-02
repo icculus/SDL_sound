@@ -715,8 +715,8 @@ typedef struct CSoundFile
     int gbInitPlugins;
 } CSoundFile;
 
-typedef struct _ModPlug_Settings ModPlug_Settings;
-CSoundFile *new_CSoundFile(LPCBYTE lpStream, DWORD dwMemLength, const ModPlug_Settings *settings);
+struct _ModPlug_Settings;
+CSoundFile *new_CSoundFile(LPCBYTE lpStream, DWORD dwMemLength, const struct _ModPlug_Settings *settings);
 void delete_CSoundFile(CSoundFile *_this);
 
 	UINT CSoundFile_GetMaxPosition(CSoundFile *_this);
