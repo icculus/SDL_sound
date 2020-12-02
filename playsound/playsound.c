@@ -18,6 +18,9 @@
 #  include <signal.h>
 #endif
 
+#ifdef _WIN32
+#define SDL_MAIN_HANDLED /* this is a console-only app */
+#endif
 #include "SDL.h"
 #include "SDL_sound.h"
 
