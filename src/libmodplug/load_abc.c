@@ -333,9 +333,9 @@ static uint32_t notelen_notediv_to_ticks(int speed, int len, int div)
 	return u;
 }
 
+#if 0 /* not used */
 static void abc_dumptracks(ABCHANDLE *h, const char *p)
 {
-#if 0
 	ABCTRACK *t;
 	ABCEVENT *e;
 	int n,pat,row,tck;
@@ -398,8 +398,8 @@ static void abc_dumptracks(ABCHANDLE *h, const char *p)
 			}
 		}
 	}
-#endif
 }
+#endif
 
 
 // =====================================================================================

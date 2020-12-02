@@ -362,12 +362,10 @@ static SDL_INLINE int decode_adpcm_sample_frame(Sound_Sample *sample)
     SDL_RWops *rw = internal->rw;
     int i;
     int max = fmt->wChannels;
-    Sint32 delta;
     Uint8 nib = fmt->fmt.adpcm.nibble;
 
     for (i = 0; i < max; i++)
     {
-        Uint8 byte;
         Sint16 iCoef1 = fmt->fmt.adpcm.aCoef[headers[i].bPredictor].iCoef1;
         Sint16 iCoef2 = fmt->fmt.adpcm.aCoef[headers[i].bPredictor].iCoef2;
         Sint32 lPredSamp = ((headers[i].iSamp1 * iCoef1) +
@@ -645,7 +643,6 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
     SDL_RWops *rw = internal->rw;
     data_t d;
     wav_t *w;
-    Uint32 pos;
 
     BAIL_IF_MACRO(SDL_ReadLE32(rw) != riffID, "WAV: Not a RIFF file.", 0);
     SDL_ReadLE32(rw);  /* throw the length away; we get this info later. */

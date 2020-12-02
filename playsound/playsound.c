@@ -656,12 +656,11 @@ static void report_filename(const char *filename)
     const char *icon = "playsound";
     char *ptr = NULL;
 
-    fprintf(stdout, "%s: Now playing [%s]...\n", icon, filename);
-
     /*
      * Some versions of SDL can set the PulseAudio application name.
      *  It's a harmless no-op elsewhere.
      */
+
     ptr = strrchr(filename, '/');
     if (ptr != NULL)
         filename = ptr + 1;
@@ -687,6 +686,8 @@ static void report_filename(const char *filename)
     SDL_SetHint("SDL_AUDIO_DEVICE_APP_NAME", icon);
     SDL_SetHint("SDL_AUDIO_DEVICE_STREAM_NAME", filename);
 #endif
+
+    fprintf(stdout, "%s: Now playing [%s]...\n", icon, filename);
 } /* report_filename */
 
 
