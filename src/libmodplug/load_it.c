@@ -9,7 +9,8 @@
 
 #include "libmodplug.h"
 
-static const BYTE autovibit2xm[8] =
+static const
+BYTE autovibit2xm[8] =
 { 0, 3, 1, 4, 2, 0, 0, 0 };
 
 //////////////////////////////////////////////////////////
@@ -780,10 +781,9 @@ UINT CSoundFile_LoadMixPlugins(CSoundFile *_this, const void *pData, UINT nLen)
 			{
 				break;
 			}
-            // took out the (otherwise unused) plugin loading code here.  --ryan.
+			// took out the (otherwise unused) plugin loading code here.  --ryan.
 		}
 		nPos += nPluginSize + 8;
 	}
 	return nPos;
 }
-

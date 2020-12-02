@@ -178,7 +178,7 @@ BOOL CSoundFile_ReadDMF(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 						for (UINT i=0; i<tracks; i++) if (!infobyte[i])
 						{
 							MODCOMMAND cmd;
-                            SDL_zero(cmd);
+							SDL_zero(cmd);
 							BYTE info = lpStream[d++];
 							if (info & 0x80) infobyte[i] = lpStream[d++];
 							// Instrument

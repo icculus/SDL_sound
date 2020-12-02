@@ -9,11 +9,11 @@
 
 void ModPlug_Quit(void) { /* does nothing. */ }
 
+extern void init_modplug_filters(void);
 int ModPlug_Init(void)
 {
-    extern void init_modplug_filters(void);
-    init_modplug_filters();
-    return 1;
+	init_modplug_filters();
+	return 1;
 }
 
 ModPlugFile* ModPlug_Load(const void* data, int size, const ModPlug_Settings *settings)
@@ -28,7 +28,7 @@ void ModPlug_Unload(ModPlugFile* file)
 
 int ModPlug_Read(ModPlugFile* file, void* buffer, int size)
 {
-    CSoundFile *sndfile = (CSoundFile *) file;
+	CSoundFile *sndfile = (CSoundFile *) file;
 	return CSoundFile_Read(sndfile, buffer, size) * sndfile->gSampleSize;
 }
 
@@ -56,21 +56,21 @@ void ModPlug_Seek(ModPlugFile* file, int millisecond)
 // inefficient, but oh well.
 char *rwops_fgets(char *buf, int buflen, SDL_RWops *rwops)
 {
-    char *retval = buf;
-    if (!buflen) return buf;
-    while (buflen > 1) {
-        char ch;
-        if (SDL_RWread(rwops, &ch, 1, 1) != 1) {
-            break;
-        }
-        *(buf++) = ch;
-        buflen--;
-        if (ch == '\n') {
-            break;
-        }
-    }
-    *(buf) = '\0';
-    return retval;
+	char *retval = buf;
+	if (!buflen) return buf;
+	while (buflen > 1) {
+		char ch;
+		if (SDL_RWread(rwops, &ch, 1, 1) != 1) {
+			break;
+		}
+		*(buf++) = ch;
+		buflen--;
+		if (ch == '\n') {
+			break;
+		}
+	}
+	*(buf) = '\0';
+	return retval;
 }
 
 long mmftell(MMFILE *mmfile)
@@ -82,15 +82,15 @@ void mmfseek(MMFILE *mmfile, long p, int whence)
 {
 	int newpos = mmfile->pos;
 	switch(whence) {
-		case SEEK_SET:
-			newpos = p;
-			break;
-		case SEEK_CUR:
-			newpos += p;
-			break;
-		case SEEK_END:
-			newpos = mmfile->sz + p;
-			break;
+	case SEEK_SET:
+		newpos = p;
+		break;
+	case SEEK_CUR:
+		newpos += p;
+		break;
+	case SEEK_END:
+		newpos = mmfile->sz + p;
+		break;
 	}
 	if (newpos < mmfile->sz)
 		mmfile->pos = newpos;
@@ -167,4 +167,3 @@ void mmfgets(char buf[], unsigned int bufsz, MMFILE *mmfile)
 	}
 	buf[i] = '\0';
 }
-

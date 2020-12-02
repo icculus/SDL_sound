@@ -354,4 +354,3 @@ BOOL CSoundFile_ReadDBM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	}
 	return TRUE;
 }
-

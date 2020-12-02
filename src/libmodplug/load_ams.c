@@ -38,6 +38,7 @@ typedef struct AMSSAMPLEHEADER
 #pragma pack()
 
 
+
 BOOL CSoundFile_ReadAMS(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 //-----------------------------------------------------------
 {

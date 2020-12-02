@@ -93,7 +93,7 @@ typedef struct tagMMD0SAMPLE
 typedef struct tagMMDSAMPLEHEADER
 {
 	DWORD length;     // length of *one* *unpacked* channel in *bytes*
-	WORD type;   
+	WORD type;
 				// if non-negative
 					// bits 0-3 reserved for multi-octave instruments, not supported on the PC
 					// 0x10: 16 bit (otherwise 8 bit)
@@ -165,7 +165,7 @@ typedef struct tagMMD2SONGHEADER
 	BYTE numsamples;	// # of samples (max 63)
 } MMD2SONGHEADER;
 
-// For MMD0 the note information is held in 3 bytes, byte0, byte1, byte2.  For reference we 
+// For MMD0 the note information is held in 3 bytes, byte0, byte1, byte2.  For reference we
 // number the bits in each byte 0..7, where 0 is the low bit.
 // The note is held as bits 5..0 of byte0
 // The instrument is encoded in 6 bits,  bits 7 and 6 of byte0 and bits 7,6,5,4 of byte1
@@ -238,7 +238,7 @@ typedef struct tagMMD0EXP
 	DWORD annotxt;
 	DWORD annolen;
 	DWORD iinfo;			// Instrument names
-	WORD i_ext_entries;	
+	WORD i_ext_entries;
 	WORD i_ext_entrsz;
 	DWORD jumpmask;
 	DWORD rgbtable;
@@ -756,4 +756,3 @@ BOOL CSoundFile_ReadMed(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	}
 	return TRUE;
 }
-

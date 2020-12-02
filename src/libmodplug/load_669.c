@@ -25,7 +25,6 @@ typedef struct tagFILEHEADER669
 	BYTE breaks[128];
 } FILEHEADER669;
 
-
 typedef struct tagSAMPLE669
 {
 	BYTE filename[13];
@@ -184,5 +183,3 @@ BOOL CSoundFile_Read669(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	}
 	return TRUE;
 }
-
-

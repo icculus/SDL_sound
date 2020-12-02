@@ -29,7 +29,6 @@ typedef struct tagXMFILEHEADER
 	BYTE order[256];
 } XMFILEHEADER;
 
-
 typedef struct tagXMINSTRUMENTHEADER
 {
 	DWORD size;
@@ -38,7 +37,6 @@ typedef struct tagXMINSTRUMENTHEADER
 	BYTE samples;
 	BYTE samplesh;
 } XMINSTRUMENTHEADER;
-
 
 typedef struct tagXMSAMPLEHEADER
 {
@@ -69,7 +67,6 @@ typedef struct tagXMSAMPLESTRUCT
 	char name[22];
 } XMSAMPLESTRUCT;
 #pragma pack()
-
 
 BOOL CSoundFile_ReadXM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLength)
 //--------------------------------------------------------------
@@ -554,4 +551,3 @@ BOOL CSoundFile_ReadXM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 	}
 	return TRUE;
 }
-

@@ -152,6 +152,7 @@ static VOID AMF_Unpack(MODCOMMAND *pPat, const BYTE *pTrack, UINT nRows, UINT nC
 	}
 }
 
+
 BOOL CSoundFile_ReadAMF(CSoundFile *_this, LPCBYTE lpStream, const DWORD dwMemLength)
 //-----------------------------------------------------------
 {
@@ -401,4 +402,3 @@ BOOL CSoundFile_ReadAMF(CSoundFile *_this, LPCBYTE lpStream, const DWORD dwMemLe
 	}
 	return TRUE;
 }
-
