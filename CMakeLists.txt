@@ -18,6 +18,7 @@ endif()
 include_directories(src)
 
 if(CMAKE_COMPILER_IS_GNUCC)
+    add_definitions(-std=gnu99)
     # Don't use -rpath.
     set(CMAKE_SKIP_RPATH ON CACHE BOOL "Skip RPATH" FORCE)
 endif()
