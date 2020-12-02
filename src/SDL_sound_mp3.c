@@ -21,6 +21,7 @@
 
 #define DR_MP3_IMPLEMENTATION
 #define DR_MP3_NO_STDIO 1
+#define DR_MP3_FLOAT_OUTPUT 1
 #define DRMP3_ASSERT(x) SDL_assert((x))
 #define DRMP3_MALLOC(sz) SDL_malloc((sz))
 #define DRMP3_REALLOC(p, sz) SDL_realloc((p), (sz))
