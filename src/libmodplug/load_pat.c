@@ -44,14 +44,14 @@
 
 #include "load_pat.h"
 
-#ifdef MSC_VER
+#ifdef _WIN32
 #define DIRDELIM		'\\'
 #define TIMIDITYCFG	"C:\\TIMIDITY\\TIMIDITY.CFG"
 #define PATHFORPAT	"C:\\TIMIDITY\\INSTRUMENTS"
 #else
 #define DIRDELIM		'/'
-#define TIMIDITYCFG	"/usr/local/share/timidity/timidity.cfg"
-#define PATHFORPAT	"/usr/local/share/timidity/instruments"
+#define TIMIDITYCFG	"/etc/timidity.cfg" /*"/usr/share/timidity/timidity.cfg"*/
+#define PATHFORPAT	"/usr/share/timidity/instruments"
 #endif
 
 #define PAT_ENV_PATH2CFG			"MMPAT_PATH_TO_CFG"
@@ -291,12 +291,12 @@ void pat_init_patnames(void)
 	char line[PATH_MAX];
 	char cfgsources[5][PATH_MAX];
 	MMSTREAM *mmcfg;
-    SDL_memset(cfgsources, 0, sizeof (cfgsources));
+	SDL_memset(cfgsources, 0, sizeof (cfgsources));
 	SDL_strlcpy(pathforpat, PATHFORPAT, PATH_MAX);
 	SDL_strlcpy(timiditycfg, TIMIDITYCFG, PATH_MAX);
 	p = SDL_getenv(PAT_ENV_PATH2CFG);
 	if( p ) {
-        SDL_snprintf(timiditycfg, sizeof (timiditycfg), "%s/timidity.cfg", p);
+		SDL_snprintf(timiditycfg, sizeof (timiditycfg), "%s/timidity.cfg", p);
 		SDL_snprintf(pathforpat, sizeof (pathforpat), "%s", p);
 	}
 	SDL_strlcpy(cfgsources[0], timiditycfg, PATH_MAX - 1);
@@ -394,9 +394,9 @@ static char *pat_build_path(char *fname, const size_t fnamelen, int pat)
 	ps = SDL_strrchr(patfile, ':');
 	if( ps ) {
 		SDL_snprintf(fname, fnamelen, "%s%c%s", isabspath ? "" : pathforpat, DIRDELIM, patfile);
-        char *replaceptr = SDL_strrchr(fname, ':');
-        SDL_assert(replaceptr != NULL);
-        *replaceptr = '\0';
+		char *replaceptr = SDL_strrchr(fname, ':');
+		SDL_assert(replaceptr != NULL);
+		*replaceptr = '\0';
 		SDL_strlcat(fname, ".pat", fnamelen);
 		return ps;
 	}
@@ -694,10 +694,7 @@ BOOL CSoundFile_TestPAT(const BYTE *lpStream, DWORD dwMemLength)
 // =====================================================================================
 static PATHANDLE *PAT_Init(void)
 {
-    PATHANDLE   *retval;
-    retval = (PATHANDLE *)SDL_calloc(1,sizeof(PATHANDLE));
-		if( !retval ) return NULL;
-    return retval;
+    return (PATHANDLE *)SDL_calloc(1,sizeof(PATHANDLE));
 }
 
 // =====================================================================================
