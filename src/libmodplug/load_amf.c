@@ -353,7 +353,7 @@ BOOL CSoundFile_ReadAMF(CSoundFile *_this, LPCBYTE lpStream, const DWORD dwMemLe
 	}
 	// Store tracks positions
 	BYTE **pTrackData = (BYTE **) SDL_malloc(sizeof (BYTE *) * realtrackcnt);
-    if (!pTrackData) return TRUE;
+	if (!pTrackData) return TRUE;/*FIXME: return FALSE? */
 	SDL_memset(pTrackData, 0, sizeof(BYTE *) * realtrackcnt);
 	for (UINT iTrack=0; iTrack<realtrackcnt; iTrack++) if (dwMemPos <= dwMemLength - 3)
 	{
