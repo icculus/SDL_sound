@@ -105,7 +105,7 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
         SNDDBG(("MODPLUG: Unrecognized file type: %s\n", ext));
         BAIL_MACRO("MODPLUG: Not a module file.", 0);
     } /* if */
-    
+
     /* ModPlug needs the entire stream in one big chunk. I don't like it,
        but I don't think there's any way around it.  !!! FIXME: rework modplug? */
     data = (Uint8 *) SDL_malloc(CHUNK_SIZE);
@@ -127,6 +127,8 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
     if (sample->actual.rate == 0) sample->actual.rate = 44100;
     if (sample->actual.channels == 0) sample->actual.channels = 2;
     if (sample->actual.format == 0) sample->actual.format = AUDIO_S16SYS;
+
+    SDL_zero(settings);
 
     settings.mChannels=sample->actual.channels;
     settings.mFrequency=sample->actual.rate;
