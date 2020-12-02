@@ -55,6 +55,7 @@ typedef struct _MT2AUTOMATION
 
 typedef struct _MT2INSTRUMENT
 {
+	CHAR szName[32]; /* not used by SDL_sound */
 	DWORD dwDataLen;
 	WORD wSamples;
 	BYTE GroupsMapping[96];
@@ -93,6 +94,7 @@ typedef struct _MT2SYNTH
 
 typedef struct _MT2SAMPLE
 {
+	CHAR szName[32]; /* not used by SDL_sound */
 	DWORD dwDataLen;
 	DWORD dwLength;
 	DWORD dwFrequency;
