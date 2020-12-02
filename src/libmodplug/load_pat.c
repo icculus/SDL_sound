@@ -35,7 +35,7 @@
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
-#include <limits.h> // for PATH_MAX
+#include <limits.h> /* for PATH_MAX */
 #ifndef PATH_MAX
 #define PATH_MAX 256
 #endif

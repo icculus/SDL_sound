@@ -66,7 +66,7 @@
 
 static signed short CzCUBICSPLINE_lut[4*(1L<<SPLINE_FRACBITS)];
 
-static void initCzCUBICSPLINE()
+static void initCzCUBICSPLINE(void)
 {
 	int _LIi;
 	int _LLen		= (1L<<SPLINE_FRACBITS);
@@ -146,7 +146,7 @@ static void initCzCUBICSPLINE()
 
 static float CzWINDOWEDFIR_coef( int _PCnr, float _POfs, float _PCut, int _PWidth, int _PType )
 //OLD args to coef: float _PPos, float _PFc, int _PLen )
-	{	
+{
 		double	_LWidthM1       = _PWidth-1;
 		double	_LWidthM1Half   = 0.5*_LWidthM1;
 		double	_LPosU          = ((double)_PCnr - _POfs);
@@ -200,12 +200,12 @@ static float CzWINDOWEDFIR_coef( int _PCnr, float _POfs, float _PCut, int _PWidt
 			_LSi	 = SDL_sin(_PCut*_LPos)/_LPos;
 		}
 		return (float)(_LWc*_LSi);
-	}
+}
 
 static signed short CzWINDOWEDFIR_lut[WFIR_LUTLEN*WFIR_WIDTH];
 
-static void initCzWINDOWEDFIR()
-{	
+static void initCzWINDOWEDFIR(void)
+{
 	int _LPcl;
 	float _LPcllen	= (float)(1L<<WFIR_FRACBITS);	// number of precalculated lines for 0..1 (-1..0)
 	float _LNorm	= 1.0f / (float)(2.0f * _LPcllen);
@@ -222,7 +222,7 @@ static void initCzWINDOWEDFIR()
 		_LGain = 1.0f/_LGain;
 		for( _LCc=0;_LCc<WFIR_WIDTH;_LCc++ )
 		{	float _LCoef = (float)floor( 0.5 + _LScale*_LCoefs[_LCc]*_LGain );
-		CzWINDOWEDFIR_lut[_LIdx+_LCc] = (signed short)( (_LCoef<-_LScale)?-_LScale:((_LCoef>_LScale)?_LScale:_LCoef) );
+			CzWINDOWEDFIR_lut[_LIdx+_LCc] = (signed short)( (_LCoef<-_LScale)?-_LScale:((_LCoef>_LScale)?_LScale:_LCoef) );
 		}
 	}
 }

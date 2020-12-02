@@ -24,14 +24,10 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <windowsx.h>
-#include <mmsystem.h>
+#include <mmsystem.h> /* for WAVE_FORMAT_PCM */
 #include <stdio.h>
 #include <malloc.h>
 #include <stdint.h>
-
-#define srandom(_seed)  srand(_seed)
-#define random()        rand()
 
 #else
 
@@ -63,12 +59,6 @@ typedef void VOID;
 
 #define LPCTSTR LPCSTR
 #define WAVE_FORMAT_PCM 1
-//#define ENABLE_EQ
-
-#define  GHND   0
-
-#define GlobalAllocPtr(x, size) SDL_calloc(1, (size))
-#define GlobalFreePtr(p) SDL_free((void *)(p))
 
 #ifndef FALSE
 #define FALSE	0
