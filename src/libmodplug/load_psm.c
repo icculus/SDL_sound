@@ -291,17 +291,17 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 			ch = p[pos++];
 			if (ch >= _this->m_nChannels) {
 				sp = &dummy;
-            } else {
+			} else {
 				sp = &m[ch];
-            }
+			}
 			// Note + Instr
-            if ((flags & 0x80) && (pos+1 < len))
-        	{
-                UINT note = p[pos++];
-                note = (note>>4)*12+(note&0x0f)+12+1;
-                if (note > 0x80) note = 0;
+			if ((flags & 0x80) && (pos+1 < len))
+			{
+				UINT note = p[pos++];
+				note = (note>>4)*12+(note&0x0f)+12+1;
+				if (note > 0x80) note = 0;
 				sp->note = note;
-            }
+			}
 			if ((flags & 0x40) && (pos+1 < len))
 			{
 				UINT nins = p[pos++];
@@ -325,10 +325,10 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 				case 0x01:	command = CMD_VOLUMESLIDE; param |= 0x0f;
 						if (param == 15) param=31;
 						break;
-                                // 02: volslide up
-                                case 0x02:      command = CMD_VOLUMESLIDE; param>>=1; param<<=4; break;
-                                // 03: fine volslide down
-                                case 0x03:	command = CMD_VOLUMESLIDE; param>>=4; param |= 0xf0;
+				// 02: volslide up
+				case 0x02:	command = CMD_VOLUMESLIDE; param>>=1; param<<=4; break;
+				// 03: fine volslide down
+				case 0x03:	command = CMD_VOLUMESLIDE; param>>=4; param |= 0xf0;
 						if (param == 240) param=241;
 						break;
 				// 04: fine volslide down
@@ -340,7 +340,7 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 				// 0F: tone portamento
 				case 0x0F:	command = CMD_TONEPORTAMENTO; param = param/4; break;
 				// 15: vibrato
-                                case 0x15:	command = CMD_VIBRATO; break;
+				case 0x15:	command = CMD_VIBRATO; break;
 				// 29: sample offset
 				case 0x29:	pos += 2; break;
 				// 2A: retrigger note
