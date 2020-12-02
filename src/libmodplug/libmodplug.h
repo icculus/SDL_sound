@@ -61,12 +61,6 @@ typedef const char* LPCSTR;
 typedef void* PVOID;
 typedef void VOID;
 
-inline LONG MulDiv (long a, long b, long c)
-{
-  // if (!c) return 0;
-  return ((uint64_t) a * (uint64_t) b ) / c;
-}
-
 #define LPCTSTR LPCSTR
 #define WAVE_FORMAT_PCM 1
 //#define ENABLE_EQ
