@@ -39,11 +39,10 @@ typedef struct _AMFSAMPLE
 	UCHAR volume;
 } AMFSAMPLE;
 
-
 #pragma pack()
 
 
-VOID AMF_Unpack(MODCOMMAND *pPat, const BYTE *pTrack, UINT nRows, UINT nChannels)
+static VOID AMF_Unpack(MODCOMMAND *pPat, const BYTE *pTrack, UINT nRows, UINT nChannels)
 //-------------------------------------------------------------------------------
 {
 	UINT lastinstr = 0;
@@ -152,8 +151,6 @@ VOID AMF_Unpack(MODCOMMAND *pPat, const BYTE *pTrack, UINT nRows, UINT nChannels
 		pTrack += 3;
 	}
 }
-
-
 
 BOOL CSoundFile_ReadAMF(CSoundFile *_this, LPCBYTE lpStream, const DWORD dwMemLength)
 //-----------------------------------------------------------
