@@ -15,13 +15,6 @@ static const BYTE autovibit2xm[8] =
 //////////////////////////////////////////////////////////
 // Impulse Tracker IT file support
 
-static inline UINT ConvertVolParam(UINT value)
-//--------------------------------------------
-{
-	return (value > 9)  ? 9 : value;
-}
-
-
 static BOOL ITInstrToMPT(const void *p, INSTRUMENTHEADER *penv, UINT trkvers)
 //--------------------------------------------------------------------------------
 {
@@ -770,7 +763,6 @@ UINT CSoundFile_LoadMixPlugins(CSoundFile *_this, const void *pData, UINT nLen)
 	while (nPos+8 < nLen)
 	{
 		DWORD nPluginSize;
-		UINT nPlugin;
 
 		nPluginSize = bswapLE32(*(DWORD *)(p+nPos+4));
 		if (nPluginSize > nLen-nPos-8) break;;

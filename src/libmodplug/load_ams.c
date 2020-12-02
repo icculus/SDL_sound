@@ -320,7 +320,6 @@ BOOL CSoundFile_ReadAMS2(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 	for (UINT nIns=1; nIns<=_this->m_nInstruments; nIns++)
 	{
 		const UINT insnamelen = lpStream[dwMemPos];
-		CHAR *pinsname = (CHAR *)(lpStream+dwMemPos+1);
 		dwMemPos += insnamelen + 1;
 		AMS2INSTRUMENT *pins = (AMS2INSTRUMENT *)(lpStream + dwMemPos);
 		dwMemPos += sizeof(AMS2INSTRUMENT);

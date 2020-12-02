@@ -43,9 +43,8 @@ static void RAW_quit(void)
 static int RAW_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = sample->opaque;
-    SDL_RWops *rw = internal->rw;
     Uint32 pos, sample_rate;
-  
+
         /*
          * We check this explicitly, since we have no other way to
          *  determine whether we should handle this data or not.

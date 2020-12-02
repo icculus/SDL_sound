@@ -109,7 +109,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = sample->opaque;
     SDL_RWops *rw = internal->rw;
-    int skip, hsize, i, bytes_per_second;
+    int hsize, i, bytes_per_second;
     struct au_file_hdr hdr;
     struct audec *dec;
     char c;

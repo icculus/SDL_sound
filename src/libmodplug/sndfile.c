@@ -16,24 +16,6 @@ extern void ITUnpack8Bit(signed char *pSample, DWORD dwLen, LPBYTE lpMemFile, DW
 extern void ITUnpack16Bit(signed char *pSample, DWORD dwLen, LPBYTE lpMemFile, DWORD dwMemLength, BOOL b215);
 
 
-#define MAX_PACK_TABLES		3
-
-
-// Compression table
-static const signed char UnpackTable[MAX_PACK_TABLES][16] =
-//--------------------------------------------
-{
-	// CPU-generated dynamic table
-	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-	// u-Law table
-	{0, 1, 2, 4, 8, 16, 32, 64,
-	-1, -2, -4, -8, -16, -32, -48, -64},
-	// Linear table
-	{0, 1, 2, 3, 5, 7, 12, 19,
-	-1, -2, -3, -5, -7, -12, -19, -31}
-};
-
-
 static void CSoundFile_UpdateSettings(CSoundFile *_this, const ModPlug_Settings *settings)
 {
 	if(settings->mFlags & MODPLUG_ENABLE_REVERB)
