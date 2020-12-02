@@ -67,7 +67,7 @@ typedef void VOID;
 
 #define  GHND   0
 
-#define GlobalAllocPtr(x, size) ((int8_t *) SDL_calloc(1, (size)))
+#define GlobalAllocPtr(x, size) SDL_calloc(1, (size))
 #define GlobalFreePtr(p) SDL_free((void *)(p))
 
 #ifndef FALSE
@@ -117,10 +117,7 @@ char *rwops_fgets(char *buf, int buflen, SDL_RWops *rwops);
 #define _mm_recalloc(h,buf,sz,elsz)	SDL_realloc(buf,sz)
 #define _mm_free(h,p)				SDL_free(p)
 
-
 #define MODPLUG_EXPORT
-
-
 
 /*
  * This source code is public domain.
@@ -151,7 +148,6 @@ typedef const BYTE * LPCBYTE;
 #define MAX_EQ_BANDS		6
 #define MAX_MIXPLUGINS		8
 
-
 #define MOD_TYPE_NONE		0x00
 #define MOD_TYPE_MOD		0x01
 #define MOD_TYPE_S3M		0x02
@@ -181,8 +177,6 @@ typedef const BYTE * LPCBYTE;
 #define MOD_TYPE_PAT		0x2000000
 #define MOD_TYPE_UMX		0x80000000 // Fake type
 #define MAX_MODTYPE		24
-
-
 
 // Channel flags:
 // Bits 0-7:	Sample Flags
@@ -215,7 +209,6 @@ typedef const BYTE * LPCBYTE;
 #define CHN_EXTRALOUD		0x2000000
 #define CHN_REVERB              0x4000000
 #define CHN_NOREVERB		0x8000000
-
 
 #define ENV_VOLUME              0x0001
 #define ENV_VOLSUSTAIN		0x0002
@@ -264,7 +257,6 @@ typedef const BYTE * LPCBYTE;
 #define CMD_PANNINGSLIDE		29
 #define CMD_SETENVPOSITION		30
 #define CMD_MIDI                        31
-
 
 // Volume Column commands
 #define VOLCMD_VOLUME			1
@@ -436,7 +428,6 @@ enum {
 	NUM_REVERBTYPES
 };
 
-
 enum {
 	SRCMODE_NEAREST,
 	SRCMODE_LINEAR,
@@ -444,7 +435,6 @@ enum {
 	SRCMODE_POLYPHASE,
 	NUM_SRC_MODES
 };
-
 
 // Sample Struct
 typedef struct _MODINSTRUMENT
@@ -464,7 +454,6 @@ typedef struct _MODINSTRUMENT
 	BYTE nVibDepth;
 	BYTE nVibRate;
 } MODINSTRUMENT;
-
 
 // Instrument Struct
 typedef struct _INSTRUMENTHEADER
@@ -512,7 +501,6 @@ typedef struct _INSTRUMENTHEADER
 	unsigned char nPPC;
 	CHAR filename[12];
 } INSTRUMENTHEADER;
-
 
 // Channel Struct
 typedef struct _MODCHANNEL
@@ -574,7 +562,6 @@ typedef struct _MODCHANNEL
 	BYTE nActiveMacro, nPadding;
 } MODCHANNEL;
 
-
 typedef struct _MODCHANNELSETTINGS
 {
 	UINT nPan;
@@ -582,7 +569,6 @@ typedef struct _MODCHANNELSETTINGS
 	DWORD dwFlags;
 	UINT nMixPlugin;
 } MODCHANNELSETTINGS;
-
 
 typedef struct _MODCOMMAND
 {
@@ -607,7 +593,6 @@ enum {
 	MIDIOUT_BANKSEL,
 	MIDIOUT_PROGRAM,
 };
-
 
 typedef struct MODMIDICFG
 {
@@ -652,6 +637,7 @@ typedef struct CSoundFile
 	UINT m_nMaxMixChannels;
 	DWORD gdwSoundSetup, gdwMixingFreq, gnBitsPerSample, gnChannels;
 	UINT gnVolumeRampSamples;
+
     UINT gSampleSize;
     int MixSoundBuffer[MIXBUFFERSIZE*4];
     #ifndef MODPLUG_NO_REVERB
@@ -860,7 +846,6 @@ void delete_CSoundFile(CSoundFile *_this);
 	UINT CSoundFile_Normalize24BitBuffer(LPBYTE pbuffer, UINT cbsizebytes, DWORD lmax24, DWORD dwByteInc);
 
 
-
 #pragma pack(1)
 
 typedef struct tagITFILEHEADER
@@ -888,7 +873,6 @@ typedef struct tagITFILEHEADER
 	BYTE chnpan[64];
 	BYTE chnvol[64];
 } ITFILEHEADER;
-
 
 typedef struct tagITENVELOPE
 {
@@ -927,7 +911,6 @@ typedef struct tagITOLDINSTRUMENT
 	BYTE nodes[50];
 } ITOLDINSTRUMENT;
 
-
 // Impulse Instrument Format
 typedef struct tagITINSTRUMENT
 {
@@ -960,7 +943,6 @@ typedef struct tagITINSTRUMENT
 	BYTE dummy[4]; // was 7, but IT v2.17 saves 554 bytes
 } ITINSTRUMENT;
 
-
 // IT Sample Format
 typedef struct ITSAMPLESTRUCT
 {
@@ -989,4 +971,3 @@ typedef struct ITSAMPLESTRUCT
 #pragma pack()
 
 #endif
-

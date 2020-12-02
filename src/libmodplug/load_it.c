@@ -143,10 +143,11 @@ BOOL CSoundFile_ReadIT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 	DWORD patpos[MAX_PATTERNS];
 	BYTE chnmask[64], channels_used[64];
 	MODCOMMAND lastvalue[64];
+	UINT j;
 
 	if ((!lpStream) || (dwMemLength < sizeof(ITFILEHEADER))) return FALSE;
 	ITFILEHEADER pifh;
-    SDL_memcpy(&pifh, lpStream, sizeof (pifh));
+	SDL_memcpy(&pifh, lpStream, sizeof(pifh));
 
 	pifh.id = bswapLE32(pifh.id);
 	pifh.reserved1 = bswapLE16(pifh.reserved1);
@@ -204,7 +205,7 @@ BOOL CSoundFile_ReadIT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 	if (inspossize > MAX_INSTRUMENTS) inspossize = MAX_INSTRUMENTS;
 	inspossize <<= 2;
 	SDL_memcpy(inspos, lpStream+dwMemPos, inspossize);
-	for (UINT j=0; j < (inspossize>>2); j++)
+	for (j=0; j < (inspossize>>2); j++)
 	{
 	       inspos[j] = bswapLE32(inspos[j]);
 	}
@@ -215,7 +216,7 @@ BOOL CSoundFile_ReadIT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 	if (smppossize > MAX_SAMPLES) smppossize = MAX_SAMPLES;
 	smppossize <<= 2;
 	SDL_memcpy(smppos, lpStream+dwMemPos, smppossize);
-	for (UINT j=0; j < (smppossize>>2); j++)
+	for (j=0; j < (smppossize>>2); j++)
 	{
 	       smppos[j] = bswapLE32(smppos[j]);
 	}
@@ -226,7 +227,7 @@ BOOL CSoundFile_ReadIT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 	if (patpossize > MAX_PATTERNS) patpossize = MAX_PATTERNS;
 	patpossize <<= 2;
 	SDL_memcpy(patpos, lpStream+dwMemPos, patpossize);
-	for (UINT j=0; j < (patpossize>>2); j++)
+	for (j=0; j < (patpossize>>2); j++)
 	{
 	       patpos[j] = bswapLE32(patpos[j]);
 	}

@@ -2542,10 +2542,10 @@ static int ABC_Key(const char *p)
 {
 	int i,j;
 	char c[8];
-    SDL_memset(c, 0, sizeof (c));
 	const char *q;
 	while( SDL_isspace(*p) ) p++;
 	q = p;
+	SDL_memset(c, 0, sizeof(c));
 	for( i=0; i<8 && *p && *p != ']'; p++ ) {
 		if( SDL_isspace(*p) ) {
 			while( SDL_isspace(*p) ) p++;
@@ -2838,8 +2838,7 @@ static void abc_MIDI_voice(const char *p, ABCTRACK *tp, ABCHANDLE *h)
 static void abc_MIDI_chordname(const char *p)
 {
 	char name[20];
-	int i, notes[6];
-    SDL_memset(notes, 0, sizeof (notes));
+	int i;
 
 	for( ; *p && SDL_isspace(*p); p++ ) ;
 	i = 0;
@@ -2853,7 +2852,9 @@ static void abc_MIDI_chordname(const char *p)
 		abc_message("Failure: Bad format for chordname command, %s", p);
 	}
 	else {
+		int notes[6];
 		i = 0;
+		SDL_memset(notes, 0, sizeof (notes));
 		while ((i < 6) && SDL_isspace(*p)) {
 			for( ; *p && SDL_isspace(*p); p++ ) ;
 			p += abc_getnumber(p, &notes[i]);
