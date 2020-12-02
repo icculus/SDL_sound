@@ -466,6 +466,7 @@ BOOL CSoundFile_ReadMT2(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 			{
 				MODINSTRUMENT *psmp = &_this->Ins[iSmp];
 				psmp->nGlobalVol = 64;
+				if (dwMemPos+sizeof(MT2SAMPLE) > dwMemLength) return TRUE;
 				psmp->nVolume = (pms->wVolume >> 7);
 				psmp->nPan = (pms->nPan == 0x80) ? 128 : (pms->nPan^0x80);
 				psmp->nLength = pms->dwLength;
@@ -522,7 +523,7 @@ BOOL CSoundFile_ReadMT2(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 		MODINSTRUMENT *psmp = &_this->Ins[iData+1];
 		if (!(pms->nFlags & 5))
 		{
-			if (psmp->nLength > 0) 
+			if (psmp->nLength > 0 && dwMemPos < dwMemLength)
 			{
 				UINT rsflags;
 				

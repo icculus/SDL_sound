@@ -260,14 +260,16 @@ BOOL CSoundFile_ProcessRow(CSoundFile *_this)
 			_this->m_nNextPattern = _this->m_nCurrentPattern;
 		}
 		// Weird stuff?
-		if ((_this->m_nPattern >= MAX_PATTERNS) || (!_this->Patterns[_this->m_nPattern])) return FALSE;
+		if ((_this->m_nPattern >= MAX_PATTERNS) || (!_this->Patterns[_this->m_nPattern]) ||
+			_this->PatternSize[_this->m_nPattern] == 0) return FALSE;
 		// Should never happen
 		if (_this->m_nRow >= _this->PatternSize[_this->m_nPattern]) _this->m_nRow = 0;
 		_this->m_nNextRow = _this->m_nRow + 1;
 		if (_this->m_nNextRow >= _this->PatternSize[_this->m_nPattern])
 		{
 			if (!(_this->m_dwSongFlags & SONG_PATTERNLOOP)) _this->m_nNextPattern = _this->m_nCurrentPattern + 1;
-			_this->m_nNextRow = 0;
+			_this->m_nNextRow = _this->m_nNextStartRow;
+			_this->m_nNextStartRow = 0;
 		}
 		// Reset channel values
 		MODCHANNEL *pChn = _this->Chn;

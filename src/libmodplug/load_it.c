@@ -348,7 +348,8 @@ BOOL CSoundFile_ReadIT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 	if (_this->m_nInstruments >= MAX_INSTRUMENTS) _this->m_nInstruments = MAX_INSTRUMENTS-1;
 	for (UINT nins=0; nins<_this->m_nInstruments; nins++)
 	{
-		if ((inspos[nins] > 0) && (inspos[nins] < dwMemLength - sizeof(ITOLDINSTRUMENT)))
+		if ((inspos[nins] > 0) && dwMemLength > sizeof(ITOLDINSTRUMENT) &&
+			(inspos[nins] < dwMemLength - sizeof(ITOLDINSTRUMENT)))
 		{
 			INSTRUMENTHEADER *penv = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER));
 			if (!penv) continue;
@@ -575,6 +576,10 @@ static DWORD ITReadBits(DWORD *bitbuf, UINT *bitnum, LPBYTE *_ibuf, CHAR n)
     LPBYTE ibuf = *_ibuf;
 	DWORD retval = 0;
 	UINT i = n;
+
+	// explicit if read 0 bits, then return 0
+	if (i == 0)
+		return(0);
 
 	if (n > 0)
 	{

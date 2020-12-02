@@ -13,7 +13,7 @@ DWORD CSoundFile_GetLength(CSoundFile *_this, BOOL bAdjust, BOOL bTotal)
 {
 	UINT dwElapsedTime=0, nRow=0, nCurrentPattern=0, nNextPattern=0, nPattern=0;
 	UINT nMusicSpeed=_this->m_nDefaultSpeed, nMusicTempo=_this->m_nDefaultTempo, nNextRow=0;
-	UINT nMaxRow = 0, nMaxPattern = 0;
+	UINT nMaxRow = 0, nMaxPattern = 0, nNextStartRow = 0;
 	LONG nGlbVol = _this->m_nDefaultGlobalVolume, nOldGlbVolSlide = 0;
 	BYTE samples[MAX_CHANNELS];
 	BYTE instr[MAX_CHANNELS];
@@ -40,7 +40,7 @@ DWORD CSoundFile_GetLength(CSoundFile *_this, BOOL bAdjust, BOOL bTotal)
 		nRow = nNextRow;
 		nCurrentPattern = nNextPattern;
 		// Check if pattern is valid
-		nPattern = _this->Order[nCurrentPattern];
+		nPattern = (nCurrentPattern < MAX_ORDERS) ? _this->Order[nCurrentPattern] : 0xFF;
 		while (nPattern >= MAX_PATTERNS)
 		{
 			// End of song ?
@@ -55,7 +55,8 @@ DWORD CSoundFile_GetLength(CSoundFile *_this, BOOL bAdjust, BOOL bTotal)
 			nNextPattern = nCurrentPattern;
 		}
 		// Weird stuff?
-		if ((nPattern >= MAX_PATTERNS) || (!_this->Patterns[nPattern])) break;
+		if ((nPattern >= MAX_PATTERNS) || (!_this->Patterns[nPattern]) ||
+			_this->PatternSize[nPattern] == 0) break;
 		// Should never happen
 		if (nRow >= _this->PatternSize[nPattern]) nRow = 0;
 		// Update next position
@@ -63,7 +64,8 @@ DWORD CSoundFile_GetLength(CSoundFile *_this, BOOL bAdjust, BOOL bTotal)
 		if (nNextRow >= _this->PatternSize[nPattern])
 		{
 			nNextPattern = nCurrentPattern + 1;
-			nNextRow = 0;
+			nNextRow = nNextStartRow;
+			nNextStartRow = 0;
 		}
 		if (!nRow)
 		{
@@ -98,6 +100,7 @@ DWORD CSoundFile_GetLength(CSoundFile *_this, BOOL bAdjust, BOOL bTotal)
 				if (param <= nCurrentPattern) goto EndMod;
 				nNextPattern = param;
 				nNextRow = 0;
+				nNextStartRow = 0;
 				if (bAdjust)
 				{
 					pChn->nPatternLoopCount = 0;
@@ -108,6 +111,7 @@ DWORD CSoundFile_GetLength(CSoundFile *_this, BOOL bAdjust, BOOL bTotal)
 			case CMD_PATTERNBREAK:
 				nNextRow = param;
 				nNextPattern = nCurrentPattern + 1;
+				nNextStartRow = 0;
 				if (bAdjust)
 				{
 					pChn->nPatternLoopCount = 0;
@@ -149,7 +153,10 @@ DWORD CSoundFile_GetLength(CSoundFile *_this, BOOL bAdjust, BOOL bTotal)
 				if ((param & 0xF0) == 0x60)
 				{
 					if (param & 0x0F) dwElapsedTime += (dwElapsedTime - patloop[nChn]) * (param & 0x0F);
-					else patloop[nChn] = dwElapsedTime;
+					else {
+						patloop[nChn] = dwElapsedTime;
+						if (_this->m_nType & MOD_TYPE_XM) nNextStartRow = nRow;
+					}
 				}
 				break;
 			}
@@ -1159,11 +1166,13 @@ BOOL CSoundFile_ProcessEffects(CSoundFile *_this)
 		// Position Jump
 		case CMD_POSITIONJUMP:
 			nPosJump = param;
+			_this->m_nNextStartRow = 0;
 			break;
 
 		// Pattern Break
 		case CMD_PATTERNBREAK:
 			nBreakRow = param;
+			_this->m_nNextStartRow = 0;
 			break;
 
 		// Midi Controller
@@ -2100,6 +2109,7 @@ int CSoundFile_PatternLoop(CSoundFile *_this, MODCHANNEL *pChn, UINT param)
 	} else
 	{
 		pChn->nPatternLoop = _this->m_nRow;
+		if (_this->m_nType & MOD_TYPE_XM) _this->m_nNextStartRow = _this->m_nRow;
 	}
 	return -1;
 }
@@ -2271,8 +2281,12 @@ UINT CSoundFile_GetPeriodFromNote(CSoundFile *_this, UINT note, int nFineTune, U
 			return (FreqS3MTable[note % 12] << 5) >> (note / 12);
 		} else
 		{
+			int divider;
 			if (!nC4Speed) nC4Speed = 8363;
-			return _muldiv(8363, (FreqS3MTable[note % 12] << 5), nC4Speed << (note / 12));
+			// if C4Speed is large, then up shifting may produce a zero divider
+			divider = nC4Speed << (note / 12);
+			if (!divider) divider = 1e6;
+			return _muldiv(8363, (FreqS3MTable[note % 12] << 5), divider);
 		}
 	} else
 	if (_this->m_nType & (MOD_TYPE_XM|MOD_TYPE_MT2))

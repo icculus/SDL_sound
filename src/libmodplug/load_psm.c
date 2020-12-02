@@ -262,53 +262,50 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 		if ((_this->Patterns[nPat] = CSoundFile_AllocatePattern(nRows, _this->m_nChannels)) == NULL) break;
 		MODCOMMAND *m = _this->Patterns[nPat];
 		BYTE *p = pPsmPat->data;
+		MODCOMMAND *sp, dummy;
 		UINT pos = 0;
 		UINT row = 0;
-		UINT oldch = 0;
-		BOOL bNewRow = FALSE;
-		while ((row < nRows) && (pos+1 < len))
+		UINT rowlim;
+		UINT flags, ch;
+		rowlim = bswapLE16(pPsmPat->reserved1)-2;
+		while ((row < nRows) && (pos+3 < len))
 		{
-			UINT flags = p[pos++];
-			UINT ch = p[pos++];
-			
-			if (((flags & 0xf0) == 0x10) && (ch <= oldch) /*&& (!bNewRow)*/)
-			{
-				if ((pos+1<len) && (!(p[pos] & 0x0f)) && (p[pos+1] < _this->m_nChannels))
-				{
-					row++;
-					m += _this->m_nChannels;
-					oldch = ch;
-					continue;
-				}
-			}
-			if ((pos >= len) || (row >= nRows)) break;
-			if (!(flags & 0xf0))
-			{
-				row++;
+			if ((pos+1) >= rowlim) {
+				pos = rowlim;
+				rowlim = (((int)p[pos+1])<<8)
+					| ((int)p[pos+0]);
 				m += _this->m_nChannels;
-				bNewRow = TRUE;
-				oldch = ch;
-				continue;
+				row++;
+				rowlim += pos;
+				pos += 2;
 			}
-			bNewRow = FALSE;
-			if (ch >= _this->m_nChannels)
-			{
-				ch = 0;
+			if (row >= nRows) continue;
+
+			flags = p[pos++];
+			ch = p[pos++];
+			if (ch >= _this->m_nChannels) {
+				sp = &dummy;
+			} else {
+				sp = &m[ch];
 			}
 			// Note + Instr
-			if ((flags & 0x40) && (pos+1 < len))
+			if ((flags & 0x80) && (pos+1 < len))
 			{
 				UINT note = p[pos++];
+				note = (note>>4)*12+(note&0x0f)+12+1;
+				if (note > 0x80) note = 0;
+				sp->note = note;
+			}
+			if ((flags & 0x40) && (pos+1 < len))
+			{
 				UINT nins = p[pos++];
-				if ((note) && (note < 0x80)) note = (note>>4)*12+(note&0x0f)+12+1;
-				m[ch].instr = samplemap[nins];
-				m[ch].note = note;
+				sp->instr = samplemap[nins];
 			}
 			// Volume
 			if ((flags & 0x20) && (pos < len))
 			{
-				m[ch].volcmd = VOLCMD_VOLUME;
-				m[ch].vol = p[pos++] / 2;
+				sp->volcmd = VOLCMD_VOLUME;
+				sp->vol = p[pos++] / 2;
 			}
 			// Effect
 			if ((flags & 0x10) && (pos+1 < len))
@@ -319,13 +316,29 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 				switch(command)
 				{
 				// 01: fine volslide up
-				case 0x01:	command = CMD_VOLUMESLIDE; param |= 0x0f; break;
+				case 0x01:	command = CMD_VOLUMESLIDE; param |= 0x0f;
+						if (param == 15) param=31;
+						break;
+                                // 02: volslide up
+                                case 0x02:      command = CMD_VOLUMESLIDE; param>>=1; param<<=4; break;
+                                // 03: fine volslide down
+                                case 0x03:	command = CMD_VOLUMESLIDE; param>>=4; param |= 0xf0;
+						if (param == 240) param=241;
+						break;
 				// 04: fine volslide down
 				case 0x04:	command = CMD_VOLUMESLIDE; param>>=4; param |= 0xf0; break;
 				// 0C: portamento up
 				case 0x0C:	command = CMD_PORTAMENTOUP; param = (param+1)/2; break;
 				// 0E: portamento down
 				case 0x0E:	command = CMD_PORTAMENTODOWN; param = (param+1)/2; break;
+				// 0F: tone portamento
+				case 0x0F:	command = CMD_TONEPORTAMENTO; param = param/4; break;
+				// 15: vibrato
+                                case 0x15:	command = CMD_VIBRATO; break;
+				// 29: sample offset
+				case 0x29:	pos += 2; break;
+				// 2A: retrigger note
+				case 0x2A:	command = CMD_RETRIG; break;
 				// 33: Position Jump
 				case 0x33:	command = CMD_POSITIONJUMP; break;
 				// 34: Pattern break
@@ -338,10 +351,9 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 				default:
 					command = param = 0;
 				}
-				m[ch].command = (BYTE)command;
-				m[ch].param = (BYTE)param;
+				sp->command = (BYTE)command;
+				sp->param = (BYTE)param;
 			}
-			oldch = ch;
 		}
 	}
 

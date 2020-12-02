@@ -346,6 +346,9 @@ BOOL CSoundFile_ReadAMF(CSoundFile *_this, LPCBYTE lpStream, const DWORD dwMemLe
 	USHORT *pTrackMap = (USHORT *)(lpStream+dwMemPos);
 	UINT realtrackcnt = 0;
 	dwMemPos += pfh->numtracks * sizeof(USHORT);
+	if (dwMemPos >= dwMemLength)
+		return TRUE;
+
 	for (UINT iTrkMap=0; iTrkMap<pfh->numtracks; iTrkMap++)
 	{
 		if (realtrackcnt < pTrackMap[iTrkMap]) realtrackcnt = pTrackMap[iTrkMap];
