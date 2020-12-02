@@ -212,7 +212,7 @@ if(DOXYGEN_FOUND)
     file(APPEND "${SDLSOUND_OUTPUT_DOXYFILE}" "\n# End auto-generated section.\n\n")
 
     add_custom_target(
-        docs
+        SDL2_sound-docs
         ${DOXYGEN_EXECUTABLE} "${SDLSOUND_OUTPUT_DOXYFILE}"
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         COMMENT "Building documentation..."
@@ -224,13 +224,13 @@ endif()
 if(UNIX)
     set(SDLSOUND_TARBALL "${CMAKE_CURRENT_SOURCE_DIR}/../SDL_sound-${SDLSOUND_VERSION}.tar.bz2")
     add_custom_target(
-        dist
+        SDL2_sound-dist
         hg archive -t tbz2 "${SDLSOUND_TARBALL}"
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         COMMENT "Building source tarball '${SDLSOUND_TARBALL}'..."
     )
     add_custom_target(
-        uninstall
+        SDL2_sound-uninstall
         "${CMAKE_CURRENT_SOURCE_DIR}/docs/uninstall.sh"
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
         COMMENT "Uninstall the project..."
