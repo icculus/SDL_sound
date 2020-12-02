@@ -271,7 +271,7 @@ static Uint32 AU_read(Sound_Sample *sample)
     ret = SDL_RWread(internal->rw, buf, 1, maxlen);
     if (ret == 0)
         sample->flags |= SOUND_SAMPLEFLAG_EOF;
-    else if (ret == -1)
+    else if (ret == -1) /** FIXME: this error check is broken **/
         sample->flags |= SOUND_SAMPLEFLAG_ERROR;
     else
     {

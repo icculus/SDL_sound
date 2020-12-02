@@ -279,7 +279,7 @@ static Uint32 read_sample_fmt_normal(Sound_Sample *sample)
     if ((retval == 0) || (a->bytesLeft == 0))
         sample->flags |= SOUND_SAMPLEFLAG_EOF;
 
-    else if (retval == -1)
+    else if (retval == -1) /** FIXME: this error check is broken **/
         sample->flags |= SOUND_SAMPLEFLAG_ERROR;
 
         /* (next call this EAGAIN may turn into an EOF or error.) */
