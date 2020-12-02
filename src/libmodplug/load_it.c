@@ -286,6 +286,8 @@ BOOL CSoundFile_ReadIT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 		dwMemPos += 8;
 		if ((dwMemPos + len <= dwMemLength) && (len <= 64*MAX_CHANNELNAME))
 		{
+			const UINT n = len / MAX_CHANNELNAME;
+			if (n > _this->m_nChannels) _this->m_nChannels = n;
 			dwMemPos += len;
 		}
 	}
