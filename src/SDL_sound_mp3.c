@@ -62,7 +62,7 @@ static size_t mp3_read(void* pUserData, void* pBufferOut, size_t bytesToRead)
             sample->flags |= SOUND_SAMPLEFLAG_EOF;
             break;
         } /* if */
-        else if (retval == -1)
+        else if (rc == -1) /** FIXME: this error check is broken **/
         {
             sample->flags |= SOUND_SAMPLEFLAG_ERROR;
             break;

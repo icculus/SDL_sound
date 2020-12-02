@@ -81,7 +81,7 @@ static Uint32 FMT_read(Sound_Sample *sample)
     if (retval == 0)
         sample->flags |= SOUND_SAMPLEFLAG_EOF;
 
-    else if (retval == -1)
+    else if (retval == -1) /** FIXME: this error check is broken **/
         sample->flags |= SOUND_SAMPLEFLAG_ERROR;
 
         /* (next call this EAGAIN may turn into an EOF or error.) */
