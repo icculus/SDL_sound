@@ -923,6 +923,7 @@ typedef struct tagITOLDINSTRUMENT
 	WORD trkvers;
 	BYTE nos;
 	BYTE reserved2;
+	CHAR name[26]; /* not used by SDL_sound */
 	WORD reserved3[3];
 	BYTE keyboard[240];
 	BYTE volenv[200];
@@ -949,6 +950,7 @@ typedef struct tagITINSTRUMENT
 	WORD trkvers;
 	BYTE nos;
 	BYTE reserved1;
+	CHAR name[26]; /* not used by SDL_sound */
 	BYTE ifc;
 	BYTE ifr;
 	BYTE mch;
@@ -971,6 +973,7 @@ typedef struct ITSAMPLESTRUCT
 	BYTE gvl;
 	BYTE flags;
 	BYTE vol;
+	CHAR name[26]; /* not used by SDL_sound */
 	BYTE cvt;
 	BYTE dfp;
 	DWORD length;
