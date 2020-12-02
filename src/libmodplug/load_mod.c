@@ -97,11 +97,10 @@ static BOOL IsMagic(LPCSTR s1, LPCSTR s2)
 	return ((*(DWORD *)s1) == (*(DWORD *)s2)) ? TRUE : FALSE;
 }
 
-
 BOOL CSoundFile_ReadMod(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLength)
 //---------------------------------------------------------------
 {
-    char s[1024];          // changed from CHAR
+        char s[1024];          // changed from CHAR
 	DWORD dwMemPos, dwTotalSampleLen;
 	PMODMAGIC pMagic;
 	UINT nErr;
@@ -293,4 +292,3 @@ BOOL CSoundFile_ReadMod(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	}
 	return (dwErrCheck) ? TRUE : FALSE;
 }
-

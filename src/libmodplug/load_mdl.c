@@ -501,7 +501,7 @@ BOOL CSoundFile_ReadMDL(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 WORD MDLReadBits(DWORD *bitbuf, UINT *bitnum, LPBYTE *_ibuf, CHAR n)
 //-----------------------------------------------------------------
 {
-    LPBYTE ibuf = *_ibuf;
+	LPBYTE ibuf = *_ibuf;
 	const WORD v = (WORD)(*bitbuf & ((1 << n) - 1) );
 	*bitbuf >>= n;
 	*bitnum -= n;
@@ -510,7 +510,6 @@ WORD MDLReadBits(DWORD *bitbuf, UINT *bitnum, LPBYTE *_ibuf, CHAR n)
 		*bitbuf |= (((DWORD)(*ibuf++)) << *bitnum);
 		*bitnum += 8;
 	}
-    *_ibuf = ibuf;
+	*_ibuf = ibuf;
 	return v;
 }
-

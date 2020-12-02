@@ -1,3 +1,4 @@
+
 #include "libmodplug.h"
 
 #pragma pack(1)
@@ -55,7 +56,7 @@ typedef struct _MT2AUTOMATION
 
 typedef struct _MT2INSTRUMENT
 {
-	CHAR szName[32]; /* not used by SDL_sound */
+	CHAR szName[32];
 	DWORD dwDataLen;
 	WORD wSamples;
 	BYTE GroupsMapping[96];
@@ -94,7 +95,7 @@ typedef struct _MT2SYNTH
 
 typedef struct _MT2SAMPLE
 {
-	CHAR szName[32]; /* not used by SDL_sound */
+	CHAR szName[32];
 	DWORD dwDataLen;
 	DWORD dwLength;
 	DWORD dwFrequency;
@@ -546,4 +547,3 @@ BOOL CSoundFile_ReadMT2(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 	}
 	return TRUE;
 }
-

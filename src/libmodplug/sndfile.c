@@ -46,23 +46,24 @@ static void CSoundFile_UpdateSettings(CSoundFile *_this, const ModPlug_Settings 
 CSoundFile *new_CSoundFile(LPCBYTE lpStream, DWORD dwMemLength, const ModPlug_Settings *settings)
 //----------------------------------------------------------
 {
-    CSoundFile *_this = (CSoundFile *) SDL_calloc(1, sizeof (CSoundFile));
-    if (!_this) return NULL;
 	int i;
 
-    _this->m_nXBassDepth = 6;
-    _this->m_nXBassRange = XBASS_DELAY;
-    _this->m_nReverbDepth = 1;
-    _this->m_nReverbDelay = 100;
-    _this->m_nProLogicDepth = 12;
-    _this->m_nProLogicDelay = 20;
-    _this->m_nStereoSeparation = 128;
-    _this->m_nMaxMixChannels = 32;
-    _this->gnChannels = 1;
-    _this->gdwSoundSetup = 0;
-    _this->gdwMixingFreq = 44100;
-    _this->gnBitsPerSample = 16;
-    _this->gnVolumeRampSamples = 64;
+	CSoundFile *_this = (CSoundFile *) SDL_calloc(1, sizeof (CSoundFile));
+	if (!_this) return NULL;
+
+	_this->m_nXBassDepth = 6;
+	_this->m_nXBassRange = XBASS_DELAY;
+	_this->m_nReverbDepth = 1;
+	_this->m_nReverbDelay = 100;
+	_this->m_nProLogicDepth = 12;
+	_this->m_nProLogicDelay = 20;
+	_this->m_nStereoSeparation = 128;
+	_this->m_nMaxMixChannels = 32;
+	_this->gnChannels = 1;
+	_this->gdwSoundSetup = 0;
+	_this->gdwMixingFreq = 44100;
+	_this->gnBitsPerSample = 16;
+	_this->gnVolumeRampSamples = 64;
 
 	_this->m_nFreqFactor = _this->m_nTempoFactor = 128;
 	_this->m_nMasterVolume = 128;
@@ -176,10 +177,10 @@ CSoundFile *new_CSoundFile(LPCBYTE lpStream, DWORD dwMemLength, const ModPlug_Se
 		UINT maxpreamp = 0x10+(_this->m_nChannels*8);
 		if (maxpreamp > 100) maxpreamp = 100;
 		if (_this->m_nSongPreAmp > maxpreamp) _this->m_nSongPreAmp = maxpreamp;
-        CSoundFile_UpdateSettings(_this, settings);
+		CSoundFile_UpdateSettings(_this, settings);
 		return _this;
 	}
-    SDL_free(_this);
+	SDL_free(_this);
 	return NULL;
 }
 
@@ -218,7 +219,7 @@ void delete_CSoundFile(CSoundFile *_this)
 	_this->m_nType = MOD_TYPE_NONE;
 	_this->m_nChannels = _this->m_nSamples = _this->m_nInstruments = 0;
 
-    SDL_free(_this);
+	SDL_free(_this);
 }
 
 
@@ -273,8 +274,6 @@ void CSoundFile_ResetMidiCfg(CSoundFile *_this)
 	SDL_strlcpy(&_this->m_MidiCfg.szMidiSFXExt[0], "F0F000z", 32);
 	for (int iz=0; iz<16; iz++) SDL_snprintf(&_this->m_MidiCfg.szMidiZXXExt[iz*32], 32, "F0F001%02X", iz*8);
 }
-
-
 
 
 BOOL CSoundFile_SetWaveConfig(CSoundFile *_this, UINT nRate,UINT nBits,UINT nChannels)
@@ -514,9 +513,9 @@ UINT CSoundFile_ReadSample(CSoundFile *_this, MODINSTRUMENT *pIns, UINT nFlags, 
 			{
 				const BYTE b0 = (BYTE)lpMemFile[j];
 				const BYTE b1 = (BYTE)(lpMemFile[j] >> 4);
-                delta = (signed char)(delta + _this->CompressionTable[b0 & 0x0F]);
+				delta = (signed char)(delta + _this->CompressionTable[b0 & 0x0F]);
 				pSample[0] = delta;
-                delta = (signed char)(delta + _this->CompressionTable[b1 & 0x0F]);
+				delta = (signed char)(delta + _this->CompressionTable[b1 & 0x0F]);
 				pSample[1] = (signed char)(delta + _this->CompressionTable[b1 & 0x0F]);
 				pSample += 2;
 			}
@@ -889,7 +888,6 @@ void CSoundFile_AdjustSampleLoop(CSoundFile *_this, MODINSTRUMENT *pIns)
 				}
 			}
 		}
-
 		// Adjust end of sample
 		if (pIns->uFlags & CHN_STEREO)
 		{
@@ -953,15 +951,15 @@ void CSoundFile_FrequencyToTransposeInstrument(MODINSTRUMENT *psmp)
 
 void CSoundFile_SetRepeatCount(CSoundFile *_this, int n)
 {
-    _this->m_nRepeatCount = n;
-    _this->m_nInitialRepeatCount = n;
+	_this->m_nRepeatCount = n;
+	_this->m_nInitialRepeatCount = n;
 }
 
 BOOL CSoundFile_SetPatternName(CSoundFile *_this, UINT nPat, LPCSTR lpszName)
 //---------------------------------------------------------
 {
-    char szName[MAX_PATTERNNAME];
-    szName[0] = 0;
+        char szName[MAX_PATTERNNAME];
+	szName[0] = 0;
 	// check input arguments
 	if (nPat >= MAX_PATTERNS) return FALSE;
 	if (lpszName == NULL) return(FALSE);

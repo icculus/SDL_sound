@@ -106,7 +106,6 @@ static DWORD boundInput(DWORD input, DWORD smin, DWORD smax)
 	return(input);
 }
 
-
 BOOL CSoundFile_ReadS3M(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLength)
 //---------------------------------------------------------------
 {
@@ -118,7 +117,7 @@ BOOL CSoundFile_ReadS3M(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 
 	if ((!lpStream) || (dwMemLength <= sizeof(S3MFILEHEADER)+sizeof(S3MSAMPLESTRUCT)+64)) return FALSE;
 	S3MFILEHEADER psfh;
-    SDL_memcpy(&psfh, lpStream, sizeof (psfh));
+	SDL_memcpy(&psfh, lpStream, sizeof (psfh));
 
 	psfh.reserved1 = bswapLE16(psfh.reserved1);
 	psfh.ordnum = bswapLE16(psfh.ordnum);
@@ -322,4 +321,3 @@ BOOL CSoundFile_ReadS3M(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	if (psfh.flags & 0x10) _this->m_dwSongFlags |= SONG_AMIGALIMITS;
 	return TRUE;
 }
-

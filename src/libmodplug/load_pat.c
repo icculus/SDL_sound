@@ -35,9 +35,7 @@
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
-#ifndef _WIN32
 #include <limits.h> // for PATH_MAX
-#endif
 #ifndef PATH_MAX
 #define PATH_MAX 256
 #endif
@@ -133,18 +131,16 @@ typedef struct {
 
 #define C4SPD	8363
 #define C4mHz	523251
-#define C4	  523.251f
-#define PI 	  3.141592653589793f
+#define C4	523.251f
+#define PI	3.141592653589793f
 #define OMEGA	((2.0f * PI * C4)/(float)C4SPD)
 
-/**************************************************************************
-**************************************************************************/
+/**********************************************************************/
 /* !!! FIXME: global state */
 static BYTE pat_gm_used[MAXSMP];
 static BYTE pat_loops[MAXSMP];
 
-/**************************************************************************
-**************************************************************************/
+/**********************************************************************/
 
 static SDL_INLINE int IsAlpha(const char c) {
     return ( ((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) );
@@ -645,7 +641,7 @@ static BOOL dec_pat_Decompress16Bit(short int *dest, int cbcount, int samplenum)
 		for( i=0; i<cbcount; i++ )
 			dest[i] = (short int)(32000.0*f(i));
 	}
-  return cbcount;
+	return cbcount;
 }
 
 // convert 8 bit data to 16 bit!
@@ -660,9 +656,10 @@ static void	pat_blowup_to16bit(short int *dest, int cbcount) {
 	s += cbcount;
 	d += cbcount;
 	for(t=0; t<cbcount; t++)
-	{   s--;
-			d--;
-			*d = (*s) << 8;
+	{
+		s--;
+		d--;
+		*d = (*s) << 8;
 	}
 }
 
@@ -695,7 +692,7 @@ static BOOL TestPAT(const BYTE *lpStream, DWORD dwMemLength)
 // =====================================================================================
 static PATHANDLE *PAT_Init(void)
 {
-    return (PATHANDLE *)SDL_calloc(1,sizeof(PATHANDLE));
+	return (PATHANDLE *)SDL_calloc(1,sizeof(PATHANDLE));
 }
 
 // =====================================================================================
@@ -739,6 +736,7 @@ int pat_modnote(int midinote)
 	return n;
 }
 
+// =====================================================================================
 static void PAT_ReadPatterns(MODCOMMAND *pattern[], WORD psize[], PATHANDLE *h, int numpat)
 // =====================================================================================
 {
@@ -1144,4 +1142,3 @@ BOOL CSoundFile_ReadPAT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	PAT_Cleanup(h);	// we dont need it anymore
 	return 1;
 }
-

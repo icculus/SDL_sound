@@ -48,7 +48,6 @@ int _muldiv(long a, long b, long c)
 	return ((uint64_t) a * (uint64_t) b ) / c;
 }
 
-
 // Return (a*b+c/2)/c - no divide error
 int _muldivr(long a, long b, long c)
 {
@@ -186,7 +185,6 @@ MixDone:
 	if (nStat) { _this->m_nMixStat += nStat-1; _this->m_nMixStat /= nStat; }
 	return lMax - lRead;
 }
-
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -607,7 +605,7 @@ BOOL CSoundFile_ReadNote(CSoundFile *_this)
 				{
 #ifndef NO_FILTER
 					CSoundFile_SetupChannelFilter(_this, pChn, (pChn->dwFlags & CHN_FILTER) ? FALSE : TRUE, envpitch);
-#endif
+#endif // NO_FILTER
 				} else
 				// Pitch Envelope
 				{

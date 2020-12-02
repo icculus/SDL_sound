@@ -35,15 +35,14 @@
 #define PAN_RIGHT   0xD0
 #define MAX_POLYPHONY 16  // max notes in one midi channel
 #define MAX_TRACKS    (MAX_BASECHANNELS-6)  // max mod tracks
-#define WHEELSHIFT    10  // how many bits the 13bit midi wheel value must shift right 
+#define WHEELSHIFT    10  // how many bits the 13bit midi wheel value must shift right
 
 #include "load_pat.h"
 
 #define ROWSPERNOTE 16
-#define ENV_MMMID_SPEED	"MMMID_SPEED"
+#define ENV_MMMID_SPEED "MMMID_SPEED"
 
-/**************************************************************************
-**************************************************************************/
+/**********************************************************************/
 
 typedef enum {
 	none,
@@ -83,8 +82,7 @@ typedef struct _MIDTRACK
 	BYTE instr;	// current instrument for this track
 } MIDTRACK;
 
-/**************************************************************************
-**************************************************************************/
+/**********************************************************************/
 
 typedef struct _MIDHANDLE
 {
@@ -168,19 +166,19 @@ static MIDEVENT *mid_new_event(MIDHANDLE *h)
 static MIDTRACK *mid_new_track(MIDHANDLE *h, int mch, int pos)
 // =====================================================================================
 {
-    MIDTRACK *retval;
-    retval = (MIDTRACK *)_mm_calloc(h->trackhandle, 1,sizeof(MIDTRACK));
-		retval->next       = NULL;
-    retval->vpos       = pos;
-		retval->instr      = 1;
-		retval->chan       = mch;
-		retval->head       = NULL;
-		retval->tail       = NULL;
-		retval->workevent  = NULL;
-		retval->vtracktick = 0;
-		retval->volume     = h->track? h->track->volume: 120;
-		retval->balance    = 64;
-    return retval;
+	MIDTRACK *retval;
+	retval = (MIDTRACK *)_mm_calloc(h->trackhandle, 1,sizeof(MIDTRACK));
+	retval->next       = NULL;
+	retval->vpos       = pos;
+	retval->instr      = 1;
+	retval->chan       = mch;
+	retval->head       = NULL;
+	retval->tail       = NULL;
+	retval->workevent  = NULL;
+	retval->vtracktick = 0;
+	retval->volume     = h->track? h->track->volume: 120;
+	retval->balance    = 64;
+	return retval;
 }
 
 static int mid_numtracks(MIDHANDLE *h)
@@ -701,7 +699,7 @@ static void MID_Cleanup(MIDHANDLE *handle)
 
 static int mid_is_global_event(MIDEVENT *e)
 {
-	return (e->fx == tmpo || e->fx == fxbrk); 
+	return (e->fx == tmpo || e->fx == fxbrk);
 }
 
 static MIDEVENT *mid_next_global(MIDEVENT *e)
@@ -733,6 +731,7 @@ static MIDEVENT *mid_next_note(MIDEVENT *e)
 	return e;
 }
 
+// =====================================================================================
 static int MID_ReadPatterns(MODCOMMAND *pattern[], WORD psize[], MIDHANDLE *h, int numpat, int channels)
 // =====================================================================================
 {
@@ -847,7 +846,7 @@ static int MID_ReadPatterns(MODCOMMAND *pattern[], WORD psize[], MIDHANDLE *h, i
 						m->volcmd = VOLCMD_VOLUME;
 						m->vol    = vol;
 					}
-					else { 
+					else {
 						// two notes in one row, use FINEPITCHSLIDE runonce effect
 						// start first note on first tick and framedly runonce on seconds note tick
 						// use volume and instrument of last note
@@ -1205,7 +1204,7 @@ BOOL CSoundFile_ReadMID(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 							break;
 						case 0x0b: // expression
 							break;
-						case 0x7b: 
+						case 0x7b:
 							if( midibyte[1] == 0x00 ) // all notes off
 								mid_all_notes_off(h, ch);
 							break;
@@ -1322,7 +1321,7 @@ BOOL CSoundFile_ReadMID(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 		}
 	}
 	if( metalen & 0x03ff ) {
-		if( (metalen & 0x0f00) == 0x0400 ) 
+		if( (metalen & 0x0f00) == 0x0400 )
 			h->percussion = 10; // buggy sng2mid uses channel 10
 		else
 			h->percussion = 9;
@@ -1404,4 +1403,3 @@ BOOL CSoundFile_ReadMID(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	avoid_reentry = 0; // it is safe now, I'm finished
 	return TRUE;
 }
-

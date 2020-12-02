@@ -736,7 +736,6 @@ void delete_CSoundFile(CSoundFile *_this);
 	BOOL CSoundFile_ReadAMF(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength);
 	BOOL CSoundFile_ReadMT2(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength);
 	BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength);
-	BOOL CSoundFile_ReadJ2B(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength);
 	BOOL CSoundFile_ReadUMX(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength);
 	BOOL CSoundFile_ReadABC(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength);
 	BOOL CSoundFile_ReadMID(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength);
@@ -904,7 +903,7 @@ typedef struct tagITOLDINSTRUMENT
 	WORD trkvers;
 	BYTE nos;
 	BYTE reserved2;
-	CHAR name[26]; /* not used by SDL_sound */
+	CHAR name[26];
 	WORD reserved3[3];
 	BYTE keyboard[240];
 	BYTE volenv[200];
@@ -930,7 +929,7 @@ typedef struct tagITINSTRUMENT
 	WORD trkvers;
 	BYTE nos;
 	BYTE reserved1;
-	CHAR name[26]; /* not used by SDL_sound */
+	CHAR name[26];
 	BYTE ifc;
 	BYTE ifr;
 	BYTE mch;
@@ -952,7 +951,7 @@ typedef struct ITSAMPLESTRUCT
 	BYTE gvl;
 	BYTE flags;
 	BYTE vol;
-	CHAR name[26]; /* not used by SDL_sound */
+	CHAR name[26];
 	BYTE cvt;
 	BYTE dfp;
 	DWORD length;

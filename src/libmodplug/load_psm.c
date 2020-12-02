@@ -4,6 +4,7 @@
  * Authors: Olivier Lapicque <olivierl@jps.net>
 */
 
+
 ///////////////////////////////////////////////////
 //
 // PSM module loader
@@ -100,7 +101,7 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 	DWORD patptrs[MAX_PATTERNS];
 	BYTE samplemap[MAX_SAMPLES];
 	UINT nPatterns;
-	
+
 	if (dwMemLength < 256) return FALSE;
 
 	SDL_memcpy(&pfh, lpStream, sizeof(PSMCHUNK));
@@ -290,17 +291,17 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 			ch = p[pos++];
 			if (ch >= _this->m_nChannels) {
 				sp = &dummy;
-			} else {
+            } else {
 				sp = &m[ch];
-			}
+            }
 			// Note + Instr
-			if ((flags & 0x80) && (pos+1 < len))
-			{
-				UINT note = p[pos++];
-				note = (note>>4)*12+(note&0x0f)+12+1;
-				if (note > 0x80) note = 0;
+            if ((flags & 0x80) && (pos+1 < len))
+        	{
+                UINT note = p[pos++];
+                note = (note>>4)*12+(note&0x0f)+12+1;
+                if (note > 0x80) note = 0;
 				sp->note = note;
-			}
+            }
 			if ((flags & 0x40) && (pos+1 < len))
 			{
 				UINT nins = p[pos++];
@@ -365,4 +366,3 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 	// Done (finally!)
 	return TRUE;
 }
-

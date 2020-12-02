@@ -69,7 +69,7 @@ BOOL CSoundFile_ReadPTM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 
 	if ((!lpStream) || (dwMemLength < sizeof(PTMFILEHEADER))) return FALSE;
 	PTMFILEHEADER pfh;
-    SDL_memcpy(&pfh, lpStream, sizeof (pfh));
+	SDL_memcpy(&pfh, lpStream, sizeof (pfh));
 
 	pfh.norders = bswapLE16(pfh.norders);
 	pfh.nsamples = bswapLE16(pfh.nsamples);
@@ -104,6 +104,7 @@ BOOL CSoundFile_ReadPTM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	{
 		MODINSTRUMENT *pins = &_this->Ins[ismp+1];
 		PTMSAMPLE *psmp = (PTMSAMPLE *)(lpStream+dwMemPos);
+
 		pins->nGlobalVol = 64;
 		pins->nPan = 128;
 		pins->nVolume = psmp->volume << 2;
@@ -202,4 +203,3 @@ BOOL CSoundFile_ReadPTM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	}
 	return TRUE;
 }
-

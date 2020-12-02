@@ -61,6 +61,7 @@ BOOL CSoundFile_ReadOKT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 		{
 			OKTSAMPLE *psmp = (OKTSAMPLE *)(lpStream + dwMemPos);
 			MODINSTRUMENT *pins = &_this->Ins[smp];
+
 			pins->uFlags = 0;
 			pins->nLength = bswapBE32(psmp->length) & ~1;
 			pins->nLoopStart = bswapBE16(psmp->loopstart);
