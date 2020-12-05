@@ -217,19 +217,7 @@ SOURCE=..\decoders\wav.c
 # End Group
 # Begin Source File
 
-SOURCE=..\acconfig.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\audio_convert.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\extra_rwops.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\extra_rwops.h
 # End Source File
 # Begin Source File
 
