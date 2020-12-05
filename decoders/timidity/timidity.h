@@ -36,7 +36,7 @@ typedef Sint32 final_volume_t;
 typedef struct {
   Sint32
     loop_start, loop_end, data_length,
-    sample_rate, low_vel, high_vel, low_freq, high_freq, root_freq;
+    sample_rate, low_freq, high_freq, root_freq;
   Sint32
     envelope_rate[6], envelope_offset[6];
   float
@@ -113,9 +113,6 @@ typedef struct {
     void *next;
 } MidiEventList;
 
-struct _DLS_Data;
-typedef struct _DLS_Data DLS_Patches;
-
 typedef struct {
     int playing;
     SDL_RWops *rw;
@@ -123,7 +120,6 @@ typedef struct {
     Sint32 encoding;
     float master_volume;
     Sint32 amplification;
-    DLS_Patches *patches;
     ToneBank *tonebank[128];
     ToneBank *drumset[128];
     Instrument *default_instrument;
@@ -161,9 +157,6 @@ extern int Timidity_Init(void);
 extern int Timidity_Init_NoConfig(void);
 extern void Timidity_SetVolume(MidiSong *song, int volume);
 extern int Timidity_PlaySome(MidiSong *song, void *stream, Sint32 len);
-extern DLS_Patches *Timidity_LoadDLS(SDL_RWops *rw);
-extern void Timidity_FreeDLS(DLS_Patches *patches);
-extern MidiSong *Timidity_LoadDLSSong(SDL_RWops *rw, DLS_Patches *patches, SDL_AudioSpec *audio);
 extern MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio);
 extern void Timidity_Start(MidiSong *song);
 extern void Timidity_Seek(MidiSong *song, Uint32 ms);
