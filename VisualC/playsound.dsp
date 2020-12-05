@@ -50,7 +50,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
-# ADD LINK32 sdl.lib sdlmain.lib win32lib\sdl_sound.lib /nologo /subsystem:console /machine:I386 /out:"win32bin/playsound.exe"
+# ADD LINK32 SDL.lib SDLmain.lib win32lib\SDL_sound.lib /nologo /subsystem:console /machine:I386 /out:"win32bin/playsound.exe"
 
 !ELSEIF  "$(CFG)" == "playsound - Win32 Debug"
 
@@ -74,7 +74,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 sdl.lib sdlmain.lib win32lib\sdl_sound_d.lib /nologo /subsystem:console /debug /machine:I386 /out:"win32bin/playsound_d.exe" /pdbtype:sept
+# ADD LINK32 SDL.lib SDLmain.lib win32lib\SDL_sound_d.lib /nologo /subsystem:console /debug /machine:I386 /out:"win32bin/playsound_d.exe" /pdbtype:sept
 
 !ENDIF 
 

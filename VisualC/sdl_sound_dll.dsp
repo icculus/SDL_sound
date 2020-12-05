@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SDL_SOUND_DLL_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O1 /I "..\\" /I "..\decoders" /I "..\decoders\timidity" /I "..\decoders\mpglib" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SDL_SOUND_DLL_EXPORTS" /D "NDEBUG" /D "_LIB" /D "SOUND_SUPPORTS_AU" /D "SOUND_SUPPORTS_AIFF" /D "SOUND_SUPPORTS_SHN" /D "SOUND_SUPPORTS_MIDI" /D "SOUND_SUPPORTS_WAV" /D "SOUND_SUPPORTS_VOC" /D "SOUND_SUPPORTS_MIKMOD" /D "SOUND_SUPPORTS_MPGLIB" /D "SOUND_SUPPORTS_SMPEG" /D "SOUND_SUPPORTS_OGG" /D "SOUND_SUPPORTS_RAW" /D "SOUND_SUPPORTS_MODPLUG" /D "SOUND_SUPPORTS_FLAC" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O1 /I "..\\" /I "..\decoders" /I "..\decoders\timidity" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SDL_SOUND_DLL_EXPORTS" /D "NDEBUG" /D "_LIB" /D "SOUND_SUPPORTS_AU" /D "SOUND_SUPPORTS_AIFF" /D "SOUND_SUPPORTS_SHN" /D "SOUND_SUPPORTS_MIDI" /D "SOUND_SUPPORTS_WAV" /D "SOUND_SUPPORTS_VOC" /D "SOUND_SUPPORTS_MIKMOD" /D "SOUND_SUPPORTS_MPG123" /D "SOUND_SUPPORTS_OGG" /D "SOUND_SUPPORTS_RAW" /D "SOUND_SUPPORTS_MODPLUG" /D "SOUND_SUPPORTS_FLAC" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
@@ -53,7 +53,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 sdl.lib vorbis.lib vorbisfile.lib ogg.lib smpeg.lib libFLAC.lib mikmod.lib modplug.lib /nologo /dll /machine:I386 /out:"win32lib/sdl_sound.dll"
+# ADD LINK32 SDL.lib vorbis.lib vorbisfile.lib ogg.lib mpg123.lib libFLAC.lib mikmod.lib modplug.lib /nologo /dll /machine:I386 /out:"win32lib/SDL_sound.dll"
 
 !ELSEIF  "$(CFG)" == "sdl_sound_dll - Win32 Debug"
 
@@ -69,7 +69,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SDL_SOUND_DLL_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\\" /I "..\decoders" /I "..\decoders\timidity" /I "..\decoders\mpglib" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SDL_SOUND_DLL_EXPORTS" /D "NDEBUG" /D "_LIB" /D "SOUND_SUPPORTS_AU" /D "SOUND_SUPPORTS_AIFF" /D "SOUND_SUPPORTS_SHN" /D "SOUND_SUPPORTS_MIDI" /D "SOUND_SUPPORTS_WAV" /D "SOUND_SUPPORTS_VOC" /D "SOUND_SUPPORTS_MIKMOD" /D "SOUND_SUPPORTS_MPGLIB" /D "SOUND_SUPPORTS_SMPEG" /D "SOUND_SUPPORTS_OGG" /D "SOUND_SUPPORTS_RAW" /D "SOUND_SUPPORTS_MODPLUG" /D "SOUND_SUPPORTS_FLAC" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\\" /I "..\decoders" /I "..\decoders\timidity" /D "_DEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SDL_SOUND_DLL_EXPORTS" /D "NDEBUG" /D "_LIB" /D "SOUND_SUPPORTS_AU" /D "SOUND_SUPPORTS_AIFF" /D "SOUND_SUPPORTS_SHN" /D "SOUND_SUPPORTS_MIDI" /D "SOUND_SUPPORTS_WAV" /D "SOUND_SUPPORTS_VOC" /D "SOUND_SUPPORTS_MIKMOD" /D "SOUND_SUPPORTS_MPGLIB" /D "SOUND_SUPPORTS_OGG" /D "SOUND_SUPPORTS_RAW" /D "SOUND_SUPPORTS_MODPLUG" /D "SOUND_SUPPORTS_FLAC" /YX /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
@@ -79,7 +79,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 sdl.lib vorbis.lib vorbisfile.lib ogg.lib smpeg.lib libFLAC.lib mikmod.lib modplug.lib /nologo /dll /debug /machine:I386 /out:"win32lib/sdl_sound_d.dll" /pdbtype:sept
+# ADD LINK32 SDL.lib vorbis.lib vorbisfile.lib ogg.lib mpg123.lib libFLAC.lib mikmod.lib modplug.lib /nologo /dll /debug /machine:I386 /out:"win32lib/SDL_sound_d.dll" /pdbtype:sept
 
 !ENDIF 
 
@@ -93,58 +93,6 @@ LINK32=link.exe
 # Begin Group "decoders"
 
 # PROP Default_Filter ""
-# Begin Group "mpglib"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\decoders\mpglib\dct64_i386.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\decoders\mpglib\decode_i386.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\decoders\mpglib\huffman.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\decoders\mpglib\interface.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\decoders\mpglib\l2tables.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\decoders\mpglib\layer1.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\decoders\mpglib\layer2.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\decoders\mpglib\layer3.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\decoders\mpglib\mpg123_sdlsound.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\decoders\mpglib\mpglib_common.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\decoders\mpglib\mpglib_sdlsound.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\decoders\mpglib\tabinit.c
-# End Source File
-# End Group
 # Begin Group "timidity"
 
 # PROP Default_Filter ""
@@ -251,7 +199,7 @@ SOURCE=..\decoders\modplug.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\decoders\mpglib.c
+SOURCE=..\decoders\mpg123.c
 # End Source File
 # Begin Source File
 
@@ -264,10 +212,6 @@ SOURCE=..\decoders\raw.c
 # Begin Source File
 
 SOURCE=..\decoders\shn.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\decoders\smpeg.c
 # End Source File
 # Begin Source File
 
