@@ -53,14 +53,9 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_playsound_OBJECTS = playsound-playsound.$(OBJEXT) \
-	playsound-physfsrwops.$(OBJEXT)
+am_playsound_OBJECTS = playsound.$(OBJEXT)
 playsound_OBJECTS = $(am_playsound_OBJECTS)
-am__DEPENDENCIES_1 =
-playsound_DEPENDENCIES = ../libSDL_sound.la $(am__DEPENDENCIES_1)
-playsound_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(playsound_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+playsound_DEPENDENCIES = ../libSDL_sound.la
 am_playsound_simple_OBJECTS = playsound_simple.$(OBJEXT)
 playsound_simple_OBJECTS = $(am_playsound_simple_OBJECTS)
 playsound_simple_DEPENDENCIES = ../libSDL_sound.la
@@ -211,13 +206,8 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 INCLUDES = -I$(top_srcdir)
-@USE_PHYSICSFS_FALSE@PHYSFS_CFLAGS = 
-@USE_PHYSICSFS_TRUE@PHYSFS_CFLAGS = -DSUPPORT_PHYSFS=1
-@USE_PHYSICSFS_FALSE@PHYSFS_LIBS = 
-@USE_PHYSICSFS_TRUE@PHYSFS_LIBS = -lphysfs
-playsound_CFLAGS = $(PHYSFS_CFLAGS)
-playsound_LDADD = ../libSDL_sound.la $(PHYSFS_LIBS)
-playsound_SOURCES = playsound.c physfsrwops.c physfsrwops.h
+playsound_LDADD = ../libSDL_sound.la
+playsound_SOURCES = playsound.c
 playsound_simple_LDADD = ../libSDL_sound.la
 playsound_simple_SOURCES = playsound_simple.c
 all: all-am
@@ -299,7 +289,7 @@ clean-binPROGRAMS:
 	rm -f $$list
 playsound$(EXEEXT): $(playsound_OBJECTS) $(playsound_DEPENDENCIES) 
 	@rm -f playsound$(EXEEXT)
-	$(playsound_LINK) $(playsound_OBJECTS) $(playsound_LDADD) $(LIBS)
+	$(LINK) $(playsound_OBJECTS) $(playsound_LDADD) $(LIBS)
 playsound_simple$(EXEEXT): $(playsound_simple_OBJECTS) $(playsound_simple_DEPENDENCIES) 
 	@rm -f playsound_simple$(EXEEXT)
 	$(LINK) $(playsound_simple_OBJECTS) $(playsound_simple_LDADD) $(LIBS)
@@ -310,8 +300,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/playsound-physfsrwops.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/playsound-playsound.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/playsound.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/playsound_simple.Po@am__quote@
 
 .c.o:
@@ -334,34 +323,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
-
-playsound-playsound.o: playsound.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(playsound_CFLAGS) $(CFLAGS) -MT playsound-playsound.o -MD -MP -MF $(DEPDIR)/playsound-playsound.Tpo -c -o playsound-playsound.o `test -f 'playsound.c' || echo '$(srcdir)/'`playsound.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/playsound-playsound.Tpo $(DEPDIR)/playsound-playsound.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='playsound.c' object='playsound-playsound.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(playsound_CFLAGS) $(CFLAGS) -c -o playsound-playsound.o `test -f 'playsound.c' || echo '$(srcdir)/'`playsound.c
-
-playsound-playsound.obj: playsound.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(playsound_CFLAGS) $(CFLAGS) -MT playsound-playsound.obj -MD -MP -MF $(DEPDIR)/playsound-playsound.Tpo -c -o playsound-playsound.obj `if test -f 'playsound.c'; then $(CYGPATH_W) 'playsound.c'; else $(CYGPATH_W) '$(srcdir)/playsound.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/playsound-playsound.Tpo $(DEPDIR)/playsound-playsound.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='playsound.c' object='playsound-playsound.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(playsound_CFLAGS) $(CFLAGS) -c -o playsound-playsound.obj `if test -f 'playsound.c'; then $(CYGPATH_W) 'playsound.c'; else $(CYGPATH_W) '$(srcdir)/playsound.c'; fi`
-
-playsound-physfsrwops.o: physfsrwops.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(playsound_CFLAGS) $(CFLAGS) -MT playsound-physfsrwops.o -MD -MP -MF $(DEPDIR)/playsound-physfsrwops.Tpo -c -o playsound-physfsrwops.o `test -f 'physfsrwops.c' || echo '$(srcdir)/'`physfsrwops.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/playsound-physfsrwops.Tpo $(DEPDIR)/playsound-physfsrwops.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='physfsrwops.c' object='playsound-physfsrwops.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(playsound_CFLAGS) $(CFLAGS) -c -o playsound-physfsrwops.o `test -f 'physfsrwops.c' || echo '$(srcdir)/'`physfsrwops.c
-
-playsound-physfsrwops.obj: physfsrwops.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(playsound_CFLAGS) $(CFLAGS) -MT playsound-physfsrwops.obj -MD -MP -MF $(DEPDIR)/playsound-physfsrwops.Tpo -c -o playsound-physfsrwops.obj `if test -f 'physfsrwops.c'; then $(CYGPATH_W) 'physfsrwops.c'; else $(CYGPATH_W) '$(srcdir)/physfsrwops.c'; fi`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/playsound-physfsrwops.Tpo $(DEPDIR)/playsound-physfsrwops.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='physfsrwops.c' object='playsound-physfsrwops.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(playsound_CFLAGS) $(CFLAGS) -c -o playsound-physfsrwops.obj `if test -f 'physfsrwops.c'; then $(CYGPATH_W) 'physfsrwops.c'; else $(CYGPATH_W) '$(srcdir)/physfsrwops.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
