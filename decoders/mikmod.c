@@ -139,7 +139,7 @@ static int _mm_RWopsReader_get(MREADER *reader)
 } /* _mm_RWopsReader_get */
 
 
-static BOOL _mm_RWopsReader_seek(MREADER *reader, long offset, int whence)
+static int _mm_RWopsReader_seek(MREADER *reader, long offset, int whence)
 {
     MRWOPSREADER *rwops_reader = (MRWOPSREADER *) reader;
     Sound_Sample *sample = rwops_reader->sample;
