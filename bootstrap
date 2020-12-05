@@ -2,19 +2,19 @@
 
 set -e
 echo "Initial preparation...this can take awhile, so sit tight..."
-aclocal
 
 # MacOS X renames GNU libtool to "glibtool", since they have something
 #  else called "libtool" already...
 if [ -x /usr/bin/glibtoolize ]; then
-  glibtoolize --automake --copy --force
+  glibtoolize -i -c
 else
-  libtoolize --automake --copy --force
+  libtoolize  -i -c
 fi
 
+aclocal -I acinclude
 autoheader
 automake --foreign --add-missing --copy
-autoconf
+autoconf -I acinclude
 
 echo "You are now ready to run ./configure ..."
 
