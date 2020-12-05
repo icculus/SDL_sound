@@ -76,7 +76,7 @@ static int QT_seek(Sound_Sample *sample, Uint32 ms);
 
 #define QT_MAX_INPUT_BUFFER (32*1024) /* Maximum size of internal buffer (internal->buffer_size) */
 
-static const char *extensions_quicktime[] = { "mov", NULL };
+static const char *extensions_quicktime[] = { "MOV", NULL };
 const Sound_DecoderFunctions __Sound_DecoderFunctions_QuickTime =
   {
     {
