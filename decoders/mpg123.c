@@ -112,13 +112,16 @@ static off_t rwseek(void *p, off_t pos, int whence)
 static const char *set_error(mpg123_handle *mp, const int err)
 {
     char buffer[128];
-    const char *str = NULL;
+    const char *str;
+
     if ((err == MPG123_ERR) && (mp != NULL))
         str = mpg123_strerror(mp);
     else
         str = mpg123_plain_strerror(err);
 
-    snprintf(buffer, sizeof (buffer), "MPG123: %s", str);
+    memcpy(buffer,"MPG123: ",8);
+    strncpy(buffer+8, str, 120);
+    buffer[127] = '\0';
     __Sound_SetError(buffer);
 
     return(NULL);  /* this is for BAIL_MACRO to not try to reset the string. */
