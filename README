@@ -20,7 +20,7 @@ SDL_sound _REQUIRES_ Simple Directmedia Layer (SDL) to function, and cannot
  Reports of success or failure are welcome.
 
 Some optional external libraries that SDL_sound can use and where to find them:
- SMPEG (used to decode MP3s): http://icculus.org/smpeg/
+ mpg123 (used to decode MP3s): http://mpg123.org/
  libvorbisfile (used to decode OGGs): http://www.xiph.org/ogg/vorbis/
  libSpeex (used to decode SPXs): http://speex.org/
  libFLAC (used to decode FLACs): http://flac.sourceforge.net/
@@ -42,7 +42,6 @@ These external libraries are OPTIONAL. SDL_sound will build and function
  - Audio Interchange format (AIFF) files
  - Sun Audio (.AU) files
  - MIDI files
- - MP3 files (internal decoder, different than the one SMPEG uses)
  - Raw waveform data
 
 Building/Installing:

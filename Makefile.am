@@ -21,18 +21,12 @@ else
 TIMIDITY_LIB =
 endif
 
-if USE_MPGLIB
-MPGLIB_LIB = decoders/mpglib/libmpglib.la
-else
-MPGLIB_LIB =
-endif
-
 libSDL_sound_la_LDFLAGS = 		\
 	-release $(LT_RELEASE)	\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 libSDL_sound_la_LIBADD =	\
 	decoders/libdecoders.la	\
-	$(TIMIDITY_LIB) $(MPGLIB_LIB)
+	$(TIMIDITY_LIB)
 
 EXTRA_DIST =	\
 	CREDITS \
@@ -50,4 +44,3 @@ dist-hook:
 	echo " or can be read online at http://icculus.org/SDL_sound/docs/" >> $(distdir)/docs/README
 	echo >> $(distdir)/docs/README
 	rm -rf `find $(distdir) -type d -name ".svn"`
-
