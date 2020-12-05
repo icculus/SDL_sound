@@ -59,7 +59,7 @@ static volatile int global_done_flag = 0;
  *  faster than realtime, which isn't really a problem with any modern format
  *  on even pretty old hardware at this point.
  */
-static void audio_callback(void *userdata, Uint8 *stream, int len)
+static void SDLCALL audio_callback(void *userdata, Uint8 *stream, int len)
 {
     PlaysoundAudioCallbackData *data = (PlaysoundAudioCallbackData *) userdata;
     Sound_Sample *sample = data->sample;

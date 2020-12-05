@@ -43,7 +43,7 @@ typedef struct
 
 
 /* Just pass through to the actual SDL_RWops's method... */
-static int refcounter_seek(SDL_RWops *rw, int offset, int whence)
+static int SDLCALL refcounter_seek(SDL_RWops *rw, int offset, int whence)
 {
     RWRefCounterData *data = (RWRefCounterData *) rw->hidden.unknown.data1;
     return(data->rw->seek(data->rw, offset, whence));
@@ -51,7 +51,7 @@ static int refcounter_seek(SDL_RWops *rw, int offset, int whence)
 
 
 /* Just pass through to the actual SDL_RWops's method... */
-static int refcounter_read(SDL_RWops *rw, void *ptr, int size, int maxnum)
+static int SDLCALL refcounter_read(SDL_RWops *rw, void *ptr, int size, int maxnum)
 {
     RWRefCounterData *data = (RWRefCounterData *) rw->hidden.unknown.data1;
     return(data->rw->read(data->rw, ptr, size, maxnum));
@@ -59,7 +59,7 @@ static int refcounter_read(SDL_RWops *rw, void *ptr, int size, int maxnum)
 
 
 /* Just pass through to the actual SDL_RWops's method... */
-static int refcounter_write(SDL_RWops *rw, const void *ptr, int size, int num)
+static int SDLCALL refcounter_write(SDL_RWops *rw, const void *ptr, int size, int num)
 {
     RWRefCounterData *data = (RWRefCounterData *) rw->hidden.unknown.data1;
     return(data->rw->write(data->rw, ptr, size, num));
@@ -70,7 +70,7 @@ static int refcounter_write(SDL_RWops *rw, const void *ptr, int size, int num)
  * Decrement the reference count. If there are no more references, pass
  *   through to the actual SDL_RWops's method, and then clean ourselves up.
  */
-static int refcounter_close(SDL_RWops *rw)
+static int SDLCALL refcounter_close(SDL_RWops *rw)
 {
     int retval = 0;
     RWRefCounterData *data = (RWRefCounterData *) rw->hidden.unknown.data1;
