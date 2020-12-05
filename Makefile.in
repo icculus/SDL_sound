@@ -38,7 +38,8 @@ host_triplet = @host@
 target_triplet = @target@
 subdir = .
 DIST_COMMON = README $(am__configure_deps) \
-	$(libSDL_soundinclude_HEADERS) $(srcdir)/Makefile.am \
+	$(am__libSDL2_soundinclude_HEADERS_DIST) \
+	$(am__libSDL_soundinclude_HEADERS_DIST) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure COPYING INSTALL TODO config.guess \
 	config.sub depcomp install-sh ltmain.sh missing
@@ -48,7 +49,8 @@ am__aclocal_m4_deps = $(top_srcdir)/acinclude/libtool.m4 \
 	$(top_srcdir)/acinclude/ltsugar.m4 \
 	$(top_srcdir)/acinclude/ltversion.m4 \
 	$(top_srcdir)/acinclude/lt~obsolete.m4 \
-	$(top_srcdir)/acinclude/sdl.m4 $(top_srcdir)/configure.in
+	$(top_srcdir)/acinclude/pkg.m4 $(top_srcdir)/acinclude/sdl.m4 \
+	$(top_srcdir)/acinclude/sdl2.m4 $(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -79,18 +81,31 @@ am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
 am__installdirs = "$(DESTDIR)$(libdir)" \
+	"$(DESTDIR)$(libSDL2_soundincludedir)" \
 	"$(DESTDIR)$(libSDL_soundincludedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 @USE_TIMIDITY_TRUE@am__DEPENDENCIES_1 =  \
 @USE_TIMIDITY_TRUE@	decoders/timidity/libtimidity.la
-libSDL_sound_la_DEPENDENCIES = decoders/libdecoders.la \
-	$(am__DEPENDENCIES_1)
-am_libSDL_sound_la_OBJECTS = SDL_sound.lo alt_audio_convert.lo \
-	audio_convert.lo
+am__DEPENDENCIES_2 = decoders/libdecoders.la $(am__DEPENDENCIES_1)
+@USE_SDL2_TRUE@libSDL2_sound_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am__libSDL2_sound_la_SOURCES_DIST = SDL_sound.c SDL_sound_internal.h \
+	alt_audio_convert.c alt_audio_convert.h audio_convert.c
+am__objects_1 = SDL_sound.lo alt_audio_convert.lo audio_convert.lo
+@USE_SDL2_TRUE@am_libSDL2_sound_la_OBJECTS = $(am__objects_1)
+libSDL2_sound_la_OBJECTS = $(am_libSDL2_sound_la_OBJECTS)
+libSDL2_sound_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(libSDL2_sound_la_LDFLAGS) $(LDFLAGS) -o $@
+@USE_SDL2_TRUE@am_libSDL2_sound_la_rpath = -rpath $(libdir)
+@USE_SDL2_FALSE@libSDL_sound_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am__libSDL_sound_la_SOURCES_DIST = SDL_sound.c SDL_sound_internal.h \
+	alt_audio_convert.c alt_audio_convert.h audio_convert.c
+@USE_SDL2_FALSE@am_libSDL_sound_la_OBJECTS = $(am__objects_1)
 libSDL_sound_la_OBJECTS = $(am_libSDL_sound_la_OBJECTS)
 libSDL_sound_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libSDL_sound_la_LDFLAGS) $(LDFLAGS) -o $@
+@USE_SDL2_FALSE@am_libSDL_sound_la_rpath = -rpath $(libdir)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -104,8 +119,9 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(libSDL_sound_la_SOURCES)
-DIST_SOURCES = $(libSDL_sound_la_SOURCES)
+SOURCES = $(libSDL2_sound_la_SOURCES) $(libSDL_sound_la_SOURCES)
+DIST_SOURCES = $(am__libSDL2_sound_la_SOURCES_DIST) \
+	$(am__libSDL_sound_la_SOURCES_DIST)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -113,7 +129,10 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-pdf-recursive install-ps-recursive install-recursive \
 	installcheck-recursive installdirs-recursive pdf-recursive \
 	ps-recursive uninstall-recursive
-HEADERS = $(libSDL_soundinclude_HEADERS)
+am__libSDL2_soundinclude_HEADERS_DIST = SDL_sound.h
+am__libSDL_soundinclude_HEADERS_DIST = SDL_sound.h
+HEADERS = $(libSDL2_soundinclude_HEADERS) \
+	$(libSDL_soundinclude_HEADERS)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
@@ -221,7 +240,9 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKG_CONFIG = @PKG_CONFIG@
 RANLIB = @RANLIB@
+SDL2_CONFIG = @SDL2_CONFIG@
 SDL_CFLAGS = @SDL_CFLAGS@
 SDL_CONFIG = @SDL_CONFIG@
 SDL_LIBS = @SDL_LIBS@
@@ -288,29 +309,25 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I acinclude
 AUTOMAKE_OPTIONS = foreign
-lib_LTLIBRARIES = libSDL_sound.la
 SUBDIRS = decoders . playsound
-libSDL_soundincludedir = $(includedir)/SDL
-libSDL_soundinclude_HEADERS = \
-	SDL_sound.h
-
-libSDL_sound_la_SOURCES = \
-	SDL_sound.c		\
-	SDL_sound_internal.h	\
-	alt_audio_convert.c	\
-	alt_audio_convert.h	\
-	audio_convert.c
-
 @USE_TIMIDITY_FALSE@TIMIDITY_LIB = 
 @USE_TIMIDITY_TRUE@TIMIDITY_LIB = decoders/timidity/libtimidity.la
-libSDL_sound_la_LDFLAGS = \
-	-no-undefined		\
-	-release $(LT_RELEASE)	\
-	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
-
-libSDL_sound_la_LIBADD = \
-	decoders/libdecoders.la $(TIMIDITY_LIB)
-
+SDLSOUND_HDRS = SDL_sound.h
+SDLSOUND_SRCS = SDL_sound.c SDL_sound_internal.h alt_audio_convert.c alt_audio_convert.h audio_convert.c
+SDLSOUND_LDFLAGS = -no-undefined -release $(LT_RELEASE) -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
+SDLSOUND_LIBADD = decoders/libdecoders.la $(TIMIDITY_LIB)
+@USE_SDL2_FALSE@lib_LTLIBRARIES = libSDL_sound.la
+@USE_SDL2_TRUE@lib_LTLIBRARIES = libSDL2_sound.la
+@USE_SDL2_TRUE@libSDL2_soundincludedir = $(includedir)/SDL2
+@USE_SDL2_TRUE@libSDL2_soundinclude_HEADERS = $(SDLSOUND_HDRS)
+@USE_SDL2_TRUE@libSDL2_sound_la_SOURCES = $(SDLSOUND_SRCS)
+@USE_SDL2_TRUE@libSDL2_sound_la_LDFLAGS = $(SDLSOUND_LDFLAGS)
+@USE_SDL2_TRUE@libSDL2_sound_la_LIBADD = $(SDLSOUND_LIBADD)
+@USE_SDL2_FALSE@libSDL_soundincludedir = $(includedir)/SDL
+@USE_SDL2_FALSE@libSDL_soundinclude_HEADERS = $(SDLSOUND_HDRS)
+@USE_SDL2_FALSE@libSDL_sound_la_SOURCES = $(SDLSOUND_SRCS)
+@USE_SDL2_FALSE@libSDL_sound_la_LDFLAGS = $(SDLSOUND_LDFLAGS)
+@USE_SDL2_FALSE@libSDL_sound_la_LIBADD = $(SDLSOUND_LIBADD)
 EXTRA_DIST = \
 	CREDITS \
 	COPYING \
@@ -408,8 +425,10 @@ clean-libLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
+libSDL2_sound.la: $(libSDL2_sound_la_OBJECTS) $(libSDL2_sound_la_DEPENDENCIES) 
+	$(libSDL2_sound_la_LINK) $(am_libSDL2_sound_la_rpath) $(libSDL2_sound_la_OBJECTS) $(libSDL2_sound_la_LIBADD) $(LIBS)
 libSDL_sound.la: $(libSDL_sound_la_OBJECTS) $(libSDL_sound_la_DEPENDENCIES) 
-	$(libSDL_sound_la_LINK) -rpath $(libdir) $(libSDL_sound_la_OBJECTS) $(libSDL_sound_la_LIBADD) $(LIBS)
+	$(libSDL_sound_la_LINK) $(am_libSDL_sound_la_rpath) $(libSDL_sound_la_OBJECTS) $(libSDL_sound_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -450,6 +469,26 @@ clean-libtool:
 
 distclean-libtool:
 	-rm -f libtool config.lt
+install-libSDL2_soundincludeHEADERS: $(libSDL2_soundinclude_HEADERS)
+	@$(NORMAL_INSTALL)
+	test -z "$(libSDL2_soundincludedir)" || $(MKDIR_P) "$(DESTDIR)$(libSDL2_soundincludedir)"
+	@list='$(libSDL2_soundinclude_HEADERS)'; test -n "$(libSDL2_soundincludedir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(libSDL2_soundincludedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(libSDL2_soundincludedir)" || exit $$?; \
+	done
+
+uninstall-libSDL2_soundincludeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(libSDL2_soundinclude_HEADERS)'; test -n "$(libSDL2_soundincludedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(libSDL2_soundincludedir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(libSDL2_soundincludedir)" && rm -f $$files
 install-libSDL_soundincludeHEADERS: $(libSDL_soundinclude_HEADERS)
 	@$(NORMAL_INSTALL)
 	test -z "$(libSDL_soundincludedir)" || $(MKDIR_P) "$(DESTDIR)$(libSDL_soundincludedir)"
@@ -789,7 +828,7 @@ check: check-recursive
 all-am: Makefile $(LTLIBRARIES) $(HEADERS) config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(libSDL_soundincludedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(libSDL2_soundincludedir)" "$(DESTDIR)$(libSDL_soundincludedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -841,7 +880,8 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-libSDL_soundincludeHEADERS
+install-data-am: install-libSDL2_soundincludeHEADERS \
+	install-libSDL_soundincludeHEADERS
 
 install-dvi: install-dvi-recursive
 
@@ -890,6 +930,7 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-libLTLIBRARIES \
+	uninstall-libSDL2_soundincludeHEADERS \
 	uninstall-libSDL_soundincludeHEADERS
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) all \
@@ -906,14 +947,15 @@ uninstall-am: uninstall-libLTLIBRARIES \
 	install install-am install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-libSDL_soundincludeHEADERS \
-	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-recursive uninstall uninstall-am \
-	uninstall-libLTLIBRARIES uninstall-libSDL_soundincludeHEADERS
+	install-libLTLIBRARIES install-libSDL2_soundincludeHEADERS \
+	install-libSDL_soundincludeHEADERS install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
+	uninstall-libLTLIBRARIES uninstall-libSDL2_soundincludeHEADERS \
+	uninstall-libSDL_soundincludeHEADERS
 
 
 dist-hook:
