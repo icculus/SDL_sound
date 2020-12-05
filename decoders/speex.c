@@ -124,7 +124,7 @@ static void SPEEX_quit(void)
 
 static int process_header(speex_t *speex, Sound_Sample *sample)
 {
-    SpeexMode *mode;
+    const SpeexMode *mode;
     SpeexHeader *hptr;
     SpeexHeader header;
     int enh_enabled = SPEEX_USE_PERCEPTUAL_ENHANCER;
