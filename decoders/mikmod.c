@@ -180,11 +180,11 @@ static MREADER *_mm_new_rwops_reader(Sound_Sample *sample)
         here = SDL_RWtell(internal->rw);
         if (here != -1)
         {
-            reader->end = SDL_RWseek(internal->rw, 0, SEEK_END);
+            reader->end = SDL_RWseek(internal->rw, 0, RW_SEEK_END);
             if (reader->end != -1)
             {
                 /* Move back */
-                if (SDL_RWseek(internal->rw, here, SEEK_SET) != -1)
+                if (SDL_RWseek(internal->rw, here, RW_SEEK_SET) != -1)
                     failed_seek = 0;
             } /* if */
         } /* if */

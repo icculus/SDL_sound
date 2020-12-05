@@ -35,6 +35,12 @@
 
 #include "SDL.h"
 
+#if !(SDL_VERSION_ATLEAST(1,2,10))
+#define RW_SEEK_SET 0
+#define RW_SEEK_CUR 1
+#define RW_SEEK_END 2
+#endif /**/
+
 #if (defined DEBUG_CHATTER)
 #define SNDDBG(x) printf x
 #else

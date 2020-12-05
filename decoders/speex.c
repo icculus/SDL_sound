@@ -202,7 +202,7 @@ static int SPEEX_open(Sound_Sample *sample, const char *ext)
      */
     magic = SDL_ReadLE32(rw);  /* make sure this is an ogg stream. */
     BAIL_IF_MACRO(magic != SPEEX_MAGIC, "SPEEX: Not a complete ogg stream", 0);
-    BAIL_IF_MACRO(SDL_RWseek(rw, -4, SEEK_CUR) < 0, ERR_IO_ERROR, 0);
+    BAIL_IF_MACRO(SDL_RWseek(rw, -4, RW_SEEK_CUR) < 0, ERR_IO_ERROR, 0);
 
     speex = (speex_t *) malloc(sizeof (speex_t));
     BAIL_IF_MACRO(speex == NULL, ERR_OUT_OF_MEMORY, 0);
