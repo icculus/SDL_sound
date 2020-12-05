@@ -276,7 +276,7 @@ static Uint32 OGG_read(Sound_Sample *sample)
 	{
         /* Creating a pointer to the buffer that denotes where to start
          * writing new data. */
-        Uint8* buffer_start_point = NULL;
+        char * buffer_start_point = NULL;
         int total_bytes_read = rc;
         int bytes_remaining = internal->buffer_size - rc;
 
@@ -291,7 +291,7 @@ static Uint32 OGG_read(Sound_Sample *sample)
         /* All the messiness is to get rid of the warning for
          * dereferencing a void*
          */
-            buffer_start_point = &(((Uint8*)internal->buffer)[total_bytes_read]);
+            buffer_start_point = &(((char *)internal->buffer)[total_bytes_read]);
             rc = ov_read(vf, buffer_start_point, bytes_remaining,
                 ((sample->actual.format & 0x1000) ? 1 : 0), /* bigendian? */
                 ((sample->actual.format & 0xFF) / 8), /* bytes per sample point */

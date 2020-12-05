@@ -186,7 +186,6 @@ static int SPEEX_open(Sound_Sample *sample, const char *ext)
 {
     int set_error_str = 1;
     int bitstream_initialized = 0;
-    Uint8 *buffer = NULL;
     int packet_count = 0;
     speex_t *speex = NULL;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;

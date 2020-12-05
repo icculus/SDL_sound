@@ -159,7 +159,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_FLAC =
     FLAC_seek        /*   seek() method */
 };
 
-    /* This is what we store in our internal->decoder_private field. */
+/* This is what we store in our internal->decoder_private field. */
 typedef struct
 {
     decoder_t *decoder;
@@ -236,11 +236,11 @@ static d_write_status_t write_callback(
 
     dst = f->sample->buffer;
 
-        /* If the sample is neither exactly 8-bit nor 16-bit, it will have to
-         * be converted. Unfortunately the buffer is read-only, so we either
-         * have to check for each sample, or make a copy of the buffer. I'm
-         * not sure which way is best, so I've arbitrarily picked the former.
-         */
+    /* If the sample is neither exactly 8-bit nor 16-bit, it will have to
+     * be converted. Unfortunately the buffer is read-only, so we either
+     * have to check for each sample, or make a copy of the buffer. I'm
+     * not sure which way is best, so I've arbitrarily picked the former.
+     */
     if (f->sample->actual.format == AUDIO_S8)
     {
         for (i = 0; i < frame->header.blocksize; i++)
@@ -285,9 +285,9 @@ static void metadata_callback(
 
     SNDDBG(("FLAC: Metadata callback.\n"));
 
-        /* There are several kinds of metadata, but STREAMINFO is the only
-         * one that always has to be there.
-         */
+    /* There are several kinds of metadata, but STREAMINFO is the only
+     * one that always has to be there.
+     */
     if (metadata->type == FLAC__METADATA_TYPE_STREAMINFO)
     {
         SNDDBG(("FLAC: Metadata is streaminfo.\n"));
@@ -376,7 +376,7 @@ static FLAC__bool eof_callback(
     flac_t *f = (flac_t *) client_data;
     int pos;
 
-        /* Maybe we could check for SOUND_SAMPLEFLAG_EOF here instead? */
+    /* Maybe we could check for SOUND_SAMPLEFLAG_EOF here instead? */
     pos = SDL_RWtell(f->rw);
     
     if (pos >= 0 && pos >= f->stream_length)
@@ -447,7 +447,7 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     {
         free(f);
         BAIL_MACRO(ERR_OUT_OF_MEMORY, 0);
-    } /* if */       
+    } /* if */
 
 #ifdef LEGACY_FLAC
     d_set_read_callback(decoder, read_callback);
@@ -493,12 +493,12 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
         sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
     } /* if */
 
-        /*
-         * If we are not sure this is a FLAC stream, check for the STREAMINFO
-         * metadata block. If not, we'd have to peek at the first audio frame
-         * and get the sound format from there, but that is not yet
-         * implemented.
-         */
+    /*
+     * If we are not sure this is a FLAC stream, check for the STREAMINFO
+     * metadata block. If not, we'd have to peek at the first audio frame
+     * and get the sound format from there, but that is not yet
+     * implemented.
+     */
     if (!f->is_flac)
     {
         d_process_metadata(decoder);
@@ -529,7 +529,6 @@ static Uint32 FLAC_read(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     flac_t *f = (flac_t *) internal->decoder_private;
-    Uint32 len;
 
     if (!d_process_one_frame(f->decoder))
     {
