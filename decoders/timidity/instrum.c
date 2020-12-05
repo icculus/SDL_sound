@@ -254,7 +254,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
       if (1 != SDL_RWread(rw, &tmplong, 4, 1)) goto fail; \
       thing = SDL_SwapLE32(tmplong);
 
-      SDL_RWseek(rw, 7, RW_SEEK_CUR); /* Skip the wave name */
+      SDL_RWseek(rw, 7, SEEK_CUR); /* Skip the wave name */
 
       if (1 != SDL_RWread(rw, &fractions, 1, 1))
 	{
@@ -277,7 +277,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
       READ_LONG(sp->low_freq);
       READ_LONG(sp->high_freq);
       READ_LONG(sp->root_freq);
-      SDL_RWseek(rw, 2, RW_SEEK_CUR); /* Why have a "root frequency" and then
+      SDL_RWseek(rw, 2, SEEK_CUR); /* Why have a "root frequency" and then
 				    * "tuning"?? */
       
       READ_CHAR(tmp[0]);
@@ -326,7 +326,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
 
       READ_CHAR(sp->modes);
 
-      SDL_RWseek(rw, 40, RW_SEEK_CUR); /* skip the useless scale frequency, scale
+      SDL_RWseek(rw, 40, SEEK_CUR); /* skip the useless scale frequency, scale
 				       factor (what's it mean?), and reserved
 				       space */
 

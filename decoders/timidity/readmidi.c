@@ -117,7 +117,7 @@ static MidiEventList *read_midi_event(MidiSong *song)
       if(me==0xF0 || me == 0xF7) /* SysEx event */
 	{
 	  len=getvl(song->rw);
-	  SDL_RWseek(song->rw, len, RW_SEEK_CUR);
+	  SDL_RWseek(song->rw, len, SEEK_CUR);
 	}
       else if(me==0xFF) /* Meta event */
 	{
@@ -144,7 +144,7 @@ static MidiEventList *read_midi_event(MidiSong *song)
 		
 	      default:
 		SNDDBG(("(Meta event type 0x%02x, length %d)\n", type, len));
-		SDL_RWseek(song->rw, len, RW_SEEK_CUR);
+		SDL_RWseek(song->rw, len, SEEK_CUR);
 		break;
 	      }
 	}
@@ -319,7 +319,7 @@ static int read_track(MidiSong *song, int append)
 	 * track data, skip any junk at the end.  */
           pos = SDL_RWtell(song->rw);
           if (pos < next_pos)
-            SDL_RWseek(song->rw, next_pos - pos, RW_SEEK_CUR);
+            SDL_RWseek(song->rw, next_pos - pos, SEEK_CUR);
 	  return 0;
 	}
 
@@ -569,7 +569,7 @@ MidiEvent *read_midi_file(MidiSong *song, Sint32 *count, Sint32 *sp)
   if (len > 6)
     {
       SNDDBG(("MIDI file header size %u bytes", len));
-      SDL_RWseek(song->rw, len-6, RW_SEEK_CUR); /* skip the excess */
+      SDL_RWseek(song->rw, len-6, SEEK_CUR); /* skip the excess */
     }
   if (format<0 || format >2)
     {
