@@ -341,6 +341,8 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
 
                 if (uc)
                     sample->actual.channels = 2;  /* Stereo */
+                /* VOC_EXTENDED may be read before spec->channels inited: */
+                else sample->actual.channels = 1;
 
                 /* Needed number of channels before finishing
                    compute for rate */
