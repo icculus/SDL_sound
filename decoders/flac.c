@@ -262,8 +262,13 @@ static d_write_status_t write_callback(
                     sample <<= (16 - frame->header.bits_per_sample);
                 else if (frame->header.bits_per_sample > 16)
                     sample >>= (frame->header.bits_per_sample - 16);
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
                 *dst++ = (sample & 0xff00) >> 8;
                 *dst++ = sample & 0x00ff;
+#else
+                *dst++ = sample & 0x00ff;
+                *dst++ = (sample & 0xff00) >> 8;
+#endif
             } /* for */
     } /* else */
 
@@ -292,7 +297,7 @@ static void metadata_callback(
         f->sample->actual.rate = metadata->data.stream_info.sample_rate;
 
         if (metadata->data.stream_info.bits_per_sample > 8)
-            f->sample->actual.format = AUDIO_S16MSB;
+            f->sample->actual.format = AUDIO_S16SYS;
         else
             f->sample->actual.format = AUDIO_S8;
     } /* if */
