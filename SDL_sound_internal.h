@@ -35,11 +35,6 @@
 
 #include "SDL.h"
 
-/* SDL 1.2.4 defines this, but better safe than sorry. */
-#if (!defined(__inline__))
-#  define __inline__
-#endif
-
 #if (defined DEBUG_CHATTER)
 #define SNDDBG(x) printf x
 #else
