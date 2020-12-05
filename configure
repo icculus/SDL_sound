@@ -14426,6 +14426,7 @@ fi
   fi
 fi
 
+
 # Check whether --enable-altcvt was given.
 if test "${enable_altcvt+set}" = set; then
   enableval=$enable_altcvt;
@@ -14985,10 +14986,6 @@ fi
 
 
 # Checks for library functions.
-
-# This is only in the bleeding edge autoconf distro...
-#AC_FUNC_MALLOC
-
 
 { $as_echo "$as_me:$LINENO: checking for working memcmp" >&5
 $as_echo_n "checking for working memcmp... " >&6; }
