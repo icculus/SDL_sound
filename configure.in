@@ -183,7 +183,7 @@ AC_ARG_ENABLE(mpg123,
               , enable_mpg123=yes)
 if test x$enable_mpg123 = xyes; then
   AC_CHECK_HEADER([mpg123.h], [have_mpg123_hdr=yes])
-  AC_CHECK_LIB([mpg123], [mpg123_replace_reader], [have_mpg123_lib=yes])
+  AC_CHECK_LIB([mpg123], [mpg123_replace_reader_handle], [have_mpg123_lib=yes])
   if test x$have_mpg123_hdr = xyes -a x$have_mpg123_lib = xyes; then
     LIBS="$LIBS -lmpg123"
     AC_DEFINE(SOUND_SUPPORTS_MPG123, 1, [Define if MPG123 support is desired.])
