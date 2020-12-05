@@ -23,6 +23,7 @@ TIMIDITY_LIB =
 endif
 
 libSDL_sound_la_LDFLAGS = 	\
+	-no-undefined		\
 	-release $(LT_RELEASE)	\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 libSDL_sound_la_LIBADD =	\
