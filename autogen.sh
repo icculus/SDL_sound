@@ -2,7 +2,7 @@
 
 aclocal -I acinclude
 #libtoolize -c -i
-autoheader
+autoheader -f
 automake --foreign --include-deps --add-missing --copy
 autoconf
 
