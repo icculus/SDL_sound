@@ -730,13 +730,15 @@ int main(int argc, char **argv)
 
         if (strcmp(argv[i], "--rate") == 0 && argc > i + 1)
         {
+            Sint32 r;
             use_specific_audiofmt = 1;
-            sound_desired.rate = atoi(argv[++i]);
-            if (sound_desired.rate <= 0)
+            r = atoi(argv[++i]);
+            if (r <= 0)
             {
                 fprintf(stderr, "Bad argument to --rate!\n");
                 return(42);
             } /* if */
+            sound_desired.rate = (Uint32)r;
         } /* else if */
 
         else if (strcmp(argv[i], "--format") == 0 && argc > i + 1)

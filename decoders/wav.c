@@ -80,7 +80,6 @@ static __inline__ int read_le16(SDL_RWops *rw, Uint16 *ui16)
     return(1);
 } /* read_le16 */
 
-
 /* Better than SDL_ReadLE32, since you can detect i/o errors... */
 static __inline__ int read_le32(SDL_RWops *rw, Uint32 *ui32)
 {
@@ -90,6 +89,15 @@ static __inline__ int read_le32(SDL_RWops *rw, Uint32 *ui32)
     return(1);
 } /* read_le32 */
 
+static __inline__ int read_le16s(SDL_RWops *rw, Sint16 *si16)
+{
+    return read_le16(rw, (Uint16 *) si16);
+} /* read_le16s */
+
+static __inline__ int read_le32s(SDL_RWops *rw, Sint32 *si32)
+{
+    return read_le32(rw, (Uint32 *) si32);
+} /* read_le32s */
 
 /* This is just cleaner on the caller's end... */
 static __inline__ int read_uint8(SDL_RWops *rw, Uint8 *ui8)
@@ -182,11 +190,11 @@ static int read_fmt_chunk(SDL_RWops *rw, fmt_t *fmt)
     /* skip reading the chunk ID, since it was already read at this point... */
     fmt->chunkID = fmtID;
 
-    BAIL_IF_MACRO(!read_le32(rw, &fmt->chunkSize), NULL, 0);
+    BAIL_IF_MACRO(!read_le32s(rw, &fmt->chunkSize), NULL, 0);
     BAIL_IF_MACRO(fmt->chunkSize < 16, "WAV: Invalid chunk size", 0);
     fmt->next_chunk_offset = SDL_RWtell(rw) + fmt->chunkSize;
     
-    BAIL_IF_MACRO(!read_le16(rw, &fmt->wFormatTag), NULL, 0);
+    BAIL_IF_MACRO(!read_le16s(rw, &fmt->wFormatTag), NULL, 0);
     BAIL_IF_MACRO(!read_le16(rw, &fmt->wChannels), NULL, 0);
     BAIL_IF_MACRO(!read_le32(rw, &fmt->dwSamplesPerSec), NULL, 0);
     BAIL_IF_MACRO(!read_le32(rw, &fmt->dwAvgBytesPerSec), NULL, 0);
@@ -220,7 +228,7 @@ static int read_data_chunk(SDL_RWops *rw, data_t *data)
 {
     /* skip reading the chunk ID, since it was already read at this point... */
     data->chunkID = dataID;
-    BAIL_IF_MACRO(!read_le32(rw, &data->chunkSize), NULL, 0);
+    BAIL_IF_MACRO(!read_le32s(rw, &data->chunkSize), NULL, 0);
     return(1);
 } /* read_data_chunk */
 
@@ -347,10 +355,10 @@ static __inline__ int read_adpcm_block_headers(Sound_Sample *sample)
         BAIL_IF_MACRO(!read_le16(rw, &headers[i].iDelta), NULL, 0);
 
     for (i = 0; i < max; i++)
-        BAIL_IF_MACRO(!read_le16(rw, &headers[i].iSamp1), NULL, 0);
+        BAIL_IF_MACRO(!read_le16s(rw, &headers[i].iSamp1), NULL, 0);
 
     for (i = 0; i < max; i++)
-        BAIL_IF_MACRO(!read_le16(rw, &headers[i].iSamp2), NULL, 0);
+        BAIL_IF_MACRO(!read_le16s(rw, &headers[i].iSamp2), NULL, 0);
 
     fmt->fmt.adpcm.samples_left_in_block = fmt->fmt.adpcm.wSamplesPerBlock;
     fmt->fmt.adpcm.nibble_state = 0;
@@ -405,12 +413,10 @@ static __inline__ int decode_adpcm_sample_frame(Sound_Sample *sample)
     SDL_RWops *rw = internal->rw;
     int i;
     int max = fmt->wChannels;
-    Sint32 delta;
     Uint8 nib = fmt->fmt.adpcm.nibble;
 
     for (i = 0; i < max; i++)
     {
-        Uint8 byte;
         Sint16 iCoef1 = fmt->fmt.adpcm.aCoef[headers[i].bPredictor].iCoef1;
         Sint16 iCoef2 = fmt->fmt.adpcm.aCoef[headers[i].bPredictor].iCoef2;
         Sint32 lPredSamp = ((headers[i].iSamp1 * iCoef1) +
@@ -600,8 +606,8 @@ static int read_fmt_adpcm(SDL_RWops *rw, fmt_t *fmt)
 
     for (i = 0; i < fmt->fmt.adpcm.wNumCoef; i++)
     {
-        BAIL_IF_MACRO(!read_le16(rw, &fmt->fmt.adpcm.aCoef[i].iCoef1), NULL, 0);
-        BAIL_IF_MACRO(!read_le16(rw, &fmt->fmt.adpcm.aCoef[i].iCoef2), NULL, 0);
+        BAIL_IF_MACRO(!read_le16s(rw, &fmt->fmt.adpcm.aCoef[i].iCoef1), NULL, 0);
+        BAIL_IF_MACRO(!read_le16s(rw, &fmt->fmt.adpcm.aCoef[i].iCoef2), NULL, 0);
     } /* for */
 
     i = sizeof (ADPCMBLOCKHEADER) * fmt->wChannels;
@@ -671,7 +677,7 @@ static int find_chunk(SDL_RWops *rw, Uint32 id)
             return(1);
 
             /* skip ahead and see what next chunk is... */
-        BAIL_IF_MACRO(!read_le32(rw, &siz), NULL, 0);
+        BAIL_IF_MACRO(!read_le32s(rw, &siz), NULL, 0);
         assert(siz >= 0);
         pos += (sizeof (Uint32) * 2) + siz;
         if (siz > 0)
@@ -688,7 +694,6 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
     SDL_RWops *rw = internal->rw;
     data_t d;
     wav_t *w;
-    Uint32 pos;
 
     BAIL_IF_MACRO(SDL_ReadLE32(rw) != riffID, "WAV: Not a RIFF file.", 0);
     SDL_ReadLE32(rw);  /* throw the length away; we get this info later. */

@@ -1067,7 +1067,6 @@ static Uint32 SHN_read(Sound_Sample *sample)
 {
     Uint32 retval = 0;
     Sint32 chan = 0;
-    Uint32 cpyBytes = 0;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SDL_RWops *rw = internal->rw;
     shn_t *shn = (shn_t *) internal->decoder_private;
@@ -1304,9 +1303,9 @@ static Uint32 SHN_read(Sound_Sample *sample)
 static int SHN_rewind(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    shn_t *shn = (shn_t *) internal->decoder_private;
 
 #if 0
+    shn_t *shn = (shn_t *) internal->decoder_private;
     int rc = SDL_RWseek(internal->rw, shn->start_pos, RW_SEEK_SET);
     BAIL_IF_MACRO(rc != shn->start_pos, ERR_IO_ERROR, 0);
     /* !!! FIXME: set state. */
