@@ -114,11 +114,11 @@ playsound_simple.obj: playsound/playsound_simple.c
 
 playsound.exe: $(LIBFILE) playsound.obj
   @echo * Link: $@
-  wlink SYS os2v2 LIBPATH $(DEPS_LIB) LIBR {$(LIBFILE) SDL2.lib} op q op el F {playsound.obj}  N playsound.exe
+  wlink SYS os2v2 LIBPATH $(DEPS_LIB) LIBR {$(LIBFILE) $(LIBSDL)} op q op el F {playsound.obj} N playsound.exe
 
 playsound_simple.exe: $(LIBFILE) playsound_simple.obj
   @echo * Link: $@
-  wlink SYS os2v2 LIBPATH $(DEPS_LIB) LIBR {$(LIBFILE) SDL2.lib} op q op el F {playsound_simple.obj}  N playsound_simple.exe
+  wlink SYS os2v2 LIBPATH $(DEPS_LIB) LIBR {$(LIBFILE) $(LIBSDL)} op q op el F {playsound_simple.obj} N playsound_simple.exe
 
 .c: decoders/timidity;
 timidity.lib: $(TIMIOBJS)
