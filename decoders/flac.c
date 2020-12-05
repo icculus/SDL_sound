@@ -435,7 +435,7 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
         BAIL_IF_MACRO(flac_magic != FLAC_MAGIC, "FLAC: Not a FLAC stream.", 0);
 
         /* move back over magic number for metadata scan... */
-        rc = SDL_RWseek(internal->rw, -sizeof (flac_magic), SEEK_CUR);
+        rc = SDL_RWseek(internal->rw, -((long) sizeof(flac_magic)), SEEK_CUR);
         BAIL_IF_MACRO(rc < 0, ERR_IO_ERROR, 0);
     } /* if */
 
