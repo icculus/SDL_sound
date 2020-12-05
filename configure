@@ -787,8 +787,6 @@ ac_includes_default="\
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
-USE_PHYSICSFS_FALSE
-USE_PHYSICSFS_TRUE
 USE_TIMIDITY_FALSE
 USE_TIMIDITY_TRUE
 LIBOBJS
@@ -941,7 +939,6 @@ enable_modplug
 enable_ogg
 enable_flac
 enable_speex
-enable_physfs
 enable_altcvt
 '
       ac_precious_vars='build_alias
@@ -1604,7 +1601,6 @@ Optional Features:
   --enable-ogg               enable OGG decoding via libvorbis default=yes
   --enable-flac              enable FLAC decoding via libFLAC default=yes
   --enable-speex               enable SPX decoding via libspeex default=yes
-  --enable-physfs            enable PhysicsFS in playsound default=yes
   --enable-altcvt            enable EXPERIMENTAL audio converter default=no
 
 Optional Packages:
@@ -4902,13 +4898,13 @@ if test "${lt_cv_nm_interface+set}" = set; then
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:4905: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:4901: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4908: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:4904: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4911: output\"" >&5)
+  (eval echo "\"\$as_me:4907: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -6108,7 +6104,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6111 "configure"' > conftest.$ac_ext
+  echo '#line 6107 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7966,11 +7962,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7969: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7965: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7973: \$? = $ac_status" >&5
+   echo "$as_me:7969: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8305,11 +8301,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8308: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8304: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:8312: \$? = $ac_status" >&5
+   echo "$as_me:8308: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8410,11 +8406,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8413: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8409: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8417: \$? = $ac_status" >&5
+   echo "$as_me:8413: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8465,11 +8461,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8468: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8464: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8472: \$? = $ac_status" >&5
+   echo "$as_me:8468: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -11267,7 +11263,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11270 "configure"
+#line 11266 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11363,7 +11359,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11366 "configure"
+#line 11362 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12029,7 +12025,6 @@ _ACEOF
 
 fi
 
-
 # Check whether --enable-wav was given.
 if test "${enable_wav+set}" = set; then
   enableval=$enable_wav;
@@ -12045,7 +12040,6 @@ _ACEOF
 
 fi
 
-
 # Check whether --enable-raw was given.
 if test "${enable_raw+set}" = set; then
   enableval=$enable_raw;
@@ -12060,7 +12054,6 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 fi
-
 
 # Check whether --enable-aiff was given.
 if test "${enable_aiff+set}" = set; then
@@ -13559,7 +13552,6 @@ _ACEOF
 fi
 
 
-
 x="C__stream_decoder_process_single"
 flcsym="FLA$x"
 # Check whether --enable-flac was given.
@@ -13787,7 +13779,6 @@ _ACEOF
     fi
   fi
 fi
-
 
 # Check whether --enable-speex was given.
 if test "${enable_speex+set}" = set; then
@@ -14208,224 +14199,6 @@ _ACEOF
 
   fi
 fi
-
-
-# Check whether --enable-physfs was given.
-if test "${enable_physfs+set}" = set; then
-  enableval=$enable_physfs;
-else
-  enable_physfs=yes
-fi
-
-if test x$enable_physfs = xyes; then
-  if test "${ac_cv_header_physfs_h+set}" = set; then
-  { $as_echo "$as_me:$LINENO: checking for physfs.h" >&5
-$as_echo_n "checking for physfs.h... " >&6; }
-if test "${ac_cv_header_physfs_h+set}" = set; then
-  $as_echo_n "(cached) " >&6
-fi
-{ $as_echo "$as_me:$LINENO: result: $ac_cv_header_physfs_h" >&5
-$as_echo "$ac_cv_header_physfs_h" >&6; }
-else
-  # Is the header compilable?
-{ $as_echo "$as_me:$LINENO: checking physfs.h usability" >&5
-$as_echo_n "checking physfs.h usability... " >&6; }
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-$ac_includes_default
-#include <physfs.h>
-_ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
-$as_echo "$ac_try_echo") >&5
-  (eval "$ac_compile") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
-  ac_header_compiler=yes
-else
-  $as_echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_header_compiler=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-{ $as_echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
-$as_echo "$ac_header_compiler" >&6; }
-
-# Is the header present?
-{ $as_echo "$as_me:$LINENO: checking physfs.h presence" >&5
-$as_echo_n "checking physfs.h presence... " >&6; }
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <physfs.h>
-_ACEOF
-if { (ac_try="$ac_cpp conftest.$ac_ext"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
-$as_echo "$ac_try_echo") >&5
-  (eval "$ac_cpp conftest.$ac_ext") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } >/dev/null && {
-	 test -z "$ac_c_preproc_warn_flag$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       }; then
-  ac_header_preproc=yes
-else
-  $as_echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-  ac_header_preproc=no
-fi
-
-rm -f conftest.err conftest.$ac_ext
-{ $as_echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
-$as_echo "$ac_header_preproc" >&6; }
-
-# So?  What about this header?
-case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
-  yes:no: )
-    { $as_echo "$as_me:$LINENO: WARNING: physfs.h: accepted by the compiler, rejected by the preprocessor!" >&5
-$as_echo "$as_me: WARNING: physfs.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
-    { $as_echo "$as_me:$LINENO: WARNING: physfs.h: proceeding with the compiler's result" >&5
-$as_echo "$as_me: WARNING: physfs.h: proceeding with the compiler's result" >&2;}
-    ac_header_preproc=yes
-    ;;
-  no:yes:* )
-    { $as_echo "$as_me:$LINENO: WARNING: physfs.h: present but cannot be compiled" >&5
-$as_echo "$as_me: WARNING: physfs.h: present but cannot be compiled" >&2;}
-    { $as_echo "$as_me:$LINENO: WARNING: physfs.h:     check for missing prerequisite headers?" >&5
-$as_echo "$as_me: WARNING: physfs.h:     check for missing prerequisite headers?" >&2;}
-    { $as_echo "$as_me:$LINENO: WARNING: physfs.h: see the Autoconf documentation" >&5
-$as_echo "$as_me: WARNING: physfs.h: see the Autoconf documentation" >&2;}
-    { $as_echo "$as_me:$LINENO: WARNING: physfs.h:     section \"Present But Cannot Be Compiled\"" >&5
-$as_echo "$as_me: WARNING: physfs.h:     section \"Present But Cannot Be Compiled\"" >&2;}
-    { $as_echo "$as_me:$LINENO: WARNING: physfs.h: proceeding with the preprocessor's result" >&5
-$as_echo "$as_me: WARNING: physfs.h: proceeding with the preprocessor's result" >&2;}
-    { $as_echo "$as_me:$LINENO: WARNING: physfs.h: in the future, the compiler will take precedence" >&5
-$as_echo "$as_me: WARNING: physfs.h: in the future, the compiler will take precedence" >&2;}
-
-    ;;
-esac
-{ $as_echo "$as_me:$LINENO: checking for physfs.h" >&5
-$as_echo_n "checking for physfs.h... " >&6; }
-if test "${ac_cv_header_physfs_h+set}" = set; then
-  $as_echo_n "(cached) " >&6
-else
-  ac_cv_header_physfs_h=$ac_header_preproc
-fi
-{ $as_echo "$as_me:$LINENO: result: $ac_cv_header_physfs_h" >&5
-$as_echo "$ac_cv_header_physfs_h" >&6; }
-
-fi
-if test "x$ac_cv_header_physfs_h" = x""yes; then
-  have_physfs_hdr=yes
-fi
-
-
-  { $as_echo "$as_me:$LINENO: checking for PHYSFS_init in -lphysfs" >&5
-$as_echo_n "checking for PHYSFS_init in -lphysfs... " >&6; }
-if test "${ac_cv_lib_physfs_PHYSFS_init+set}" = set; then
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lphysfs  $LIBS"
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char PHYSFS_init ();
-int
-main ()
-{
-return PHYSFS_init ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (ac_try="$ac_link"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
-$as_echo "$ac_try_echo") >&5
-  (eval "$ac_link") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest$ac_exeext && {
-	 test "$cross_compiling" = yes ||
-	 $as_test_x conftest$ac_exeext
-       }; then
-  ac_cv_lib_physfs_PHYSFS_init=yes
-else
-  $as_echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	ac_cv_lib_physfs_PHYSFS_init=no
-fi
-
-rm -rf conftest.dSYM
-rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
-      conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:$LINENO: result: $ac_cv_lib_physfs_PHYSFS_init" >&5
-$as_echo "$ac_cv_lib_physfs_PHYSFS_init" >&6; }
-if test "x$ac_cv_lib_physfs_PHYSFS_init" = x""yes; then
-  have_physfs_lib=yes
-fi
-
-  if test x$have_physfs_hdr = xyes -a x$have_physfs_lib = xyes; then
-    enable_physfs="yes"
-  else
-    enable_physfs="no"
-  fi
-fi
-
 
 # Check whether --enable-altcvt was given.
 if test "${enable_altcvt+set}" = set; then
@@ -15192,14 +14965,6 @@ else
   USE_TIMIDITY_FALSE=
 fi
 
- if test x$enable_physfs = xyes; then
-  USE_PHYSICSFS_TRUE=
-  USE_PHYSICSFS_FALSE='#'
-else
-  USE_PHYSICSFS_TRUE='#'
-  USE_PHYSICSFS_FALSE=
-fi
-
 
 ac_config_files="$ac_config_files Makefile decoders/Makefile decoders/timidity/Makefile playsound/Makefile"
 
@@ -15326,13 +15091,6 @@ if test -z "${USE_TIMIDITY_TRUE}" && test -z "${USE_TIMIDITY_FALSE}"; then
   { { $as_echo "$as_me:$LINENO: error: conditional \"USE_TIMIDITY\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 $as_echo "$as_me: error: conditional \"USE_TIMIDITY\" was never defined.
-Usually this means the macro was only invoked conditionally." >&2;}
-   { (exit 1); exit 1; }; }
-fi
-if test -z "${USE_PHYSICSFS_TRUE}" && test -z "${USE_PHYSICSFS_FALSE}"; then
-  { { $as_echo "$as_me:$LINENO: error: conditional \"USE_PHYSICSFS\" was never defined.
-Usually this means the macro was only invoked conditionally." >&5
-$as_echo "$as_me: error: conditional \"USE_PHYSICSFS\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi

@@ -46,11 +46,6 @@
 #include "SDL.h"
 #include "SDL_sound.h"
 
-#if SUPPORT_PHYSFS
-#include "physfs.h"
-#include "physfsrwops.h"
-#endif
-
 #define DEFAULT_DECODEBUF 16384
 #define DEFAULT_AUDIOBUF  4096
 
@@ -204,109 +199,6 @@ static void output_credits(void)
            "\n",
             PLAYSOUND_VER_MAJOR, PLAYSOUND_VER_MINOR, PLAYSOUND_VER_PATCH);
 } /* output_credits */
-
-
-
-/* archive stuff... */
-
-static int init_archive(const char *argv0)
-{
-    int retval = 1;
-
-#if SUPPORT_PHYSFS
-    retval = PHYSFS_init(argv0);
-    if (!retval)
-    {
-        fprintf(stderr, "Couldn't init PhysicsFS: %s\n",
-                PHYSFS_getLastError());
-    } /* if */
-#endif
-
-    return(retval);
-} /* init_archive */
-
-
-#if SUPPORT_PHYSFS
-static SDL_RWops *rwops_from_physfs(const char *filename)
-{
-    SDL_RWops *retval = NULL;
-
-    char *path = (char *) malloc(strlen(filename) + 1);
-    char *archive;
-
-    if (path == NULL)
-    {
-        fprintf(stderr, "Out of memory!\n");
-        return(NULL);
-    } /* if */
-
-    strcpy(path, filename);
-    archive = strchr(path, '@');
-    if (archive != NULL)
-    {
-        *(archive++) = '\0';  /* blank '@', point to archive name. */
-        if (!PHYSFS_addToSearchPath(archive, 0))
-        {
-            fprintf(stderr, "Couldn't open archive: %s\n",
-                    PHYSFS_getLastError());
-            free(path);
-            return(NULL);
-        } /* if */
-
-        retval = PHYSFSRWOPS_openRead(path);
-    } /* if */
-
-    free(path);
-    return(retval);
-} /* rwops_from_physfs */
-#endif
-
-
-static Sound_Sample *sample_from_archive(const char *fname,
-                                         Sound_AudioInfo *desired,
-                                         Uint32 decode_buffersize)
-{
-    Sound_Sample *retval = NULL;
-
-#if SUPPORT_PHYSFS
-    SDL_RWops *rw = rwops_from_physfs(fname);
-    if (rw != NULL)
-    {
-        char *path = (char *) malloc(strlen(fname) + 1);
-        char *ptr;
-        strcpy(path, fname);
-        ptr = strchr(path, '@');
-        *ptr = '\0';
-        ptr = strrchr(path, '.');
-        if (ptr != NULL)
-            ptr++;
-
-        retval = Sound_NewSample(rw, ptr, desired, decode_buffersize);
-        free(path);
-    } /* if */
-#endif
-
-    return(retval);
-} /* sample_from_archive */
-
-
-static void close_archive(const char *filename)
-{
-#if SUPPORT_PHYSFS
-    char *archive_name = strchr(filename, '@');
-    if (archive_name != NULL)
-        PHYSFS_removeFromSearchPath(archive_name + 1);
-#endif
-} /* close_archive */
-
-
-static void deinit_archive(void)
-{
-#if SUPPORT_PHYSFS
-    PHYSFS_deinit();
-#endif
-} /* deinit_archive */
-
 
 
 static volatile int done_flag = 0;
@@ -793,9 +685,6 @@ int main(int argc, char **argv)
         } /* else if */
     } /* for */
 
-    if (!init_archive(argv[0]))
-        return(42);
-
     if (SDL_Init(sdl_init_flags) == -1)
     {
         fprintf(stderr, "SDL_Init() failed!\n"
@@ -929,16 +818,9 @@ int main(int argc, char **argv)
         else
         {
             filename = argv[i];
-            sample = sample_from_archive(filename,
+            sample = Sound_NewSampleFromFile(filename,
                             use_specific_audiofmt ? &sound_desired : NULL,
                             decode_buffersize);
-
-            if (sample == NULL)
-            {
-                sample = Sound_NewSampleFromFile(filename,
-                            use_specific_audiofmt ? &sound_desired : NULL,
-                            decode_buffersize);
-            } /* if */
         } /* else */
 
         if (filename == NULL) /* still parsing command line stuff? */
@@ -961,7 +843,6 @@ int main(int argc, char **argv)
             {
                 fprintf(stderr, "Want seeks, but sample cannot handle it!\n");
                 Sound_FreeSample(sample);
-                close_archive(filename);
                 continue;
             } /* if */
         } /* if */
@@ -1045,15 +926,12 @@ int main(int argc, char **argv)
         SDL_CloseAudio();  /* reopen with next sample's format if possible */
         Sound_FreeSample(sample);
 
-        close_archive(filename);
-
         if (done_flag < 0)
             break;
     } /* for */
 
     Sound_Quit();
     SDL_Quit();
-    deinit_archive();
     return((done_flag < 0) ? 1 : 0);
 } /* main */
 
