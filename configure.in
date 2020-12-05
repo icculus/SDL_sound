@@ -1,5 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 AC_INIT(SDL_sound.c)
+AC_CONFIG_MACRO_DIR([acinclude])
 
 dnl ---------------------------------------------------------------------
 dnl System/version info
@@ -54,7 +55,8 @@ dnl ---------------------------------------------------------------------
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
-AM_PROG_LIBTOOL
+AC_LIBTOOL_WIN32_DLL
+AC_PROG_LIBTOOL
 
 
 dnl ---------------------------------------------------------------------
@@ -175,27 +177,18 @@ if test x$enable_midi = xyes; then
   AC_DEFINE(SOUND_SUPPORTS_MIDI, 1, [Define if MIDI support is desired.])
 fi
 
-dnl Check for SMPEG
-AC_ARG_ENABLE(smpeg,
-[  --enable-smpeg             enable MP3 decoding via smpeg [default=yes]],
-              , enable_smpeg=yes)
-if test x$enable_smpeg = xyes; then
-  AC_CHECK_HEADER(smpeg.h, have_smpeg_hdr=yes)
-  AC_CHECK_LIB(smpeg, SMPEG_new, have_smpeg_lib=yes)
-  if test x$have_smpeg_hdr = xyes -a x$have_smpeg_lib = xyes; then
-    LIBS="$LIBS -lsmpeg"
-    AC_DEFINE(SOUND_SUPPORTS_SMPEG, 1, [Define if SMPEG support is desired.])
+dnl Check for MPG123
+AC_ARG_ENABLE(mpg123,
+[  --enable-mpg123            enable MP3 decoding via mpg123 [default=yes]],
+              , enable_mpg123=yes)
+if test x$enable_mpg123 = xyes; then
+  AC_CHECK_HEADER([mpg123.h], [have_mpg123_hdr=yes])
+  AC_CHECK_LIB([mpg123], [mpg123_replace_reader], [have_mpg123_lib=yes])
+  if test x$have_mpg123_hdr = xyes -a x$have_mpg123_lib = xyes; then
+    LIBS="$LIBS -lmpg123"
+    AC_DEFINE(SOUND_SUPPORTS_MPG123, 1, [Define if MPG123 support is desired.])
   fi
 fi
-
-dnl Check for the MIDI decoder...
-AC_ARG_ENABLE(mpglib,
-[  --enable-mpglib            enable MP3 decoding internally [default=yes]],
-              , enable_mpglib=yes)
-if test x$enable_mpglib = xyes; then
-  AC_DEFINE(SOUND_SUPPORTS_MPGLIB, 1, [Define if MPGLIB support is desired.])
-fi
-
 
 dnl Check for libmikmod
 AC_ARG_ENABLE(mikmod,
@@ -359,13 +352,11 @@ AC_CHECK_FUNCS([memset strrchr setbuf])
 
 dnl Add Makefile conditionals
 AM_CONDITIONAL(USE_TIMIDITY, test x$enable_midi = xyes)
-AM_CONDITIONAL(USE_MPGLIB, test x$enable_mpglib = xyes)
 AM_CONDITIONAL(USE_PHYSICSFS, test x$enable_physfs = xyes)
 
 AC_OUTPUT([
 Makefile
 decoders/Makefile
 decoders/timidity/Makefile
-decoders/mpglib/Makefile
 playsound/Makefile
 ])
