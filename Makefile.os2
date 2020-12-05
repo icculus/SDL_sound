@@ -1,0 +1,137 @@
+# Open Watcom makefile to build SDL_sound for OS/2
+# wmake -f Makefile.os2
+#
+# Remember to edit DEPS_INC and DEPS_LIB below to meet
+# your own environment!.
+
+# if you want to build against SDL-1.2, change USE_SDL2 to no
+USE_SDL2=yes
+# change DEPS_INC in order to point to the dependency headers.
+DEPS_INC=-IC:\SDL2DEV\h\SDL2 -IC:\SDL2DEV\h
+# change DEPS_LIB in order to point to the dependency libraries.
+DEPS_LIB=C:\SDL2DEV\lib
+
+!ifeq USE_SDL2 yes
+LIBNAME = SDL2snd
+!else
+LIBNAME = SDLsound
+!endif
+VERSION = 1.0.4
+
+LIBFILE = $(LIBNAME).lib
+DLLFILE = $(LIBNAME).dll
+LNKFILE = $(LIBNAME).lnk
+TIMILIB = timidity.lib
+
+TITLENAME = $(LIBNAME) $(VERSION)
+
+SRCS = aiff.c au.c flac.c midi.c mikmod.c modplug.c mpg123.c ogg.c &
+       raw.c shn.c speex.c voc.c wav.c &
+       alt_audio_convert.c audio_convert.c SDL_sound.c
+
+TIMISRCS = common.c instrum.c mix.c output.c playmidi.c readmidi.c &
+       resample.c tables.c timidity.c
+
+OBJS = $(SRCS:.c=.obj)
+TIMIOBJS = $(TIMISRCS:.c=.obj)
+
+CFLAGS_BASE = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei -j
+CFLAGS_BASE+= -DNDEBUG
+# warnings:
+CFLAGS_BASE+= -wx
+# include paths:
+CFLAGS_BASE+= -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
+CFLAGS_BASE+= -I. $(DEPS_INC)
+CFLAGS = $(CFLAGS_BASE) -I"decoders/timidity"
+# to build a dll:
+CFLAGS+= -bd
+# for DECLSPEC:
+CFLAGS+= -DBUILD_SDL -DSDL_SOUND_DLL_EXPORTS
+
+#this is noted as experimental:
+#CFLAGS+= -DSOUND_USE_ALTCVT=1
+
+CFLAGS+= -DSOUND_SUPPORTS_MPG123 &
+         -DSOUND_SUPPORTS_MIKMOD &
+         -DSOUND_SUPPORTS_WAV &
+         -DSOUND_SUPPORTS_AIFF &
+         -DSOUND_SUPPORTS_AU &
+         -DSOUND_SUPPORTS_OGG &
+         -DSOUND_SUPPORTS_VOC &
+         -DSOUND_SUPPORTS_RAW &
+         -DSOUND_SUPPORTS_FLAC &
+         -DSOUND_SUPPORTS_MIDI
+# -DSOUND_SUPPORTS_SPEEX
+# -DSOUND_SUPPORTS_MODPLUG
+
+!ifeq USE_SDL2 yes
+LIBSDL = SDL2.lib
+!else
+LIBSDL = SDL12.lib
+!endif
+LIBS = $(LIBSDL) FLAC.lib vorbisfile.lib vorbis.lib ogg.lib mpg123.lib mikmod.lib $(TIMILIB)
+# speex.lib
+# modplug.lib
+
+.extensions:
+.extensions: .lib .dll .obj .c
+
+all: $(DLLFILE) playsound.exe playsound_simple.exe
+
+.c: decoders
+.c: playsound
+
+$(LIBFILE): $(DLLFILE)
+  @echo * Create library: $@...
+  wlib -b -n -q -c -pa -s -t -zld -ii -io $@ $(DLLFILE)
+
+$(DLLFILE): $(OBJS) $(TIMILIB) $(LNKFILE)
+  @echo * Link: $@
+  wlink @$(LNKFILE)
+
+$(LNKFILE):
+  @%create $@
+  @%append $@ SYSTEM os2v2_dll INITINSTANCE TERMINSTANCE
+  @%append $@ NAME $(LIBNAME)
+  @for %i in ($(OBJS)) do @%append $@ FILE %i
+  @%append $@ OPTION QUIET
+  @%append $@ OPTION DESCRIPTION '@$#icculus org:$(VERSION)$#@Simple DirectMedia Layer, abstract soundfile decoder'
+  @%append $@ LIBPATH $(DEPS_LIB)
+  @for %i in ($(LIBS)) do @%append $@ LIB %i
+  @%append $@ OPTION MAP=$^&.map
+  @%append $@ OPTION ELIMINATE
+  @%append $@ OPTION MANYAUTODATA
+  @%append $@ OPTION OSNAME='OS/2 and eComStation'
+  @%append $@ OPTION SHOWDEAD
+
+.c.obj:
+  wcc386 $(CFLAGS) -fo=$^@ $<
+
+playsound.obj: playsound/playsound.c
+  wcc386 $(CFLAGS_BASE) -DHAVE_SIGNAL_H=1 -DHAVE_SETBUF=1 -DHAVE_ASSERT_H=1 -fo=$^@ $<
+playsound_simple.obj: playsound/playsound_simple.c
+  wcc386 $(CFLAGS_BASE) -fo=$^@ $<
+
+playsound.exe: $(LIBFILE) playsound.obj
+  @echo * Link: $@
+  wlink SYS os2v2 LIBPATH $(DEPS_LIB) LIBR {$(LIBFILE) SDL2.lib} op q op el F {playsound.obj}  N playsound.exe
+
+playsound_simple.exe: $(LIBFILE) playsound_simple.obj
+  @echo * Link: $@
+  wlink SYS os2v2 LIBPATH $(DEPS_LIB) LIBR {$(LIBFILE) SDL2.lib} op q op el F {playsound_simple.obj}  N playsound_simple.exe
+
+.c: decoders/timidity;
+timidity.lib: $(TIMIOBJS)
+  wlib -b -n -q -c -pa -s -t -zld -ii -io $@ $(TIMIOBJS)
+
+clean: .SYMBOLIC
+  @echo * Clean: $(TITLENAME)
+  @if exist *.obj rm *.obj
+  @if exist *.err rm *.err
+  @if exist $(TIMILIB) rm $(TIMILIB)
+  @if exist $(LNKFILE) rm $(LNKFILE)
+distclean: .SYMBOLIC clean
+  @if exist $(DLLFILE) rm $(DLLFILE)
+  @if exist $(LIBFILE) rm $(LIBFILE)
+  @if exist *.map rm *.map
+  @if exist *.exe rm *.exe
