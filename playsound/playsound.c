@@ -51,7 +51,7 @@
 
 #define PLAYSOUND_VER_MAJOR  0
 #define PLAYSOUND_VER_MINOR  1
-#define PLAYSOUND_VER_PATCH  5
+#define PLAYSOUND_VER_PATCH  6
 
 
 static const char *option_list[] =
@@ -868,6 +868,21 @@ int main(int argc, char **argv)
         sdl_desired.callback = audio_callback;
         sdl_desired.userdata = sample;
 
+        /* grr, SDL_CloseAudio() calls SDL_QuitSubSystem internally. */
+        if (!SDL_WasInit(SDL_INIT_AUDIO))
+        {
+            if (SDL_Init(SDL_INIT_AUDIO) == -1)
+            {
+                fprintf(stderr, "SDL_Init() failed!\n"
+                                "  reason: [%s].\n", SDL_GetError());
+                Sound_Quit();
+                SDL_Quit();
+                return(42);
+            } /* if */
+        } /* if */
+
+        fprintf(stdout, "Now playing [%s]...\n", filename);
+
         if (SDL_OpenAudio(&sdl_desired, NULL) < 0)
         {
             fprintf(stderr, "Couldn't open audio device!\n"
@@ -876,8 +891,6 @@ int main(int argc, char **argv)
             SDL_Quit();
             return(42);
         } /* if */
-
-        fprintf(stdout, "Now playing [%s]...\n", filename);
 
         if (global_state.predecode)
         {
