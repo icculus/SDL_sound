@@ -440,11 +440,14 @@ int Timidity_Init()
    *            file itself since that file should contain any other directory
    *            that needs to be added to the search path.
    */
-#ifdef WIN32
-  add_to_pathlist("\\TIMIDITY");
+#if defined(_WIN32)||defined(__OS2__)
+  add_to_pathlist("C:\\TIMIDITY");
 #else
-  add_to_pathlist("/usr/local/lib/timidity");
+  add_to_pathlist("/etc/timidity");
   add_to_pathlist("/etc");
+  add_to_pathlist("/usr/share/timidity");
+  add_to_pathlist("/usr/local/share/timidity");
+  add_to_pathlist("/usr/local/lib/timidity");
 #endif
 
   Timidity_Init_NoConfig();
