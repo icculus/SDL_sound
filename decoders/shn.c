@@ -1307,7 +1307,7 @@ static int SHN_rewind(Sound_Sample *sample)
     shn_t *shn = (shn_t *) internal->decoder_private;
 
 #if 0
-    int rc = SDL_RWseek(internal->rw, shn->start_pos, SEEK_SET);
+    int rc = SDL_RWseek(internal->rw, shn->start_pos, RW_SEEK_SET);
     BAIL_IF_MACRO(rc != shn->start_pos, ERR_IO_ERROR, 0);
     /* !!! FIXME: set state. */
     return(1);
@@ -1318,7 +1318,7 @@ static int SHN_rewind(Sound_Sample *sample)
      * !!! FIXME:  to decode. The below kludge adds unneeded overhead and
      * !!! FIXME:  risk of failure.
      */
-    BAIL_IF_MACRO(SDL_RWseek(internal->rw, 0, SEEK_SET) != 0, ERR_IO_ERROR, 0);
+    BAIL_IF_MACRO(SDL_RWseek(internal->rw, 0, RW_SEEK_SET) != 0, ERR_IO_ERROR, 0);
     SHN_close(sample);
     return(SHN_open(sample, "SHN"));
 #endif

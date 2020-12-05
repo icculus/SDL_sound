@@ -287,7 +287,7 @@ static int seek_sample_fmt_normal(Sound_Sample *sample, Uint32 ms)
     fmt_t *fmt = w->fmt;
     int offset = __Sound_convertMsToBytePos(&sample->actual, ms);
     int pos = (int) (fmt->data_starting_offset + offset);
-    int rc = SDL_RWseek(internal->rw, pos, SEEK_SET);
+    int rc = SDL_RWseek(internal->rw, pos, RW_SEEK_SET);
     BAIL_IF_MACRO(rc != pos, ERR_IO_ERROR, 0);
     w->bytesLeft = fmt->total_bytes - offset;
     return(1);  /* success. */
@@ -540,7 +540,7 @@ static int seek_sample_fmt_adpcm(Sound_Sample *sample, Uint32 ms)
     int bpb = (fmt->fmt.adpcm.wSamplesPerBlock * fmt->sample_frame_size);
     int skipsize = (offset / bpb) * fmt->wBlockAlign;
     int pos = skipsize + fmt->data_starting_offset;
-    int rc = SDL_RWseek(internal->rw, pos, SEEK_SET);
+    int rc = SDL_RWseek(internal->rw, pos, RW_SEEK_SET);
     BAIL_IF_MACRO(rc != pos, ERR_IO_ERROR, 0);
 
     /* The offset we need is in this block, so we need to decode to there. */
@@ -548,7 +548,7 @@ static int seek_sample_fmt_adpcm(Sound_Sample *sample, Uint32 ms)
     rc = (offset % bpb);  /* bytes into this block we need to decode */
     if (!read_adpcm_block_headers(sample))
     {
-        SDL_RWseek(internal->rw, origpos, SEEK_SET);  /* try to make sane. */
+        SDL_RWseek(internal->rw, origpos, RW_SEEK_SET);  /* try to make sane. */
         return(0);
     } /* if */
 
@@ -559,7 +559,7 @@ static int seek_sample_fmt_adpcm(Sound_Sample *sample, Uint32 ms)
     {
         if (!decode_adpcm_sample_frame(sample))
         {
-            SDL_RWseek(internal->rw, origpos, SEEK_SET);
+            SDL_RWseek(internal->rw, origpos, RW_SEEK_SET);
             fmt->fmt.adpcm.samples_left_in_block = origsampsleft;
             return(0);
         } /* if */
@@ -675,7 +675,7 @@ static int find_chunk(SDL_RWops *rw, Uint32 id)
         assert(siz >= 0);
         pos += (sizeof (Uint32) * 2) + siz;
         if (siz > 0)
-            BAIL_IF_MACRO(SDL_RWseek(rw, pos, SEEK_SET) != pos, NULL, 0);
+            BAIL_IF_MACRO(SDL_RWseek(rw, pos, RW_SEEK_SET) != pos, NULL, 0);
     } /* while */
 
     return(0);  /* shouldn't hit this, but just in case... */
@@ -711,7 +711,7 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
     } /* else */
 
     BAIL_IF_MACRO(!read_fmt(rw, fmt), NULL, 0);
-    SDL_RWseek(rw, fmt->next_chunk_offset, SEEK_SET);
+    SDL_RWseek(rw, fmt->next_chunk_offset, RW_SEEK_SET);
     BAIL_IF_MACRO(!find_chunk(rw, dataID), "WAV: No data chunk.", 0);
     BAIL_IF_MACRO(!read_data_chunk(rw, &d), "WAV: Can't read data chunk.", 0);
 
@@ -780,7 +780,7 @@ static int WAV_rewind(Sound_Sample *sample)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     wav_t *w = (wav_t *) internal->decoder_private;
     fmt_t *fmt = w->fmt;
-    int rc = SDL_RWseek(internal->rw, fmt->data_starting_offset, SEEK_SET);
+    int rc = SDL_RWseek(internal->rw, fmt->data_starting_offset, RW_SEEK_SET);
     BAIL_IF_MACRO(rc != fmt->data_starting_offset, ERR_IO_ERROR, 0);
     w->bytesLeft = fmt->total_bytes;
     return(fmt->rewind_sample(sample));

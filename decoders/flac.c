@@ -323,7 +323,7 @@ static d_seek_status_t seek_callback(
 {
     flac_t *f = (flac_t *) client_data;
 
-    if (SDL_RWseek(f->rw, absolute_byte_offset, SEEK_SET) >= 0)
+    if (SDL_RWseek(f->rw, absolute_byte_offset, RW_SEEK_SET) >= 0)
     {
         return(D_SEEK_STATUS_OK);
     } /* if */
@@ -435,7 +435,7 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
         BAIL_IF_MACRO(flac_magic != FLAC_MAGIC, "FLAC: Not a FLAC stream.", 0);
 
         /* move back over magic number for metadata scan... */
-        rc = SDL_RWseek(internal->rw, -((long) sizeof(flac_magic)), SEEK_CUR);
+        rc = SDL_RWseek(internal->rw, -((long) sizeof(flac_magic)), RW_SEEK_CUR);
         BAIL_IF_MACRO(rc < 0, ERR_IO_ERROR, 0);
     } /* if */
 
@@ -482,10 +482,10 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     sample->flags = SOUND_SAMPLEFLAG_NONE;
 
     pos = SDL_RWtell(f->rw);
-    if (SDL_RWseek(f->rw, 0, SEEK_END) > 0)
+    if (SDL_RWseek(f->rw, 0, RW_SEEK_END) > 0)
     {
         f->stream_length = SDL_RWtell(f->rw);
-        if (SDL_RWseek(f->rw, pos, SEEK_SET) == -1)
+        if (SDL_RWseek(f->rw, pos, RW_SEEK_SET) == -1)
         {
             free_flac(f);
             BAIL_MACRO(ERR_IO_ERROR, 0);

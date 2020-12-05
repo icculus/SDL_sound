@@ -188,7 +188,7 @@ static pascal OSErr QT_get_movie_data_proc (long offset, long size,
   SDL_RWops* rw = (SDL_RWops*)user_data;
   OSErr error;
 	
-  if (offset == SDL_RWseek (rw, offset, SEEK_SET)) {
+  if (offset == SDL_RWseek (rw, offset, RW_SEEK_SET)) {
 	  
     if (size == SDL_RWread (rw, data, 1, size)) {
       error = noErr;

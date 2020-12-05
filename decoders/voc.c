@@ -175,7 +175,7 @@ static __inline__ int voc_check_header(SDL_RWops *src)
 
     datablockofs = SDL_SwapLE16(datablockofs);
 
-    if (SDL_RWseek(src, datablockofs, SEEK_SET) != datablockofs)
+    if (SDL_RWseek(src, datablockofs, RW_SEEK_SET) != datablockofs)
     {
         BAIL_MACRO("VOC: Failed to seek to data block.", 0);
     } /* if */
@@ -424,7 +424,7 @@ static int voc_read_waveform(Sound_Sample *sample, int fill_buf, Uint32 max)
             cur = SDL_RWtell(src);
             if (cur >= 0)
             {
-                rc = SDL_RWseek(src, max, SEEK_CUR);
+                rc = SDL_RWseek(src, max, RW_SEEK_CUR);
                 if (rc >= 0)
                     done = rc - cur;
                 else
@@ -519,7 +519,7 @@ static int VOC_rewind(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     vs_t *v = (vs_t *) internal->decoder_private;
-    int rc = SDL_RWseek(internal->rw, v->start_pos, SEEK_SET);
+    int rc = SDL_RWseek(internal->rw, v->start_pos, RW_SEEK_SET);
     BAIL_IF_MACRO(rc != v->start_pos, ERR_IO_ERROR, 0);
     v->rest = 0;
     return(1);
@@ -553,7 +553,7 @@ static int VOC_seek(Sound_Sample *sample, Uint32 ms)
         Uint32 rc = voc_read_waveform(sample, 0, offset);
         if ( (rc == 0) || (!voc_get_block(sample, v)) )
         {
-            SDL_RWseek(internal->rw, origpos, SEEK_SET);
+            SDL_RWseek(internal->rw, origpos, RW_SEEK_SET);
             v->rest = origrest;
             return(0);
         } /* if */
