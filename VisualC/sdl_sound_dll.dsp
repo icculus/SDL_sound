@@ -52,7 +52,7 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
+# ADD BASE LINK32 kernel32.lib /nologo /dll /machine:I386
 # ADD LINK32 SDL.lib vorbis.lib vorbisfile.lib ogg.lib mpg123.lib libFLAC.lib mikmod.lib modplug.lib /nologo /dll /machine:I386 /out:"win32lib/SDL_sound.dll"
 
 !ELSEIF  "$(CFG)" == "sdl_sound_dll - Win32 Debug"
@@ -78,7 +78,7 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
+# ADD BASE LINK32 kernel32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 SDL.lib vorbis.lib vorbisfile.lib ogg.lib mpg123.lib libFLAC.lib mikmod.lib modplug.lib /nologo /dll /debug /machine:I386 /out:"win32lib/SDL_sound_d.dll" /pdbtype:sept
 
 !ENDIF 
@@ -228,24 +228,12 @@ SOURCE=..\audio_convert.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\extra_rwops.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\SDL_sound.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
-# Begin Source File
-
-SOURCE=..\acconfig.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\extra_rwops.h
-# End Source File
 # Begin Source File
 
 SOURCE=..\SDL_sound.h
