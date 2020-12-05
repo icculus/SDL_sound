@@ -41,7 +41,7 @@
 static PathList *pathlist = NULL; /* This is a linked list */
 
 /* This is meant to find and open files for reading */
-SDL_RWops *open_file(char *name)
+SDL_RWops *open_file(const char *name)
 {
   SDL_RWops *rw;
 
@@ -61,7 +61,7 @@ SDL_RWops *open_file(char *name)
   {
     char current_filename[1024];
     PathList *plp = pathlist;
-    int l;
+    size_t l;
 
     while (plp)  /* Try along the path then */
       {
@@ -95,14 +95,15 @@ void *safe_malloc(size_t count)
   void *p;
 
   p = malloc(count);
-  if (p == NULL)
+  if (p == NULL) {
     SNDDBG(("Sorry. Couldn't malloc %d bytes.\n", count));
+  }
 
   return p;
 }
 
 /* This adds a directory to the path list */
-void add_to_pathlist(char *s)
+void add_to_pathlist(const char *s)
 {
   PathList *plp = safe_malloc(sizeof(PathList));
 

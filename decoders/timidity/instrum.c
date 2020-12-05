@@ -214,6 +214,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
 						      differences are */
     {
       SNDDBG(("%s: not an instrument\n", name));
+      SDL_RWclose(rw);
       return 0;
     }
   
@@ -221,12 +222,14 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
 				       0 means 1 */
     {
       SNDDBG(("Can't handle patches with %d instruments\n", tmp[82]));
+      SDL_RWclose(rw);
       return 0;
     }
 
   if (tmp[151] != 1 && tmp[151] != 0) /* layers. What's a layer? */
     {
       SNDDBG(("Can't handle instruments with %d layers\n", tmp[151]));
+      SDL_RWclose(rw);
       return 0;
     }
   
@@ -251,7 +254,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
       if (1 != SDL_RWread(rw, &tmplong, 4, 1)) goto fail; \
       thing = SDL_SwapLE32(tmplong);
 
-      SDL_RWseek(rw, 7, SEEK_CUR); /* Skip the wave name */
+      SDL_RWseek(rw, 7, RW_SEEK_CUR); /* Skip the wave name */
 
       if (1 != SDL_RWread(rw, &fractions, 1, 1))
 	{
@@ -261,6 +264,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
 	    free(ip->sample[j].data);
 	  free(ip->sample);
 	  free(ip);
+	  SDL_RWclose(rw);
 	  return 0;
 	}
 
@@ -273,7 +277,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
       READ_LONG(sp->low_freq);
       READ_LONG(sp->high_freq);
       READ_LONG(sp->root_freq);
-      SDL_RWseek(rw, 2, SEEK_CUR); /* Why have a "root frequency" and then
+      SDL_RWseek(rw, 2, RW_SEEK_CUR); /* Why have a "root frequency" and then
 				    * "tuning"?? */
       
       READ_CHAR(tmp[0]);
@@ -322,7 +326,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
 
       READ_CHAR(sp->modes);
 
-      SDL_RWseek(rw, 40, SEEK_CUR); /* skip the useless scale frequency, scale
+      SDL_RWseek(rw, 40, RW_SEEK_CUR); /* skip the useless scale frequency, scale
 				       factor (what's it mean?), and reserved
 				       space */
 
@@ -352,8 +356,9 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
 
       if (strip_envelope==1)
 	{
-	  if (sp->modes & MODES_ENVELOPE)
+	  if (sp->modes & MODES_ENVELOPE) {
 	    SNDDBG((" - Removing envelope\n"));
+	  }
 	  sp->modes &= ~MODES_ENVELOPE;
 	}
       else if (strip_envelope != 0)
@@ -393,45 +398,44 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
 	}
 
       /* Then read the sample data */
-      sp->data = safe_malloc(sp->data_length);
+      sp->data = (sample_t *) safe_malloc(sp->data_length+4);
       if (1 != SDL_RWread(rw, sp->data, sp->data_length, 1))
 	goto fail;
       
       if (!(sp->modes & MODES_16BIT)) /* convert to 16-bit data */
 	{
-	  Sint32 i=sp->data_length;
+	  Sint32 k=sp->data_length;
 	  Uint8 *cp=(Uint8 *)(sp->data);
-	  Uint16 *tmp,*new;
-	  tmp=new=safe_malloc(sp->data_length*2);
-	  while (i--)
-	    *tmp++ = (Uint16)(*cp++) << 8;
-	  cp=(Uint8 *)(sp->data);
-	  sp->data = (sample_t *)new;
-	  free(cp);
+	  Uint16 *tmp16,*new16;
 	  sp->data_length *= 2;
 	  sp->loop_start *= 2;
 	  sp->loop_end *= 2;
+	  tmp16 = new16 = (Uint16 *) safe_malloc(sp->data_length+4);
+	  while (k--)
+	    *tmp16++ = (Uint16)(*cp++) << 8;
+	  free(sp->data);
+	  sp->data = (sample_t *)new16;
 	}
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
       else
 	/* convert to machine byte order */
 	{
-	  Sint32 i=sp->data_length/2;
-	  Sint16 *tmp=(Sint16 *)sp->data,s;
-	  while (i--)
-	    { 
-	      s=SDL_SwapLE16(*tmp);
-	      *tmp++=s;
+	  Sint32 k=sp->data_length/2;
+	  Sint16 *tmp16=(Sint16 *)sp->data,s;
+	  while (k--)
+	    {
+	      s=SDL_SwapLE16(*tmp16);
+	      *tmp16++=s;
 	    }
 	}
 #endif
       
       if (sp->modes & MODES_UNSIGNED) /* convert to signed data */
 	{
-	  Sint32 i=sp->data_length/2;
-	  Sint16 *tmp=(Sint16 *)sp->data;
-	  while (i--)
-	    *tmp++ ^= 0x8000;
+	  Sint32 k=sp->data_length/2;
+	  Sint16 *tmp16=(Sint16 *)sp->data;
+	  while (k--)
+	    *tmp16++ ^= 0x8000;
 	}
 
       /* Reverse reverse loops and pass them off as normal loops */
@@ -460,12 +464,12 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
 	  /* Try to determine a volume scaling factor for the sample.
 	     This is a very crude adjustment, but things sound more
 	     balanced with it. Still, this should be a runtime option. */
-	  Sint32 i=sp->data_length/2;
+	  Sint32 k=sp->data_length/2;
 	  Sint16 maxamp=0,a;
-	  Sint16 *tmp=(Sint16 *)sp->data;
-	  while (i--)
+	  Sint16 *tmp16=(Sint16 *)sp->data;
+	  while (k--)
 	    {
-	      a=*tmp++;
+	      a=*tmp16++;
 	      if (a<0) a=-a;
 	      if (a>maxamp)
 		maxamp=a;
@@ -483,6 +487,10 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
       sp->data_length /= 2; /* These are in bytes. Convert into samples. */
       sp->loop_start /= 2;
       sp->loop_end /= 2;
+
+      /* initialize the added extra sample space (see the +4 bytes in
+	 allocation) using the last actual sample:  */
+      sp->data[sp->data_length] = sp->data[sp->data_length+1] = 0;
 
       /* Then fractional samples */
       sp->data_length <<= FRACTION_BITS;

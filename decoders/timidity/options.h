@@ -30,7 +30,7 @@
    On the other hand, some files know that 16 is not a drum channel and
    try to play music on it. This is now a runtime option, so this isn't
    a critical choice anymore. */
-#define DEFAULT_DRUMCHANNELS ((1<<9) | (1<<15))
+#define DEFAULT_DRUMCHANNELS (1<<9) /* | (1<<15) */
 
 /* In percent. */
 #define DEFAULT_AMPLIFICATION 	70
@@ -106,7 +106,7 @@
 #endif
 
 /* The path separator (D.M.) */
-#ifdef WIN32
+#if defined(_WIN32) || defined(__OS2__)
 #  define PATH_SEP '\\'
 #else
 #  define PATH_SEP '/'

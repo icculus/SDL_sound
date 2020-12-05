@@ -81,7 +81,7 @@ static char *RWgets(SDL_RWops *rw, char *s, int size)
     return (num_read != 0) ? s : NULL;
 }
 
-static int read_config_file(char *name)
+static int read_config_file(const char *name)
 {
   SDL_RWops *rw;
   char tmp[1024], *w[MAXWORDS], *cp;
@@ -115,8 +115,10 @@ static int read_config_file(char *name)
     if (*w[0] == '#')
         continue;
 
-    while (w[words] && *w[words] != '#' && (words < MAXWORDS))
-      w[++words]=strtok(0," \t\240");
+    while (w[words] && *w[words] != '#') {
+      if (++words == MAXWORDS) break;
+      w[words]=strtok(NULL, " \t\240");
+    }
 
         /*
          * TiMidity++ adds a number of extensions to the config file format.
@@ -458,9 +460,11 @@ MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio)
 
   if (rw == NULL)
       return NULL;
-  
+
   /* Allocate memory for the song */
   song = (MidiSong *)safe_malloc(sizeof(*song));
+  if (song == NULL)
+      return NULL;
   memset(song, 0, sizeof(*song));
 
   for (i = 0; i < 128; i++)
@@ -493,6 +497,11 @@ MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio)
       song->encoding |= PE_SIGNED;
   if (audio->channels == 1)
       song->encoding |= PE_MONO;
+  else if (audio->channels > 2) {
+      SDL_SetError("Surround sound not supported");
+      free(song);
+      return NULL;
+  }
   switch (audio->format) {
       case AUDIO_S8:
 	  song->write = s32tos8;
@@ -509,10 +518,13 @@ MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio)
       case AUDIO_U16LSB:
 	  song->write = s32tou16l;
 	  break;
-      default:
-	  SNDDBG(("Unsupported audio format"));
-	  song->write = s32tou16l;
+      case AUDIO_U16MSB:
+	  song->write = s32tou16b;
 	  break;
+      default:
+	  SDL_SetError("Unsupported audio format");
+	  free(song);
+	  return NULL;
   }
 
   song->buffer_size = audio->samples;
