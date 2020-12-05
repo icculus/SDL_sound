@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "sdl_sound_static___Win32_Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O1 /I "..\\" /I "..\decoders" /I "..\decoders\timidity" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "SOUND_SUPPORTS_AU" /D "SOUND_SUPPORTS_AIFF" /D "SOUND_SUPPORTS_SHN" /D "SOUND_SUPPORTS_MIDI" /D "SOUND_SUPPORTS_WAV" /D "SOUND_SUPPORTS_VOC" /D "SOUND_SUPPORTS_MIKMOD" /D "SOUND_SUPPORTS_MPG123" /D "SOUND_SUPPORTS_OGG" /D "SOUND_SUPPORTS_RAW" /D "SOUND_SUPPORTS_MODPLUG" /D "SOUND_SUPPORTS_FLAC" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O1 /I ".\external\include\SDL" /I ".\external\include" /I "..\\" /I "..\decoders" /I "..\decoders\timidity" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "SOUND_SUPPORTS_AU" /D "SOUND_SUPPORTS_AIFF" /D "SOUND_SUPPORTS_SHN" /D "SOUND_SUPPORTS_MIDI" /D "SOUND_SUPPORTS_WAV" /D "SOUND_SUPPORTS_VOC" /D "SOUND_SUPPORTS_MIKMOD" /D "SOUND_SUPPORTS_MPG123" /D "SOUND_SUPPORTS_OGG" /D "SOUND_SUPPORTS_RAW" /D "SOUND_SUPPORTS_MODPLUG" /D "SOUND_SUPPORTS_FLAC" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -49,7 +49,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo
+# ADD LIB32 /nologo /out:"win32lib\SDL_sound_static.lib"
 
 !ELSEIF  "$(CFG)" == "sdl_sound_static - Win32 Debug"
 
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "sdl_sound_static___Win32_Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "..\\" /I "..\decoders" /I "..\decoders\timidity" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "SOUND_SUPPORTS_AU" /D "SOUND_SUPPORTS_AIFF" /D "SOUND_SUPPORTS_SHN" /D "SOUND_SUPPORTS_MIDI" /D "SOUND_SUPPORTS_WAV" /D "SOUND_SUPPORTS_VOC" /D "SOUND_SUPPORTS_MIKMOD" /D "SOUND_SUPPORTS_MPG123" /D "SOUND_SUPPORTS_OGG" /D "SOUND_SUPPORTS_RAW" /D "SOUND_SUPPORTS_MODPLUG" /D "SOUND_SUPPORTS_FLAC" /YX /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I ".\external\include\SDL" /I ".\external\include" /I "..\\" /I "..\decoders" /I "..\decoders\timidity" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /D "SOUND_SUPPORTS_AU" /D "SOUND_SUPPORTS_AIFF" /D "SOUND_SUPPORTS_SHN" /D "SOUND_SUPPORTS_MIDI" /D "SOUND_SUPPORTS_WAV" /D "SOUND_SUPPORTS_VOC" /D "SOUND_SUPPORTS_MIKMOD" /D "SOUND_SUPPORTS_MPG123" /D "SOUND_SUPPORTS_OGG" /D "SOUND_SUPPORTS_RAW" /D "SOUND_SUPPORTS_MODPLUG" /D "SOUND_SUPPORTS_FLAC" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -72,7 +72,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"win32lib\sdl_sound_static_d.lib"
+# ADD LIB32 /nologo /out:"win32lib\SDL_sound_static_d.lib"
 
 !ENDIF 
 
