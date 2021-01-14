@@ -393,6 +393,8 @@ static MidiEvent *groom_list(MidiSong *song, Sint32 divisions,Sint32 *eventsp,
 	{
 	  skip_this_event=1;
 	}
+      else if (meep->event.channel >= 16)
+        skip_this_event=1;
       else switch (meep->event.type)
 	{
 	case ME_PROGRAM:
@@ -544,13 +546,14 @@ MidiEvent *read_midi_file(MidiSong *song, Sint32 *count, Sint32 *sp)
 	return NULL;
       }
   }
-  len=SDL_SwapBE32(len);
+  len=(Sint32)SDL_SwapBE32((Uint32)len);
   if (memcmp(tmp, "MThd", 4) || len < 6)
     {
       SNDDBG(("Not a MIDI file!\n"));
       return NULL;
     }
 
+  format=tracks=divisions_tmp = -1;
   SDL_RWread(song->rw, &format, 2, 1);
   SDL_RWread(song->rw, &tracks, 2, 1);
   SDL_RWread(song->rw, &divisions_tmp, 2, 1);
