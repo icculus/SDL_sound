@@ -19,8 +19,10 @@ SDL_sound _REQUIRES_ Simple Directmedia Layer (SDL) 2.x to function, and cannot
  2.x only works with SDL2, and SDL_sound 1.x only works with SDL 1.x.
  Reports of success or failure are welcome.
 
- Unless explicitly disabled during initial build configuration, SDL_sound
- always supports these file formats internally:
+Current versions of SDL_sound do not use any external libraries for decoding
+ various file formats. All needed decoder source code is included with the
+ library. Unless explicitly disabled during initial build configuration,
+ SDL_sound always supports these file formats internally:
 
  - Wave (.WAV) files
  - MPEG-1 layers I-III (.MP3, .MP2, .MP1)
