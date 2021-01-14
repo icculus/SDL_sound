@@ -38,6 +38,7 @@ EXTRA_DIST =	\
 	PBProjects.tar.gz \
 	borland.zip \
 	Doxyfile \
+	Makefile.os2 \
 	VisualC
 
 dist-hook:
