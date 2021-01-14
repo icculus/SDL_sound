@@ -5,10 +5,10 @@
 cmake_minimum_required(VERSION 2.8.4)
 
 project(SDL_sound)
-set(SDLSOUND_VERSION 1.9.0)
+set(SDLSOUND_VERSION 2.0.0)
 
 # Increment this if/when we break backwards compatibility.
-set(SDLSOUND_SOVERSION 1)
+set(SDLSOUND_SOVERSION 2)
 
 # I hate that they define "WIN32" ... we're about to move to Win64...I hope!
 if(WIN32 AND NOT WINDOWS)
