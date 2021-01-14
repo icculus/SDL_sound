@@ -307,10 +307,10 @@ void pat_init_patnames(void)
 			isdrumset = 0;
 			_mm_fgets(mmcfg, line, PATH_MAX);
 			while( !_mm_feof(mmcfg) ) {
-			if( SDL_isdigit(line[0]) || (IsBlank(line[0]) && SDL_isdigit(line[1])) ) {
-				p = line;
+			p = line;
+			while ( SDL_isspace(*p) ) p ++;
+			if( SDL_isdigit(p[0]) ) {
 				// get pat number
-				while ( SDL_isspace(*p) ) p ++;
 				i = SDL_atoi(p);
 				while ( SDL_isdigit(*p) ) p ++;
 				while ( SDL_isspace(*p) ) p ++;
@@ -338,10 +338,24 @@ void pat_init_patnames(void)
 					*q++ = '\0';
 				}
 			}
-			if( !SDL_strncmp(line,"drumset",7) ) isdrumset = 1;
-			if( !SDL_strncmp(line,"source",6) && nsources < 5 ) {
+			else if( !SDL_strncmp(p,"bank",4) ) isdrumset = 0;
+			else if( !SDL_strncmp(p,"drumset",7) ) isdrumset = 1;
+			else if( !SDL_strncmp(p,"soundfont",9) ) {
+				SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "warning: soundfont directive unsupported!\n");
+			}
+			else if( !SDL_strncmp(p,"dir",3) )  {
+				p += 3;
+				while ( SDL_isspace(*p) ) p ++;
+				q = p + SDL_strlen(p);
+				if(q > p) {
+					--q;
+					while ( q > p && SDL_isspace(*q) ) *(q--) = 0;
+					SDL_strlcpy(pathforpat, p, PATH_MAX);
+				}
+			}
+			else if( !SDL_strncmp(p,"source",6) && nsources < 5 ) {
 				q = cfgsources[nsources];
-				p = &line[7];
+				p += 6;
 				while ( SDL_isspace(*p) ) p ++;
 				pfnlen = 0;
 				while ( *p && *p != '#' && !SDL_isspace(*p) && pfnlen < 128 ) {
@@ -379,9 +393,9 @@ void pat_init_patnames(void)
 
 static char *pat_build_path(char *fname, const size_t fnamelen, int pat)
 {
-	char *ps;
+	char *ps, *p;
 	char *patfile = midipat[pat];
-	int isabspath = (patfile[0] == '/');
+	int has_ext = 0, isabspath = (patfile[0] == '/');
 	if ( isabspath ) patfile ++;
 	ps = SDL_strrchr(patfile, ':');
 	if( ps ) {
@@ -392,7 +406,9 @@ static char *pat_build_path(char *fname, const size_t fnamelen, int pat)
 		SDL_strlcat(fname, ".pat", fnamelen);
 		return ps;
 	}
-	SDL_snprintf(fname, fnamelen, "%s%c%s.pat", isabspath ? "" : pathforpat, DIRDELIM, patfile);
+	p = SDL_strrchr(patfile, '.');
+	if(p && !SDL_strcasecmp(p, ".pat")) has_ext = 1;
+	SDL_snprintf(fname, fnamelen, "%s%c%s%s", isabspath ? "" : pathforpat, DIRDELIM, patfile, has_ext ? "" : ".pat");
 	return 0;
 }
 
