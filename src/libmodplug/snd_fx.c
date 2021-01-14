@@ -5,7 +5,7 @@
 */
 
 #include "libmodplug.h"
-#include <stdlib.h>
+#include <stdlib.h> /* for rand() */
 #include "tables.h"
 
 DWORD CSoundFile_GetLength(CSoundFile *_this, BOOL bAdjust, BOOL bTotal)
