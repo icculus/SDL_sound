@@ -323,11 +323,12 @@ dnl Add Makefile conditionals
 AM_CONDITIONAL(USE_TIMIDITY, test x$enable_midi = xyes)
 AM_CONDITIONAL(USE_SDL2, test x$enable_sdl2 = xyes)
 
-dnl 
 AC_CONFIG_FILES([
 Makefile
 decoders/Makefile
 decoders/timidity/Makefile
 examples/Makefile
 ])
+dnl fix exports from MinGW builds
+AC_CONFIG_COMMANDS_POST([sed -i 's/-DDLL_EXPORT/-DSDL_SOUND_DLL_EXPORTS/' config.status])
 AC_OUTPUT
