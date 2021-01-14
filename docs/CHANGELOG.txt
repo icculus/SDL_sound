@@ -1,6 +1,4 @@
-/*
- * CHANGELOG.
- */
+// CHANGELOG.
 
 Not maintaining CHANGELOG.txt by hand any more. This is why we have revision
  control tools to do it for us.  :)
@@ -10,5 +8,5 @@ Take a look at https://hg.icculus.org/icculus/SDL_sound/shortlog for a
 
 --ryan. (icculus@icculus.org)
 
-/* end of CHANGELOG.txt ... */
+// end of CHANGELOG.txt ...
 
