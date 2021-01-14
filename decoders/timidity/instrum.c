@@ -17,8 +17,8 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-   instrum.c 
-   
+   instrum.c
+
    Code to load and unload GUS-compatible instrument patches.
 
 */
@@ -74,7 +74,7 @@ static void free_bank(MidiSong *song, int dr, int b)
 static Sint32 convert_envelope_rate(MidiSong *song, Uint8 rate)
 {
   Sint32 r;
-  
+
   r = 3 - ((rate >> 6) & 0x3);
   r *= 3;
   r = (Sint32) (rate & 0x3f) << r; /* 6.9 fixed point */
@@ -153,12 +153,12 @@ static void reverse_data(Sint16 *sp, Sint32 ls, Sint32 le)
     }
 }
 
-/* 
+/*
    If panning or note_to_use != -1, it will be used for all samples,
    instead of the sample-specific values in the instrument file. 
 
    For note_to_use, any value <0 or >127 will be forced to 0.
- 
+
    For other parameters, 1 means yes, 0 means no, other values are
    undefined.
 
@@ -172,15 +172,15 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
   Sample *sp;
   SDL_RWops *rw;
   char tmp[1024];
-  int i,j,noluck=0;
+  int i,j;
   static char *patch_ext[] = PATCH_EXT_LIST;
 
+  (void)percussion; /* unused */
   if (!name) return 0;
-  
+
   /* Open patch file */
   if ((rw=open_file(name)) == NULL)
     {
-      noluck=1;
       /* Try with various extensions */
       for (i=0; patch_ext[i]; i++)
 	{
@@ -189,22 +189,19 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
 	      strcpy(tmp, name);
 	      strcat(tmp, patch_ext[i]);
 	      if ((rw=open_file(tmp)) != NULL)
-		{
-		  noluck=0;
 		  break;
-		}
 	    }
 	}
     }
-  
-  if (noluck)
+
+  if (rw == NULL)
     {
       SNDDBG(("Instrument `%s' can't be found.\n", name));
       return 0;
     }
-      
+
   SNDDBG(("Loading instrument %s\n", tmp));
-  
+
   /* Read some headers and do cursory sanity checks. There are loads
      of magic offsets. This could be rewritten... */
 
@@ -217,8 +214,8 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
       SDL_RWclose(rw);
       return 0;
     }
-  
-  if (tmp[82] != 1 && tmp[82] != 0) /* instruments. To some patch makers, 
+
+  if (tmp[82] != 1 && tmp[82] != 0) /* instruments. To some patch makers,
 				       0 means 1 */
     {
       SNDDBG(("Can't handle patches with %d instruments\n", tmp[82]));
@@ -232,13 +229,12 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
       SDL_RWclose(rw);
       return 0;
     }
-  
+
   ip=safe_malloc(sizeof(Instrument));
   ip->samples = tmp[198];
   ip->sample = safe_malloc(sizeof(Sample) * ip->samples);
   for (i=0; i<ip->samples; i++)
     {
-
       Uint8 fractions;
       Sint32 tmplong;
       Uint16 tmpshort;
@@ -269,7 +265,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
 	}
 
       sp=&(ip->sample[i]);
-      
+
       READ_LONG(sp->data_length);
       READ_LONG(sp->loop_start);
       READ_LONG(sp->loop_end);
@@ -279,7 +275,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
       READ_LONG(sp->root_freq);
       SDL_RWseek(rw, 2, RW_SEEK_CUR); /* Why have a "root frequency" and then
 				    * "tuning"?? */
-      
+
       READ_CHAR(tmp[0]);
 
       if (panning==-1)
@@ -327,20 +323,19 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
       READ_CHAR(sp->modes);
 
       SDL_RWseek(rw, 40, RW_SEEK_CUR); /* skip the useless scale frequency, scale
-				       factor (what's it mean?), and reserved
-				       space */
+				  factor (what's it mean?), and reserved
+				  space */
 
       /* Mark this as a fixed-pitch instrument if such a deed is desired. */
       if (note_to_use!=-1)
 	sp->note_to_use=(Uint8)(note_to_use);
       else
 	sp->note_to_use=0;
-      
+
       /* seashore.pat in the Midia patch set has no Sustain. I don't
          understand why, and fixing it by adding the Sustain flag to
          all looped patches probably breaks something else. We do it
          anyway. */
-	 
       if (sp->modes & MODES_LOOPING) 
 	sp->modes |= MODES_SUSTAIN;
 
@@ -401,7 +396,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
       sp->data = (sample_t *) safe_malloc(sp->data_length+4);
       if (1 != SDL_RWread(rw, sp->data, sp->data_length, 1))
 	goto fail;
-      
+
       if (!(sp->modes & MODES_16BIT)) /* convert to 16-bit data */
 	{
 	  Sint32 k=sp->data_length;
@@ -429,7 +424,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
 	    }
 	}
 #endif
-      
+
       if (sp->modes & MODES_UNSIGNED) /* convert to signed data */
 	{
 	  Sint32 k=sp->data_length/2;
