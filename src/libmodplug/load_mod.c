@@ -115,6 +115,7 @@ BOOL CSoundFile_ReadMod(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	if ((IsMagic(s, "M.K.")) || (IsMagic(s, "M!K!"))
 	 || (IsMagic(s, "M&K!")) || (IsMagic(s, "N.T."))) _this->m_nChannels = 4; else
 	if ((IsMagic(s, "CD81")) || (IsMagic(s, "OKTA"))) _this->m_nChannels = 8; else
+	if (IsMagic(s, "CD61")) _this->m_nChannels = 6; else
 	if ((s[0]=='F') && (s[1]=='L') && (s[2]=='T') && (s[3]>='4') && (s[3]<='9')) _this->m_nChannels = s[3] - '0'; else
 	if ((s[0]>='2') && (s[0]<='9') && (s[1]=='C') && (s[2]=='H') && (s[3]=='N')) _this->m_nChannels = s[0] - '0'; else
 	if ((s[0]=='1') && (s[1]>='0') && (s[1]<='9') && (s[2]=='C') && (s[3]=='H')) _this->m_nChannels = s[1] - '0' + 10; else

@@ -69,7 +69,7 @@ BOOL CSoundFile_Read669(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	_this->m_dwSongFlags |= SONG_LINEARSLIDES;
 	_this->m_nMinPeriod = 28 << 2;
 	_this->m_nMaxPeriod = 1712 << 3;
-	_this->m_nDefaultTempo = 125;
+	_this->m_nDefaultTempo = 78;
 	_this->m_nDefaultSpeed = 6;
 	_this->m_nChannels = 8;
 	_this->m_nSamples = pfh->samples;
@@ -146,7 +146,7 @@ BOOL CSoundFile_Read669(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 					case 0x02:	command = CMD_TONEPORTAMENTO; break;
 					case 0x03:	command = CMD_MODCMDEX; param |= 0x50; break;
 					case 0x04:	command = CMD_VIBRATO; param |= 0x40; break;
-					case 0x05:	if (param) command = CMD_SPEED; else command = 0; param += 2; break;
+					case 0x05:	if (param) command = CMD_SPEED; else command = 0; break;
 					case 0x06:	if (param == 0) { command = CMD_PANNINGSLIDE; param = 0xFE; }
 							else if (param == 1) { command = CMD_PANNINGSLIDE; param = 0xEF; }
 							else command = 0;
@@ -166,7 +166,7 @@ BOOL CSoundFile_Read669(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 				for (UINT i=0; i<8; i++) if (!mspeed[i].command)
 				{
 					mspeed[i].command = CMD_SPEED;
-					mspeed[i].param = pfh->tempolist[npat] + 2;
+					mspeed[i].param = pfh->tempolist[npat];
 					break;
 				}
 			}
