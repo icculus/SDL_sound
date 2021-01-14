@@ -1,5 +1,6 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT(SDL_sound.c)
+AC_INIT
+AC_CONFIG_SRCDIR([SDL_sound.c])
 AC_CONFIG_MACRO_DIR([acinclude])
 
 dnl ---------------------------------------------------------------------
@@ -44,7 +45,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 dnl Setup for automake
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE(SDL_sound, $VERSION)
 
 
@@ -55,8 +56,7 @@ dnl ---------------------------------------------------------------------
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
-AC_LIBTOOL_WIN32_DLL
-AC_PROG_LIBTOOL
+LT_INIT([win32-dll])
 
 
 dnl ---------------------------------------------------------------------
@@ -323,9 +323,10 @@ dnl Add Makefile conditionals
 AM_CONDITIONAL(USE_TIMIDITY, test x$enable_midi = xyes)
 AM_CONDITIONAL(USE_SDL2, test x$enable_sdl2 = xyes)
 
-AC_OUTPUT([
+AC_CONFIG_FILES([
 Makefile
 decoders/Makefile
 decoders/timidity/Makefile
 playsound/Makefile
 ])
+AC_OUTPUT
