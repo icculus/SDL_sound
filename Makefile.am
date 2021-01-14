@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = -I acinclude
 AUTOMAKE_OPTIONS = foreign
 
-SUBDIRS = decoders . playsound
+SUBDIRS = decoders . examples
 
 if USE_TIMIDITY
 TIMIDITY_LIB = decoders/timidity/libtimidity.la
