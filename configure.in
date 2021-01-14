@@ -323,10 +323,11 @@ dnl Add Makefile conditionals
 AM_CONDITIONAL(USE_TIMIDITY, test x$enable_midi = xyes)
 AM_CONDITIONAL(USE_SDL2, test x$enable_sdl2 = xyes)
 
+dnl 
 AC_CONFIG_FILES([
 Makefile
 decoders/Makefile
 decoders/timidity/Makefile
-playsound/Makefile
+examples/Makefile
 ])
 AC_OUTPUT
