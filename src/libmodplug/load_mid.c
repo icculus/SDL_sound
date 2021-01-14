@@ -24,12 +24,6 @@
 	All systems - all compilers (hopefully)
 */
 
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
-#include <math.h>
-#include <ctype.h>
-
 #include "libmodplug.h"
 #define PAN_LEFT    0x30
 #define PAN_RIGHT   0xD0

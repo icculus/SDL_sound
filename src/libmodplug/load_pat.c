@@ -30,11 +30,6 @@
 
 #include "libmodplug.h"
 
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
-#include <math.h>
-#include <ctype.h>
 #include <limits.h> /* for PATH_MAX */
 #ifndef PATH_MAX
 #define PATH_MAX 256

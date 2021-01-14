@@ -24,12 +24,8 @@
 	All systems - all compilers (hopefully)
 */
 
-#include <limits.h>
-#include <stdlib.h>
+#include <stdlib.h> /* rand(), srand() */
 #include <time.h>
-#include <string.h>
-#include <math.h>
-#include <ctype.h>
 
 #include "libmodplug.h"
 
