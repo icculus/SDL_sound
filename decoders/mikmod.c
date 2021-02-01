@@ -72,6 +72,7 @@ static const char *extensions_mikmod[] =
     "ULT",   /* Ultratracker module                                         */
     "UNI",   /* UNIMOD - libmikmod's and APlayer's internal module format   */
     "XM",    /* Fasttracker module                                          */
+    "UMX",   /* Unreal UMX -- supported by libmikmod >= 3.3.3               */
     NULL
 };
 
@@ -97,7 +98,15 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MIKMOD =
 /* Make MikMod read from a RWops... */
 
 typedef struct MRWOPSREADER {
-    MREADER core;
+    /* MREADER core members in libmikmod2/3: */
+    int  (*Seek)(struct MREADER*, long, int);
+    long (*Tell)(struct MREADER*);
+    BOOL (*Read)(struct MREADER*, void*, size_t);
+    int  (*Get)(struct MREADER*);
+    BOOL (*Eof)(struct MREADER*);
+    /* no iobase members in libmikmod <= 3.2.0-beta2 */
+    long iobase, prev_iobase;
+
     Sound_Sample *sample;
     int end;
 } MRWOPSREADER;
@@ -107,9 +116,9 @@ static BOOL _mm_RWopsReader_eof(MREADER *reader)
     MRWOPSREADER *rwops_reader = (MRWOPSREADER *) reader;
     Sound_Sample *sample = rwops_reader->sample;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    int pos = SDL_RWtell(internal->rw);
+    int pos = SDL_RWtell(internal->rw) - rwops_reader->iobase;
 
-    if (rwops_reader->end == pos)
+    if (pos >= rwops_reader->end)
         return(1);
 
     return(0);
@@ -144,8 +153,12 @@ static int _mm_RWopsReader_seek(MREADER *reader, long offset, int whence)
     MRWOPSREADER *rwops_reader = (MRWOPSREADER *) reader;
     Sound_Sample *sample = rwops_reader->sample;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-
-    return(SDL_RWseek(internal->rw, offset, whence));
+    if (whence == SEEK_SET) {
+        offset += rwops_reader->iobase;
+        if (offset < rwops_reader->iobase)
+            return -1;
+    }
+    return(SDL_RWseek(internal->rw, offset, whence) < rwops_reader->iobase) ? -1 : 0;
 } /* _mm_RWopsReader_seek */
 
 
@@ -155,7 +168,7 @@ static long _mm_RWopsReader_tell(MREADER *reader)
     Sound_Sample *sample = rwops_reader->sample;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
 
-    return(SDL_RWtell(internal->rw));
+    return(SDL_RWtell(internal->rw) - rwops_reader->iobase);
 } /* _mm_RWopsReader_tell */
 
 
@@ -168,11 +181,12 @@ static MREADER *_mm_new_rwops_reader(Sound_Sample *sample)
     {
         int failed_seek = 1;
         int here;
-        reader->core.Eof  = _mm_RWopsReader_eof;
-        reader->core.Read = _mm_RWopsReader_read;
-        reader->core.Get  = _mm_RWopsReader_get;
-        reader->core.Seek = _mm_RWopsReader_seek;
-        reader->core.Tell = _mm_RWopsReader_tell;
+        memset(reader, 0, sizeof (MRWOPSREADER));
+        reader->Eof  = _mm_RWopsReader_eof;
+        reader->Read = _mm_RWopsReader_read;
+        reader->Get  = _mm_RWopsReader_get;
+        reader->Seek = _mm_RWopsReader_seek;
+        reader->Tell = _mm_RWopsReader_tell;
         reader->sample = sample;
 
         /* RWops does not explicitly support an eof check, so we shall find
@@ -180,6 +194,7 @@ static MREADER *_mm_new_rwops_reader(Sound_Sample *sample)
         here = SDL_RWtell(internal->rw);
         if (here != -1)
         {
+            reader->prev_iobase = reader->iobase = here;
             reader->end = SDL_RWseek(internal->rw, 0, RW_SEEK_END);
             if (reader->end != -1)
             {
