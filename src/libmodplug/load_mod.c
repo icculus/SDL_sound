@@ -6,7 +6,6 @@
 */
 
 #include "libmodplug.h"
-#include "tables.h"
 
 //////////////////////////////////////////////////////////
 // ProTracker / NoiseTracker MOD/NST file support

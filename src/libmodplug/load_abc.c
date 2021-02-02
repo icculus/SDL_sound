@@ -2092,7 +2092,7 @@ static void abc_substitute(ABCHANDLE *h, char *target, char *s)
 	int n = SDL_strlen(s);
 	if (l <= 0 ||n <= 0 || SDL_strstr(s, target) || abs(n-l) > 10e3)
 		return;
-	while( (p=SDL_strstr(h->line, target)) ) {
+	while ((p=SDL_strstr(h->line, target)) != NULL) {
 		if( (i=SDL_strlen(h->line)) + n - l >= (int)h->len ) {
 			int reqsize = h->len<<1;
 			while (i + n - l >= reqsize) reqsize = reqsize<<1;
@@ -3570,7 +3570,7 @@ BOOL CSoundFile_ReadABC(CSoundFile *_this, const uint8_t *lpStream, DWORD dwMemL
 		abcstate = INSKIPFORX;
 		abcxcount = 0;
 		mmfseek(mmfile,0,SEEK_SET);
-		while( (line=abc_gets(h, mmfile)) ) {
+		while ((line=abc_gets(h, mmfile)) != NULL) {
 			for( p=line; SDL_isspace(*p); p++ ) ;
 			if( !SDL_strncmp(p,"X:",2) ) abcxcount++;
 		}
@@ -3583,7 +3583,7 @@ BOOL CSoundFile_ReadABC(CSoundFile *_this, const uint8_t *lpStream, DWORD dwMemL
 	}
 	while( mmsp > 0 ) {
 		mmsp--;
-		while((line=abc_gets(h, mmstack[mmsp]))) {
+		while ((line=abc_gets(h, mmstack[mmsp])) != NULL) {
 			char blankline[3] = "%%";
 			for( p=line; SDL_isspace(*p); p++ ) ;
 			switch(abcstate) {
@@ -3938,7 +3938,7 @@ BOOL CSoundFile_ReadABC(CSoundFile *_this, const uint8_t *lpStream, DWORD dwMemL
 					// plough thru the songline gathering mos....
 					ch0 = ' ';
 					pp = 0;
-					while( (ch = *p++) ) {
+					while ((ch = *p++) != '\0') {
 						if( !pp && IsAlpha(ch) && *p != ':' ) { // maybe a macro
 							for( mp=h->umacro; mp; mp=mp->next ) {
 								if( ch == mp->name[0] ) {
@@ -4042,7 +4042,7 @@ BOOL CSoundFile_ReadABC(CSoundFile *_this, const uint8_t *lpStream, DWORD dwMemL
 									h->tp = abc_check_track(h, h->tp);
 									abc_track_clear_tiedvpos(h);
 									abcbeatvol = abc_beat_vol(h, abcvol, (h->tracktime - bartime)/barticks);
-									while( (ch=*p++) && (ch != ']') ) {
+									while ((ch=*p++) != '\0' && (ch != ']')) {
 										h->tp = abc_locate_track(h, h->tp->v, abcchord? abcchord+DRONEPOS2: 0);
 										p += abc_add_noteon(h, ch, p, h->tracktime, barsig, abcbeatvol, abceffect, abceffoper);
 										p += abc_notelen(p, &notelen, &notediv);
@@ -4210,7 +4210,7 @@ BOOL CSoundFile_ReadABC(CSoundFile *_this, const uint8_t *lpStream, DWORD dwMemL
 								int barticks = notelen_notediv_to_ticks(h->speed,1,mnotediv);
 								if (barticks == 0) barticks = 1;
 								abcbeatvol = abc_beat_vol(h, abcvol, (h->tracktime - bartime)/barticks);
-								while( (ch=*p++) && (ch != '}') ) {
+								while ((ch=*p++) != '\0' && (ch != '}')) {
 									p += abc_add_noteon(h, ch, p, h->tracktime+abcgrace, barsig, abcbeatvol, none, 0);
 									p += abc_notelen(p, &notelen, &notediv);
 									if( *p=='-' ) {
@@ -4296,7 +4296,7 @@ BOOL CSoundFile_ReadABC(CSoundFile *_this, const uint8_t *lpStream, DWORD dwMemL
  									if( h->tp == h->tpc ) abc_add_chord(p, h, h->tpc, h->tracktime); // only do chords for one voice
 								}
 								abcto = 0;
-								while( (ch=*p++) && (ch != '"') ) {
+								while ((ch=*p++) != '\0' && (ch != '"')) {
 									if( !SDL_strncasecmp(p,"fade",4) && h->track && h->track->slidevol > -2 )
 										abc_globalslide(h, h->tracktime, -2); // set volumeslide to fade away...
 									if( !SDL_strncasecmp(p,"to coda",7) ) {
@@ -4505,7 +4505,7 @@ BOOL CSoundFile_ReadABC(CSoundFile *_this, const uint8_t *lpStream, DWORD dwMemL
 								else {
 									h->tp = abc_check_track(h, h->tp);
 									abcvol = abc_parse_decorations(h, h->tp, p);
-									while( (ch=*p++) && (ch != '+') )
+									while ((ch=*p++) != '\0' && (ch != '+'))
 										;
 								}
 								break;
@@ -4683,7 +4683,7 @@ BOOL CSoundFile_ReadABC(CSoundFile *_this, const uint8_t *lpStream, DWORD dwMemL
 	ord  = calculated
 */
 #if 0
-	if( (p=SDL_getenv(ABC_ENV_DUMPTRACKS)) ) {
+	if ((p=SDL_getenv(ABC_ENV_DUMPTRACKS)) != NULL) {
 		printf("P:%s\n",abcparts);
 		for( t=0; t<26; t++ )
 			if( partpat[t][1] >= partpat[t][0] )
