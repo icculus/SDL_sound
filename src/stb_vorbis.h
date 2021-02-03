@@ -906,7 +906,7 @@ static int error(vorb *f, enum STBVorbisError e)
 #define array_size_required(count,size)  (count*(sizeof(void *)+(size)))
 
 #define temp_alloc(f,size)              (f->alloc.alloc_buffer ? setup_temp_malloc(f,size) : alloca(size))
-#define temp_free(f,p)                  0
+#define temp_free(f,p)                  (void)0
 #define temp_alloc_save(f)              ((f)->temp_offset)
 #define temp_alloc_restore(f,p)         ((f)->temp_offset = (p))
 

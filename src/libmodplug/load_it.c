@@ -142,7 +142,7 @@ BOOL CSoundFile_ReadIT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 	DWORD inspos[MAX_INSTRUMENTS];
 	DWORD smppos[MAX_SAMPLES];
 	DWORD patpos[MAX_PATTERNS];
-	BYTE chnmask[64], channels_used[64];
+	BYTE chnmask[64];//, channels_used[64]
 	MODCOMMAND lastvalue[64];
 	UINT j;
 
@@ -206,9 +206,8 @@ BOOL CSoundFile_ReadIT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 	if (inspossize > MAX_INSTRUMENTS) inspossize = MAX_INSTRUMENTS;
 	inspossize <<= 2;
 	SDL_memcpy(inspos, lpStream+dwMemPos, inspossize);
-	for (j=0; j < (inspossize>>2); j++)
-	{
-	       inspos[j] = bswapLE32(inspos[j]);
+	for (j=0; j < (inspossize>>2); j++) {
+	    inspos[j] = bswapLE32(inspos[j]);
 	}
 	dwMemPos += pifh.insnum * 4;
 	// Reading Samples Offsets
@@ -217,9 +216,8 @@ BOOL CSoundFile_ReadIT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 	if (smppossize > MAX_SAMPLES) smppossize = MAX_SAMPLES;
 	smppossize <<= 2;
 	SDL_memcpy(smppos, lpStream+dwMemPos, smppossize);
-	for (j=0; j < (smppossize>>2); j++)
-	{
-	       smppos[j] = bswapLE32(smppos[j]);
+	for (j=0; j < (smppossize>>2); j++) {
+	    smppos[j] = bswapLE32(smppos[j]);
 	}
 	dwMemPos += pifh.smpnum * 4;
 	// Reading Patterns Offsets
@@ -228,9 +226,8 @@ BOOL CSoundFile_ReadIT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 	if (patpossize > MAX_PATTERNS) patpossize = MAX_PATTERNS;
 	patpossize <<= 2;
 	SDL_memcpy(patpos, lpStream+dwMemPos, patpossize);
-	for (j=0; j < (patpossize>>2); j++)
-	{
-	       patpos[j] = bswapLE32(patpos[j]);
+	for (j=0; j < (patpossize>>2); j++) {
+	    patpos[j] = bswapLE32(patpos[j]);
 	}
 	dwMemPos += pifh.patnum * 4;
 	// Reading IT Extra Info
@@ -478,7 +475,7 @@ BOOL CSoundFile_ReadIT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 					if (note < 0x80) note++;
 					m[ch].note = note;
 					lastvalue[ch].note = note;
-					channels_used[ch] = TRUE;
+				//	channels_used[ch] = TRUE;
 				}
 			}
 			if (chnmask[ch] & 2)
@@ -596,7 +593,7 @@ void ITUnpack8Bit(signed char *pSample, DWORD dwLen, LPBYTE lpMemFile, DWORD dwM
 {
 	signed char *pDst = pSample;
 	LPBYTE pSrc = lpMemFile;
-	DWORD wHdr = 0;
+//	DWORD wHdr = 0;
 	DWORD wCount = 0;
 	DWORD bitbuf = 0;
 	UINT bitnum = 0;
@@ -607,7 +604,7 @@ void ITUnpack8Bit(signed char *pSample, DWORD dwLen, LPBYTE lpMemFile, DWORD dwM
 		if (!wCount)
 		{
 			wCount = 0x8000;
-			wHdr = bswapLE16(*((LPWORD)pSrc));
+		//	wHdr = bswapLE16(*((LPWORD)pSrc));
 			pSrc += 2;
 			bLeft = 9;
 			bTemp = bTemp2 = 0;
@@ -678,7 +675,7 @@ void ITUnpack16Bit(signed char *pSample, DWORD dwLen, LPBYTE lpMemFile, DWORD dw
 {
 	signed short *pDst = (signed short *)pSample;
 	LPBYTE pSrc = lpMemFile;
-	DWORD wHdr = 0;
+//	DWORD wHdr = 0;
 	DWORD wCount = 0;
 	DWORD bitbuf = 0;
 	UINT bitnum = 0;
@@ -690,7 +687,7 @@ void ITUnpack16Bit(signed char *pSample, DWORD dwLen, LPBYTE lpMemFile, DWORD dw
 		if (!wCount)
 		{
 			wCount = 0x4000;
-			wHdr = bswapLE16(*((LPWORD)pSrc));
+		//	wHdr = bswapLE16(*((LPWORD)pSrc));
 			pSrc += 2;
 			bLeft = 17;
 			wTemp = wTemp2 = 0;
