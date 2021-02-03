@@ -1434,13 +1434,13 @@ UINT CSoundFile_CreateStereoMix(CSoundFile *_this, int count)
 	{
 		const LPMIXINTERFACE *pMixFuncTable;
 		MODCHANNEL * const pChannel = &_this->Chn[_this->ChnMix[nChn]];
-		UINT nFlags, nMasterCh;
+		UINT nFlags;//, nMasterCh
 		LONG nSmpCount;
 		int nsamples;
 		int *pbuffer;
 
 		if (!pChannel->pCurrentSample) continue;
-		nMasterCh = (_this->ChnMix[nChn] < _this->m_nChannels) ? _this->ChnMix[nChn]+1 : pChannel->nMasterChn;
+		//nMasterCh = (_this->ChnMix[nChn] < _this->m_nChannels) ? _this->ChnMix[nChn]+1 : pChannel->nMasterChn;
 		pOfsR = &_this->gnDryROfsVol;
 		pOfsL = &_this->gnDryLOfsVol;
 		nFlags = 0;

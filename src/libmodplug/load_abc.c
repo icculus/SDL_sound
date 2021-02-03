@@ -714,7 +714,7 @@ static ABCTRACK *abc_locate_track(ABCHANDLE *h, const char *voice, int pos)
 	char vc[21];
 	int i, trans=0, voiceno=0, instrno = 1, channo = 0;
 	for( ; *voice == ' '; voice++ ) ;	// skip leading spaces
-	for( i=0; i+1 < sizeof(vc) && *voice && *voice != ']' && *voice != '%' && !SDL_isspace(*voice); voice++ )	// can work with inline voice instructions
+	for( i=0; i+1 < (int) sizeof(vc) && *voice && *voice != ']' && *voice != '%' && !SDL_isspace(*voice); voice++ )	// can work with inline voice instructions
 		vc[i++] = *voice;
 	vc[i] = '\0';
 	prev = NULL;
@@ -1384,7 +1384,8 @@ static void	abc_add_chord(const char *p, ABCHANDLE *h, ABCTRACK *tp, uint32_t tr
 			break;
 	}
 	d[chordbase] = d[chordnote];
-	for( i=0; i < sizeof(s) - 1 && p[i] && p[i] != '"' && p[i] != '/' && p[i] != '(' && p[i] != ')' && p[i] != ' '; i++ ) s[i] = p[i];
+	for( i=0; i < (int)sizeof(s) - 1 && p[i] && p[i] != '"' && p[i] != '/' && p[i] != '(' && p[i] != ')' && p[i] != ' '; i++ )
+		s[i] = p[i];
 	s[i] = '\0';
 	p = &p[i];
 	if( *p=='/' ) {
@@ -1718,13 +1719,13 @@ static void	abc_set_parts(char **d, char *p)
 	q = (char *)_mm_calloc(h, size + 1, sizeof(char)); // enough storage for the worst case
 	// now copy bytes from p to *d, taking parens and digits in account
 	j = 0;
-	for( i=0; p[i] && p[i] != '%' && j < size && i < size; i++ ) {
+	for( i=0; p[i] && p[i] != '%' && j < size && i < (int)size; i++ ) {
 		if( SDL_isdigit(p[i]) || IsUpper(p[i]) || p[i] == '(' || p[i] == ')' ) {
 			if( p[i] == ')' ) {
 				for( n=j; n > 0 && q[n-1] != '('; n-- )	;	// find open paren in q
 				// q[n+1] to q[j] contains the substring that must be repeated
 				if( n > 0 ) {
-					for( k = n; k<j; k++ ) q[k-1] = q[k];	// shift to the left...
+					for( k = n; k<(int)j; k++ ) q[k-1] = q[k];	// shift to the left...
 					j--;
 				}
 				else {
@@ -1759,10 +1760,10 @@ static void	abc_set_parts(char **d, char *p)
 	}
 	q[j] = '\0';
 	// remove any left over parens
-	for( i=0; i<j; i++ ) {
+	for( i=0; i<(int)j; i++ ) {
 		if( q[i] == '(' ) {
 			abc_message("Warning: Unbalanced left parens in P: definition %s",p);
-			for( k=i; k<j; k++ ) q[k] = q[k+1];
+			for( k=i; k<(int)j; k++ ) q[k] = q[k+1];
 			j--;
 		}
 	}
@@ -2872,11 +2873,11 @@ static int abc_MIDI_drum(const char *p, ABCHANDLE *h)
 	for( q = h->drum; *p && !SDL_isspace(*p); p++ ) {
 		if( !SDL_strchr("dz0123456789",*p) ) break;
 		*q++ = *p; len++;
-		if( !SDL_isdigit(*p) && len < sizeof(h->drum)-1 ) {
+		if( !SDL_isdigit(*p) && len < (int)sizeof(h->drum)-1 ) {
 			if( !SDL_isdigit(p[1]) ) { *q++ = '1'; len ++; }
 			n++; // count the silences too....
 		}
-		if (len >= sizeof(h->drum)-1) {
+		if (len >= (int)sizeof(h->drum)-1) {
 			// consume the rest of the input
 			// definitely enough "drum last state" stored.
 			while ( *p && !SDL_isspace(*p) ) p++;
@@ -2926,8 +2927,8 @@ static int abc_MIDI_gchord(const char *p, ABCHANDLE *h)
 	for( q = h->gchord; *p && !SDL_isspace(*p); p++ ) {
 		if( !SDL_strchr("fbcz0123456789ghijGHIJ",*p) ) break;
 		*q++ = *p; len++;
-		if( !SDL_isdigit(*p) && len < sizeof(h->gchord)-1 && !SDL_isdigit(p[1]) ) { *q++ = '1'; len ++; }
-		if (len >= sizeof(h->gchord)-1) {
+		if( !SDL_isdigit(*p) && len < (int)sizeof(h->gchord)-1 && !SDL_isdigit(p[1]) ) { *q++ = '1'; len ++; }
+		if (len >= (int)sizeof(h->gchord)-1) {
 			// consume the rest of the input
 			// definitely enough "drum last state" stored.
 			while ( *p && !SDL_isspace(*p) ) p++;
@@ -2973,8 +2974,8 @@ static void abc_metric_gchord(ABCHANDLE *h, int mlen, int mdiv)
 
 			if( mdiv == 8 )	dest = mlen*2;
 			else dest = mlen*4;
-			if (dest >= sizeof(h->gchord))
-				dest = sizeof(h->gchord) - 1;
+			if (dest >= (int)sizeof(h->gchord))
+				dest = (int)sizeof(h->gchord) - 1;
 			h->gchord[dest] = '\0';
 		}
 		break;
@@ -3806,7 +3807,7 @@ BOOL CSoundFile_ReadABC(CSoundFile *_this, const uint8_t *lpStream, DWORD dwMemL
 			if( !SDL_strncmp(p,"m:",2) ) {
 				if( abcstate != INSKIPFORX ) {
 					char *pm = p;
-					if (mmstack[mmsp]->pos < dwMemLength) {
+					if (mmstack[mmsp]->pos < (LONG)dwMemLength) {
 						pm = abc_continuated(h, mmstack[mmsp], p);
 						abc_new_macro(h, pm+2);
 					}
