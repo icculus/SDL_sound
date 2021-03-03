@@ -79,7 +79,7 @@ LIBS = $(LIBSDL) FLAC.lib vorbisfile.lib vorbis.lib ogg.lib mpg123.lib mikmod.li
 all: $(DLLFILE) playsound.exe playsound_simple.exe
 
 .c: decoders
-.c: playsound
+.c: examples
 
 $(LIBFILE): $(DLLFILE)
   @echo * Create library: $@...
@@ -107,9 +107,9 @@ $(LNKFILE):
 .c.obj:
   wcc386 $(CFLAGS) -fo=$^@ $<
 
-playsound.obj: playsound/playsound.c
+playsound.obj: examples/playsound.c
   wcc386 $(CFLAGS_BASE) -DHAVE_SIGNAL_H=1 -DHAVE_SETBUF=1 -DHAVE_ASSERT_H=1 -fo=$^@ $<
-playsound_simple.obj: playsound/playsound_simple.c
+playsound_simple.obj: examples/playsound_simple.c
   wcc386 $(CFLAGS_BASE) -fo=$^@ $<
 
 playsound.exe: $(LIBFILE) playsound.obj
