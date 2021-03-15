@@ -559,14 +559,6 @@ enum STBVorbisError
    #include <string.h>
    #include <assert.h>
    #include <math.h>
-
-   // find definition of alloca if it's not in stdlib.h:
-   #if defined(_MSC_VER) || defined(__MINGW32__)
-      #include <malloc.h>
-   #endif
-   #if defined(__linux__) || defined(__linux) || defined(__EMSCRIPTEN__)
-      #include <alloca.h>
-   #endif
 #else // STB_VORBIS_NO_CRT
    #ifndef NULL
    #define NULL 0
@@ -584,8 +576,19 @@ enum STBVorbisError
 
 #include <limits.h>
 
-#if defined(__MINGW32__) && !defined(alloca)
-   #define alloca __builtin_alloca
+/* we need alloca() regardless of STB_VORBIS_NO_CRT,
+ * because there is not a corresponding 'dealloca' */
+#if !defined(alloca)
+# if defined(HAVE_ALLOCA_H)
+#  include <alloca.h>
+# elif defined(__GNUC__)
+#  define alloca __builtin_alloca
+# elif defined(_MSC_VER)
+#  include <malloc.h>
+#  define alloca _alloca
+# elif defined(__WATCOMC__)
+#  include <malloc.h>
+# endif
 #endif
 
 #ifndef STB_FORCEINLINE
