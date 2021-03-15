@@ -11,6 +11,16 @@
 
 #include "SDL.h"
 
+#if defined(HAVE_LIBC) && defined(__WATCOMC__) /* Watcom has issues... */
+#define SDL_cos  cos
+#define SDL_fabs fabs
+#define SDL_log  log
+#define SDL_pow  pow
+#define SDL_sin  sin
+#define SDL_sinf sin
+#define SDL_abs  abs
+#endif
+
 #if ((defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__)) && !defined(_WIN32)
 #pragma GCC visibility push(hidden)
 #endif
