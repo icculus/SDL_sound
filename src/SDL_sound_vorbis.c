@@ -43,9 +43,6 @@
 #ifdef memcpy
 #undef memcpy
 #endif
-#ifdef alloca
-#undef alloca
-#endif
 #define assert SDL_assert
 #define memset SDL_memset
 #define memcmp SDL_memcmp
@@ -56,8 +53,12 @@
 #define malloc SDL_malloc
 #define realloc SDL_realloc
 #define free SDL_free
+/* there is no 'dealloca' in stb_vorbis: we need alloca()
+#ifdef alloca
+#undef alloca
+#endif
 #define alloca(x) ((void *) SDL_stack_alloc(Uint8, (x)))
-#define dealloca(x) SDL_stack_free((x))
+*/
 #define ldexp(v, e) SDL_scalbn((v), (e))
 #define abs(x) SDL_abs(x)
 #define cos(x) SDL_cos(x)
