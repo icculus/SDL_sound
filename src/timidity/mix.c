@@ -8,14 +8,6 @@
 
     mix.c */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
 

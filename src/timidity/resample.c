@@ -9,14 +9,6 @@
     resample.c
 */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
 
@@ -608,7 +600,7 @@ void pre_resample(MidiSong *song, Sample *sp)
   sp->data_length = newlen;
   sp->loop_start = (Sint32)(sp->loop_start * a);
   sp->loop_end = (Sint32)(sp->loop_end * a);
-  free(sp->data);
+  SDL_free(sp->data);
   sp->data = (sample_t *) newdata;
   sp->sample_rate = 0;
 }
