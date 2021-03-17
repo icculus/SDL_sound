@@ -48,6 +48,7 @@ ToneBank *master_tonebank[128], *master_drumset[128];
 static char def_instr_name[256] = "";
 
 #define MAXWORDS 10
+#define MAX_RCFCOUNT 50
 
 /* Quick-and-dirty fgets() replacement. */
 
@@ -81,22 +82,25 @@ static char *RWgets(SDL_RWops *rw, char *s, int size)
     return (num_read != 0) ? s : NULL;
 }
 
-static int read_config_file(const char *name)
+static int read_config_file(const char *name, int rcf_count)
 {
   SDL_RWops *rw;
-  char tmp[1024], *w[MAXWORDS], *cp;
+  char tmp[1024];
+  char *w[MAXWORDS], *cp;
   ToneBank *bank=0;
-  int i, j, k, line=0, words;
-  static int rcf_count=0;
+  int i, j, k, line, r, words;
 
-  if (rcf_count>50)
-  {
+  if (rcf_count >= MAX_RCFCOUNT) {
     SNDDBG(("Probable source loop in configuration files\n"));
     return (-1);
   }
 
   if (!(rw=open_file(name)))
    return -1;
+
+  bank = NULL;
+  line = 0;
+  r = -1; /* start by assuming failure, */
 
   while (RWgets(rw, tmp, sizeof(tmp)))
   {
@@ -231,15 +235,11 @@ static int read_config_file(const char *name)
       }
       for (i=1; i<words; i++)
       {
-	int status;
-	rcf_count++;
-	status = read_config_file(w[i]);
-	rcf_count--;
-	if (status != 0) {
-	  SDL_RWclose(rw);
-	  return status;
-	}
+	r = read_config_file(w[i], rcf_count + 1);
+	if (r != 0)
+	  goto fail;
       }
+      r = -1; /* not finished yet, */
     }
     else if (!strcmp(w[0], "default"))
     {
@@ -408,11 +408,11 @@ static int read_config_file(const char *name)
       }
     }
   }
-  SDL_RWclose(rw);
-  return 0;
+
+  r = 0; /* we're good. */
 fail:
   SDL_RWclose(rw);
-  return -2;
+  return r;
 }
 
 int Timidity_Init_NoConfig(void)
@@ -452,7 +452,7 @@ int Timidity_Init(void)
 
   Timidity_Init_NoConfig();
 
-  if (read_config_file(CONFIG_FILE) < 0) {
+  if (read_config_file(CONFIG_FILE, 0) < 0) {
       Timidity_Exit();
       return -1;
   }
