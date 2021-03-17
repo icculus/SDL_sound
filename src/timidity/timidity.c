@@ -1,5 +1,4 @@
 /*
-
     TiMidity -- Experimental MIDI to WAVE converter
     Copyright (C) 1995 Tuukka Toivonen <toivonen@clinet.fi>
 
@@ -26,6 +25,7 @@ static ToneBank *master_tonebank[128], *master_drumset[128];
 static char def_instr_name[256] = "";
 
 #define MAXWORDS 10
+#define MAX_RCFCOUNT 50
 
 /* Quick-and-dirty fgets() replacement. */
 
@@ -129,18 +129,16 @@ static char *SDL_strtokr(char *s1, const char *s2, char **ptr)
 }
 #endif /* HAVE_SDL_STRTOKR */
 
-static int read_config_file(const char *name)
+static int read_config_file(const char *name, int rcf_count)
 {
   SDL_RWops *rw;
   char tmp[1024];
   char *w[MAXWORDS], *cp;
   char *endp;
   ToneBank *bank;
-  int i, j, k, line, words;
-  static int rcf_count=0;
+  int i, j, k, line, r, words;
 
-  if (rcf_count>50)
-  {
+  if (rcf_count >= MAX_RCFCOUNT) {
     SNDDBG(("Probable source loop in configuration files\n"));
     return -1;
   }
@@ -150,6 +148,7 @@ static int read_config_file(const char *name)
 
   bank = NULL;
   line = 0;
+  r = -1; /* start by assuming failure, */
 
   while (RWgets(rw, tmp, sizeof(tmp)))
   {
@@ -272,15 +271,11 @@ static int read_config_file(const char *name)
       }
       for (i=1; i<words; i++)
       {
-	int status;
-	rcf_count++;
-	status = read_config_file(w[i]);
-	rcf_count--;
-	if (status != 0) {
-	  SDL_RWclose(rw);
-	  return status;
-	}
+	r = read_config_file(w[i], rcf_count + 1);
+	if (r != 0)
+	  goto fail;
       }
+      r = -1; /* not finished yet, */
     }
     else if (!SDL_strcmp(w[0], "default"))
     {
@@ -355,10 +350,9 @@ static int read_config_file(const char *name)
 		name, line));
 	goto fail;
       }
-      if (bank->tone[i].name)
-	SDL_free(bank->tone[i].name);
+      SDL_free(bank->tone[i].name);
       sz = SDL_strlen(w[1])+1;
-      bank->tone[i].name=SDL_malloc(sz);
+      bank->tone[i].name = SDL_malloc(sz);
       SDL_memcpy(bank->tone[i].name,w[1],sz);
       bank->tone[i].note=bank->tone[i].amp=bank->tone[i].pan=
       bank->tone[i].strip_loop=bank->tone[i].strip_envelope=
@@ -447,11 +441,11 @@ static int read_config_file(const char *name)
       }
     }
   }
-  SDL_RWclose(rw);
-  return 0;
+
+  r = 0; /* we're good. */
 fail:
   SDL_RWclose(rw);
-  return -2;
+  return r;
 }
 
 int Timidity_Init_NoConfig(void)
@@ -482,7 +476,7 @@ int Timidity_Init(const char *config_file)
   if (p != NULL)
     add_to_pathlist(config_file, p - config_file + 1);
 
-  if (read_config_file(config_file) < 0) {
+  if (read_config_file(config_file, 0) < 0) {
       Timidity_Exit();
       return -1;
   }
