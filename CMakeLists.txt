@@ -42,7 +42,6 @@ if(WIN32)
     string(STRIP "${SDL2_LIBRARIES}" SDL2_LIBRARIES)
 endif()
 
-
 # Decoders ...
 # These are (mostly) on by default now, so these options are only useful for
 #  disabling them.
@@ -269,6 +268,7 @@ message_bool_option("VORBIS support" SDLSOUND_DECODER_VORBIS)
 message_bool_option("RAW support" SDLSOUND_DECODER_RAW)
 message_bool_option("SHN support" SDLSOUND_DECODER_SHN)
 message_bool_option("MODPLUG support" SDLSOUND_DECODER_MODPLUG)
+message_bool_option("TiMidity support" SDLSOUND_DECODER_MIDI)
 message_bool_option("MP3 support" SDLSOUND_DECODER_MP3)
 message_bool_option("COREAUDIO support" SDLSOUND_DECODER_COREAUDIO)
 message_bool_option("Build static library" SDLSOUND_BUILD_STATIC)
