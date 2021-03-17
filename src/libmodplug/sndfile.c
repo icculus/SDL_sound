@@ -88,10 +88,6 @@ CSoundFile *new_CSoundFile(LPCBYTE lpStream, DWORD dwMemLength, const ModPlug_Se
 		 && (!CSoundFile_ReadS3M(_this, lpStream, dwMemLength))
 		 && (!CSoundFile_ReadIT(_this, lpStream, dwMemLength))
 #ifndef MODPLUG_BASIC_SUPPORT
-/* Sequencer File Format Support */
-		 && (!CSoundFile_ReadABC(_this, lpStream, dwMemLength))
-		 && (!CSoundFile_ReadMID(_this, lpStream, dwMemLength))
-		 && (!CSoundFile_ReadPAT(_this, lpStream, dwMemLength))
 		 && (!CSoundFile_ReadSTM(_this, lpStream, dwMemLength))
 		 && (!CSoundFile_ReadMed(_this, lpStream, dwMemLength))
 		 && (!CSoundFile_ReadMTM(_this, lpStream, dwMemLength))
