@@ -15,23 +15,28 @@ VERSION = 2.0.0
 LIBFILE = $(LIBNAME).lib
 DLLFILE = $(LIBNAME).dll
 LNKFILE = $(LIBNAME).lnk
+
 MODPLIB = modplug.lib
+TIMILIB = timidity.lib
 
 TITLENAME = $(LIBNAME) $(VERSION)
 
-SRCS = SDL_sound_aiff.c SDL_sound_au.c SDL_sound_raw.c SDL_sound_shn.c &
-       SDL_sound_voc.c SDL_sound_wav.c SDL_sound_flac.c SDL_sound_modplug.c &
-       SDL_sound_mp3.c SDL_sound_vorbis.c SDL_sound.c
+SRCS     = SDL_sound_aiff.c SDL_sound_au.c SDL_sound_raw.c SDL_sound_shn.c     &
+           SDL_sound_voc.c SDL_sound_wav.c SDL_sound_flac.c SDL_sound_mp3.c    &
+           SDL_sound_vorbis.c SDL_sound_midi.c SDL_sound_modplug.c SDL_sound.c
 
 MODPSRCS = modplug.c sndfile.c fastmix.c snd_dsp.c snd_flt.c snd_fx.c sndmix.c &
            load_669.c load_amf.c load_ams.c load_dbm.c load_dmf.c load_dsm.c   &
            load_far.c load_it.c  load_mdl.c load_med.c load_mod.c load_mt2.c   &
            load_mtm.c load_okt.c load_psm.c load_ptm.c load_s3m.c load_stm.c   &
-           load_ult.c load_umx.c load_xm.c &
-           load_abc.c load_mid.c load_pat.c
+           load_ult.c load_umx.c load_xm.c
+
+TIMISRCS = common.c instrum.c mix.c output.c playmidi.c readmidi.c resample.c  &
+           tables.c timidity.c
 
 OBJS = $(SRCS:.c=.obj)
 MODPOBJS = $(MODPSRCS:.c=.obj)
+TIMIOBJS = $(TIMISRCS:.c=.obj)
 
 CFLAGS_BASE = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei -j
 CFLAGS_BASE+= -DNDEBUG
@@ -40,7 +45,7 @@ CFLAGS_BASE+= -wx
 # include paths:
 CFLAGS_BASE+= -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
 CFLAGS_BASE+= -I. $(DEPS_INC)
-CFLAGS = $(CFLAGS_BASE) -Ilibmodplug
+CFLAGS = $(CFLAGS_BASE)
 # to build a dll:
 CFLAGS+= -bd
 # there are _lots_ of lazy declarations:
@@ -53,6 +58,7 @@ CFLAGS+= -DBUILD_SDL -DSDL_SOUND_DLL_EXPORTS
 
 CFLAGS+= -DSOUND_SUPPORTS_MP3 &
          -DSOUND_SUPPORTS_MODPLUG &
+         -DSOUND_SUPPORTS_MIDI &
          -DSOUND_SUPPORTS_WAV &
          -DSOUND_SUPPORTS_AIFF &
          -DSOUND_SUPPORTS_AU &
@@ -62,7 +68,7 @@ CFLAGS+= -DSOUND_SUPPORTS_MP3 &
          -DSOUND_SUPPORTS_FLAC
 
 LIBSDL = SDL2.lib
-LIBS = $(LIBSDL) $(MODPLIB)
+LIBS = $(LIBSDL) $(MODPLIB) $(TIMILIB)
 
 .extensions:
 .extensions: .lib .dll .obj .c
@@ -76,7 +82,7 @@ $(LIBFILE): $(DLLFILE)
   @echo * Create library: $@...
   wlib -b -n -q -c -pa -s -t -zld -ii -io $@ $(DLLFILE)
 
-$(DLLFILE): $(OBJS) $(MODPLIB) $(LNKFILE)
+$(DLLFILE): $(OBJS) $(MODPLIB) $(TIMILIB) $(LNKFILE)
   @echo * Link: $@
   wlink @$(LNKFILE)
 
@@ -116,11 +122,16 @@ playsound_simple.exe: $(LIBFILE) playsound_simple.obj
 modplug.lib: $(MODPOBJS)
   wlib -b -n -q -c -pa -s -t -zld -ii -io $@ $(MODPOBJS)
 
+.c: timidity;
+timidity.lib: $(TIMIOBJS)
+  wlib -b -n -q -c -pa -s -t -zld -ii -io $@ $(TIMIOBJS)
+
 clean: .SYMBOLIC
   @echo * Clean: $(TITLENAME)
   @if exist *.obj rm *.obj
   @if exist *.err rm *.err
   @if exist $(MODPLIB) rm $(MODPLIB)
+  @if exist $(TIMILIB) rm $(TIMILIB)
   @if exist $(LNKFILE) rm $(LNKFILE)
 distclean: .SYMBOLIC clean
   @if exist $(DLLFILE) rm $(DLLFILE)

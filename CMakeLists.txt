@@ -62,6 +62,7 @@ sdlsound_decoder_option(FLAC "Free Lossless Audio Codec" ".FLAC")
 sdlsound_decoder_option(VORBIS "Ogg Vorbis" ".OGG")
 sdlsound_decoder_option(RAW "raw PCM audio" ".RAW")
 sdlsound_decoder_option(SHN "Shorten" ".SHN")
+sdlsound_decoder_option(MIDI "Midi" ".MID")
 sdlsound_decoder_option(MODPLUG "ModPlug" "various tracker formats")
 sdlsound_decoder_option(MP3 "MPEG-1 Layers I-III" ".MP3, .MP2, .MP1")
 
@@ -72,11 +73,23 @@ if(APPLE)
     endif()
 endif()
 
+if(SDLSOUND_DECODER_MIDI)
+    set(TIMIDITY_SRCS
+        src/timidity/common.c
+        src/timidity/instrum.c
+        src/timidity/mix.c
+        src/timidity/output.c
+        src/timidity/playmidi.c
+        src/timidity/readmidi.c
+        src/timidity/resample.c
+        src/timidity/tables.c
+        src/timidity/timidity.c
+    )
+endif()
 if(SDLSOUND_DECODER_MODPLUG)
     set(LIBMODPLUG_SRCS
         src/libmodplug/fastmix.c
         src/libmodplug/load_669.c
-        src/libmodplug/load_abc.c
         src/libmodplug/load_amf.c
         src/libmodplug/load_ams.c
         src/libmodplug/load_dbm.c
@@ -86,12 +99,10 @@ if(SDLSOUND_DECODER_MODPLUG)
         src/libmodplug/load_it.c
         src/libmodplug/load_mdl.c
         src/libmodplug/load_med.c
-        src/libmodplug/load_mid.c
         src/libmodplug/load_mod.c
         src/libmodplug/load_mt2.c
         src/libmodplug/load_mtm.c
         src/libmodplug/load_okt.c
-        src/libmodplug/load_pat.c
         src/libmodplug/load_psm.c
         src/libmodplug/load_ptm.c
         src/libmodplug/load_s3m.c
@@ -118,6 +129,7 @@ set(SDLSOUND_SRCS
     src/SDL_sound_au.c
     src/SDL_sound_coreaudio.c
     src/SDL_sound_flac.c
+    src/SDL_sound_midi.c
     src/SDL_sound_modplug.c
     src/SDL_sound_mp3.c
     src/SDL_sound_raw.c
@@ -125,6 +137,7 @@ set(SDLSOUND_SRCS
     src/SDL_sound_voc.c
     src/SDL_sound_vorbis.c
     src/SDL_sound_wav.c
+    ${TIMIDITY_SRCS}
     ${LIBMODPLUG_SRCS}
 )
 
@@ -262,4 +275,4 @@ message_bool_option("Build static library" SDLSOUND_BUILD_STATIC)
 message_bool_option("Build shared library" SDLSOUND_BUILD_SHARED)
 message_bool_option("Build stdio test program" SDLSOUND_BUILD_TEST)
 
-# end of CMakeLists.txt ...
+# end of CMakeLists.txt

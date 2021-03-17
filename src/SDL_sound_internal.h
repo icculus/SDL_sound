@@ -39,6 +39,9 @@
 #define SNDDBG(x)
 #endif
 
+#ifndef SOUND_SUPPORTS_MIDI
+#define SOUND_SUPPORTS_MIDI  1
+#endif
 #ifndef SOUND_SUPPORTS_MP3
 #define SOUND_SUPPORTS_MP3 1
 #endif

@@ -165,7 +165,6 @@ typedef const BYTE * LPCBYTE;
 #define MOD_TYPE_DSM		0x2000
 #define MOD_TYPE_MDL		0x4000
 #define MOD_TYPE_OKT		0x8000
-#define MOD_TYPE_MID		0x10000
 #define MOD_TYPE_DMF		0x20000
 #define MOD_TYPE_PTM		0x40000
 #define MOD_TYPE_DBM		0x80000
@@ -173,8 +172,6 @@ typedef const BYTE * LPCBYTE;
 #define MOD_TYPE_AMF0		0x200000
 #define MOD_TYPE_PSM		0x400000
 #define MOD_TYPE_J2B		0x800000
-#define MOD_TYPE_ABC		0x1000000
-#define MOD_TYPE_PAT		0x2000000
 #define MOD_TYPE_UMX		0x80000000 // Fake type
 #define MAX_MODTYPE		24
 
@@ -737,9 +734,6 @@ void delete_CSoundFile(CSoundFile *_this);
 	BOOL CSoundFile_ReadMT2(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength);
 	BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength);
 	BOOL CSoundFile_ReadUMX(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength);
-	BOOL CSoundFile_ReadABC(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength);
-	BOOL CSoundFile_ReadMID(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength);
-	BOOL CSoundFile_ReadPAT(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength);
 
 	// MOD Convert function
 	void CSoundFile_ConvertModCommand(CSoundFile *_this, MODCOMMAND *);

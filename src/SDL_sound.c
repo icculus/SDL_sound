@@ -19,6 +19,7 @@
 /* The various decoder drivers... */
 
 /* All these externs may be missing; we check SOUND_SUPPORTS_xxx before use. */
+extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MIDI;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MODPLUG;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_MP3;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_WAV;
@@ -40,6 +41,9 @@ typedef struct
 
 static decoder_element decoders[] =
 {
+#if SOUND_SUPPORTS_MIDI
+    { 0, &__Sound_DecoderFunctions_MIDI },
+#endif
 #if SOUND_SUPPORTS_MODPLUG
     { 0, &__Sound_DecoderFunctions_MODPLUG },
 #endif

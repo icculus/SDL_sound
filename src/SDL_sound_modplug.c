@@ -50,9 +50,6 @@ static const char *extensions_modplug[] =
     "ULT",   
     "UMX",
     "XM",    /* FastTracker II                                              */
-    "ABC",
-    "MID",
-    "MIDI",
     NULL
 };
 
