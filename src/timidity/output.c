@@ -11,10 +11,6 @@
     Audio output (to file / device) functions.
 */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
 
