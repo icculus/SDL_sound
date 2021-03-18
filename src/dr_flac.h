@@ -3305,7 +3305,6 @@ static drflac_bool32 drflac__seek_subframe(drflac_bs* bs, drflac_frame* frame, i
             }
             lpcPrecision += 1;
 
-
             bitsToSeek = (pSubframe->lpcOrder * lpcPrecision) + 5;    // +5 for shift.
             if (!drflac__seek_bits(bs, bitsToSeek)) {
                 return DRFLAC_FALSE;
@@ -3798,7 +3797,6 @@ drflac_bool32 drflac__read_and_decode_metadata(drflac_read_proc onRead, drflac_s
             return DRFLAC_FALSE;
         }
         runningFilePos += 4;
-
 
         drflac_metadata metadata;
         metadata.type = blockType;
@@ -4350,7 +4348,6 @@ drflac_result drflac_ogg__read_page_header_after_capture_pattern(drflac_read_pro
         *pCRC32 = drflac_crc32_byte(*pCRC32, data[i]);
     }
 
-
     if (onRead(pUserData, pHeader->segmentTable, pHeader->segmentCount) != pHeader->segmentCount) {
         return DRFLAC_END_OF_STREAM;
     }
@@ -4706,7 +4703,6 @@ drflac_bool32 drflac_ogg__seek_to_sample(drflac* pFlac, drflac_uint64 sampleInde
             break; // The sample is somewhere in the previous page.
         }
 
-
         // At this point we know the sample is not in the previous page. It could possibly be in this page. For simplicity we
         // disregard any pages that do not begin a fresh packet.
         if ((oggbs->currentPageHeader.headerType & 0x01) == 0) {    // <-- Is it a fresh page?
@@ -4724,7 +4720,6 @@ drflac_bool32 drflac_ogg__seek_to_sample(drflac* pFlac, drflac_uint64 sampleInde
         }
     }
 
-
     // We found the page that that is closest to the sample, so now we need to find it. The first thing to do is seek to the
     // start of that page. In the loop above we checked that it was a fresh page which means this page is also the start of
     // a new frame. This property means that after we've seeked to the page we can immediately start looping over frames until
@@ -4735,7 +4730,6 @@ drflac_bool32 drflac_ogg__seek_to_sample(drflac* pFlac, drflac_uint64 sampleInde
     if (!drflac_oggbs__goto_next_page(oggbs, drflac_ogg_recover_on_crc_mismatch)) {
         return DRFLAC_FALSE;
     }
-
 
     // At this point we'll be sitting on the first byte of the frame header of the first frame in the page. We just keep
     // looping over these frames until we find the one containing the sample we're after.
@@ -4940,14 +4934,12 @@ drflac_bool32 drflac__init_private__ogg(drflac_init_info* pInit, drflac_read_pro
 
         pInit->runningFilePos += pageBodySize;
 
-
         // Read the header of the next page.
         if (drflac_ogg__read_page_header(onRead, pUserData, &header, &bytesRead, &crc32) != DRFLAC_SUCCESS) {
             return DRFLAC_FALSE;
         }
         pInit->runningFilePos += bytesRead;
     }
-
 
     // If we get here it means we found a FLAC audio stream. We should be sitting on the first byte of the header of the next page. The next
     // packets in the FLAC logical stream contain the metadata. The only thing left to do in the initialization phase for Ogg is to create the
@@ -5201,8 +5193,6 @@ drflac* drflac_open_with_metadata_private(drflac_read_proc onRead, drflac_seek_p
         }
     }
 
-    
-
     // If we get here, but don't have a STREAMINFO block, it means we've opened the stream in relaxed mode and need to decode
     // the first frame.
     if (!init.hasStreamInfoBlock) {
@@ -5229,7 +5219,6 @@ drflac* drflac_open_with_metadata_private(drflac_read_proc onRead, drflac_seek_p
 
     return pFlac;
 }
-
 
 
 #ifndef DR_FLAC_NO_STDIO
@@ -5643,7 +5632,7 @@ drflac_uint64 drflac_read_s32(drflac* pFlac, drflac_uint64 samplesToRead, drflac
                     for (drflac_uint64 i = 0; i < alignedSampleCountPerChannel; ++i) {
                         int mid  = pDecodedSamples0[i] << pFlac->currentFrame.subframes[0].wastedBitsPerSample;
                         int side = pDecodedSamples1[i] << pFlac->currentFrame.subframes[1].wastedBitsPerSample;
-                        
+
                         mid = (((drflac_uint32)mid) << 1) | (side & 0x01);
 
                         bufferOut[i*2+0] = ((mid + side) >> 1) << (unusedBitsPerSample);
@@ -5824,7 +5813,6 @@ drflac_bool32 drflac_seek_to_sample(drflac* pFlac, drflac_uint64 sampleIndex)
 }
 
 
-
 //// High Level APIs ////
 
 #if defined(SIZE_MAX)
@@ -5878,7 +5866,7 @@ static type* drflac__full_decode_and_close_ ## extension (drflac* pFlac, unsigne
         drflac_zero_memory(pSampleData + totalSampleCount, (size_t)(sampleDataBufferSize - totalSampleCount*sizeof(type)));                                         \
     } else {                                                                                                                                                        \
         drflac_uint64 dataSize = totalSampleCount * sizeof(type);                                                                                                   \
-        if (dataSize > DRFLAC_SIZE_MAX) {                                                                                                                           \
+        if (dataSize > (drflac_uint64)DRFLAC_SIZE_MAX) {                                                                                                            \
             goto on_error;  /* The decoded data is too big. */                                                                                                      \
         }                                                                                                                                                           \
                                                                                                                                                                     \
@@ -6044,7 +6032,6 @@ void drflac_free(void* pSampleDataReturnedByOpenAndDecode)
 
 
 
-
 void drflac_init_vorbis_comment_iterator(drflac_vorbis_comment_iterator* pIter, drflac_uint32 commentCount, const void* pComments)
 {
     if (pIter == NULL) {
@@ -6074,8 +6061,6 @@ const char* drflac_next_vorbis_comment(drflac_vorbis_comment_iterator* pIter, dr
     if (pCommentLengthOut) *pCommentLengthOut = length;
     return pComment;
 }
-
-
 
 
 void drflac_init_cuesheet_track_iterator(drflac_cuesheet_track_iterator* pIter, drflac_uint32 trackCount, const void* pTrackData)
