@@ -33,7 +33,7 @@ typedef struct _PathList {
 static PathList *pathlist = NULL;
 
 /* This is meant to find and open files for reading */
-SDL_RWops *open_file(const char *name)
+SDL_RWops *timi_openfile(const char *name)
 {
   SDL_RWops *rw;
 
@@ -82,7 +82,7 @@ SDL_RWops *open_file(const char *name)
 }
 
 /* This adds a directory to the path list */
-int add_to_pathlist(const char *s, size_t l)
+int timi_add_pathlist(const char *s, size_t l)
 {
   PathList *plp = SDL_malloc(sizeof(PathList));
   if (plp == NULL) return -2;
@@ -98,7 +98,7 @@ int add_to_pathlist(const char *s, size_t l)
   return 0;
 }
 
-void free_pathlist(void)
+void timi_free_pathlist(void)
 {
     PathList *plp = pathlist;
     PathList *next;
