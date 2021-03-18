@@ -1,5 +1,4 @@
 /*
-
     TiMidity -- Experimental MIDI to WAVE converter
     Copyright (C) 1995 Tuukka Toivonen <toivonen@clinet.fi>
 
@@ -7,7 +6,6 @@
     it under the terms of the Perl Artistic License, available in COPYING.
 
     playmidi.c -- random stuff in need of rearrangement
-
 */
 
 #define __SDL_SOUND_INTERNAL__
@@ -644,6 +642,13 @@ Uint32 Timidity_GetSongLength(MidiSong *song)
   /* We want last_event->time * 1000 / song->rate */
   Uint32 retvalue = (last_event->time / song->rate) * 1000;
   retvalue       += (last_event->time % song->rate) * 1000 / song->rate;
+  return retvalue;
+}
+
+Uint32 Timidity_GetSongTime(MidiSong *song)
+{
+  Uint32 retvalue = (song->current_sample / song->rate) * 1000;
+  retvalue       += (song->current_sample % song->rate) * 1000 / song->rate;
   return retvalue;
 }
 
