@@ -1112,7 +1112,7 @@ static int compute_codewords(Codebook *c, uint8 *len, int n, uint32 *values)
       add_entry(c, bit_reverse(res), i, m++, len[i], values);
       // propagate availability up the tree
       if (z != len[i]) {
-         assert(len[i] >= 0 && len[i] < 32);
+         assert(/*len[i] >= 0 &&*/ len[i] < 32);
          for (y=len[i]; y > z; --y) {
             assert(available[y] == 0);
             available[y] = res + (1 << (32-y));
@@ -1333,16 +1333,15 @@ static int STBV_CDECL point_compare(const void *p, const void *q)
 
 static uint8 get8(vorb *z)
 {
-   if (USE_MEMORY(z)) {
-      if (z->stream >= z->stream_end) { z->eof = TRUE; return 0; }
-      return *z->stream++;
-   }
-
    #ifdef __SDL_SOUND_INTERNAL__
-   {
    uint8 c;
    if (SDL_RWread(z->rwops, &c, 1, 1) != 1) { z->eof = TRUE; return 0; }
    return c;
+
+   #else
+   if (USE_MEMORY(z)) {
+      if (z->stream >= z->stream_end) { z->eof = TRUE; return 0; }
+      return *z->stream++;
    }
    #endif
 
@@ -1367,18 +1366,17 @@ static uint32 get32(vorb *f)
 
 static int getn(vorb *z, uint8 *data, int n)
 {
+   #ifdef __SDL_SOUND_INTERNAL__
+   if (SDL_RWread(z->rwops, data, n, 1) == 1) return 1;
+   z->eof = 1;
+   return 0;
+
+   #else
    if (USE_MEMORY(z)) {
       if (z->stream+n > z->stream_end) { z->eof = 1; return 0; }
       memcpy(data, z->stream, n);
       z->stream += n;
       return 1;
-   }
-
-   #ifdef __SDL_SOUND_INTERNAL__
-   {
-      if (SDL_RWread(z->rwops, data, n, 1) == 1) { return 1; }
-      z->eof = 1;
-      return 0;
    }
    #endif
 
@@ -1394,14 +1392,14 @@ static int getn(vorb *z, uint8 *data, int n)
 
 static void skip(vorb *z, int n)
 {
+   #ifdef __SDL_SOUND_INTERNAL__
+   SDL_RWseek(z->rwops, n, RW_SEEK_CUR);
+
+   #else
    if (USE_MEMORY(z)) {
       z->stream += n;
       if (z->stream >= z->stream_end) z->eof = 1;
       return;
-   }
-   #ifdef __SDL_SOUND_INTERNAL__
-   {
-      SDL_RWseek(z->rwops, n, RW_SEEK_CUR);
    }
    #endif
 
@@ -1419,19 +1417,8 @@ static int set_file_offset(stb_vorbis *f, unsigned int loc)
    if (f->push_mode) return 0;
    #endif
    f->eof = 0;
-   if (USE_MEMORY(f)) {
-      if (f->stream_start + loc >= f->stream_end || f->stream_start + loc < f->stream_start) {
-         f->stream = f->stream_end;
-         f->eof = 1;
-         return 0;
-      } else {
-         f->stream = f->stream_start + loc;
-         return 1;
-      }
-   }
 
    #ifdef __SDL_SOUND_INTERNAL__
-   {
    if (loc + f->rwops_start < loc || loc >= 0x80000000) {
       loc = 0x7fffffff;
       f->eof = 1;
@@ -1443,6 +1430,17 @@ static int set_file_offset(stb_vorbis *f, unsigned int loc)
    f->eof = 1;
    SDL_RWseek(f->rwops, f->rwops_start, RW_SEEK_END);
    return 0;
+
+   #else
+   if (USE_MEMORY(f)) {
+      if (f->stream_start + loc >= f->stream_end || f->stream_start + loc < f->stream_start) {
+         f->stream = f->stream_end;
+         f->eof = 1;
+         return 0;
+      } else {
+         f->stream = f->stream_start + loc;
+         return 1;
+      }
    }
    #endif
 
@@ -4521,9 +4519,10 @@ unsigned int stb_vorbis_get_file_offset(stb_vorbis *f)
    #ifndef STB_VORBIS_NO_PUSHDATA_API
    if (f->push_mode) return 0;
    #endif
-   if (USE_MEMORY(f)) return (unsigned int) (f->stream - f->stream_start);
    #ifdef __SDL_SOUND_INTERNAL__
    return (unsigned int) (SDL_RWtell(f->rwops) - f->rwops_start);
+   #else
+   if (USE_MEMORY(f)) return (unsigned int) (f->stream - f->stream_start);
    #endif
    #ifndef STB_VORBIS_NO_STDIO
    return (unsigned int) (ftell(f->f) - f->f_start);
