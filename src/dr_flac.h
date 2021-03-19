@@ -981,8 +981,10 @@ static void drflac__init_cpu_caps()
     drflac_zero_memory(info, sizeof (info));
 
     // LZCNT
+#if defined(DRFLAC_HAS_LZCNT_INTRINSIC)
     drflac__cpuid(info, 0x80000001);
     drflac__gIsLZCNTSupported = (info[2] & (1 <<  5)) != 0;
+#endif
 
     // SSE4.2
     drflac__cpuid(info, 1);
