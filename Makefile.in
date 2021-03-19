@@ -336,7 +336,6 @@ EXTRA_DIST = \
 	CHANGELOG \
 	CWProject.sit \
 	PBProjects.tar.gz \
-	borland.zip \
 	Doxyfile \
 	Makefile.os2 \
 	VisualC
