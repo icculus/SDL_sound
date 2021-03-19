@@ -5,6 +5,7 @@
 */
 
 #include "libmodplug.h"
+#define SNDMIX_C
 #include "tables.h"
 
 // Volume ramp length, in 1/10 ms

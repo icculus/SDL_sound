@@ -6,6 +6,7 @@
 
 #include "libmodplug.h"
 #include <stdlib.h> /* for rand() */
+#define SNDFX_C
 #include "tables.h"
 
 DWORD CSoundFile_GetLength(CSoundFile *_this, BOOL bAdjust, BOOL bTotal)
