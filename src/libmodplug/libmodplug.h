@@ -80,43 +80,6 @@ typedef void VOID;
 
 #endif // _WIN32
 
-
-typedef struct {
-	char *mm;
-	int sz;
-	int pos;
-	int error;
-} MMFILE;
-
-void mmfclose(MMFILE *mmfile);
-int mmfeof(MMFILE *mmfile);
-int mmfgetc(MMFILE *mmfile);
-void mmfgets(char buf[], unsigned int bufsz, MMFILE *mmfile);
-long mmftell(MMFILE *mmfile);
-void mmfseek(MMFILE *mmfile, long p, int whence);
-BYTE mmreadUBYTE(MMFILE *mmfile);
-void mmreadUBYTES(BYTE *buf, long sz, MMFILE *mmfile);
-void mmreadSBYTES(char *buf, long sz, MMFILE *mmfile);
-char *rwops_fgets(char *buf, int buflen, SDL_RWops *rwops);
-
-#define MMSTREAM					SDL_RWops
-#define _mm_fopen(name,mode)		SDL_RWFromFile(name, mode)
-#define _mm_fgets(f,buf,sz)			rwops_fgets(buf,sz,f)
-#define _mm_fseek(f,pos,whence)		SDL_RWseek(f,pos,whence)
-#define _mm_ftell(f)				SDL_RWtell(f)
-#define _mm_read_UBYTES(buf,sz,f)	SDL_RWread(f, buf, 1, sz)
-#define _mm_read_SBYTES(buf,sz,f)	SDL_RWread(f, buf, 1, sz)
-#define _mm_feof(f)					(SDL_RWtell(f) >= SDL_RWsize(f))
-#define _mm_fclose(f)				SDL_RWclose(f)
-#define DupStr(h,buf,sz)			SDL_strdup(buf)
-/* _mm_malloc and _mm_free clash with Windows malloc.h */
-#undef _mm_malloc
-#undef _mm_realloc
-#undef _mm_free
-#define _mm_calloc(h,n,sz)			SDL_calloc(n,sz)
-#define _mm_recalloc(h,buf,sz,elsz)	SDL_realloc(buf,sz)
-#define _mm_free(h,p)				SDL_free(p)
-
 #define MODPLUG_EXPORT
 
 /*
