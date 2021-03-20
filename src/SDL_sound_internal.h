@@ -18,11 +18,6 @@
 #error Do not include this header from your applications.
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-
 #include "SDL_sound.h"
 
 #if ((defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__)) && !defined(_WIN32)
