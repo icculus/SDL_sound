@@ -16,10 +16,6 @@
 
 #if SOUND_SUPPORTS_MIDI
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "timidity/timidity.h"
 
 
