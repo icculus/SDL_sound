@@ -60,6 +60,7 @@
 #if !(defined(HAVE_LIBC) && defined(__WATCOMC__)) /* Watcom has issues... */
 #define pow SDL_pow
 #define floor SDL_floor
+#define exp SDL_exp
 #define ldexp(v, e) SDL_scalbn((v), (e))
 #define abs(x) SDL_abs(x)
 #define cos(x) SDL_cos(x)
