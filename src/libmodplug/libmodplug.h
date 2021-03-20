@@ -9,7 +9,8 @@
 #ifndef _INCL_LIBMODPLUG_H_
 #define _INCL_LIBMODPLUG_H_
 
-#include "SDL.h"
+#define __SDL_SOUND_INTERNAL__
+#include "SDL_sound_internal.h"
 
 #if defined(HAVE_LIBC) && defined(__WATCOMC__) /* Watcom has issues... */
 #define SDL_cos  cos
@@ -32,18 +33,12 @@
 #pragma warning (disable:4514)
 #endif
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
-#include <mmsystem.h> /* for WAVE_FORMAT_PCM */
-#include <stdio.h>
-#include <malloc.h>
-#include <stdint.h>
 
 #else
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
 typedef Sint8 CHAR;
 typedef Uint8 UCHAR;
@@ -68,7 +63,6 @@ typedef void* PVOID;
 typedef void VOID;
 
 #define LPCTSTR LPCSTR
-#define WAVE_FORMAT_PCM 1
 
 #ifndef FALSE
 #define FALSE	0
