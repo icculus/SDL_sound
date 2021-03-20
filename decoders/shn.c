@@ -1072,8 +1072,6 @@ static Uint32 SHN_read(Sound_Sample *sample)
     shn_t *shn = (shn_t *) internal->decoder_private;
     Sint32 cmd;
 
-    assert(shn->backBufLeft >= 0);
-
         /* see if there are leftovers to copy... */
     if (shn->backBufLeft > 0)
     {
