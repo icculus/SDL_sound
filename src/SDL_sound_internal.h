@@ -89,7 +89,7 @@
  *  SDL_sound that rely on it, though.
  * !!! FIXME: SDL2 supports more channels.
  */
-#define MAX_CHANNELS 2
+#define SOUND_MAX_CHANNELS  2
 
 
 typedef struct __SOUND_DECODERFUNCTIONS__
