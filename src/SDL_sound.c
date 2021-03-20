@@ -352,8 +352,7 @@ static Sound_Sample *alloc_sample(SDL_RWops *rw, Sound_AudioInfo *desired,
 #if (defined DEBUG_CHATTER)
 static SDL_INLINE const char *fmt_to_str(Uint16 fmt)
 {
-    switch(fmt)
-    {
+    switch(fmt) {
         case AUDIO_U8:
             return "U8";
         case AUDIO_S8:
@@ -375,7 +374,6 @@ static SDL_INLINE const char *fmt_to_str(Uint16 fmt)
         case AUDIO_F32MSB:
             return "F32MSB";
     } /* switch */
-
     return "Unknown";
 } /* fmt_to_str */
 #endif
@@ -400,7 +398,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
     internal->funcs = funcs;
     if (!funcs->open(sample, ext))
     {
-        SDL_RWseek(internal->rw, pos, SEEK_SET);  /* set for next try... */
+        SDL_RWseek(internal->rw, pos, RW_SEEK_SET);     /* set for next try... */
         return 0;
     } /* if */
 
@@ -427,7 +425,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
     {
         __Sound_SetError(SDL_GetError());
         funcs->close(sample);
-        SDL_RWseek(internal->rw, pos, SEEK_SET);  /* set for next try... */
+        SDL_RWseek(internal->rw, pos, RW_SEEK_SET);     /* set for next try... */
         return 0;
     } /* if */
 
@@ -437,7 +435,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
         if (rc == NULL)
         {
             funcs->close(sample);
-            SDL_RWseek(internal->rw, pos, SEEK_SET);  /* set for next try... */
+            SDL_RWseek(internal->rw, pos, RW_SEEK_SET); /* set for next try... */
             return 0;
         } /* if */
 
