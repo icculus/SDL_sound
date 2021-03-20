@@ -783,9 +783,11 @@ int main(int argc, char **argv)
         SDL_assert(screen != NULL);
     #endif
 
+    SDL_memset(&sound_desired, '\0', sizeof (Sound_AudioInfo));
+
     for (i = 1; i < argc; i++)
     {
-        char *filename = NULL;
+        const char *filename = NULL;
 
         /* set variables back to defaults for next file... */
         if (new_sample)
