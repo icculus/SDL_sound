@@ -437,14 +437,11 @@ static int read_fmt(SDL_RWops *rw, comm_t *c, fmt_t *fmt)
 
         /* add other types here. */
 
-        default:
-            SNDDBG(("AIFF: Format %lu is unknown.\n",
-                    (unsigned int) fmt->type));
-            BAIL_MACRO("AIFF: Unsupported format", 0);
     } /* switch */
 
-    assert(0);  /* shouldn't hit this point. */
-    return(0);
+    SNDDBG(("AIFF: Format %u is unknown.\n",
+            (unsigned int) fmt->type));
+    BAIL_MACRO("AIFF: Unsupported format", 0);
 } /* read_fmt */
 
 
