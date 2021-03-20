@@ -185,6 +185,11 @@ mark_as_advanced(SDLSOUND_BUILD_TEST)
 if(SDLSOUND_BUILD_TEST)
     add_executable(playsound examples/playsound.c)
     target_link_libraries(playsound ${SDLSOUND_LIB_TARGET} ${OTHER_LDFLAGS})
+    # assuming assert.h, signal.h and setbuf() being available universally
+    target_compile_definitions(playsound PRIVATE "HAVE_SETBUF")
+    target_compile_definitions(playsound PRIVATE "HAVE_ASSERT_H")
+    target_compile_definitions(playsound PRIVATE "HAVE_SIGNAL_H")
+
     set(SDLSOUND_INSTALL_TARGETS ${SDLSOUND_INSTALL_TARGETS} ";playsound")
     add_executable(playsound_simple examples/playsound_simple.c)
     target_link_libraries(playsound_simple ${SDLSOUND_LIB_TARGET} ${OTHER_LDFLAGS})
