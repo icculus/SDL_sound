@@ -7,12 +7,12 @@
 #include "modplug.h"
 #include "libmodplug.h"
 
-void ModPlug_Quit(void) { /* does nothing. */ }
-
+void ModPlug_Quit(void) {
+}
 int ModPlug_Init(void)
 {
 	init_modplug_filters();
-	SDL_srand(SDL_GetTicks());
+	SDL_srand(SDL_GetPerformanceCounter());
 	return 1;
 }
 
