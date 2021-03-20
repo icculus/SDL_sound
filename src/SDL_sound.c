@@ -798,6 +798,19 @@ Sint32 Sound_GetDuration(Sound_Sample *sample)
 
 /* Utility functions ... */
 
+/* The following uses the implementation suggested by
+ * the standard document, assumes RAND_MAX == 32767 */
+static unsigned long __Sound_seed = 1;
+int __Sound_rand(void)
+{
+    __Sound_seed = __Sound_seed * 1103515245 + 12345;
+    return (__Sound_seed / 65536) % 32768;
+}
+void __Sound_srand(unsigned int seed)
+{
+    __Sound_seed = seed;
+}
+
 #if !defined(HAVE_SDL_STRTOKR)
 /* Adapted from _PDCLIB_strtok() of PDClib library at
  * https://github.com/DevSolar/pdclib.git

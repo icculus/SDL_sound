@@ -83,6 +83,8 @@ typedef void VOID;
  *          Adam Goode       <adam@evdebs.org> (endian and char fixes for PPC)
 */
 
+extern void init_modplug_filters(void);
+
 #ifndef LPCBYTE
 typedef const BYTE * LPCBYTE;
 #endif

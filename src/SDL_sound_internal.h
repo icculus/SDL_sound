@@ -304,6 +304,12 @@ Uint32 __Sound_convertMsToBytePos(Sound_AudioInfo *info, Uint32 ms);
 extern char *SDL_strtokr(char *s1, const char *s2, char **saveptr);
 #endif
 
+/* SDL doesn't provide a rand() replacement */
+#define SDL_rand __Sound_rand
+#define SDL_srand __Sound_srand
+extern int SDL_rand(void);
+extern void SDL_srand(unsigned int seed);
+
 #endif /* defined _INCLUDE_SDL_SOUND_INTERNAL_H_ */
 
 /* end of SDL_sound_internal.h ... */
