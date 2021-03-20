@@ -9,10 +9,10 @@
 
 void ModPlug_Quit(void) { /* does nothing. */ }
 
-extern void init_modplug_filters(void);
 int ModPlug_Init(void)
 {
 	init_modplug_filters();
+	SDL_srand(SDL_GetTicks());
 	return 1;
 }
 
