@@ -936,6 +936,8 @@ drflac_bool32 drflac_next_cuesheet_track(drflac_cuesheet_track_iterator* pIter, 
 #else
 #ifdef __GNUC__
 #define DRFLAC_INLINE inline __attribute__((always_inline))
+#elif defined(__WATCOMC__)
+#define DRFLAC_INLINE __inline
 #else
 #define DRFLAC_INLINE inline
 #endif
