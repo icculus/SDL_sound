@@ -621,8 +621,8 @@ int main(int argc, char **argv)
 {
     Sound_AudioInfo sound_desired;
     SDL_AudioSpec sdl_desired;
-    Uint32 audio_buffersize;
-    Uint32 decode_buffersize;
+    Uint32 audio_buffersize = DEFAULT_AUDIOBUF;
+    Uint32 decode_buffersize = DEFAULT_DECODEBUF;
     Sound_Sample *sample;
     int use_specific_audiofmt = 0;
     int i;
@@ -638,8 +638,8 @@ int main(int argc, char **argv)
     #endif
 
     #ifdef HAVE_SETBUF
-        setbuf(stdout, NULL);
-        setbuf(stderr, NULL);
+    setbuf(stdout, NULL);
+    setbuf(stderr, NULL);
     #endif
 
     if (!valid_cmdline(argc, argv))
@@ -701,12 +701,12 @@ int main(int argc, char **argv)
     } /* if */
 
     #if HAVE_SIGNAL_H
-        signal(SIGINT, sigint_catcher);
+    signal(SIGINT, sigint_catcher);
     #endif
 
     #if ENABLE_EVENTS
-        screen = SDL_SetVideoMode(320, 240, 8, 0);
-        assert(screen != NULL);
+    screen = SDL_SetVideoMode(320, 240, 8, 0);
+    assert(screen != NULL);
     #endif
 
     memset(&sound_desired, '\0', sizeof (Sound_AudioInfo));
@@ -922,9 +922,9 @@ int main(int argc, char **argv)
         while (!done_flag)
         {
             #if ENABLE_EVENTS
-                SDL_PollEvent(&event);
-                if ((event.type == SDL_KEYDOWN) || (event.type == SDL_QUIT))
-                    done_flag = 1;
+            SDL_PollEvent(&event);
+            if ((event.type == SDL_KEYDOWN) || (event.type == SDL_QUIT))
+                done_flag = 1;
             #endif
 
             SDL_Delay(10);
