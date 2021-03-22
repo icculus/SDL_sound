@@ -43,7 +43,8 @@ static void RAW_quit(void)
 static int RAW_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = sample->opaque;
-    Uint32 pos, sample_rate;
+    Sint64 pos;
+    Uint32 sample_rate;
 
         /*
          * We check this explicitly, since we have no other way to
@@ -72,11 +73,11 @@ static int RAW_open(Sound_Sample *sample, const char *ext)
     SDL_memcpy(&sample->actual, &sample->desired, sizeof (Sound_AudioInfo));
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
 
-    if ((pos = SDL_RWseek(internal->rw, 0, RW_SEEK_END) ) <= 0) {
-        BAIL_MACRO("RAW: cannot seek the end of the file \"RAW\".", 0);
+    if ((pos = SDL_RWseek(internal->rw, 0, RW_SEEK_END)) <= 0) {
+        BAIL_MACRO("RAW: can't seek to the end of the file.", 0);
     }
-    if ( SDL_RWseek(internal->rw, 0, RW_SEEK_SET) ) {
-        BAIL_MACRO("RAW: cannot reset file \"RAW\".", 0);
+    if ( SDL_RWseek(internal->rw, 0, RW_SEEK_SET) != 0) {
+        BAIL_MACRO("RAW: can't reset file.", 0);
     }
 
     sample_rate =  (sample->actual.rate * sample->actual.channels

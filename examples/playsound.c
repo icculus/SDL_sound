@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef _WIN32
+#if HAVE_SIGNAL_H
 #  include <signal.h>
 #endif
 
@@ -64,11 +64,7 @@ static void output_versions(const char *argv0)
     Sound_GetLinkedVersion(&linked);
     SDL_VERSION(&sdl_compiled);
 
-    #if SDL_MAJOR_VERSION >= 2
     SDL_GetVersion(&sdl_linked_ver);
-    #else
-    sdl_linked = SDL_Linked_Version();
-    #endif
 
     fprintf(stdout,
            "%s version %d.%d.%d\n"
@@ -656,11 +652,6 @@ static void report_filename(const char *filename)
     const char *icon = "playsound";
     char *ptr = NULL;
 
-    /*
-     * Some versions of SDL can set the PulseAudio application name.
-     *  It's a harmless no-op elsewhere.
-     */
-
     ptr = strrchr(filename, '/');
     if (ptr != NULL)
         filename = ptr + 1;
@@ -668,24 +659,9 @@ static void report_filename(const char *filename)
     if (ptr != NULL)
         filename = ptr + 1;
 
-#if SDL_MAJOR_VERSION < 2
-    {
-    const size_t len = strlen(filename) + strlen(icon) + 3;
-    char *buf = (char *) SDL_malloc(len);
-    if (buf == NULL)
-        SDL_WM_SetCaption(icon, icon);
-    else
-    {
-        snprintf(buf, len, "%s: %s", icon, filename);
-        SDL_WM_SetCaption(buf, icon);
-        SDL_free(buf);
-    } /* else */
-    }
-#else
     /* SDL2's PulseAudio backend picks up these hints. */
     SDL_SetHint("SDL_AUDIO_DEVICE_APP_NAME", icon);
     SDL_SetHint("SDL_AUDIO_DEVICE_STREAM_NAME", filename);
-#endif
 
     fprintf(stdout, "%s: Now playing [%s]...\n", icon, filename);
 } /* report_filename */
@@ -695,8 +671,8 @@ int main(int argc, char **argv)
 {
     Sound_AudioInfo sound_desired;
     SDL_AudioSpec sdl_desired;
-    Uint32 audio_buffersize;
-    Uint32 decode_buffersize;
+    Uint32 audio_buffersize = DEFAULT_AUDIOBUF;
+    Uint32 decode_buffersize = DEFAULT_DECODEBUF;
     Sound_Sample *sample;
     int use_specific_audiofmt = 0;
     int i;
@@ -712,8 +688,8 @@ int main(int argc, char **argv)
     #endif
 
     #ifdef HAVE_SETBUF
-        setbuf(stdout, NULL);
-        setbuf(stderr, NULL);
+    setbuf(stdout, NULL);
+    setbuf(stderr, NULL);
     #endif
 
     if (!valid_cmdline(argc, argv))
@@ -775,12 +751,12 @@ int main(int argc, char **argv)
     } /* if */
 
     #if HAVE_SIGNAL_H
-        signal(SIGINT, sigint_catcher);
+    signal(SIGINT, sigint_catcher);
     #endif
 
     #if ENABLE_EVENTS
-        screen = SDL_SetVideoMode(320, 240, 8, 0);
-        SDL_assert(screen != NULL);
+    screen = SDL_SetVideoMode(320, 240, 8, 0);
+    SDL_assert(screen != NULL);
     #endif
 
     SDL_memset(&sound_desired, '\0', sizeof (Sound_AudioInfo));
@@ -806,13 +782,15 @@ int main(int argc, char **argv)
 
         if (SDL_strcmp(argv[i], "--rate") == 0 && argc > i + 1)
         {
+            Sint32 r;
             use_specific_audiofmt = 1;
-            sound_desired.rate = SDL_atoi(argv[++i]);
-            if (sound_desired.rate <= 0)
+            r = SDL_atoi(argv[++i]);
+            if (r <= 0)
             {
                 fprintf(stderr, "Bad argument to --rate!\n");
                 return(42);
             } /* if */
+            sound_desired.rate = (Uint32)r;
         } /* else if */
 
         else if (SDL_strcmp(argv[i], "--format") == 0 && argc > i + 1)
@@ -994,9 +972,9 @@ int main(int argc, char **argv)
         while (!done_flag)
         {
             #if ENABLE_EVENTS
-                SDL_PollEvent(&event);
-                if ((event.type == SDL_KEYDOWN) || (event.type == SDL_QUIT))
-                    done_flag = 1;
+            SDL_PollEvent(&event);
+            if ((event.type == SDL_KEYDOWN) || (event.type == SDL_QUIT))
+                done_flag = 1;
             #endif
 
             SDL_Delay(10);
