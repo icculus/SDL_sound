@@ -604,9 +604,9 @@ enum STBVorbisError
     #if defined(_MSC_VER)
         #define STB_FORCEINLINE __forceinline
     #elif defined(__GNUC__) || defined(__clang__)
-        #define STB_FORCEINLINE __attribute__((always_inline))
+        #define STB_FORCEINLINE static __inline __attribute__((always_inline))
     #else
-        #define STB_FORCEINLINE
+        #define STB_FORCEINLINE static __inline
     #endif
 #endif
 
@@ -789,7 +789,6 @@ struct stb_vorbis
    uint32 f_start;
    int close_on_free;
 #endif
-
 #ifdef __SDL_SOUND_INTERNAL__
    SDL_RWops *rwops;
    uint32 rwops_start;
