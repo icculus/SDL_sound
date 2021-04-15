@@ -41,8 +41,11 @@ DIST_COMMON = README $(am__configure_deps) \
 	$(am__libSDL2_soundinclude_HEADERS_DIST) \
 	$(am__libSDL_soundinclude_HEADERS_DIST) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(top_srcdir)/configure COPYING INSTALL TODO compile \
-	config.guess config.sub depcomp install-sh ltmain.sh missing
+	$(top_srcdir)/configure COPYING INSTALL TODO \
+	build-scripts/compile build-scripts/config.guess \
+	build-scripts/config.sub build-scripts/depcomp \
+	build-scripts/install-sh build-scripts/ltmain.sh \
+	build-scripts/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude/libtool.m4 \
 	$(top_srcdir)/acinclude/ltoptions.m4 \
@@ -109,7 +112,7 @@ libSDL_sound_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(libSDL_sound_la_LDFLAGS) $(LDFLAGS) -o $@
 @USE_SDL2_FALSE@am_libSDL_sound_la_rpath = -rpath $(libdir)
 DEFAULT_INCLUDES = -I.@am__isrc@
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/build-scripts/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \

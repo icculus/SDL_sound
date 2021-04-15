@@ -60,7 +60,7 @@ am_libdecoders_la_OBJECTS = aiff.lo au.lo mikmod.lo modplug.lo \
 	quicktime.lo wav.lo
 libdecoders_la_OBJECTS = $(am_libdecoders_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/build-scripts/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
