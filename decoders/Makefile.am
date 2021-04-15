@@ -19,3 +19,5 @@ libdecoders_la_SOURCES =	\
 	speex.c		\
 	quicktime.c \
 	wav.c
+
+EXTRA_DIST = skeleton.c

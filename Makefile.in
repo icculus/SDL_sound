@@ -337,7 +337,8 @@ SDLSOUND_LIBADD = decoders/libdecoders.la $(TIMIDITY_LIB)
 @USE_SDL2_FALSE@libSDL_sound_la_SOURCES = $(SDLSOUND_SRCS)
 @USE_SDL2_FALSE@libSDL_sound_la_LDFLAGS = $(SDLSOUND_LDFLAGS)
 @USE_SDL2_FALSE@libSDL_sound_la_LIBADD = $(SDLSOUND_LIBADD)
-EXTRA_DIST = \
+EXTRA_DIST = autogen.sh \
+	filter_templates.h \
 	CREDITS \
 	COPYING \
 	CHANGELOG \
