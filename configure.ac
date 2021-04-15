@@ -2,6 +2,7 @@
 AC_INIT
 AC_CONFIG_SRCDIR([SDL_sound.c])
 AC_CONFIG_MACRO_DIR([acinclude])
+AC_CONFIG_AUX_DIR(build-scripts)
 
 dnl ---------------------------------------------------------------------
 dnl System/version info
@@ -60,16 +61,6 @@ LT_INIT([win32-dll])
 
 
 dnl ---------------------------------------------------------------------
-dnl Have GCC's -fvisibility option?
-dnl ---------------------------------------------------------------------
-gl_VISIBILITY
-
-if test x$gl_cv_cc_visibility = xyes; then
-    CFLAGS="$CFLAGS -fvisibility=hidden"
-fi
-
-
-dnl ---------------------------------------------------------------------
 dnl Debug mode?
 dnl ---------------------------------------------------------------------
 
@@ -82,11 +73,32 @@ if test x$enable_debug = xyes; then
   else
     CFLAGS="-O0"
   fi
-  CFLAGS="$CFLAGS -Werror"
   AC_DEFINE(DEBUG, 1, [Define for debug builds.])
   AC_DEFINE(DEBUG_CHATTER, 1, [Define for debug build chattering.])
 else
   AC_DEFINE(NDEBUG, 1, [Define to disable debugging.])
+fi
+
+
+dnl ---------------------------------------------------------------------
+dnl Have GCC's -Wall option?
+dnl ---------------------------------------------------------------------
+saved_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Wall"
+AC_MSG_CHECKING([if ${CC} supports -Wall])
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[int foo;]])],
+  [AC_MSG_RESULT([yes])],
+  [AC_MSG_RESULT([no])
+  CFLAGS="$saved_CFLAGS"])
+
+
+dnl ---------------------------------------------------------------------
+dnl Have GCC's -fvisibility option?
+dnl ---------------------------------------------------------------------
+gl_VISIBILITY
+
+if test x$gl_cv_cc_visibility = xyes; then
+    CFLAGS="$CFLAGS -fvisibility=hidden"
 fi
 
 
