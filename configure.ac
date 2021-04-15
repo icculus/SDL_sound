@@ -62,24 +62,10 @@ LT_INIT([win32-dll])
 dnl ---------------------------------------------------------------------
 dnl Have GCC's -fvisibility option?
 dnl ---------------------------------------------------------------------
-AC_MSG_CHECKING(for GCC -fvisibility=hidden option)
-have_gcc_fvisibility=no
-visibility_CFLAGS="-fvisibility=hidden"
-save_CFLAGS="$CFLAGS"
-CFLAGS="$save_CFLAGS $visibility_CFLAGS -Werror"
-AC_TRY_COMPILE([
-#if !defined(__GNUC__) || __GNUC__ < 4
-#error SDL only uses visibility attributes in GCC 4 or newer
-#endif
-],[
-],[
-have_gcc_fvisibility=yes
-])
-AC_MSG_RESULT($have_gcc_fvisibility)
-CFLAGS="$save_CFLAGS"
+gl_VISIBILITY
 
-if test x$have_gcc_fvisibility = xyes; then
-    CFLAGS="$CFLAGS $visibility_CFLAGS"
+if test x$gl_cv_cc_visibility = xyes; then
+    CFLAGS="$CFLAGS -fvisibility=hidden"
 fi
 
 
@@ -88,7 +74,7 @@ dnl Debug mode?
 dnl ---------------------------------------------------------------------
 
 AC_ARG_ENABLE(debug,
-[  --enable-debug             enable debug mode [default=no]],
+[AS_HELP_STRING([--enable-debug], [enable debug mode [default=no]])],
               , enable_debug=no)
 if test x$enable_debug = xyes; then
   if test x$ac_cv_prog_cc_g = xyes; then
@@ -110,7 +96,7 @@ dnl ---------------------------------------------------------------------
 
 dnl Check for SDL
 AC_ARG_ENABLE(sdl2,
-[  --enable-sdl2              use SDL2 instead of SDL-1.2 [default=no]],
+[AS_HELP_STRING([--enable-sdl2], [use SDL2 instead of SDL-1.2 [default=no]])],
               , enable_sdl2=no)
 
 if test x$enable_sdl2 = xyes; then
@@ -126,7 +112,7 @@ LIBS="$LIBS $SDL_LIBS"
 
 dnl Check for voc decoder inclusion...
 AC_ARG_ENABLE(voc,
-[  --enable-voc               enable VOC decoding [default=yes]],
+[AS_HELP_STRING([--enable-voc], [enable VOC decoding [default=yes]])],
               , enable_voc=yes)
 if test x$enable_voc = xyes; then
     AC_DEFINE(SOUND_SUPPORTS_VOC, 1, [Define if VOC support is desired.])
@@ -134,7 +120,7 @@ fi
 
 dnl Check for wav decoder inclusion...
 AC_ARG_ENABLE(wav,
-[  --enable-wav               enable WAV decoding [default=yes]],
+[AS_HELP_STRING([--enable-wav], [enable WAV decoding [default=yes]])],
               , enable_wav=yes)
 if test x$enable_wav = xyes; then
     AC_DEFINE(SOUND_SUPPORTS_WAV, 1, [Define if WAV support is desired.])
@@ -142,7 +128,7 @@ fi
 
 dnl Check for raw decoder inclusion...
 AC_ARG_ENABLE(raw,
-[  --enable-raw               enable raw audio "decoding" [default=yes]],
+[AS_HELP_STRING([--enable-raw], [enable raw audio "decoding" [default=yes]])],
               , enable_raw=yes)
 if test x$enable_raw = xyes; then
     AC_DEFINE(SOUND_SUPPORTS_RAW, 1, [Define if RAW support is desired.])
@@ -150,7 +136,7 @@ fi
 
 dnl Check for aiff decoder inclusion...
 AC_ARG_ENABLE(aiff,
-[  --enable-aiff              enable AIFF decoding [default=yes]],
+[AS_HELP_STRING([--enable-aiff], [enable AIFF decoding [default=yes]])],
               , enable_aiff=yes)
 if test x$enable_aiff = xyes; then
     AC_DEFINE(SOUND_SUPPORTS_AIFF, 1, [Define if AIFF support is desired.])
@@ -158,7 +144,7 @@ fi
 
 dnl Check for au decoder inclusion
 AC_ARG_ENABLE(au,
-[  --enable-au                enable AU decoding [default=yes]],
+[AS_HELP_STRING([--enable-au], [enable AU decoding [default=yes]])],
               , enable_au=yes)
 if test x$enable_au = xyes; then
     AC_DEFINE(SOUND_SUPPORTS_AU, 1, [Define if AU support is desired.])
@@ -166,7 +152,7 @@ fi
 
 dnl Check for shn decoder inclusion...
 AC_ARG_ENABLE(shn,
-[  --enable-shn               enable SHN decoding [default=yes]],
+[AS_HELP_STRING([--enable-shn], [enable SHN decoding [default=yes]])],
               , enable_shn=yes)
 if test x$enable_shn = xyes; then
     AC_DEFINE(SOUND_SUPPORTS_SHN, 1, [Define if SHN support is desired.])
@@ -174,7 +160,7 @@ fi
 
 dnl Check for the MIDI decoder...
 AC_ARG_ENABLE(midi,
-[  --enable-midi              enable software MIDI music [default=yes]],
+[AS_HELP_STRING([--enable-midi], [enable software MIDI music [default=yes]])],
               , enable_midi=yes)
 if test x$enable_midi = xyes; then
   AC_DEFINE(SOUND_SUPPORTS_MIDI, 1, [Define if MIDI support is desired.])
@@ -182,7 +168,7 @@ fi
 
 dnl Check for MPG123
 AC_ARG_ENABLE(mpg123,
-[  --enable-mpg123            enable MP3 decoding via mpg123 [default=yes]],
+[AS_HELP_STRING([--enable-mpg123], [enable MP3 decoding via mpg123 [default=yes]])],
               , enable_mpg123=yes)
 if test x$enable_mpg123 = xyes; then
   AC_CHECK_HEADER([mpg123.h], [have_mpg123_hdr=yes])
@@ -195,7 +181,7 @@ fi
 
 dnl Check for libmikmod
 AC_ARG_ENABLE(mikmod,
-[  --enable-mikmod            enable MOD decoding via mikmod [default=yes]],
+[AS_HELP_STRING([--enable-mikmod], [enable MOD decoding via mikmod [default=yes]])],
               , enable_mikmod=yes)
 if test x$enable_mikmod = xyes; then
   AC_CHECK_HEADER(mikmod.h, have_mikmod_hdr=yes)
@@ -208,7 +194,7 @@ fi
 
 dnl Check for libmodplug
 AC_ARG_ENABLE(modplug,
-[  --enable-modplug           enable MOD decoding via modplug [default=yes]],
+[AS_HELP_STRING([--enable-modplug], [enable MOD decoding via modplug [default=yes]])],
               , enable_modplug=yes)
 if test x$enable_modplug = xyes; then
   have_modplug_hdr=no
@@ -238,7 +224,7 @@ fi
 dnl !!! FIXME: should be --enable-vorbis.
 dnl Check for Ogg Vorbis
 AC_ARG_ENABLE(ogg,
-[  --enable-ogg               enable OGG decoding via libvorbis [default=yes]],
+[AS_HELP_STRING([--enable-ogg], [enable OGG decoding via libvorbis [default=yes]])],
               , enable_ogg=yes)
 if test x$enable_ogg = xyes; then
   AC_CHECK_HEADER(vorbis/codec.h, have_vorbis_hdr=yes)
@@ -269,7 +255,7 @@ x="C__stream_decoder_process_single"
 flcsym="FLA$x"
 dnl Check for libFLAC
 AC_ARG_ENABLE(flac,
-[  --enable-flac              enable FLAC decoding via libFLAC [default=yes]],
+[AS_HELP_STRING([--enable-flac], [enable FLAC decoding via libFLAC [default=yes]])],
               , enable_flac=yes)
 if test x$enable_flac = xyes; then
   AC_CHECK_HEADER(FLAC/stream_decoder.h, have_flac_hdr=yes)
@@ -284,7 +270,7 @@ fi
 
 dnl Check for speex
 AC_ARG_ENABLE(speex,
-[  --enable-speex               enable SPX decoding via libspeex [default=yes]],
+[AS_HELP_STRING([--enable-speex], [enable SPX decoding via libspeex [default=yes]])],
               , enable_speex=yes)
 if test x$enable_speex = xyes; then
   AC_CHECK_HEADER(ogg/ogg.h, have_ogg_hdr=yes)
@@ -299,7 +285,7 @@ fi
 
 dnl Check whether the EXPERIMENTAL audio converter is preferred
 AC_ARG_ENABLE(altcvt,
-[  --enable-altcvt            enable EXPERIMENTAL audio converter [default=no]],
+[AS_HELP_STRING([--enable-altcvt], [enable EXPERIMENTAL audio converter [default=no]])],
               , enable_altcvt=no)
 if test x$enable_altcvt = xyes; then
   AC_DEFINE(SOUND_USE_ALTCVT, 1, [Define to use alternate audio converter.])
@@ -329,6 +315,7 @@ decoders/Makefile
 decoders/timidity/Makefile
 examples/Makefile
 ])
+
 dnl fix exports from MinGW builds
 AC_CONFIG_COMMANDS_POST([sed -i 's/-DDLL_EXPORT/-DSDL_SOUND_DLL_EXPORTS/' config.status])
 AC_OUTPUT

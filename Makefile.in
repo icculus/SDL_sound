@@ -41,8 +41,8 @@ DIST_COMMON = README $(am__configure_deps) \
 	$(am__libSDL2_soundinclude_HEADERS_DIST) \
 	$(am__libSDL_soundinclude_HEADERS_DIST) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(top_srcdir)/configure COPYING INSTALL TODO config.guess \
-	config.sub depcomp install-sh ltmain.sh missing
+	$(top_srcdir)/configure COPYING INSTALL TODO compile \
+	config.guess config.sub depcomp install-sh ltmain.sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude/libtool.m4 \
 	$(top_srcdir)/acinclude/ltoptions.m4 \
@@ -50,7 +50,9 @@ am__aclocal_m4_deps = $(top_srcdir)/acinclude/libtool.m4 \
 	$(top_srcdir)/acinclude/ltversion.m4 \
 	$(top_srcdir)/acinclude/lt~obsolete.m4 \
 	$(top_srcdir)/acinclude/pkg.m4 $(top_srcdir)/acinclude/sdl.m4 \
-	$(top_srcdir)/acinclude/sdl2.m4 $(top_srcdir)/configure.in
+	$(top_srcdir)/acinclude/sdl2.m4 \
+	$(top_srcdir)/acinclude/visibility.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -189,6 +191,7 @@ BINARY_AGE = @BINARY_AGE@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CFLAG_VISIBILITY = @CFLAG_VISIBILITY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -204,6 +207,7 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 GREP = @GREP@
+HAVE_VISIBILITY = @HAVE_VISIBILITY@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@

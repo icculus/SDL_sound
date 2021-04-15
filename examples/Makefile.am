@@ -1,6 +1,6 @@
 bin_PROGRAMS = playsound playsound_simple
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 if USE_SDL2
 LIBSDL_SOUND=libSDL2_sound.la
