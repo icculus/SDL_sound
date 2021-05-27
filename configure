@@ -799,8 +799,6 @@ SDL_CFLAGS
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
-HAVE_VISIBILITY
-CFLAG_VISIBILITY
 CPP
 OTOOL64
 OTOOL
@@ -4618,13 +4616,13 @@ if test "${lt_cv_nm_interface+set}" = set; then
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:4621: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:4619: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4624: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:4622: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:4627: output\"" >&5)
+  (eval echo "\"\$as_me:4625: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -5824,7 +5822,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 5827 "configure"' > conftest.$ac_ext
+  echo '#line 5825 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7982,11 +7980,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7985: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7983: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7989: \$? = $ac_status" >&5
+   echo "$as_me:7987: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8321,11 +8319,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8324: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8322: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:8328: \$? = $ac_status" >&5
+   echo "$as_me:8326: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8426,11 +8424,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8429: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8427: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8433: \$? = $ac_status" >&5
+   echo "$as_me:8431: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8481,11 +8479,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8484: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8482: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8488: \$? = $ac_status" >&5
+   echo "$as_me:8486: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -11289,7 +11287,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11292 "configure"
+#line 11290 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11385,7 +11383,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11388 "configure"
+#line 11386 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11691,25 +11689,27 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
 
+saved_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -fvisibility=hidden -Werror"
+{ $as_echo "$as_me:$LINENO: checking if compiler supports visibility attributes" >&5
+$as_echo_n "checking if compiler supports visibility attributes... " >&6; }
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-
-  CFLAG_VISIBILITY=
-  HAVE_VISIBILITY=0
-  if test -n "$GCC"; then
-                { $as_echo "$as_me:$LINENO: checking whether the -Werror option is usable" >&5
-$as_echo_n "checking whether the -Werror option is usable... " >&6; }
-if test "${gl_cv_cc_vis_werror+set}" = set; then
-  $as_echo_n "(cached) " >&6
-else
-  gl_save_CFLAGS="$CFLAGS"
-       CFLAGS="$CFLAGS -Werror"
-       cat >conftest.$ac_ext <<_ACEOF
+cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
+__attribute__((visibility("default"))) int foo(void);
+__attribute__((visibility("hidden")))  int bar(void);
+int foo(void) { return 0; }
+int bar(void) { return 1; }
 int
 main ()
 {
@@ -11736,98 +11736,25 @@ $as_echo "$ac_try_echo") >&5
 	 test -z "$ac_c_werror_flag" ||
 	 test ! -s conftest.err
        } && test -s conftest.$ac_objext; then
-  gl_cv_cc_vis_werror=yes
+  have_visibility=yes
 else
   $as_echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-	gl_cv_cc_vis_werror=no
+	have_visibility=no
 fi
 
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-       CFLAGS="$gl_save_CFLAGS"
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-fi
-{ $as_echo "$as_me:$LINENO: result: $gl_cv_cc_vis_werror" >&5
-$as_echo "$gl_cv_cc_vis_werror" >&6; }
-        { $as_echo "$as_me:$LINENO: checking for simple visibility declarations" >&5
-$as_echo_n "checking for simple visibility declarations... " >&6; }
-if test "${gl_cv_cc_visibility+set}" = set; then
-  $as_echo_n "(cached) " >&6
-else
-  gl_save_CFLAGS="$CFLAGS"
-       CFLAGS="$CFLAGS -fvisibility=hidden"
-                                          if test $gl_cv_cc_vis_werror = yes; then
-         CFLAGS="$CFLAGS -Werror"
-       fi
-       cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-extern __attribute__((__visibility__("hidden"))) int hiddenvar;
-              extern __attribute__((__visibility__("default"))) int exportedvar;
-              extern __attribute__((__visibility__("hidden"))) int hiddenfunc (void);
-              extern __attribute__((__visibility__("default"))) int exportedfunc (void);
-              void dummyfunc (void);
-              void dummyfunc (void) {}
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (ac_try="$ac_compile"
-case "(($ac_try" in
-  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
-  *) ac_try_echo=$ac_try;;
-esac
-eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
-$as_echo "$ac_try_echo") >&5
-  (eval "$ac_compile") 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && {
-	 test -z "$ac_c_werror_flag" ||
-	 test ! -s conftest.err
-       } && test -s conftest.$ac_objext; then
-  gl_cv_cc_visibility=yes
-else
-  $as_echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-	gl_cv_cc_visibility=no
-fi
-
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-       CFLAGS="$gl_save_CFLAGS"
-
-fi
-{ $as_echo "$as_me:$LINENO: result: $gl_cv_cc_visibility" >&5
-$as_echo "$gl_cv_cc_visibility" >&6; }
-    if test $gl_cv_cc_visibility = yes; then
-      CFLAG_VISIBILITY="-fvisibility=hidden"
-      HAVE_VISIBILITY=1
-    fi
-  fi
-
-
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_VISIBILITY $HAVE_VISIBILITY
-_ACEOF
-
-
-
-if test x$gl_cv_cc_visibility = xyes; then
+{ $as_echo "$as_me:$LINENO: result: $have_visibility" >&5
+$as_echo "$have_visibility" >&6; }
+CFLAGS="$saved_CFLAGS"
+if test $have_visibility = yes; then
     CFLAGS="$CFLAGS -fvisibility=hidden"
 fi
 
