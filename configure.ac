@@ -95,9 +95,20 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE([[int foo;]])],
 dnl ---------------------------------------------------------------------
 dnl Have GCC's -fvisibility option?
 dnl ---------------------------------------------------------------------
-gl_VISIBILITY
-
-if test x$gl_cv_cc_visibility = xyes; then
+saved_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -fvisibility=hidden -Werror"
+AC_MSG_CHECKING([if compiler supports visibility attributes])
+AC_LANG_PUSH([C])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+__attribute__((visibility("default"))) int foo(void);
+__attribute__((visibility("hidden")))  int bar(void);
+int foo(void) { return 0; }
+int bar(void) { return 1; }]], [])],
+  [have_visibility=yes],[have_visibility=no])
+AC_LANG_POP([C])
+AC_MSG_RESULT([$have_visibility])
+CFLAGS="$saved_CFLAGS"
+if test $have_visibility = yes; then
     CFLAGS="$CFLAGS -fvisibility=hidden"
 fi
 
