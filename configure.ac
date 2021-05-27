@@ -49,21 +49,17 @@ dnl Setup for automake
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE(SDL_sound, $VERSION)
 
-
-dnl ---------------------------------------------------------------------
 dnl Compilers and other tools
-dnl ---------------------------------------------------------------------
-
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 LT_INIT([win32-dll])
+PKG_PROG_PKG_CONFIG
 
 
 dnl ---------------------------------------------------------------------
 dnl Debug mode?
 dnl ---------------------------------------------------------------------
-
 AC_ARG_ENABLE(debug,
 [AS_HELP_STRING([--enable-debug], [enable debug mode [default=no]])],
               , enable_debug=no)
