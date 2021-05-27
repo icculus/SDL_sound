@@ -39,8 +39,7 @@ not, you'll need to make sure SDL's header's are available and we can link
 against the SDL library.
 
 To do this:
-- Add everything in the src directory to your project (including the C files
-  in the libmikmod directory).
+- Add everything in the src directory to your project.
 - Make sure your app can see SDL_sound.h to #include it.
 - That's all. You don't have to #define anything, etc.
 
@@ -48,7 +47,7 @@ To do this:
 PLAYSOUND...
 
 Is an optional test application. If you can compile and link
-playsound/playsound_simple.c, then you know everything is set up correctly.
+examples/playsound_simple.c, then you know everything is set up correctly.
 This is a separate program that uses SDL_sound, and shouldn't be compiled
 into the library itself.
 
@@ -59,5 +58,4 @@ Questions? Problems? Patches? Consider joining the SDL_sound mailing list.
 Details are at https://icculus.org/SDL_sound/
 
 --ryan. (icculus@icculus.org)
-
 
