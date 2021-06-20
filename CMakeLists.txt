@@ -102,6 +102,7 @@ if(SDLSOUND_DECODER_MODPLUG)
         src/libmodplug/load_mt2.c
         src/libmodplug/load_mtm.c
         src/libmodplug/load_okt.c
+        src/libmodplug/load_gdm.c
         src/libmodplug/load_psm.c
         src/libmodplug/load_ptm.c
         src/libmodplug/load_s3m.c

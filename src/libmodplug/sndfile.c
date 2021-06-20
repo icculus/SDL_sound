@@ -101,6 +101,7 @@ CSoundFile *new_CSoundFile(LPCBYTE lpStream, DWORD dwMemLength, const ModPlug_Se
 		 && (!CSoundFile_ReadUlt(_this, lpStream, dwMemLength))
 		 && (!CSoundFile_ReadDMF(_this, lpStream, dwMemLength))
 		 && (!CSoundFile_ReadDSM(_this, lpStream, dwMemLength))
+		 && (!CSoundFile_ReadGDM(_this, lpStream, dwMemLength))
 		 && (!CSoundFile_ReadUMX(_this, lpStream, dwMemLength))
 		 && (!CSoundFile_ReadAMF(_this, lpStream, dwMemLength))
 		 && (!CSoundFile_ReadPSM(_this, lpStream, dwMemLength))

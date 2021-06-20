@@ -36,6 +36,7 @@ static const char *extensions_modplug[] =
     "DMF",   /* DMF DELUSION DIGITAL MUSIC FILEFORMAT (X-Tracker)           */
     "DSM",   /* DSIK Internal Format module                                 */
     "FAR",   /* Farandole module                                            */
+    "GDM",   /* General Digital Music                                       */
     "IT",    /* Impulse Tracker IT file                                     */
     "MDL",   /* DigiTracker module                                          */
     "MED",   /* OctaMed MED file                                            */
