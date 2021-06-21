@@ -1,6 +1,6 @@
-# SDL_sound; An abstract sound format decoding API.
-#
-# Please see the file LICENSE.txt in the source's root directory.
+# NOTE: If you installed SDL2 at an unusual place and find_package()
+# fails, define SDL2_DIR environment variable to point to your SDL2
+# installation.
 
 cmake_minimum_required(VERSION 2.8.12)
 
