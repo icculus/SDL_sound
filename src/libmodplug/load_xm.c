@@ -280,8 +280,7 @@ BOOL CSoundFile_ReadXM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 		if (dwMemPos + sizeof(XMINSTRUMENTHEADER) >= dwMemLength) return TRUE;
 		pih = (XMINSTRUMENTHEADER *)(lpStream+dwMemPos);
 		if (dwMemPos + bswapLE32(pih->size) > dwMemLength) return TRUE;
-		if ((_this->Headers[iIns] = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER))) == NULL) continue;
-		SDL_memset(_this->Headers[iIns], 0, sizeof(INSTRUMENTHEADER));
+		if ((_this->Headers[iIns] = (INSTRUMENTHEADER *) SDL_calloc(1, sizeof(INSTRUMENTHEADER))) == NULL) continue;
 		if ((nsamples = pih->samples) > 0)
 		{
 			if (dwMemPos + sizeof(XMSAMPLEHEADER) > dwMemLength) return TRUE;

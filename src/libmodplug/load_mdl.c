@@ -279,9 +279,8 @@ BOOL CSoundFile_ReadMDL(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 				if (!_this->Headers[nins])
 				{
 					UINT note = 12;
-					if ((_this->Headers[nins] = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER))) == NULL) break;
+					if ((_this->Headers[nins] = (INSTRUMENTHEADER *) SDL_calloc(1, sizeof (INSTRUMENTHEADER))) == NULL) break;
 					INSTRUMENTHEADER *penv = _this->Headers[nins];
-					SDL_memset(penv, 0, sizeof(INSTRUMENTHEADER));
 					penv->nGlobalVol = 64;
 					penv->nPPC = 5*12;
 					for (j=0; j<lpStream[dwPos+1]; j++)
@@ -323,8 +322,7 @@ BOOL CSoundFile_ReadMDL(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 			}
 			for (j=1; j<=_this->m_nInstruments; j++) if (!_this->Headers[j])
 			{
-				_this->Headers[j] = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER));
-				if (_this->Headers[j]) SDL_memset(_this->Headers[j], 0, sizeof(INSTRUMENTHEADER));
+				_this->Headers[j] = (INSTRUMENTHEADER *) SDL_calloc(1, sizeof (INSTRUMENTHEADER));
 			}
 			break;
 		// VE: Volume Envelope

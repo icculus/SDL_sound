@@ -352,9 +352,8 @@ BOOL CSoundFile_ReadAMF(CSoundFile *_this, LPCBYTE lpStream, const DWORD dwMemLe
 		if (realtrackcnt < pTrackMap[iTrkMap]) realtrackcnt = pTrackMap[iTrkMap];
 	}
 	// Store tracks positions
-	BYTE **pTrackData = (BYTE **) SDL_malloc(sizeof (BYTE *) * realtrackcnt);
+	BYTE **pTrackData = (BYTE **) SDL_calloc(realtrackcnt, sizeof(BYTE*));
 	if (!pTrackData) return TRUE;/*FIXME: return FALSE? */
-	SDL_memset(pTrackData, 0, sizeof(BYTE *) * realtrackcnt);
 	for (UINT iTrack=0; iTrack<realtrackcnt; iTrack++) if (dwMemPos <= dwMemLength - 3)
 	{
 		UINT nTrkSize = bswapLE16(*(USHORT *)(lpStream+dwMemPos));
