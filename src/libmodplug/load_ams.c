@@ -94,10 +94,9 @@ BOOL CSoundFile_ReadAMS(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 		dwMemPos += tmp;
 	}
 	// Read Pattern Names
-	_this->m_lpszPatternNames = (char *) SDL_malloc(pfh->patterns * 32);  // changed from CHAR
+	_this->m_lpszPatternNames = (char *) SDL_calloc(pfh->patterns, 32);  // changed from CHAR
 	if (!_this->m_lpszPatternNames) return TRUE;
 	_this->m_nPatternNames = pfh->patterns;
-	SDL_memset(_this->m_lpszPatternNames, 0, _this->m_nPatternNames * 32);
 	for (UINT pNam=0; pNam < _this->m_nPatternNames; pNam++)
 	{
 		if (dwMemPos + 32 >= dwMemLength) return TRUE;
@@ -330,10 +329,9 @@ BOOL CSoundFile_ReadAMS2(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 		dwMemPos += 5 + panenv->points*3;
 		pitchenv = (AMS2ENVELOPE *)(lpStream+dwMemPos);
 		dwMemPos += 5 + pitchenv->points*3;
-		INSTRUMENTHEADER *penv = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER));
+		INSTRUMENTHEADER *penv = (INSTRUMENTHEADER *) SDL_calloc(1, sizeof (INSTRUMENTHEADER));
 		if (!penv) return TRUE;
 		SDL_memset(smpmap, 0, sizeof(smpmap));
-		SDL_memset(penv, 0, sizeof(INSTRUMENTHEADER));
 		for (UINT ismpmap=0; ismpmap<pins->samples; ismpmap++)
 		{
 			if ((ismpmap >= 16) || (_this->m_nSamples+1 >= MAX_SAMPLES)) break;

@@ -34,12 +34,12 @@ static void CSoundFile_UpdateSettings(CSoundFile *_this, const ModPlug_Settings 
 	_this->gSampleSize = settings->mBits / 8 * settings->mChannels;
 
 	CSoundFile_SetWaveConfigEx(_this, settings->mFlags & MODPLUG_ENABLE_SURROUND,
-	                            !(settings->mFlags & MODPLUG_ENABLE_OVERSAMPLING),
-	                            settings->mFlags & MODPLUG_ENABLE_REVERB,
-	                            TRUE,
-	                            settings->mFlags & MODPLUG_ENABLE_MEGABASS,
-	                            settings->mFlags & MODPLUG_ENABLE_NOISE_REDUCTION,
-	                            FALSE);
+	                           !(settings->mFlags & MODPLUG_ENABLE_OVERSAMPLING),
+	                           settings->mFlags & MODPLUG_ENABLE_REVERB,
+	                           TRUE,
+	                           settings->mFlags & MODPLUG_ENABLE_MEGABASS,
+	                           settings->mFlags & MODPLUG_ENABLE_NOISE_REDUCTION,
+	                           FALSE);
 	CSoundFile_SetResamplingMode(_this, settings->mResamplingMode);
 }
 
@@ -152,7 +152,7 @@ CSoundFile *new_CSoundFile(LPCBYTE lpStream, DWORD dwMemLength, const ModPlug_Se
 		if (pins->nGlobalVol > 64) pins->nGlobalVol = 64;
 	}
 	// Check invalid instruments
-	while ((_this->m_nInstruments > 0) && (!_this->Headers[_this->m_nInstruments])) 
+	while ((_this->m_nInstruments > 0) && (!_this->Headers[_this->m_nInstruments]))
 		_this->m_nInstruments--;
 	// Set default values
 	if (_this->m_nSongPreAmp < 0x20) _this->m_nSongPreAmp = 0x20;
@@ -967,9 +967,8 @@ BOOL CSoundFile_SetPatternName(CSoundFile *_this, UINT nPat, LPCSTR lpszName)
 	{
 		if (!lpszName[0]) return TRUE;
 		UINT len = (nPat+1)*MAX_PATTERNNAME;
-		char *p = (char *) SDL_malloc(len);
+		char *p = (char *) SDL_calloc(1, len);
 		if (!p) return FALSE;
-		SDL_memset(p, 0, len);
 		if (_this->m_lpszPatternNames)
 		{
 			SDL_memcpy(p, _this->m_lpszPatternNames, _this->m_nPatternNames * MAX_PATTERNNAME);

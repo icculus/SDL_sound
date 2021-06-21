@@ -341,11 +341,10 @@ BOOL CSoundFile_ReadMT2(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 		INSTRUMENTHEADER *penv = NULL;
 		if (iIns <= _this->m_nInstruments)
 		{
-			penv = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER));
+			penv = (INSTRUMENTHEADER *) SDL_calloc(1,sizeof(INSTRUMENTHEADER));
 			_this->Headers[iIns] = penv;
 			if (penv)
 			{
-				SDL_memset(penv, 0, sizeof(INSTRUMENTHEADER));
 				penv->nGlobalVol = 64;
 				penv->nPan = 128;
 				for (UINT i=0; i<NOTE_MAX; i++)

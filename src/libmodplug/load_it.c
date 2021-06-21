@@ -336,10 +336,9 @@ BOOL CSoundFile_ReadIT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 		if ((inspos[nins] > 0) && dwMemLength > sizeof(ITOLDINSTRUMENT) &&
 			(inspos[nins] < dwMemLength - sizeof(ITOLDINSTRUMENT)))
 		{
-			INSTRUMENTHEADER *penv = (INSTRUMENTHEADER *) SDL_malloc(sizeof (INSTRUMENTHEADER));
+			INSTRUMENTHEADER *penv = (INSTRUMENTHEADER *) SDL_calloc(1, sizeof (INSTRUMENTHEADER));
 			if (!penv) continue;
 			_this->Headers[nins+1] = penv;
-			SDL_memset(penv, 0, sizeof(INSTRUMENTHEADER));
 			ITInstrToMPT(lpStream + inspos[nins], penv, pifh.cmwt);
 		}
 	}
