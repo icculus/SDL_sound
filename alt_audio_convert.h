@@ -72,17 +72,13 @@ typedef struct{
 
 #define SDL_SOUND_Loop 0x10
 
-#ifndef SNDDECLSPEC
-#define SNDDECLSPEC DECLSPEC
-#endif
-
-extern SNDDECLSPEC int Sound_AltConvertAudio( Sound_AudioCVT *Data,
+extern int Sound_AltConvertAudio( Sound_AudioCVT *Data,
     Uint8* buffer, int length, int mode );
 
-extern SNDDECLSPEC int Sound_AltBuildAudioCVT( Sound_AudioCVT *Data,
+extern int Sound_AltBuildAudioCVT( Sound_AudioCVT *Data,
    SDL_AudioSpec src, SDL_AudioSpec dst );
 
-extern SNDDECLSPEC int Sound_estimateBufferSize( Sound_AudioCVT *Data,
+extern int Sound_estimateBufferSize( Sound_AudioCVT *Data,
    int length );
 
 #endif /* _INCLUDE_AUDIO_CONVERT_H_ */
