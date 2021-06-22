@@ -22,10 +22,6 @@
 #define SDL_abs  abs
 #endif
 
-#if ((defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__)) && !defined(_WIN32)
-#pragma GCC visibility push(hidden)
-#endif
-
 #ifdef _WIN32
 
 #ifdef _MSC_VER
