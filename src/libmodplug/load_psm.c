@@ -258,16 +258,20 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 	for (UINT nPat=0; nPat<nPatterns; nPat++)
 	{
 		PSMPATTERN pPsmPat;
+		PSMCHUNK pchunk;
 		SDL_memcpy(&pPsmPat, lpStream+patptrs[nPat]+8, sizeof(PSMPATTERN));
 		swap_PSMPATTERN(&pPsmPat);
-		ULONG len = *(DWORD *)(lpStream+patptrs[nPat]+4) - 12;
+		SDL_memcpy(&pchunk, lpStream+patptrs[nPat], sizeof(PSMCHUNK));
+		swap_PSMCHUNK(&pchunk);
+
+		ULONG len = pchunk.len - 12;
 		UINT nRows = pPsmPat.rows;
 		if (len > pPsmPat.size) len = pPsmPat.size;
 		if ((nRows < 64) || (nRows > 256)) nRows = 64;
 		_this->PatternSize[nPat] = nRows;
 		if ((_this->Patterns[nPat] = CSoundFile_AllocatePattern(nRows, _this->m_nChannels)) == NULL) break;
 		MODCOMMAND *m = _this->Patterns[nPat];
-		BYTE *p = pPsmPat.data;
+		const BYTE *p = lpStream + patptrs[nPat] + 20;
 		MODCOMMAND *sp, dummy;
 		UINT pos = 0;
 		UINT row = 0;
@@ -305,7 +309,8 @@ BOOL CSoundFile_ReadPSM(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 			if ((flags & 0x40) && (pos+1 < len))
 			{
 				UINT nins = p[pos++];
-				sp->instr = samplemap[nins];
+				if (nins < MAX_SAMPLES)
+					sp->instr = samplemap[nins];
 			}
 			// Volume
 			if ((flags & 0x20) && (pos < len))

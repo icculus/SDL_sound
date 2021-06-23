@@ -101,6 +101,7 @@ BOOL CSoundFile_ReadSTM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	dwMemPos = sizeof(STMHEADER);
 	for (UINT nOrd=0; nOrd<MAX_ORDERS; nOrd++) if (_this->Order[nOrd] >= 99) _this->Order[nOrd] = 0xFF;
 	UINT nPatterns = phdr->numpat;
+	if (nPatterns > MAX_PATTERNS) nPatterns = MAX_PATTERNS;
 	for (UINT nPat=0; nPat<nPatterns; nPat++)
 	{
 		if (dwMemPos + 64*4*4 > dwMemLength) return TRUE;

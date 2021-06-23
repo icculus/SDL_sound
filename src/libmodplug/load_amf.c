@@ -299,8 +299,12 @@ BOOL CSoundFile_ReadAMF(CSoundFile *_this, LPCBYTE lpStream, const DWORD dwMemLe
 			_this->PatternSize[iOrd] = 64;
 			if (pfh->version >= 14)
 			{
+				if (dwMemPos + _this->m_nChannels * sizeof(USHORT) + 2 > dwMemLength) return FALSE;
 				_this->PatternSize[iOrd] = bswapLE16(*(USHORT *)(lpStream+dwMemPos));
 				dwMemPos += 2;
+			} else
+			{
+				if (dwMemPos + _this->m_nChannels * sizeof(USHORT) > dwMemLength) return FALSE;
 			}
 			ptracks[iOrd] = (USHORT *)(lpStream+dwMemPos);
 			dwMemPos += _this->m_nChannels * sizeof(USHORT);

@@ -131,6 +131,9 @@ BOOL CSoundFile_ReadDBM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 		// Instruments
 		if (chunk_id == bswapLE32(DBM_ID_INST))
 		{
+			// Skip duplicate chunks.
+			if (_this->m_nInstruments) continue;
+
 			if (nInstruments >= MAX_INSTRUMENTS) nInstruments = MAX_INSTRUMENTS-1;
 			for (UINT iIns=0; iIns<nInstruments; iIns++)
 			{
@@ -226,6 +229,9 @@ BOOL CSoundFile_ReadDBM(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 				DBMPATTERN *pph;
 				DWORD pksize;
 				UINT nRows;
+
+				// Skip duplicate chunks.
+				if (_this->Patterns[iPat]) break;
 
 				if (chunk_pos + sizeof(DBMPATTERN) > dwMemPos) break;
 				pph = (DBMPATTERN *)(lpStream+chunk_pos);
