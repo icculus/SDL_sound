@@ -576,7 +576,7 @@ BOOL CSoundFile_ReadMed(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 			}
 			UINT pseq = 0;
 			
-			if ((playseqtable) && (playseqtable < dwMemLength) && (nplayseq*4 < dwMemLength - playseqtable))
+			if ((playseqtable) && (playseqtable < dwMemLength) && (nplayseq*4 + 4 < dwMemLength - playseqtable))
 			{
 				pseq = bswapBE32(((LPDWORD)(lpStream+playseqtable))[nplayseq]);
 			}
@@ -624,10 +624,11 @@ BOOL CSoundFile_ReadMed(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 		UINT len = bswapBE32(psdh->length);
 		if ((len > MAX_SAMPLE_LENGTH) || (dwPos + len + 6 > dwMemLength)) len = 0;
 		UINT flags = RS_PCM8S, stype = bswapBE16(psdh->type);
-		LPSTR psdata = (LPSTR)(lpStream + dwPos + 6);
+		dwPos += 6;
 		if (stype & 0x80)
 		{
-			psdata += (stype & 0x20) ? 14 : 6;
+			dwPos += (stype & 0x20) ? 14 : 6;
+			if (dwPos >= dwMemLength) continue;
 		} else
 		{
 			if (stype & 0x10)
@@ -642,7 +643,7 @@ BOOL CSoundFile_ReadMed(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 			if (stype & 0x20) len /= 2;
 		}
 		_this->Ins[iSmp+1].nLength = len;
-		CSoundFile_ReadSample(_this, &_this->Ins[iSmp+1], flags, psdata, dwMemLength - dwPos - 6);
+		CSoundFile_ReadSample(_this, &_this->Ins[iSmp+1], flags, (const char *)(lpStream + dwPos), dwMemLength - dwPos);
 	}
 	// Reading patterns (blocks)
 	if (wNumBlocks > MAX_PATTERNS) wNumBlocks = MAX_PATTERNS;
@@ -703,9 +704,15 @@ BOOL CSoundFile_ReadMed(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 				{
 					DWORD nameofs = bswapBE32(pbi->blockname);
 					UINT namelen = bswapBE32(pbi->blocknamelen);
-					if ((nameofs < dwMemLength) && (namelen < dwMemLength - nameofs))
+					if ((namelen < dwMemLength) && (nameofs < dwMemLength - namelen))
 					{
-						CSoundFile_SetPatternName(_this, iBlk, (LPCSTR)(lpStream+nameofs));
+						// SetPatternName expects a nul-terminated string.
+						char blockname[MAX_PATTERNNAME];
+						if (namelen >= MAX_PATTERNNAME) namelen = MAX_PATTERNNAME - 1;
+						SDL_memcpy(blockname, lpStream + nameofs, namelen);
+						blockname[namelen] = '\0';
+
+						CSoundFile_SetPatternName(_this, iBlk, blockname);
 					}
 				}
 				if (pbi->cmdexttable)

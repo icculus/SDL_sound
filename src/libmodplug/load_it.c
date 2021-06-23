@@ -554,7 +554,7 @@ BOOL CSoundFile_ReadIT(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLengt
 //////////////////////////////////////////////////////////////////////////////
 // IT 2.14 compression
 
-static DWORD ITReadBits(DWORD *bitbuf, UINT *bitnum, LPBYTE *_ibuf, CHAR n)
+static DWORD ITReadBits(DWORD *bitbuf, UINT *bitnum, LPBYTE *_ibuf, LPBYTE ibufend, CHAR n)
 //-----------------------------------------------------------------
 {
 	LPBYTE ibuf = *_ibuf;
@@ -571,6 +571,11 @@ static DWORD ITReadBits(DWORD *bitbuf, UINT *bitnum, LPBYTE *_ibuf, CHAR n)
 		{
 			if (!*bitnum)
 			{
+				if (ibuf >= ibufend)
+				{
+					*_ibuf = ibuf;
+					return 0;
+				}
 				*bitbuf = *ibuf++;
 				*bitnum = 8;
 			}
@@ -592,6 +597,7 @@ void ITUnpack8Bit(signed char *pSample, DWORD dwLen, LPBYTE lpMemFile, DWORD dwM
 {
 	signed char *pDst = pSample;
 	LPBYTE pSrc = lpMemFile;
+	LPBYTE pStop = lpMemFile + dwMemLength;
 //	DWORD wHdr = 0;
 	DWORD wCount = 0;
 	DWORD bitbuf = 0;
@@ -615,13 +621,13 @@ void ITUnpack8Bit(signed char *pSample, DWORD dwLen, LPBYTE lpMemFile, DWORD dwM
 		DWORD dwPos = 0;
 		do
 		{
-			WORD wBits = (WORD)ITReadBits(&bitbuf, &bitnum, &pSrc, bLeft);
+			WORD wBits = (WORD)ITReadBits(&bitbuf, &bitnum, &pSrc, pStop, bLeft);
 			if (bLeft < 7)
 			{
 				DWORD i = 1 << (bLeft-1);
 				DWORD j = wBits & 0xFFFF;
 				if (i != j) goto UnpackByte;
-				wBits = (WORD)(ITReadBits(&bitbuf, &bitnum, &pSrc, 3) + 1) & 0xFF;
+				wBits = (WORD)(ITReadBits(&bitbuf, &bitnum, &pSrc, pStop, 3) + 1) & 0xFF;
 				bLeft = ((BYTE)wBits < bLeft) ? (BYTE)wBits : (BYTE)((wBits+1) & 0xFF);
 				goto Next;
 			}
@@ -659,7 +665,7 @@ void ITUnpack8Bit(signed char *pSample, DWORD dwLen, LPBYTE lpMemFile, DWORD dwM
 		SkipByte:
 			dwPos++;
 		Next:
-			if (pSrc >= lpMemFile+dwMemLength+1) return;
+			if (pSrc >= pStop + 1) return;
 		} while (dwPos < d);
 		// Move On
 		wCount -= d;
@@ -674,6 +680,7 @@ void ITUnpack16Bit(signed char *pSample, DWORD dwLen, LPBYTE lpMemFile, DWORD dw
 {
 	signed short *pDst = (signed short *)pSample;
 	LPBYTE pSrc = lpMemFile;
+	LPBYTE pStop = lpMemFile + dwMemLength;
 //	DWORD wHdr = 0;
 	DWORD wCount = 0;
 	DWORD bitbuf = 0;
@@ -698,13 +705,13 @@ void ITUnpack16Bit(signed char *pSample, DWORD dwLen, LPBYTE lpMemFile, DWORD dw
 		DWORD dwPos = 0;
 		do
 		{
-			DWORD dwBits = ITReadBits(&bitbuf, &bitnum, &pSrc, bLeft);
+			DWORD dwBits = ITReadBits(&bitbuf, &bitnum, &pSrc, pStop, bLeft);
 			if (bLeft < 7)
 			{
 				DWORD i = 1 << (bLeft-1);
 				DWORD j = dwBits;
 				if (i != j) goto UnpackByte;
-				dwBits = ITReadBits(&bitbuf, &bitnum, &pSrc, 4) + 1;
+				dwBits = ITReadBits(&bitbuf, &bitnum, &pSrc, pStop, 4) + 1;
 				bLeft = ((BYTE)(dwBits & 0xFF) < bLeft) ? (BYTE)(dwBits & 0xFF) : (BYTE)((dwBits+1) & 0xFF);
 				goto Next;
 			}
@@ -742,13 +749,13 @@ void ITUnpack16Bit(signed char *pSample, DWORD dwLen, LPBYTE lpMemFile, DWORD dw
 		SkipByte:
 			dwPos++;
 		Next:
-			if (pSrc >= lpMemFile+dwMemLength+1) return;
+			if (pSrc >= pStop + 1) return;
 		} while (dwPos < d);
 		// Move On
 		wCount -= d;
 		dwLen -= d;
 		pDst += d;
-		if (pSrc >= lpMemFile+dwMemLength) break;
+		if (pSrc >= pStop) break;
 	}
 }
 

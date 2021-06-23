@@ -167,6 +167,7 @@ BOOL CSoundFile_ReadS3M(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 	if (iord > MAX_ORDERS) iord = MAX_ORDERS;
 	if (iord)
 	{
+		if (dwMemPos + iord > dwMemLength) return FALSE;
 		SDL_memcpy(_this->Order, lpStream+dwMemPos, iord);
 		dwMemPos += iord;
 	}
@@ -184,6 +185,8 @@ BOOL CSoundFile_ReadS3M(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 
 	if (nins+npat)
 	{
+		if (2*(nins+npat) + dwMemPos > dwMemLength) return FALSE;
+
 		SDL_memcpy(ptr, lpStream+dwMemPos, 2*(nins+npat));
 		dwMemPos += 2*(nins+npat);
 		for (UINT j = 0; j < (nins+npat); ++j) {
@@ -191,6 +194,8 @@ BOOL CSoundFile_ReadS3M(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 		}
 		if (psfh.panning_present == 252)
 		{
+			if (dwMemPos + 32 > dwMemLength) return FALSE;
+
 			const BYTE *chnpan = lpStream+dwMemPos;
 			for (UINT i=0; i<32; i++) if (chnpan[i] & 0x20)
 			{

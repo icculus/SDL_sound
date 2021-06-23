@@ -211,6 +211,7 @@ BOOL CSoundFile_ReadMDL(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 			pmib = (const MDLINFOBLOCK *)(lpStream+dwMemPos);
 			norders = pmib->norders;
 			if (norders > MAX_ORDERS) norders = MAX_ORDERS;
+			if (blocklen < sizeof(MDLINFOBLOCK) + norders - sizeof(pmib->seq)) return FALSE;
 			_this->m_nRestartPos = pmib->repeatpos;
 			_this->m_nDefaultGlobalVolume = pmib->globalvol;
 			_this->m_nDefaultTempo = pmib->tempo;
@@ -271,7 +272,7 @@ BOOL CSoundFile_ReadMDL(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 		case 0x4949:
 			ninstruments = lpStream[dwMemPos];
 			dwPos = dwMemPos+1;
-			for (i=0; i<ninstruments; i++)
+			for (i=0; dwPos+34<dwMemLength && i<ninstruments; i++)
 			{
 				UINT nins = lpStream[dwPos];
 				if ((nins >= MAX_INSTRUMENTS) || (!nins)) break;
@@ -283,6 +284,7 @@ BOOL CSoundFile_ReadMDL(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 					INSTRUMENTHEADER *penv = _this->Headers[nins];
 					penv->nGlobalVol = 64;
 					penv->nPPC = 5*12;
+					if (34 + 14u*lpStream[dwPos+1] > dwMemLength - dwPos) break;
 					for (j=0; j<lpStream[dwPos+1]; j++)
 					{
 						const BYTE *ps = lpStream+dwPos+34+14*j;
@@ -327,18 +329,18 @@ BOOL CSoundFile_ReadMDL(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 			break;
 		// VE: Volume Envelope
 		case 0x4556:
-			if ((nvolenv = lpStream[dwMemPos]) == 0) break;
-			if (dwMemPos + nvolenv*32 + 1 <= dwMemLength) pvolenv = lpStream + dwMemPos + 1;
+			if (nvolenv || (nvolenv = lpStream[dwMemPos]) == 0) break;
+			if (dwMemPos + nvolenv*33 + 1 <= dwMemLength) pvolenv = lpStream + dwMemPos + 1;
 			break;
 		// PE: Panning Envelope
 		case 0x4550:
-			if ((npanenv = lpStream[dwMemPos]) == 0) break;
-			if (dwMemPos + npanenv*32 + 1 <= dwMemLength) ppanenv = lpStream + dwMemPos + 1;
+			if (npanenv || (npanenv = lpStream[dwMemPos]) == 0) break;
+			if (dwMemPos + npanenv*33 + 1 <= dwMemLength) ppanenv = lpStream + dwMemPos + 1;
 			break;
 		// FE: Pitch Envelope
 		case 0x4546:
-			if ((npitchenv = lpStream[dwMemPos]) == 0) break;
-			if (dwMemPos + npitchenv*32 + 1 <= dwMemLength) ppitchenv = lpStream + dwMemPos + 1;
+			if (npitchenv || (npitchenv = lpStream[dwMemPos]) == 0) break;
+			if (dwMemPos + npitchenv*33 + 1 <= dwMemLength) ppitchenv = lpStream + dwMemPos + 1;
 			break;
 		// IS: Sample Infoblock
 		case 0x5349:
@@ -416,14 +418,14 @@ BOOL CSoundFile_ReadMDL(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 				UINT nTrack = patterntracks[ipat*32+chn];
 
 				lpTracks += 2;
-				for (UINT ntrk=1; ntrk<nTrack && lpTracks < (dwMemLength + lpStream - len); ntrk++)
+				for (UINT ntrk=1; ntrk<nTrack && lpTracks + 1 < (dwMemLength + lpStream - len); ntrk++)
 				{
 					lpTracks += len;
 					len = lpTracks[0] | (lpTracks[1] << 8);
 					lpTracks += 2;
 				}
 
-				if ( len > dwMemLength - dwTrackPos ) len = 0;
+				if ( len > dwMemLength - (lpTracks - lpStream) ) len = 0;
 
 				UnpackMDLTrack(m, _this->m_nChannels, _this->PatternSize[ipat], nTrack, lpTracks, len);
 			    }
