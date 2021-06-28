@@ -15,14 +15,13 @@ Please check the website for the most up-to-date information about SDL_sound:
    https://icculus.org/SDL_sound/
 
 SDL_sound _REQUIRES_ Simple Directmedia Layer (SDL) 2.x to function, and cannot
- be built without it. You can get SDL from https://www.libsdl.org/. SDL_sound
- 2.x only works with SDL2, and SDL_sound 1.x only works with SDL 1.x.
- Reports of success or failure are welcome.
+ be built without it. You can get SDL from https://www.libsdl.org/.  Reports of
+ success or failure are welcome.
 
 Current versions of SDL_sound do not use any external libraries for decoding
  various file formats. All needed decoder source code is included with the
  library. Unless explicitly disabled during initial build configuration,
- SDL_sound always supports these file formats internally:
+ SDL_sound always supports the following file formats internally:
 
  - Wave (.WAV) files
  - MPEG-1 layers I-III (.MP3, .MP2, .MP1)
@@ -34,12 +33,11 @@ Current versions of SDL_sound do not use any external libraries for decoding
  - Creative Labs Voice (.VOC) files
  - Various "module" formats (.MOD, .669, .AMF, .XM, .IT, .S3M, .STM, etc)
  - MIDI (.mid) files
- - ABC (.abc) files
  - Raw PCM data
  - (macOS/iOS only) anything that CoreAudio can decode.
 
 Building/Installing:
-  Please read the docs/INSTALL.txt document.
+  Please read docs/INSTALL.txt.
 
 Reporting bugs/commenting:
  There is a mailing list available. Subscription and mailing list archives
@@ -50,4 +48,3 @@ Reporting bugs/commenting:
  The mailing list is the best way to get in touch with SDL_sound developers.
 
 --ryan. (icculus@icculus.org)
-
