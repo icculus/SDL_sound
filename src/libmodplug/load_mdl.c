@@ -381,12 +381,12 @@ BOOL CSoundFile_ReadMDL(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 			dwPos = dwMemPos;
 			for (i=1; i<=_this->m_nSamples; i++) if ((_this->Ins[i].nLength) && (!_this->Ins[i].pSample) && (smpinfo[i] != 3) && (dwPos < dwMemLength))
 			{
-				const BYTE *pp = lpStream + dwPos;
 				MODINSTRUMENT *pins = &_this->Ins[i];
 				UINT flags = (pins->uFlags & CHN_16BIT) ? RS_PCM16S : RS_PCM8S;
+				pp = lpStream + dwPos;
 				if (!smpinfo[i])
 				{
-					dwPos += CSoundFile_ReadSample(_this, pins, flags, (LPSTR)pp, dwMemLength - dwPos);
+					dwPos += CSoundFile_ReadSample(_this, pins, flags, (LPCSTR)pp, dwMemLength - dwPos);
 				} else
 				{
 					DWORD dwLen = pp[0] | (pp[1] << 8) | (pp[2] << 16) | (pp[3] << 24); pp += 4;
@@ -394,7 +394,7 @@ BOOL CSoundFile_ReadMDL(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 					if ((dwLen <= dwMemLength) && (dwPos <= dwMemLength - dwLen) && (dwLen > 4))
 					{
 						flags = (pins->uFlags & CHN_16BIT) ? RS_MDL16 : RS_MDL8;
-						CSoundFile_ReadSample(_this, pins, flags, (LPSTR)pp, dwLen);
+						CSoundFile_ReadSample(_this, pins, flags, (LPCSTR)pp, dwLen);
 					}
 					dwPos += dwLen;
 				}

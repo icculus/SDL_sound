@@ -691,7 +691,7 @@ void CSoundFile_CheckNNA(CSoundFile *_this, UINT nChn, UINT instr, int note, BOO
 		UINT n = CSoundFile_GetNNAChannel(_this, nChn);
 		if (n)
 		{
-			MODCHANNEL *p = &_this->Chn[n];
+			p = &_this->Chn[n];
 			// Copy Channel
 			SDL_memcpy(p, pChn, sizeof (*p));
 			p->dwFlags &= ~(CHN_VIBRATO|CHN_TREMOLO|CHN_PANBRELLO|CHN_MUTE|CHN_PORTAMENTO);
