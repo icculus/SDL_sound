@@ -276,6 +276,7 @@ static Uint32 OGG_read(Sound_Sample *sample)
 	{
         /* Creating a pointer to the buffer that denotes where to start
          * writing new data. */
+        const int minimum_read = (int) (((sample->actual.format & 0xFF) / 8) * sample->actual.channels);
         char * buffer_start_point = NULL;
         int total_bytes_read = rc;
         int bytes_remaining = internal->buffer_size - rc;
@@ -285,7 +286,7 @@ static Uint32 OGG_read(Sound_Sample *sample)
          * packets are too large to fit in remaining
          * space, or an error.)
          */
-        while( (rc > 0) && (bytes_remaining > 0) )
+        while( (rc > 0) && (bytes_remaining >= minimum_read) )
         {
         /* Set buffer pointer to end of last write */
         /* All the messiness is to get rid of the warning for
