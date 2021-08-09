@@ -30,7 +30,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "SunPro")
 endif()
 
 find_package(SDL2 REQUIRED)
-include_directories(${SDL2_INCLUDE_DIRS})
+include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_INCLUDE_DIR})
 if(WIN32)
     # -lmingw32: gcc adds it automatically.
     # -mwindows: doesn't make sense.
@@ -166,7 +166,7 @@ if(SDLSOUND_BUILD_SHARED)
         # avoid DLL having "lib" prefix
         SET(CMAKE_SHARED_LIBRARY_PREFIX "")
     endif()
-    target_link_libraries(SDL2_sound ${SDL2_LIBRARIES} ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
+    target_link_libraries(SDL2_sound ${SDL2_LIBRARIES} ${SDL2_LIBRARY} ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
     set(SDLSOUND_LIB_TARGET SDL2_sound)
     set(SDLSOUND_INSTALL_TARGETS ${SDLSOUND_INSTALL_TARGETS} ";SDL2_sound")
 endif()
