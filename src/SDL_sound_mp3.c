@@ -9,7 +9,7 @@
 /*
  * MP3 decoder for SDL_sound.
  *
- * !!! FIXME: write something here.
+ * Uses dr_mp3, a public domain, single-header library.
  *
  * dr_mp3 is here: https://github.com/mackron/dr_libs/
  */
@@ -20,6 +20,7 @@
 #if SOUND_SUPPORTS_MP3
 
 #define DR_MP3_IMPLEMENTATION
+
 #define DR_MP3_NO_STDIO 1
 #define DR_MP3_FLOAT_OUTPUT 1
 #define DRMP3_ASSERT(x) SDL_assert((x))
@@ -27,22 +28,8 @@
 #define DRMP3_REALLOC(p, sz) SDL_realloc((p), (sz))
 #define DRMP3_FREE(p) SDL_free((p))
 #define DRMP3_COPY_MEMORY(dst, src, sz) SDL_memcpy((dst), (src), (sz))
+#define DRMP3_MOVE_MEMORY(dst, src, sz) SDL_memmove((dst), (src), (sz))
 #define DRMP3_ZERO_MEMORY(p, sz) SDL_memset((p), 0, (sz))
-
-#if !defined(__clang_analyzer__)
-#ifdef memset
-#undef memset
-#endif
-#ifdef memcpy
-#undef memcpy
-#endif
-#ifdef memmove
-#undef memmove
-#endif
-#define memset SDL_memset
-#define memcpy SDL_memcpy
-#define memmove SDL_memmove
-#endif
 
 #include "dr_mp3.h"
 
