@@ -142,6 +142,9 @@ set(SDLSOUND_SRCS
 )
 
 option(SDLSOUND_BUILD_STATIC "Build static library" TRUE)
+if(OS2) # no static library on os/2
+    set(SDLSOUND_BUILD_STATIC FALSE)
+endif()
 if(SDLSOUND_BUILD_STATIC)
     add_library(SDL2_sound-static STATIC ${SDLSOUND_SRCS})
     # Don't rename this on Windows, since DLLs will also produce an import
