@@ -10,11 +10,6 @@ set(SDLSOUND_VERSION 2.0.0)
 # Increment this if/when we break backwards compatibility.
 set(SDLSOUND_SOVERSION 2)
 
-# I hate that they define "WIN32" ... we're about to move to Win64...I hope!
-if(WIN32 AND NOT WINDOWS)
-    set(WINDOWS TRUE)
-endif()
-
 include_directories(src)
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
@@ -179,12 +174,6 @@ endif()
 
 if(NOT SDLSOUND_BUILD_SHARED AND NOT SDLSOUND_BUILD_STATIC)
     message(FATAL "Both shared and static libraries are disabled!")
-endif()
-
-# CMake FAQ says I need this...
-if(SDLSOUND_BUILD_SHARED AND SDLSOUND_BUILD_STATIC AND NOT WINDOWS)
-    set_target_properties(SDL2_sound PROPERTIES CLEAN_DIRECT_OUTPUT 1)
-    set_target_properties(SDL2_sound-static PROPERTIES CLEAN_DIRECT_OUTPUT 1)
 endif()
 
 option(SDLSOUND_BUILD_TEST "Build stdio test program." TRUE)
