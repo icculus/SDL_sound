@@ -55,7 +55,7 @@ static int dumpstring(SDL_RWops *rw, Sint32 len, Uint8 type)
   signed char *s = SDL_malloc(len+1);
   if (!s)
     {
-      SDL_RWseek(song->rw, len, RW_SEEK_CUR);/* should I ? */
+      SDL_RWseek(rw, len, RW_SEEK_CUR);/* should I ? */
       return -1;
     }
   if (len != (Sint32) SDL_RWread(rw, s, 1, len))

@@ -29,7 +29,7 @@
 #endif
 
 #if (defined DEBUG_CHATTER)
-#define SNDDBG(x) SDL_LogDebug x
+#define SNDDBG(x) SDL_Log x
 #else
 #define SNDDBG(x)
 #endif
