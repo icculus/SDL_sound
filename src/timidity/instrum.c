@@ -161,6 +161,7 @@ static void load_instrument(MidiSong *song, const char *name,
   if (!name) return;
 
   /* Open patch file */
+  i = -1;
   if ((rw=timi_openfile(name)) == NULL)
     {
       /* Try with various extensions */
@@ -178,7 +179,7 @@ static void load_instrument(MidiSong *song, const char *name,
       return;
     }
 
-  SNDDBG(("Loading instrument %s\n", tmp));
+  SNDDBG(("Loading instrument %s\n", (i < 0)? name : tmp));
 
   /* Read some headers and do cursory sanity checks. There are loads
      of magic offsets. This could be rewritten... */
