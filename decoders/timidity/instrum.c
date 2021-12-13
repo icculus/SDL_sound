@@ -179,6 +179,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
   if (!name) return 0;
 
   /* Open patch file */
+  i = -1;
   if ((rw=open_file(name)) == NULL)
     {
       /* Try with various extensions */
@@ -200,7 +201,7 @@ static Instrument *load_instrument(MidiSong *song, char *name, int percussion,
       return 0;
     }
 
-  SNDDBG(("Loading instrument %s\n", tmp));
+  SNDDBG(("Loading instrument %s\n", (i < 0)? name : tmp));
 
   /* Read some headers and do cursory sanity checks. There are loads
      of magic offsets. This could be rewritten... */
