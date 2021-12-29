@@ -8,6 +8,8 @@
 #include "modplug.h"
 #include "libmodplug.h"
 
+extern BOOL MMCMP_Unpack(LPCBYTE *ppMemFile, LPDWORD pdwMemLength);
+
 // External decompressors
 extern void AMSUnpack(const char *psrc, UINT inputlen, char *pdest, UINT dmax, char packcharacter);
 extern WORD MDLReadBits(DWORD *bitbuf, UINT *bitnum, LPBYTE *ibuf, CHAR n);
@@ -84,6 +86,7 @@ CSoundFile *new_CSoundFile(LPCBYTE lpStream, DWORD dwMemLength, const ModPlug_Se
 	}
 	if (lpStream)
 	{
+		BOOL bMMCmp = MMCMP_Unpack(&lpStream, &dwMemLength);
 		if ((!CSoundFile_ReadXM(_this, lpStream, dwMemLength))
 		 && (!CSoundFile_ReadS3M(_this, lpStream, dwMemLength))
 		 && (!CSoundFile_ReadIT(_this, lpStream, dwMemLength))
@@ -108,6 +111,11 @@ CSoundFile *new_CSoundFile(LPCBYTE lpStream, DWORD dwMemLength, const ModPlug_Se
 		 && (!CSoundFile_ReadMT2(_this, lpStream, dwMemLength))
 #endif // MODPLUG_BASIC_SUPPORT
 		 && (!CSoundFile_ReadMod(_this, lpStream, dwMemLength))) _this->m_nType = MOD_TYPE_NONE;
+		if (bMMCmp)
+		{
+			SDL_free((void*)lpStream);
+			lpStream = NULL;
+		}
 	}
 	// Adjust channels
 	for (i=0; i<MAX_BASECHANNELS; i++)

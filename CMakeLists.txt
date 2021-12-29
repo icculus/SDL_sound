@@ -105,6 +105,7 @@ if(SDLSOUND_DECODER_MODPLUG)
         src/libmodplug/load_ult.c
         src/libmodplug/load_umx.c
         src/libmodplug/load_xm.c
+        src/libmodplug/mmcmp.c
         src/libmodplug/modplug.c
         src/libmodplug/snd_dsp.c
         src/libmodplug/snd_flt.c
