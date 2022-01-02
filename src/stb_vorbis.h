@@ -598,10 +598,10 @@ enum STBVorbisError
    #define malloc(s)   0
    #endif
    #ifndef free
-   #define free(s)     ((void) 0)
+   #define free(p)     ((void) 0)
    #endif
    #ifndef realloc
-   #define realloc(s)  0
+   #define realloc(p, s)  0
    #endif
 #endif // STB_VORBIS_NO_CRT
 
