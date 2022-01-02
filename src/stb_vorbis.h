@@ -668,6 +668,17 @@ typedef unsigned int   uint32;
 typedef   signed int    int32;
 #endif
 
+#ifdef __has_feature
+#if __has_feature(undefined_behavior_sanitizer)
+#define HAS_UBSAN
+#endif
+#endif
+#ifdef HAS_UBSAN
+#define STB_NO_SANITIZE(s) __attribute__((no_sanitize(s)))
+#else
+#define STB_NO_SANITIZE(s)
+#endif
+
 #ifndef TRUE
 #define TRUE 1
 #define FALSE 0
@@ -1275,6 +1286,10 @@ static int vorbis_validate(uint8 *data)
 
 // called from setup only, once per code book
 // (formula implied by specification)
+//
+// hack: suppress an UBSan error caused by invalid input data.
+// see upstream:  https://github.com/nothings/stb/issues/1168.
+STB_NO_SANITIZE("float-cast-overflow")
 static int lookup1_values(int entries, int dim)
 {
    int r = (int) floor(exp((float) log((float) entries) / dim));
@@ -5295,14 +5310,16 @@ static int8 channel_position[7][6] =
 #ifndef STB_VORBIS_NO_FAST_SCALED_FLOAT
    typedef union {
       float f;
-      int i;
+      // hack: changed this to unsigned to suppress an UBSan error.
+      // see upstream: https://github.com/nothings/stb/issues/1168.
+      unsigned int i;
    } float_conv;
    typedef char stb_vorbis_float_size_test[sizeof(float)==4 && sizeof(int) == 4];
    #define FASTDEF(x) float_conv x
    // add (1<<23) to convert to int, then divide by 2^SHIFT, then add 0.5/2^SHIFT to round
    #define MAGIC(SHIFT) (1.5f * (1 << (23-SHIFT)) + 0.5f/(1 << SHIFT))
    #define ADDEND(SHIFT) (((150-SHIFT) << 23) + (1 << 22))
-   #define FAST_SCALED_FLOAT_TO_INT(temp,x,s) (temp.f = (x) + MAGIC(s), temp.i - ADDEND(s))
+   #define FAST_SCALED_FLOAT_TO_INT(temp,x,s) (int)(temp.f = (x) + MAGIC(s), temp.i - ADDEND(s))
    #define check_endianness()
 #else
    #define FAST_SCALED_FLOAT_TO_INT(temp,x,s) ((int) ((x) * (1 << (s))))
