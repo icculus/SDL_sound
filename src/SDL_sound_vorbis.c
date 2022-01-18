@@ -52,12 +52,6 @@
 #define malloc SDL_malloc
 #define realloc SDL_realloc
 #define free SDL_free
-/* there is no 'dealloca' in stb_vorbis: we need alloca()
-#ifdef alloca
-#undef alloca
-#endif
-#define alloca(x) ((void *) SDL_stack_alloc(Uint8, (x)))
-*/
 #if !(defined(HAVE_LIBC) && defined(__WATCOMC__)) /* Watcom has issues... */
 #define pow SDL_pow
 #define floor SDL_floor
