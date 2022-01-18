@@ -38,7 +38,7 @@ OBJS = $(SRCS:.c=.obj)
 MODPOBJS = $(MODPSRCS:.c=.obj)
 TIMIOBJS = $(TIMISRCS:.c=.obj)
 
-CFLAGS_BASE = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei -j
+CFLAGS_BASE = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oeatxh -ei -j
 CFLAGS_BASE+= -DNDEBUG
 # warnings:
 CFLAGS_BASE+= -wx
