@@ -30,7 +30,6 @@ extern const Sound_DecoderFunctions __Sound_DecoderFunctions_VOC;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_RAW;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_SHN;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_FLAC;
-extern const Sound_DecoderFunctions __Sound_DecoderFunctions_QuickTime;
 extern const Sound_DecoderFunctions __Sound_DecoderFunctions_CoreAudio;
 
 typedef struct
