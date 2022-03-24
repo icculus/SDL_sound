@@ -411,13 +411,10 @@ static int AIFF_open(Sound_Sample *sample, const char *ext)
     BAIL_IF_MACRO(!read_comm_chunk(rw, &c),
                   "AIFF: Can't read common chunk.", 0);
 
+    BAIL_IF_MACRO(c.numChannels == 0, "AIFF: no channels specified.", 0);
+
     sample->actual.channels = (Uint8) c.numChannels;
     sample->actual.rate = c.sampleRate;
-
-    /* Really, sample->total_time = (c.numSampleFrames*1000) c.sampleRate */
-    internal->total_time = (c.numSampleFrames / c.sampleRate) * 1000;
-    internal->total_time += (c.numSampleFrames % c.sampleRate)
-                             *  1000 / c.sampleRate;
 
     if (c.sampleSize <= 8)
     {
@@ -458,6 +455,14 @@ static int AIFF_open(Sound_Sample *sample, const char *ext)
         SDL_free(a);
         BAIL_MACRO("AIFF: Can't read sound data chunk.", 0);
     } /* if */
+
+    if (c.numSampleFrames == 0)
+        c.numSampleFrames = (s.ckDataSize - 8) / bytes_per_sample;
+
+    /* Really, sample->total_time = (c.numSampleFrames*1000) c.sampleRate */
+    internal->total_time = (c.numSampleFrames / c.sampleRate) * 1000;
+    internal->total_time += (c.numSampleFrames % c.sampleRate) *  1000 / c.sampleRate;
+
 
     a->fmt.total_bytes = a->bytesLeft = bytes_per_sample * c.numSampleFrames;
     a->fmt.data_starting_offset = SDL_RWtell(rw);
