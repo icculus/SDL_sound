@@ -80,8 +80,7 @@ static int RAW_open(Sound_Sample *sample, const char *ext)
         BAIL_MACRO("RAW: can't reset file.", 0);
     }
 
-    sample_rate =  (sample->actual.rate * sample->actual.channels
-      * ( (sample->actual.format & 0x0018) >> 3) );
+    sample_rate = (sample->actual.rate * sample->actual.channels * ((sample->actual.format & 0x0018) >> 3));
     internal->total_time = ( pos ) / sample_rate * 1000;
     internal->total_time += (pos % sample_rate) * 1000 / sample_rate;
 

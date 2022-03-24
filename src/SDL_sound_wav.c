@@ -627,7 +627,7 @@ static int find_chunk(SDL_RWops *rw, Uint32 id)
         if (_id == id)
             return 1;
 
-            /* skip ahead and see what next chunk is... */
+        /* skip ahead and see what next chunk is... */
         BAIL_IF_MACRO(!read_le32s(rw, &siz), NULL, 0);
         SDL_assert(siz >= 0);
         pos += (sizeof (Uint32) * 2) + siz;

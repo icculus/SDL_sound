@@ -191,8 +191,7 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
                 v->rest = sblen - 2;
                 v->size = ST_SIZE_BYTE;
 
-                bytes_per_second = sample->actual.rate
-                    * sample->actual.channels;
+                bytes_per_second = sample->actual.rate * sample->actual.channels;
                 internal->total_time += ( v->rest ) / bytes_per_second * 1000;
                 internal->total_time += (v->rest % bytes_per_second) * 1000
                                             / bytes_per_second;
@@ -355,7 +354,8 @@ static int voc_read_waveform(Sound_Sample *sample, int fill_buf, Uint32 max)
     if (v->rest == 0)
         return 0;
 
-    max = (v->rest < max) ? v->rest : max;
+    if (v->rest < max)
+        max = v->rest;
 
     if (v->silent)
     {

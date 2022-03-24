@@ -49,7 +49,7 @@ typedef struct S_AIFF_FMT_T
 
 #if 0
 /*
-   this is ripped from wav.c as ann example of format-specific data.
+   this is ripped from wav.c as an example of format-specific data.
    please replace with something more appropriate when the need arises.
 */
     union
@@ -177,8 +177,7 @@ static int read_comm_chunk(SDL_RWops *rw, comm_t *comm)
         return 0;
     comm->numChannels = SDL_SwapBE16(comm->numChannels);
 
-    if (SDL_RWread(rw, &comm->numSampleFrames,
-                   sizeof (comm->numSampleFrames), 1) != 1)
+    if (SDL_RWread(rw, &comm->numSampleFrames, sizeof (comm->numSampleFrames), 1) != 1)
         return 0;
     comm->numSampleFrames = SDL_SwapBE32(comm->numSampleFrames);
 
@@ -262,8 +261,7 @@ static Uint32 read_sample_fmt_normal(Sound_Sample *sample)
     Uint32 retval;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     aiff_t *a = (aiff_t *) internal->decoder_private;
-    Uint32 max = (internal->buffer_size < (Uint32) a->bytesLeft) ?
-                    internal->buffer_size : (Uint32) a->bytesLeft;
+    const Uint32 max = SDL_min(internal->buffer_size, (Uint32) a->bytesLeft);
 
     SDL_assert(max > 0);
 
