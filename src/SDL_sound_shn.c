@@ -57,7 +57,7 @@ typedef struct
     Uint8 *backBuffer;
     Uint32 backBufferSize;
     Uint32 backBufLeft;
-    Uint32 start_pos;
+    Sint64 start_pos;
 } shn_t;
 
 
@@ -1257,7 +1257,7 @@ static int SHN_rewind(Sound_Sample *sample)
 
 #if 0
     shn_t *shn = (shn_t *) internal->decoder_private;
-    int rc = SDL_RWseek(internal->rw, shn->start_pos, RW_SEEK_SET);
+    Sint64 rc = SDL_RWseek(internal->rw, shn->start_pos, RW_SEEK_SET);
     BAIL_IF_MACRO(rc != shn->start_pos, ERR_IO_ERROR, 0);
     /* !!! FIXME: set state. */
     return 1;

@@ -38,8 +38,8 @@ typedef struct S_AIFF_FMT_T
 {
     Uint32 type;
 
-    Uint32 total_bytes;
-    Uint32 data_starting_offset;
+    Sint64 total_bytes;
+    Sint64 data_starting_offset;
 
     void (*free)(struct S_AIFF_FMT_T *fmt);
     Uint32 (*read_sample)(Sound_Sample *sample);
@@ -245,7 +245,7 @@ static int read_ssnd_chunk(SDL_RWops *rw, ssnd_t *ssnd)
     ssnd->blockSize = SDL_SwapBE32(ssnd->blockSize);
 
     /* Leave the SDL_RWops position indicator at the start of the samples */
-    if (SDL_RWseek(rw, (int) ssnd->offset, RW_SEEK_CUR) == -1)
+    if (SDL_RWseek(rw, ssnd->offset, RW_SEEK_CUR) == -1)
         return 0;
 
     return 1;
@@ -301,10 +301,10 @@ static int seek_sample_fmt_normal(Sound_Sample *sample, Uint32 ms)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     aiff_t *a = (aiff_t *) internal->decoder_private;
-    fmt_t *fmt = &a->fmt;
-    int offset = __Sound_convertMsToBytePos(&sample->actual, ms);
-    int pos = (int) (fmt->data_starting_offset + offset);
-    int rc = SDL_RWseek(internal->rw, pos, RW_SEEK_SET);
+    const fmt_t *fmt = &a->fmt;
+    const Uint32 offset = __Sound_convertMsToBytePos(&sample->actual, ms);
+    const Sint64 pos = (Sint64) (fmt->data_starting_offset + offset);
+    const Sint64 rc = SDL_RWseek(internal->rw, pos, RW_SEEK_SET);
     BAIL_IF_MACRO(rc != pos, ERR_IO_ERROR, 0);
     a->bytesLeft = fmt->total_bytes - offset;
     return 1;  /* success. */
@@ -393,8 +393,8 @@ static int AIFF_open(Sound_Sample *sample, const char *ext)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SDL_RWops *rw = internal->rw;
     Uint32 chunk_id;
-    int bytes_per_sample;
-    long pos;
+    Uint32 bytes_per_sample;
+    Sint64 pos;
     comm_t c;
     ssnd_t s;
     aiff_t *a;
@@ -493,8 +493,8 @@ static int AIFF_rewind(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     aiff_t *a = (aiff_t *) internal->decoder_private;
-    fmt_t *fmt = &a->fmt;
-    int rc = SDL_RWseek(internal->rw, fmt->data_starting_offset, RW_SEEK_SET);
+    const fmt_t *fmt = &a->fmt;
+    const Sint64 rc = SDL_RWseek(internal->rw, fmt->data_starting_offset, RW_SEEK_SET);
     BAIL_IF_MACRO(rc != fmt->data_starting_offset, ERR_IO_ERROR, 0);
     a->bytesLeft = fmt->total_bytes;
     return fmt->rewind_sample(sample);

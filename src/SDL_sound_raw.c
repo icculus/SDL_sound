@@ -133,8 +133,8 @@ static int RAW_rewind(Sound_Sample *sample)
 static int RAW_seek(Sound_Sample *sample, Uint32 ms)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    int pos = (int) __Sound_convertMsToBytePos(&sample->actual, ms);
-    int err = (SDL_RWseek(internal->rw, pos, RW_SEEK_SET) != pos);
+    const Sint64 pos = __Sound_convertMsToBytePos(&sample->actual, ms);
+    const int err = (SDL_RWseek(internal->rw, pos, RW_SEEK_SET) != pos);
     BAIL_IF_MACRO(err, ERR_IO_ERROR, 0);
     return 1;
 } /* RAW_seek */
