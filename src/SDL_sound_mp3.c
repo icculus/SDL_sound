@@ -42,24 +42,13 @@ static size_t mp3_read(void* pUserData, void* pBufferOut, size_t bytesToRead)
     size_t retval = 0;
 
     /* !!! FIXME: dr_mp3 treats returning less than bytesToRead as EOF. So we can't EAGAIN. */
-    while (retval < bytesToRead)
+    while (bytesToRead)
     {
         const size_t rc = SDL_RWread(rwops, ptr, 1, bytesToRead);
-        if (rc == 0)
-        {
-            sample->flags |= SOUND_SAMPLEFLAG_EOF;
-            break;
-        } /* if */
-        else if (rc == -1) /** FIXME: this error check is broken **/
-        {
-            sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-            break;
-        } /* else if */
-        else
-        {
-            retval += rc;
-            ptr += rc;
-        } /* else */
+        if (rc == 0) break;
+        bytesToRead -= rc;
+        retval += rc;
+        ptr += rc;
     } /* while */
 
     return retval;
@@ -126,7 +115,9 @@ static Uint32 MP3_read(Sound_Sample *sample)
     drmp3 *dr = (drmp3 *) internal->decoder_private;
     const drmp3_uint64 frames_to_read = (internal->buffer_size / channels) / sizeof (float);
     const drmp3_uint64 rc = drmp3_read_pcm_frames_f32(dr, frames_to_read, (float *) internal->buffer);
-    /* !!! FIXME: the mp3_read callback sets ERROR and EOF flags, but this only tells you about i/o errors, not corruption. */
+    /* !!! FIXME: we only set the EOF flags, but this only tells you we're done, not about i/o errors, nor corruption. */
+    if (rc < frames_to_read)
+        sample->flags |= SOUND_SAMPLEFLAG_EOF;
     return rc * channels * sizeof (float);
 } /* MP3_read */
 
