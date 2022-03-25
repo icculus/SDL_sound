@@ -16,3 +16,9 @@ freely, subject to the following restrictions:
    misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 
+
+(In the current version, Timidity source code is included to play MIDI files,
+but is disabled by default, as that code is under the "Artistic License".
+You can enable it in the CMake project by setting the SDLSOUND_DECODER_MIDI
+option to TRUE. The license text for Timidity is in src/timidity/COPYING)
+
