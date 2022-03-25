@@ -125,7 +125,7 @@ static Uint32 MP3_read(Sound_Sample *sample)
     const int channels = (int) sample->actual.channels;
     drmp3 *dr = (drmp3 *) internal->decoder_private;
     const drmp3_uint64 frames_to_read = (internal->buffer_size / channels) / sizeof (float);
-    const drmp3_uint64 rc = drmp3_read_f32(dr, frames_to_read, (float *) internal->buffer);
+    const drmp3_uint64 rc = drmp3_read_pcm_frames_f32(dr, frames_to_read, (float *) internal->buffer);
     /* !!! FIXME: the mp3_read callback sets ERROR and EOF flags, but this only tells you about i/o errors, not corruption. */
     return rc * channels * sizeof (float);
 } /* MP3_read */
@@ -134,7 +134,7 @@ static int MP3_rewind(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     drmp3 *dr = (drmp3 *) internal->decoder_private;
-    return (drmp3_seek_to_frame(dr, 0) == DRMP3_TRUE);
+    return (drmp3_seek_to_pcm_frame(dr, 0) == DRMP3_TRUE);
 } /* MP3_rewind */
 
 static int MP3_seek(Sound_Sample *sample, Uint32 ms)
@@ -143,7 +143,7 @@ static int MP3_seek(Sound_Sample *sample, Uint32 ms)
     drmp3 *dr = (drmp3 *) internal->decoder_private;
     const float frames_per_ms = ((float) sample->actual.rate) / 1000.0f;
     const drmp3_uint64 frame_offset = (drmp3_uint64) (frames_per_ms * ((float) ms));
-    return (drmp3_seek_to_frame(dr, frame_offset) == DRMP3_TRUE);
+    return (drmp3_seek_to_pcm_frame(dr, frame_offset) == DRMP3_TRUE);
 } /* MP3_seek */
 
 /* dr_mp3 will play layer 1 and 2 files, too */
