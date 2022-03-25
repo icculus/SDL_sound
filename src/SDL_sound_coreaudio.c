@@ -12,7 +12,6 @@
 #if SOUND_SUPPORTS_COREAUDIO
 
 #include <stddef.h> /* NULL */
-#include <arpa/inet.h> /* htonl */
 #include <AudioToolbox/AudioToolbox.h>
 
 typedef struct CoreAudioFileContainer
@@ -153,13 +152,13 @@ static AudioFileTypeID CoreAudio_GetAudioTypeForExtension(const char* file_exten
 	{
 		return 0;
 	}
-
 }
 
-static const char* CoreAudio_FourCCToString(int32_t error_code)
+#ifdef DEBUG_CHATTER /* used with SNDDBG() */
+static const char* CoreAudio_FourCCToString(Sint32 error_code)
 {
 	static char return_string[16];
-	uint32_t big_endian_code = htonl(error_code);
+	Uint32 big_endian_code = SDL_SwapBE32((Uint32)error_code);
 	char* big_endian_str = (char*)&big_endian_code;
 	// see if it appears to be a 4-char-code
 	if(isprint(big_endian_str[0])
@@ -187,7 +186,7 @@ static const char* CoreAudio_FourCCToString(int32_t error_code)
 	}
 	return return_string;
 }
-
+#endif
 
 
 SInt64 CoreAudio_SizeCallback(void* inClientData)
@@ -229,11 +228,9 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 	AudioStreamBasicDescription	output_format;
 	Float64 estimated_duration;
 	UInt32 format_size;
-	
 
 	core_audio_file_container = (CoreAudioFileContainer*)SDL_malloc(sizeof(CoreAudioFileContainer));
 	BAIL_IF_MACRO(core_audio_file_container == NULL, ERR_OUT_OF_MEMORY, 0);
-
 
 	audio_file_id = (AudioFileID*)SDL_malloc(sizeof(AudioFileID));
 	BAIL_IF_MACRO(audio_file_id == NULL, ERR_OUT_OF_MEMORY, 0);
@@ -255,15 +252,15 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 		SNDDBG(("Core Audio: can't grok data. reason: [%s].\n", CoreAudio_FourCCToString(error_result)));
 		BAIL_MACRO("Core Audio: Not valid audio data.", 0);
 	} /* if */
-	
-    format_size = sizeof(actual_format);
-    error_result = AudioFileGetProperty(
+
+	format_size = sizeof(actual_format);
+	error_result = AudioFileGetProperty(
 		*audio_file_id,
 		kAudioFilePropertyDataFormat,
 		&format_size,
 		&actual_format
 	);
-    if (error_result != noErr)
+	if (error_result != noErr)
 	{
 		AudioFileClose(*audio_file_id);
 		SDL_free(audio_file_id);
@@ -272,14 +269,14 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 		BAIL_MACRO("Core Audio: Not valid audio data.", 0);
 	} /* if */
 
-    format_size = sizeof(estimated_duration);
-    error_result = AudioFileGetProperty(
+	format_size = sizeof(estimated_duration);
+	error_result = AudioFileGetProperty(
 		*audio_file_id,
 		kAudioFilePropertyEstimatedDuration,
 		&format_size,
 		&estimated_duration
 	);
-    if (error_result != noErr)
+	if (error_result != noErr)
 	{
 		AudioFileClose(*audio_file_id);
 		SDL_free(audio_file_id);
@@ -288,11 +285,10 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 		BAIL_MACRO("Core Audio: Not valid audio data.", 0);
 	} /* if */
 
-
 	core_audio_file_container->audioFileID = audio_file_id;
-	
+
 	internal->decoder_private = core_audio_file_container;
-	
+
 	sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
 	sample->actual.rate = (UInt32) actual_format.mSampleRate;
 	sample->actual.channels = (UInt8)actual_format.mChannelsPerFrame;
@@ -310,7 +306,7 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 			}
 			else
 			{
-				sample->actual.format = AUDIO_U16MSB;				
+				sample->actual.format = AUDIO_U16MSB;
 			}
 		}
 		else if(8 == actual_format.mBitsPerChannel)
@@ -321,15 +317,14 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 			}
 			else
 			{
-				sample->actual.format = AUDIO_U8;				
+				sample->actual.format = AUDIO_U8;
 			}
 		}
-		else // might be 0 for undefined? 
+		else // might be 0 for undefined?
 		{
 			// This case seems to come up a lot for me. Maybe for file types like .m4a?
 			sample->actual.format = AUDIO_S16SYS;
 			SNDDBG(("Core Audio: Unsupported actual_format.mBitsPerChannel: [%d].\n", actual_format.mBitsPerChannel));
-			
 		}
 	}
 	else // little endian
@@ -342,7 +337,7 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 			}
 			else
 			{
-				sample->actual.format = AUDIO_U16LSB;				
+				sample->actual.format = AUDIO_U16LSB;
 			}
 		}
 		else if(8 == actual_format.mBitsPerChannel)
@@ -353,7 +348,7 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 			}
 			else
 			{
-				sample->actual.format = AUDIO_U8;				
+				sample->actual.format = AUDIO_U8;
 			}
 		}
 		else // might be 0 for undefined? 
@@ -362,30 +357,22 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 			
 			SNDDBG(("Core Audio: Unsupported actual_format.mBitsPerChannel: [%d].\n", actual_format.mBitsPerChannel));
 		}
-
 	}
 #else
-	
-	
-	
-    /*
-     * I want to use Core Audio to do conversion and decoding for performance reasons.
+	/*
+	 * I want to use Core Audio to do conversion and decoding for performance reasons.
 	 * This is particularly important on mobile devices like iOS.
 	 * Taking from the Ogg Vorbis decode, I pretend the "actual" format is the same 
 	 * as the desired format. 
-     */
-    sample->actual.format = (sample->desired.format == 0) ?
-	AUDIO_S16SYS : sample->desired.format;
-#endif	
-
+	 */
+	sample->actual.format = (sample->desired.format == 0) ? AUDIO_S16SYS : sample->desired.format;
+#endif
 
 	SNDDBG(("CoreAudio: channels == (%d).\n", sample->actual.channels));
 	SNDDBG(("CoreAudio: sampling rate == (%d).\n",sample->actual.rate));
 	SNDDBG(("CoreAudio: total seconds of sample == (%d).\n", internal->total_time));
 	SNDDBG(("CoreAudio: sample->actual.format == (%d).\n", sample->actual.format));
 
-
-	
 	error_result = ExtAudioFileWrapAudioFileID(*audio_file_id,
 		false, // set to false for read-only
 		&core_audio_file_container->extAudioFileRef
@@ -398,7 +385,6 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 		SNDDBG(("Core Audio: can't wrap data. reason: [%s].\n", CoreAudio_FourCCToString(error_result)));
 		BAIL_MACRO("Core Audio: Failed to wrap data.", 0);
 	} /* if */
-
 
 	/* The output format must be linear PCM because that's the only type OpenAL knows how to deal with.
 	 * Set the client format to 16 bit signed integer (native-endian) data because that is the most
@@ -454,7 +440,6 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 	output_format.mBytesPerPacket = output_format.mBitsPerChannel/8 * output_format.mChannelsPerFrame; // e.g. 16-bits/8 * channels => so 2-bytes per channel per frame
 	output_format.mBytesPerFrame = output_format.mBitsPerChannel/8 * output_format.mChannelsPerFrame; // For PCM, since 1 frame is 1 packet, it is the same as mBytesPerPacket
 
-	
 /*
 	output_format.mSampleRate = actual_format.mSampleRate; // preserve the original sample rate
 	output_format.mChannelsPerFrame = actual_format.mChannelsPerFrame; // preserve the number of channels
@@ -466,16 +451,15 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 	output_format.mBytesPerPacket = 2 * output_format.mChannelsPerFrame; // We know we are using 16-bit, so 2-bytes per channel per frame
 	output_format.mBytesPerFrame = 2 * output_format.mChannelsPerFrame; // For PCM, since 1 frame is 1 packet, it is the same as mBytesPerPacket
 */
-	SNDDBG(("output_format: mSampleRate: %lf\n", output_format.mSampleRate)); 
-	SNDDBG(("output_format: mChannelsPerFrame: %d\n", output_format.mChannelsPerFrame)); 
-	SNDDBG(("output_format: mFormatID: %d\n", output_format.mFormatID)); 
-	SNDDBG(("output_format: mFormatFlags: %d\n", output_format.mFormatFlags)); 
-	SNDDBG(("output_format: mFramesPerPacket: %d\n", output_format.mFramesPerPacket)); 
-	SNDDBG(("output_format: mBitsPerChannel: %d\n", output_format.mBitsPerChannel)); 
-	SNDDBG(("output_format: mBytesPerPacket: %d\n", output_format.mBytesPerPacket)); 
-	SNDDBG(("output_format: mBytesPerFrame: %d\n", output_format.mBytesPerFrame)); 
-	
-	
+	SNDDBG(("output_format: mSampleRate: %lf\n", output_format.mSampleRate));
+	SNDDBG(("output_format: mChannelsPerFrame: %d\n", output_format.mChannelsPerFrame));
+	SNDDBG(("output_format: mFormatID: %d\n", output_format.mFormatID));
+	SNDDBG(("output_format: mFormatFlags: %d\n", output_format.mFormatFlags));
+	SNDDBG(("output_format: mFramesPerPacket: %d\n", output_format.mFramesPerPacket));
+	SNDDBG(("output_format: mBitsPerChannel: %d\n", output_format.mBitsPerChannel));
+	SNDDBG(("output_format: mBytesPerPacket: %d\n", output_format.mBytesPerPacket));
+	SNDDBG(("output_format: mBytesPerFrame: %d\n", output_format.mBytesPerFrame));
+
 	/* Set the desired client (output) data format */
 	error_result = ExtAudioFileSetProperty(core_audio_file_container->extAudioFileRef, kExtAudioFileProperty_ClientDataFormat, sizeof(output_format), &output_format);
 	if(noErr != error_result)
@@ -486,20 +470,15 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 		SDL_free(core_audio_file_container);
 		SNDDBG(("Core Audio: ExtAudioFileSetProperty(kExtAudioFileProperty_ClientDataFormat) failed, reason: [%s].\n", CoreAudio_FourCCToString(error_result)));
 		BAIL_MACRO("Core Audio: Not valid audio data.", 0);
-	}	
-
+	}
 
 	core_audio_file_container->outputFormat = (AudioStreamBasicDescription*)SDL_malloc(sizeof(AudioStreamBasicDescription));
 	BAIL_IF_MACRO(core_audio_file_container->outputFormat == NULL, ERR_OUT_OF_MEMORY, 0);
 
-
-	
 	/* Copy the output format to the audio_description that was passed in so the 
 	 * info will be returned to the user.
 	 */
 	SDL_memcpy(core_audio_file_container->outputFormat, &output_format, sizeof(AudioStreamBasicDescription));
-
-	
 
 	return 1;
 } /* CoreAudio_open */
@@ -545,55 +524,48 @@ static Uint32 CoreAudio_read(Sound_Sample *sample)
 
 
 //	void* temp_buffer = SDL_malloc(max_buffer_size);
-	
+
 	AudioBufferList audio_buffer_list;
 	audio_buffer_list.mNumberBuffers = 1;
 	audio_buffer_list.mBuffers[0].mDataByteSize = max_buffer_size;
 	audio_buffer_list.mBuffers[0].mNumberChannels = core_audio_file_container->outputFormat->mChannelsPerFrame;
 	audio_buffer_list.mBuffers[0].mData = internal->buffer;
 
-
 	bytes_remaining = max_buffer_size;
 	buffer_size_in_frames_remaining = buffer_size_in_frames;
-	
-	// oops. Due to the kAudioFormatFlagIsPacked bug, 
+
+	// oops. Due to the kAudioFormatFlagIsPacked bug,
 	// I was misled to believe that Core Audio
-	// was not always filling my entire requested buffer. 
+	// was not always filling my entire requested buffer.
 	// So this while-loop might be unnecessary.
-	// However, I have not exhaustively tested all formats, 
+	// However, I have not exhaustively tested all formats,
 	// so maybe it is possible this loop is useful.
 	// It might also handle the not-evenly disvisible case above.
 	while(buffer_size_in_frames_remaining > 0 && !(sample->flags & SOUND_SAMPLEFLAG_EOF))
 	{
-		
 		data_buffer_size = (UInt32)(buffer_size_in_frames * core_audio_file_container->outputFormat->mBytesPerFrame);
-//		printf("data_buffer_size=%d\n", data_buffer_size); 
+//		printf("data_buffer_size=%d\n", data_buffer_size);
 
 		buffer_size_in_frames = buffer_size_in_frames_remaining;
-		
-//		printf("reading buffer_size_in_frames=%"PRId64"\n", buffer_size_in_frames); 
 
+//		printf("reading buffer_size_in_frames=%"PRId64"\n", buffer_size_in_frames); 
 
 		audio_buffer_list.mBuffers[0].mDataByteSize = bytes_remaining;
 		audio_buffer_list.mBuffers[0].mData = &(((UInt8*)internal->buffer)[total_bytes_read]);
 
-		
 		/* Read the data into an AudioBufferList */
 		error_result = ExtAudioFileRead(core_audio_file_container->extAudioFileRef, &buffer_size_in_frames, &audio_buffer_list);
 		if(error_result == noErr)
 		{
-		
-		
 			/* Success */
-			
 			total_frames_read += buffer_size_in_frames;
 			buffer_size_in_frames_remaining = buffer_size_in_frames_remaining - buffer_size_in_frames;
-			
+
 //			printf("read buffer_size_in_frames=%"PRId64", buffer_size_in_frames_remaining=%"PRId64"\n", buffer_size_in_frames, buffer_size_in_frames_remaining); 
 
 			/* ExtAudioFileRead returns the number of frames actually read. Need to convert back to bytes. */
 			data_buffer_size = (UInt32)(buffer_size_in_frames * core_audio_file_container->outputFormat->mBytesPerFrame);
-//			printf("data_buffer_size=%d\n", data_buffer_size); 
+//			printf("data_buffer_size=%d\n", data_buffer_size);
 
 			total_bytes_read += data_buffer_size;
 			bytes_remaining = bytes_remaining - data_buffer_size;
@@ -601,20 +573,18 @@ static Uint32 CoreAudio_read(Sound_Sample *sample)
 			/* Note: 0 == buffer_size_in_frames is a legitimate value meaning we are EOF. */
 			if(0 == buffer_size_in_frames)
 			{
-				sample->flags |= SOUND_SAMPLEFLAG_EOF;			
+				sample->flags |= SOUND_SAMPLEFLAG_EOF;
 			}
-
 		}
-		else 
+		else
 		{
 			SNDDBG(("Core Audio: ExtAudioFileReadfailed, reason: [%s].\n", CoreAudio_FourCCToString(error_result)));
 
 			sample->flags |= SOUND_SAMPLEFLAG_ERROR;
 			break;
-			
 		}
 	}
-	
+
 	if( (!(sample->flags & SOUND_SAMPLEFLAG_EOF)) && (total_bytes_read < max_buffer_size))
 	{
 		SNDDBG(("Core Audio: ExtAudioFileReadfailed SOUND_SAMPLEFLAG_EAGAIN, reason: [total_bytes_read < max_buffer_size], %d, %d.\n", total_bytes_read , max_buffer_size));
@@ -628,13 +598,12 @@ static Uint32 CoreAudio_read(Sound_Sample *sample)
 
 static int CoreAudio_rewind(Sound_Sample *sample)
 {
-	OSStatus error_result = noErr;	
+	OSStatus error_result = noErr;
 	Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
 	CoreAudioFileContainer* core_audio_file_container = (CoreAudioFileContainer *) internal->decoder_private;
-	
+
 	error_result = ExtAudioFileSeek(core_audio_file_container->extAudioFileRef, 0);
-	if(error_result != noErr)
-	{
+	if(error_result != noErr) {
 		sample->flags |= SOUND_SAMPLEFLAG_ERROR;
 	}
 	return 1;
@@ -651,10 +620,8 @@ static int CoreAudio_seek(Sound_Sample *sample, Uint32 ms)
 	Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
 	CoreAudioFileContainer* core_audio_file_container = (CoreAudioFileContainer *) internal->decoder_private;
 	SInt64 frame_offset = 0;
-	AudioStreamBasicDescription	actual_format;
-	UInt32 format_size;
 
-	
+#if 0 /* not working */
 	/* I'm confused. The Apple documentation says this:
 	"Seek position is specified in the sample rate and frame count of the file’s audio data format
 	— not your application’s audio data format."
@@ -663,16 +630,15 @@ static int CoreAudio_seek(Sound_Sample *sample, Uint32 ms)
 	When I use outputFormat, things seem to work correctly.
 	I must be misinterpreting the documentation or doing something wrong.
 	*/
-#if 0 /* not working */
-    format_size = sizeof(AudioStreamBasicDescription);
-    error_result = AudioFileGetProperty(
+	AudioStreamBasicDescription	actual_format;
+	UInt32 format_size = sizeof(AudioStreamBasicDescription);
+	error_result = AudioFileGetProperty(
 		*core_audio_file_container->audioFileID,
 		kAudioFilePropertyDataFormat,
 		&format_size,
 		&actual_format
 	);
-    if(error_result != noErr)
-	{
+	if(error_result != noErr) {
 		sample->flags |= SOUND_SAMPLEFLAG_ERROR;
 		BAIL_MACRO("Core Audio: Could not GetProperty for kAudioFilePropertyDataFormat.", 0);
 	} /* if */
@@ -686,11 +652,10 @@ static int CoreAudio_seek(Sound_Sample *sample, Uint32 ms)
 
 	// computed against actual format and not the client format
 	error_result = ExtAudioFileSeek(core_audio_file_container->extAudioFileRef, frame_offset);
-	if(error_result != noErr)
-	{
+	if(error_result != noErr) {
 		sample->flags |= SOUND_SAMPLEFLAG_ERROR;
 	}
-	
+
 	return 1;
 } /* CoreAudio_seek */
 
@@ -730,7 +695,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_CoreAudio =
         "Eric Wing <ewing . public @ playcontrol.net>",
         "https://playcontrol.net"
     },
-	
+
     CoreAudio_init,       /*   init() method */
     CoreAudio_quit,       /*   quit() method */
     CoreAudio_open,       /*   open() method */
