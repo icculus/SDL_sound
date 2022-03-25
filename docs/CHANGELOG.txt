@@ -3,7 +3,7 @@
 Not maintaining CHANGELOG.txt by hand any more. This is why we have revision
  control tools to do it for us.  :)
 
-Take a look at https://hg.icculus.org/icculus/SDL_sound/shortlog for a
+Take a look at https://github.com/icculus/SDL_sound/commits/ for a
  complete list of changes.
 
 --ryan. (icculus@icculus.org)

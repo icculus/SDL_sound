@@ -40,11 +40,6 @@ Building/Installing:
   Please read docs/INSTALL.txt.
 
 Reporting bugs/commenting:
- There is a mailing list available. Subscription and mailing list archives
- can be found here:
-
-    https://icculus.org/mailman/listinfo/sdlsound
-
- The mailing list is the best way to get in touch with SDL_sound developers.
+  Please visit https://github.com/icculus/SDL_sound/issues for the bug tracker.
 
 --ryan. (icculus@icculus.org)

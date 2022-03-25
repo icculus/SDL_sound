@@ -54,8 +54,8 @@ into the library itself.
 
 OTHER NOTES...
 
-Questions? Problems? Patches? Consider joining the SDL_sound mailing list.
-Details are at https://icculus.org/SDL_sound/
+Questions? Problems? Patches?
+Talk to us at https://github.com/icculus/SDL_sound/
 
 --ryan. (icculus@icculus.org)
 
