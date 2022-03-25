@@ -20,7 +20,6 @@
 #if SOUND_SUPPORTS_MP3
 
 #define DR_MP3_IMPLEMENTATION
-
 #define DR_MP3_NO_STDIO 1
 #define DR_MP3_FLOAT_OUTPUT 1
 #define DRMP3_ASSERT(x) SDL_assert((x))
@@ -30,6 +29,10 @@
 #define DRMP3_COPY_MEMORY(dst, src, sz) SDL_memcpy((dst), (src), (sz))
 #define DRMP3_MOVE_MEMORY(dst, src, sz) SDL_memmove((dst), (src), (sz))
 #define DRMP3_ZERO_MEMORY(p, sz) SDL_memset((p), 0, (sz))
+#if SDL_VERSION_ATLEAST(2, 0, 9)
+#define exp SDL_exp
+#endif
+#define floor SDL_floor
 
 #include "dr_mp3.h"
 

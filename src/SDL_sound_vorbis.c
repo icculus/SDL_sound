@@ -60,7 +60,7 @@
 #define cos(x) SDL_cos(x)
 #define sin(x) SDL_sin(x)
 #define log(x) SDL_log(x)
-#if !SDL_VERSION_ATLEAST(2, 0, 9)
+#if SDL_VERSION_ATLEAST(2, 0, 9)
 #define exp SDL_exp
 #endif
 #endif
