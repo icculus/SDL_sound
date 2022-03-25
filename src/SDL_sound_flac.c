@@ -39,6 +39,7 @@
 
 static size_t flac_read(void* pUserData, void* pBufferOut, size_t bytesToRead)
 {
+    /* !!! FIXME: dr_flac treats returning less than bytesToRead as EOF. So we can't EAGAIN. */
     Uint8 *ptr = (Uint8 *) pBufferOut;
     Sound_Sample *sample = (Sound_Sample *) pUserData;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
@@ -46,24 +47,13 @@ static size_t flac_read(void* pUserData, void* pBufferOut, size_t bytesToRead)
     size_t retval = 0;
 
     /* !!! FIXME: dr_flac treats returning less than bytesToRead as EOF. So we can't EAGAIN. */
-    while (retval < bytesToRead)
+    while (bytesToRead)
     {
         const size_t rc = SDL_RWread(rwops, ptr, 1, bytesToRead);
-        if (rc == 0)
-        {
-            sample->flags |= SOUND_SAMPLEFLAG_EOF;
-            break;
-        } /* if */
-        else if (rc == -1) /** FIXME: this error check is broken **/
-        {
-            sample->flags |= SOUND_SAMPLEFLAG_ERROR;
-            break;
-        } /* else if */
-        else
-        {
-            retval += rc;
-            ptr += rc;
-        } /* else */
+        if (rc == 0) break;
+        bytesToRead -= rc;
+        retval += rc;
+        ptr += rc;
     } /* while */
 
     return retval;
@@ -133,10 +123,14 @@ static void FLAC_close(Sound_Sample *sample)
 static Uint32 FLAC_read(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    const int channels = (int) sample->actual.channels;
     drflac *dr = (drflac *) internal->decoder_private;
-    const drflac_uint64 rc = drflac_read_pcm_frames_s32(dr, internal->buffer_size / (sizeof (drflac_int32) * sample->actual.channels), (drflac_int32 *) internal->buffer);
-    /* !!! FIXME: the flac_read callback sets ERROR and EOF flags, but this only tells you about i/o errors, not corruption. */
-    return rc * sizeof (drflac_int32) * sample->actual.channels;
+    const drflac_uint64 frames_to_read = (internal->buffer_size / channels) / sizeof (drflac_int32);
+    const drflac_uint64 rc = drflac_read_pcm_frames_s32(dr, frames_to_read, (drflac_int32 *) internal->buffer);
+    /* !!! FIXME: we only set the EOF flags, but this only tells you we're done, not about i/o errors, nor corruption. */
+    if (rc < frames_to_read)
+        sample->flags |= SOUND_SAMPLEFLAG_EOF;
+    return rc * channels * sizeof (drflac_int32);
 } /* FLAC_read */
 
 static int FLAC_rewind(Sound_Sample *sample)
@@ -177,4 +171,3 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_FLAC =
 #endif /* SOUND_SUPPORTS_FLAC */
 
 /* end of SDL_sound_flac.c ... */
-
