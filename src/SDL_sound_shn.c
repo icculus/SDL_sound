@@ -282,9 +282,9 @@ static SDL_INLINE int uint_get(int nbit, shn_t *shn, SDL_RWops *rw, Sint32 *w)
 } /* uint_get */
 
 
-static int SHN_init(void)
+static SDL_bool SHN_init(void)
 {
-    return 1;  /* initialization always successful. */
+    return SDL_TRUE;  /* initialization always successful. */
 } /* SHN_init */
 
 

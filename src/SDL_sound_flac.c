@@ -79,9 +79,9 @@ static drflac_bool32 flac_seek(void* pUserData, int offset, drflac_seek_origin o
 } /* flac_seek */
 
 
-static int FLAC_init(void)
+static SDL_bool FLAC_init(void)
 {
-    return 1;  /* always succeeds. */
+    return SDL_TRUE;  /* always succeeds. */
 } /* FLAC_init */
 
 

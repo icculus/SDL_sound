@@ -23,9 +23,9 @@ typedef struct CoreAudioFileContainer
 } CoreAudioFileContainer;
 
 
-static int CoreAudio_init(void)
+static SDL_bool CoreAudio_init(void)
 {
-    return 1;  /* always succeeds. */
+    return SDL_TRUE;  /* always succeeds. */
 } /* CoreAudio_init */
 
 

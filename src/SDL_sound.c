@@ -34,7 +34,7 @@ extern const Sound_DecoderFunctions __Sound_DecoderFunctions_CoreAudio;
 
 typedef struct
 {
-    int available;
+    SDL_bool available;
     const Sound_DecoderFunctions *funcs;
 } decoder_element;
 

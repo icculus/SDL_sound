@@ -573,9 +573,9 @@ static int read_fmt_adpcm(SDL_RWops *rw, fmt_t *fmt)
  * Everything else...                                                        *
  *****************************************************************************/
 
-static int WAV_init(void)
+static SDL_bool WAV_init(void)
 {
-    return 1;  /* always succeeds. */
+    return SDL_TRUE;  /* always succeeds. */
 } /* WAV_init */
 
 

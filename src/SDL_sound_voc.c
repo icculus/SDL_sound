@@ -77,9 +77,9 @@ typedef struct vocstuff {
 #define VOC_DATA_16   9
 
 
-static int VOC_init(void)
+static SDL_bool VOC_init(void)
 {
-    return 1;  /* always succeeds. */
+    return SDL_TRUE;  /* always succeeds. */
 } /* VOC_init */
 
 

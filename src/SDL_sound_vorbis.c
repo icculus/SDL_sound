@@ -97,9 +97,9 @@ static const char *vorbis_error_string(const int err)
     return "VORBIS: unknown error";
 } /* vorbis_error_string */
 
-static int VORBIS_init(void)
+static SDL_bool VORBIS_init(void)
 {
-    return 1;  /* always succeeds. */
+    return SDL_TRUE;  /* always succeeds. */
 } /* VORBIS_init */
 
 static void VORBIS_quit(void)

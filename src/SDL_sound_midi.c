@@ -29,7 +29,7 @@
 # define TIMIDITY_CFG_FREEPATS  "/etc/timidity/freepats.cfg"
 #endif
 
-static int MIDI_init(void)
+static SDL_bool MIDI_init(void)
 {
     const char *cfg;
     int rc = -1;
@@ -51,8 +51,8 @@ static int MIDI_init(void)
         if (rc < 0) rc = Timidity_Init(NULL); /* library's default cfg. */
     }
 
-    BAIL_IF_MACRO(rc < 0, "MIDI: Could not initialise", 0);
-    return(1);
+    BAIL_IF_MACRO(rc < 0, "MIDI: Could not initialise", SDL_FALSE);
+    return SDL_TRUE;
 } /* MIDI_init */
 
 

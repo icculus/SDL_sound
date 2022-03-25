@@ -74,9 +74,9 @@ static drmp3_bool32 mp3_seek(void* pUserData, int offset, drmp3_seek_origin orig
 } /* mp3_seek */
 
 
-static int MP3_init(void)
+static SDL_bool MP3_init(void)
 {
-    return 1;  /* always succeeds. */
+    return SDL_TRUE;  /* always succeeds. */
 } /* MP3_init */
 
 

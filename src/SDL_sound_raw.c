@@ -28,9 +28,9 @@
 
 #if SOUND_SUPPORTS_RAW
 
-static int RAW_init(void)
+static SDL_bool RAW_init(void)
 {
-    return 1;  /* always succeeds. */
+    return SDL_TRUE;  /* always succeeds. */
 } /* RAW_init */
 
 

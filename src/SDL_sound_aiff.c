@@ -332,9 +332,9 @@ static int read_fmt_normal(SDL_RWops *rw, fmt_t *fmt)
  * Everything else...                                                        *
  *****************************************************************************/
 
-static int AIFF_init(void)
+static SDL_bool AIFF_init(void)
 {
-    return 1;  /* always succeeds. */
+    return SDL_TRUE;  /* always succeeds. */
 } /* AIFF_init */
 
 

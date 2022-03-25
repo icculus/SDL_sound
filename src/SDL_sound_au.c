@@ -18,9 +18,9 @@
 #if SOUND_SUPPORTS_AU
 
 /* no init/deinit needed */
-static int AU_init(void)
+static SDL_bool AU_init(void)
 {
-    return 1;
+    return SDL_TRUE;
 } /* AU_init */
 
 static void AU_quit(void)
