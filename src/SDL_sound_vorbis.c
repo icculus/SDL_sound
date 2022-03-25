@@ -52,7 +52,7 @@
 #define malloc SDL_malloc
 #define realloc SDL_realloc
 #define free SDL_free
-#if !(defined(HAVE_LIBC) && defined(__WATCOMC__)) /* Watcom has issues... */
+#ifndef __WATCOMC__ /* #@!.!.. */
 #define pow SDL_pow
 #define floor SDL_floor
 #define ldexp(v, e) SDL_scalbn((v), (e))

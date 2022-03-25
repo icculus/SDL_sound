@@ -29,10 +29,12 @@
 #define DRMP3_COPY_MEMORY(dst, src, sz) SDL_memcpy((dst), (src), (sz))
 #define DRMP3_MOVE_MEMORY(dst, src, sz) SDL_memmove((dst), (src), (sz))
 #define DRMP3_ZERO_MEMORY(p, sz) SDL_memset((p), 0, (sz))
+#ifndef __WATCOMC__ /* #@!.!.. */
 #if SDL_VERSION_ATLEAST(2, 0, 9)
 #define exp SDL_exp
 #endif
 #define floor SDL_floor
+#endif
 
 #include "dr_mp3.h"
 
