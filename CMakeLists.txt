@@ -241,13 +241,6 @@ else()
 endif()
 
 if(UNIX)
-    set(SDLSOUND_TARBALL "${CMAKE_CURRENT_SOURCE_DIR}/../SDL_sound-${SDLSOUND_VERSION}.tar.bz2")
-    add_custom_target(
-        SDL2_sound-dist
-        hg archive -t tbz2 "${SDLSOUND_TARBALL}"
-        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-        COMMENT "Building source tarball '${SDLSOUND_TARBALL}'..."
-    )
     add_custom_target(
         SDL2_sound-uninstall
         "${CMAKE_CURRENT_SOURCE_DIR}/docs/uninstall.sh"
