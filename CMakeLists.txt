@@ -63,7 +63,7 @@ sdlsound_decoder_option(MP3 "MPEG-1 Layers I-III" ".MP3, .MP2, .MP1" TRUE)
 sdlsound_decoder_option(MIDI "Midi" ".MID" FALSE)
 
 if(APPLE)
-    sdlsound_decoder_option(COREAUDIO "CoreAudio" "various audio formats")
+    sdlsound_decoder_option(COREAUDIO "CoreAudio" "various audio formats" TRUE)
     if(SDLSOUND_DECODER_COREAUDIO)
         set(OPTIONAL_LIBRARY_LIBS ${OPTIONAL_LIBRARY_LIBS} "-framework AudioToolbox")
     endif()
