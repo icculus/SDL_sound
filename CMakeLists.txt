@@ -10,6 +10,9 @@ set(SDLSOUND_VERSION 2.0.1)
 # Increment this if/when we break backwards compatibility.
 set(SDLSOUND_SOVERSION 2)
 
+include(CMakePushCheckState)
+include(CheckFunctionExists)
+
 include_directories(src)
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
@@ -37,6 +40,18 @@ if(WIN32)
     string(STRIP "${SDL2_LIBRARIES}" SDL2_LIBRARIES)
 endif()
 
+cmake_push_check_state()
+set(CMAKE_REQUIRED_LIBRARIES ${SDL2_LIBRARIES})
+check_function_exists(SDL_exp HAVE_SDL_EXP)
+cmake_pop_check_state()
+
+if(UNIX AND NOT (WIN32 OR APPLE OR HAIKU OR EMSCRIPTEN))
+    find_library(LIBM_LIBRARY m)
+    if(LIBM_LIBRARY)
+        set(LIBM_LIBRARY m)
+    endif()
+endif()
+
 # Decoders ...
 # These are (mostly) on by default now, so these options are only useful for
 #  disabling them.
@@ -61,6 +76,11 @@ sdlsound_decoder_option(MP3 "MPEG-1 Layers I-III" ".MP3, .MP2, .MP1" TRUE)
 
 # timidity is not public domain code, so default to not building it.
 sdlsound_decoder_option(MIDI "Midi" ".MID" FALSE)
+
+if(SDLSOUND_DECODER_VORBIS AND LIBM_LIBRARY AND NOT HAVE_SDL_EXP)
+# stb_vorbis uses exp(), SDL_exp() is available as of SDL2-2.0.9
+    set(OPTIONAL_LIBRARY_LIBS ${OPTIONAL_LIBRARY_LIBS} ${LIBM_LIBRARY})
+endif()
 
 if(APPLE)
     sdlsound_decoder_option(COREAUDIO "CoreAudio" "various audio formats" TRUE)
