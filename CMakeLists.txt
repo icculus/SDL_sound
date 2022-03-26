@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 2.8.12)
 
-project(SDL_sound)
+project(SDL_sound C)
 set(SDLSOUND_VERSION 2.0.1)
 
 # Increment this if/when we break backwards compatibility.
