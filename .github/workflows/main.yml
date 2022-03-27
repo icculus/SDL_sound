@@ -10,14 +10,19 @@ jobs:
       matrix:
         platform:  # !!! FIXME: figure out an efficient way to get SDL2 on the Windows/Mac bots.
         - { name: Linux,   os: ubuntu-20.04, flags: -GNinja }
+        - { name: MacOS,   os: macos-latest }
         #- { name: Windows, os: windows-latest }
-        #- { name: MacOS,   os: macos-latest }
+        
     steps:
     - name: Setup Linux dependencies
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
         sudo apt-get install cmake ninja-build libsdl2-dev
+    - name: Setup MacOS dependencies
+      if: runner.os == 'MacOS'
+      run: |
+        brew install sdl2
     - name: Get SDL_sound sources
       uses: actions/checkout@v2
     - name: Configure CMake
