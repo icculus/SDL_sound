@@ -26,6 +26,6 @@ jobs:
     - name: Get SDL_sound sources
       uses: actions/checkout@v2
     - name: Configure CMake
-      run: cmake -B build ${{ matrix.platform.flags }}
+      run: cmake -B build -DSDLSOUND_DECODER_MIDI=ON ${{ matrix.platform.flags }}
     - name: Build
       run: cmake --build build/
