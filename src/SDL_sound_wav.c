@@ -249,8 +249,8 @@ static Uint32 read_sample_fmt_normal(Sound_Sample *sample)
     /* deal with 24-bit PCM. */
     if ((retval > 0) && (w->fmt->wBitsPerSample == 24)) {
         const Uint32 total = retval / 3;
-        const Uint8 *src = (internal->buffer + retval) - 3;
-        Uint32 *dst = (internal->buffer + (total * 4)) - 4;
+        const Uint8 *src = ((Uint8 *)internal->buffer + retval) - 3;
+        Uint32 *dst = (Uint32 *) (((Uint8 *)internal->buffer + (total * 4)) - 4);
         Uint32 i;
         for (i = 0; i < total; i++, dst--, src -= 3) {
             const Uint32 sample = ((Uint32) src[0]) | (((Uint32) src[1]) << 8) | (((Uint32) src[2]) << 16);
