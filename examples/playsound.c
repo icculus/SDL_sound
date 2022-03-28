@@ -10,19 +10,17 @@
  * This is a quick and dirty test of SDL_sound.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#if HAVE_SIGNAL_H
-#  include <signal.h>
-#endif
-
 #ifdef _WIN32
 #define SDL_MAIN_HANDLED /* this is a console-only app */
 #endif
 #include "SDL.h"
 #include "SDL_sound.h"
+
+#include <stdio.h>
+
+#if HAVE_SIGNAL_H
+#  include <signal.h>
+#endif
 
 #define DEFAULT_DECODEBUF 16384
 #define DEFAULT_AUDIOBUF  4096
@@ -652,10 +650,10 @@ static void report_filename(const char *filename)
     const char *icon = "playsound";
     char *ptr = NULL;
 
-    ptr = strrchr(filename, '/');
+    ptr = SDL_strrchr(filename, '/');
     if (ptr != NULL)
         filename = ptr + 1;
-    ptr = strrchr(filename, '\\');
+    ptr = SDL_strrchr(filename, '\\');
     if (ptr != NULL)
         filename = ptr + 1;
 
