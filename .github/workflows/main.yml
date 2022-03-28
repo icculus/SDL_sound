@@ -8,10 +8,12 @@ jobs:
     runs-on: ${{ matrix.platform.os }}
     strategy:
       matrix:
-        platform:  # !!! FIXME: figure out an efficient way to get SDL2 on the Windows/Mac bots.
-        - { name: Linux,   os: ubuntu-20.04, flags: -GNinja }
-        - { name: MacOS,   os: macos-latest }
-        #- { name: Windows, os: windows-latest }
+        platform:
+        - { name: Linux,        os: ubuntu-20.04, flags: -GNinja }
+        - { name: MacOS,        os: macos-latest }
+        - { name: MSVC (x86),   os: windows-latest, flags: "-DCMAKE_TOOLCHAIN_FILE=C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake -A Win32", vcpkg: x86-windows }
+        - { name: MSVC (x64),   os: windows-latest, flags: "-DCMAKE_TOOLCHAIN_FILE=C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake -A x64",   vcpkg: x64-windows }
+        # - { name: MSVC (ARM64), os: windows-latest, flags: "-DCMAKE_TOOLCHAIN_FILE=C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake -A ARM64", vcpkg: arm64-windows }
         
     steps:
     - name: Setup Linux dependencies
@@ -23,6 +25,11 @@ jobs:
       if: runner.os == 'MacOS'
       run: |
         brew install sdl2
+    - name: Setup MSVC dependencies
+      if: matrix.platform.vcpkg != ''
+      run: |
+        vcpkg install --triplet ${{ matrix.platform.vcpkg }} sdl2
+
     - name: Get SDL_sound sources
       uses: actions/checkout@v2
     - name: Configure CMake
