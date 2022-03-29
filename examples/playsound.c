@@ -662,6 +662,7 @@ static void report_filename(const char *filename)
     SDL_SetHint("SDL_AUDIO_DEVICE_STREAM_NAME", filename);
 
     fprintf(stdout, "%s: Now playing [%s]...\n", icon, filename);
+    fflush(stdout);
 } /* report_filename */
 
 
@@ -962,6 +963,7 @@ int main(int argc, char **argv)
             {
                 fprintf(stdout, "done.\n");
             } /* else */
+            fflush(stdout);
         } /* if */
 
         SDL_PauseAudio(0);
