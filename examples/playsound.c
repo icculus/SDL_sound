@@ -39,6 +39,7 @@ static const char *option_list[] =
     "--audiobuf",  "n   Buffer n samples to audio device (default 4096).",
     "--volume",    "n     Playback volume multiplier (default 1.0).",
     "--stdin",     "[ext]  Read from stdin (treat data as format [ext])",
+    "--window",    "      Open a window for playback.",
     "--version",   "     Display version information and exit.",
     "--decoders",  "    List supported data formats and exit.",
     "--predecode", "   Decode entire sample before playback.",
@@ -676,14 +677,8 @@ int main(int argc, char **argv)
     int i;
     int delay;
     int new_sample = 1;
+    SDL_Window *window = NULL;
     Uint32 sdl_init_flags = SDL_INIT_AUDIO;
-
-    #if ENABLE_EVENTS
-    SDL_Surface *screen = NULL;
-    SDL_Event event;
-
-    sdl_init_flags |= SDL_INIT_VIDEO;
-    #endif
 
     #ifdef HAVE_SETBUF
     setbuf(stdout, NULL);
@@ -730,7 +725,12 @@ int main(int argc, char **argv)
             output_decoders();
             Sound_Quit();
             return(0);
-        } /* else if */
+        } /* if */
+
+        else if (SDL_strcmp(argv[i], "--window") == 0)
+        {
+            sdl_init_flags |= SDL_INIT_VIDEO;
+        } /* if */
     } /* for */
 
     if (SDL_Init(sdl_init_flags) == -1)
@@ -752,10 +752,10 @@ int main(int argc, char **argv)
     signal(SIGINT, sigint_catcher);
     #endif
 
-    #if ENABLE_EVENTS
-    screen = SDL_SetVideoMode(320, 240, 8, 0);
-    SDL_assert(screen != NULL);
-    #endif
+    if (sdl_init_flags & SDL_INIT_VIDEO) {
+        window = SDL_CreateWindow("playsound", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 320, 240, 0);
+        SDL_assert(window != NULL);
+    }
 
     SDL_memset(&sound_desired, '\0', sizeof (Sound_AudioInfo));
 
@@ -969,11 +969,12 @@ int main(int argc, char **argv)
         done_flag = 0;  /* the audio callback will flip this flag. */
         while (!done_flag)
         {
-            #if ENABLE_EVENTS
-            SDL_PollEvent(&event);
-            if ((event.type == SDL_KEYDOWN) || (event.type == SDL_QUIT))
-                done_flag = 1;
-            #endif
+            if (window) {
+                SDL_Event event;
+                SDL_PollEvent(&event);
+                if ((event.type == SDL_KEYDOWN) || (event.type == SDL_QUIT))
+                    done_flag = 1;
+            }
 
             SDL_Delay(10);
         } /* while */
@@ -995,6 +996,7 @@ int main(int argc, char **argv)
             break;
     } /* for */
 
+    SDL_DestroyWindow(window);
     Sound_Quit();
     SDL_Quit();
     return((done_flag < 0) ? 1 : 0);
