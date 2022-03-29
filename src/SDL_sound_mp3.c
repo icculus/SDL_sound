@@ -92,7 +92,7 @@ static int MP3_open(Sound_Sample *sample, const char *ext)
         BAIL_MACRO("MP3: Not an MPEG-1 layer 1-3 stream.", 0);
     } /* if */
 
-    SNDDBG(("MP3: Accepting data stream.\n"));
+    SNDDBG(("MP3: Accepting data stream."));
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
 
     sample->actual.channels = dr->channels;
