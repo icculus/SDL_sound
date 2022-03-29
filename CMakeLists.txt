@@ -97,6 +97,19 @@ if(SDLSOUND_DECODER_MIDI)
         src/timidity/tables.c
         src/timidity/timidity.c
     )
+    set(TIMIDITY_HDRS
+        src/timidity/common.h
+        src/timidity/instrum.h
+        src/timidity/mix.h
+        src/timidity/options.h
+        src/timidity/output.h
+        src/timidity/playmidi.h
+        src/timidity/readmidi.h
+        src/timidity/resample.h
+        src/timidity/tables.h
+        src/timidity/timidity.h
+    )
+    source_group("src/timidity" FILES ${TIMIDITY_SRCS} ${TIMIDITY_HDRS})
 endif()
 if(SDLSOUND_DECODER_MODPLUG)
     set(LIBMODPLUG_SRCS
@@ -131,6 +144,12 @@ if(SDLSOUND_DECODER_MODPLUG)
         src/libmodplug/sndfile.c
         src/libmodplug/sndmix.c
     )
+    set(LIBMODPLUG_HDRS
+        src/libmodplug/libmodplug.h
+        src/libmodplug/modplug.h
+        src/libmodplug/tables.h
+    )
+    source_group("src/libmodplug" FILES ${LIBMODPLUG_SRCS} ${LIBMODPLUG_HDRS})
     if(MSVC)
         set_source_files_properties(${LIBMODPLUG_SRCS} PROPERTIES LANGUAGE CXX)
     endif()
@@ -159,8 +178,23 @@ set(SDLSOUND_SRCS
     src/SDL_sound_voc.c
     src/SDL_sound_vorbis.c
     src/SDL_sound_wav.c
+)
+set(SDLSOUND_HDRS
+    src/dr_flac.h
+    src/dr_mp3.h
+    src/SDL_sound.h
+    src/SDL_sound_internal.h
+    src/stb_vorbis.h
+)
+source_group("src" FILES ${SDLSOUND_SRCS} ${SDLSOUND_HDRS} ${SDLSOUND_SHARED_SRCS})
+
+set(SDLSOUND_ALL_SRCS
+    ${SDLSOUND_SRCS}
+    ${SDLSOUND_HDRS}
     ${TIMIDITY_SRCS}
+    ${TIMIDITY_HDRS}
     ${LIBMODPLUG_SRCS}
+    ${LIBMODPLUG_HDRS}
 )
 
 option(SDLSOUND_BUILD_STATIC "Build static library" TRUE)
@@ -168,7 +202,7 @@ if(OS2) # no static library on os/2
     set(SDLSOUND_BUILD_STATIC FALSE)
 endif()
 if(SDLSOUND_BUILD_STATIC)
-    add_library(SDL2_sound-static STATIC ${SDLSOUND_SRCS})
+    add_library(SDL2_sound-static STATIC ${SDLSOUND_ALL_SRCS})
     # Don't rename this on Windows, since DLLs will also produce an import
     #  library named "SDL2_sound.lib" which would conflict; Unix tend to like
     #  the same library name with a different extension for static libs, but
@@ -182,7 +216,7 @@ endif()
 
 option(SDLSOUND_BUILD_SHARED "Build shared library" TRUE)
 if(SDLSOUND_BUILD_SHARED)
-    add_library(SDL2_sound SHARED ${SDLSOUND_SRCS} ${SDLSOUND_SHARED_SRCS})
+    add_library(SDL2_sound SHARED ${SDLSOUND_ALL_SRCS} ${SDLSOUND_SHARED_SRCS})
     set_target_properties(SDL2_sound PROPERTIES MACOSX_RPATH 1)
     set_target_properties(SDL2_sound PROPERTIES VERSION ${SDLSOUND_VERSION})
     set_target_properties(SDL2_sound PROPERTIES SOVERSION ${SDLSOUND_SOVERSION})
