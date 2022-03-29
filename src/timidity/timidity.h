@@ -19,7 +19,11 @@ typedef Sint32 final_volume_t;
 #define VIBRATO_SAMPLE_INCREMENTS 32
 
 /* Maximum polyphony. */
-#define MAX_VOICES	48
+/* #define MAX_VOICES	48 */
+#define MAX_VOICES	256
+#define MAXCHAN	16
+/* #define MAXCHAN	64 */
+#define MAXBANK	128
 
 typedef struct {
   Sint32
@@ -109,8 +113,8 @@ typedef struct {
     Sint32 encoding;
     float master_volume;
     Sint32 amplification;
-    ToneBank *tonebank[128];
-    ToneBank *drumset[128];
+    ToneBank *tonebank[MAXBANK];
+    ToneBank *drumset[MAXBANK];
     Instrument *default_instrument;
     int default_program;
     void (*write)(void *dp, Sint32 *lp, Sint32 c);
@@ -123,7 +127,7 @@ typedef struct {
     /* samples per MIDI delta-t */
     Sint32 sample_increment;
     Sint32 sample_correction;
-    Channel channel[16];
+    Channel channel[MAXCHAN];
     Voice voice[MAX_VOICES];
     int voices;
     Sint32 drumchannels;

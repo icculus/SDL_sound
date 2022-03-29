@@ -45,7 +45,7 @@ static void reset_controllers(MidiSong *song, int c)
 static void reset_midi(MidiSong *song)
 {
   int i;
-  for (i=0; i<16; i++)
+  for (i=0; i<MAXCHAN; i++)
     {
       reset_controllers(song, i);
       /* The rest of these are unaffected by the Reset All Controllers event */

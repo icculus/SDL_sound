@@ -20,7 +20,7 @@
 
 #include "tables.h"
 
-static ToneBank *master_tonebank[128], *master_drumset[128];
+static ToneBank *master_tonebank[MAXBANK], *master_drumset[MAXBANK];
 
 static char def_instr_name[256] = "";
 
@@ -278,10 +278,10 @@ static int read_config_file(const char *name, int rcf_count)
 	goto fail;
       }
       i=SDL_atoi(w[1]);
-      if (i<0 || i>127)
+      if (i<0 || i>(MAXBANK-1))
       {
-	SNDDBG(("%s: line %d: Drum set must be between 0 and 127\n",
-		name, line));
+	SNDDBG(("%s: line %d: Drum set must be between 0 and %d\n",
+		name, line, MAXBANK-1));
 	goto fail;
       }
       if (!master_drumset[i])
@@ -301,10 +301,10 @@ static int read_config_file(const char *name, int rcf_count)
 	goto fail;
       }
       i=SDL_atoi(w[1]);
-      if (i<0 || i>127)
+      if (i<0 || i>(MAXBANK-1))
       {
-	SNDDBG(("%s: line %d: Tone bank must be between 0 and 127\n",
-		name, line));
+	SNDDBG(("%s: line %d: Tone bank must be between 0 and %d\n",
+		name, line, MAXBANK-1));
 	goto fail;
       }
       if (!master_tonebank[i])
@@ -526,7 +526,7 @@ static void do_song_load(SDL_RWops *rw, SDL_AudioSpec *audio, MidiSong **out)
   if (song == NULL)
       return;
 
-  for (i = 0; i < 128; i++)
+  for (i = 0; i < MAXBANK; i++)
   {
     if (master_tonebank[i]) {
       song->tonebank[i] = SDL_calloc(1, sizeof(ToneBank));
@@ -661,7 +661,7 @@ void Timidity_Exit(void)
 {
   int i, j;
 
-  for (i = 0; i < 128; i++) {
+  for (i = 0; i < MAXBANK; i++) {
     if (master_tonebank[i]) {
       ToneBankElement *e = master_tonebank[i]->tone;
       if (e != NULL) {

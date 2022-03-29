@@ -9,6 +9,7 @@
 #define __SDL_SOUND_INTERNAL__
 #include "SDL_sound_internal.h"
 
+#include "options.h"
 #include "timidity.h"
 #include "common.h"
 #include "instrum.h"
@@ -359,10 +360,10 @@ static MidiEvent *groom_list(MidiSong *song, Sint32 divisions,Sint32 *eventsp,
   Sint32 i, our_event_count, tempo, skip_this_event, new_value;
   Sint32 sample_cum, samples_to_do, at, st, dt, counting_time;
 
-  int current_bank[16], current_set[16], current_program[16];
+  int current_bank[MAXCHAN], current_set[MAXCHAN], current_program[MAXCHAN];
   /* Or should each bank have its own current program? */
 
-  for (i=0; i<16; i++)
+  for (i=0; i<MAXCHAN; i++)
     {
       current_bank[i]=0;
       current_set[i]=0;
@@ -393,7 +394,7 @@ static MidiEvent *groom_list(MidiSong *song, Sint32 divisions,Sint32 *eventsp,
 	{
 	  skip_this_event=1;
 	}
-      else if (meep->event.channel >= 16)
+      else if (meep->event.channel >= MAXCHAN)
         skip_this_event=1;
       else switch (meep->event.type)
 	{

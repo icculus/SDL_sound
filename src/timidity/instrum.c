@@ -41,7 +41,7 @@ static void free_bank(MidiSong *song, int dr, int b)
 {
   int i;
   ToneBank *bank=((dr) ? song->drumset[b] : song->tonebank[b]);
-  for (i=0; i<128; i++)
+  for (i=0; i<MAXBANK; i++)
     if (bank->instrument[i])
       {
 	if (bank->instrument[i] != MAGIC_LOAD_INSTRUMENT)
@@ -513,7 +513,7 @@ static int fill_bank(MidiSong *song, int dr, int b)
 	   (dr) ? "drumset" : "tone bank", b));
       return 0;
     }
-  for (i=0; i<128; i++)
+  for (i=0; i<MAXBANK; i++)
     {
       if (bank->instrument[i]==MAGIC_LOAD_INSTRUMENT)
 	{
@@ -574,7 +574,7 @@ static int fill_bank(MidiSong *song, int dr, int b)
 
 int load_missing_instruments(MidiSong *song)
 {
-  int i=128,errors=0;
+  int i=MAXBANK,errors=0;
   while (i--)
     {
       if (song->tonebank[i])
@@ -587,7 +587,7 @@ int load_missing_instruments(MidiSong *song)
 
 void free_instruments(MidiSong *song)
 {
-  int i=128;
+  int i=MAXBANK;
   while(i--)
     {
       if (song->tonebank[i])
