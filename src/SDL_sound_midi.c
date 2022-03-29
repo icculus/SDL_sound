@@ -69,10 +69,10 @@ static int MIDI_open(Sound_Sample *sample, const char *ext)
     SDL_AudioSpec spec;
     MidiSong *song;
 
-    spec.channels = 2;
-    spec.format = AUDIO_S16SYS;
-    spec.freq = 44100;
-    spec.samples = 4096;
+    spec.channels = (sample->desired.channels == 1) ? 1 : 2;
+    spec.format = (sample->desired.format == 0) ? AUDIO_S16SYS : sample->desired.format;
+    spec.freq = (sample->desired.rate == 0) ? 44100 : sample->desired.rate;
+    spec.samples = sample->buffer_size / (SDL_AUDIO_BITSIZE(spec.format) / 8) / spec.channels;
     
     song = Timidity_LoadSong(rw, &spec);
     BAIL_IF_MACRO(song == NULL, "MIDI: Not a MIDI file.", 0);
@@ -84,9 +84,9 @@ static int MIDI_open(Sound_Sample *sample, const char *ext)
     internal->decoder_private = (void *) song;
     internal->total_time = Timidity_GetSongLength(song);
 
-    sample->actual.channels = 2;
-    sample->actual.rate = 44100;
-    sample->actual.format = AUDIO_S16SYS;
+    sample->actual.channels = spec.channels;
+    sample->actual.rate = spec.freq;
+    sample->actual.format = spec.format;
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
     
     return(1); /* we'll handle this data. */
