@@ -28,6 +28,7 @@
 #pragma GCC visibility push(hidden)
 #endif
 
+#define DEBUG_CHATTER 1
 #if (defined DEBUG_CHATTER)
 #define SNDDBG(x) SDL_Log x
 #else

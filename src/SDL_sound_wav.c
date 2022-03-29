@@ -18,6 +18,9 @@
 
 #if SOUND_SUPPORTS_WAV
 
+/* !!! FIXME: move the byteorder reading code to SDL_sound_internal.h and
+use it in all the decoders. */
+
 /* Better than SDL_ReadLE16, since you can detect i/o errors... */
 static SDL_INLINE int read_le16(SDL_RWops *rw, Uint16 *ui16)
 {
