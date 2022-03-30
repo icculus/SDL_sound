@@ -115,14 +115,16 @@ static void MIDI_quit(void)
 
 static SDL_bool read_midi_track(MidiTrack *track)
 {
-    Uint32 delta_time;
     const Uint8 *endpos = track->data + track->datalen;
     while (track->readpos < endpos)
     {
+        Uint32 delta_time;
         Uint8 event_type;
         Uint32 event_len = 0;
+
         if (!get_vlq(track, &delta_time)) { return SDL_FALSE; }
         if (!get_uint8(track, &event_type)) { return SDL_FALSE; }
+
         if ((event_type == 0xF0) || (event_type == 0xF7))  /* sysex event */
         {
             if (!get_vlq(track, &event_len)) { return SDL_FALSE; }
@@ -141,14 +143,22 @@ static SDL_bool read_midi_track(MidiTrack *track)
         } /* else if */
         else
         {
+            Uint8 channel, msg, data1, data2;
+            SDL_bool is_running_status = SDL_FALSE;
             if ((event_type & 0x80) == 0)   /* if high bit isn't set, this is data for the current running status, not a new event. */
+            {
                 event_type = track->running_status;
+                track->readpos--;  /* re-read the data byte below. */
+                is_running_status = SDL_TRUE;
+            } /* if */
             else
+            {
                 track->running_status = event_type;   /* if high bit _is_ set, however, this becomes the new running status. */
+            } /* else */
 
-            const Uint8 channel = event_type & 0xF;
-            const Uint8 msg = event_type >> 4;
-            Uint8 data1, data2;
+            channel = event_type & 0xF;
+            msg = event_type >> 4;
+
             switch (msg)
             {
                 case 0x8:   /* note off */
@@ -212,7 +222,11 @@ static SDL_bool read_midi_track(MidiTrack *track)
                     break;
 
                 default:
-                    SNDDBG(("MIDI: UNKNOWN event channel %u, data1=%u, data2=%u", (unsigned int) channel, (unsigned int) data1, (unsigned int) data2));
+                    SNDDBG(("MIDI: UNKNOWN event 0x%X channel %u, data1=%u, data2=%u", (unsigned int) msg, (unsigned int) channel, (unsigned int) data1, (unsigned int) data2));
+                    if (is_running_status)  /* dump the byte we just pushed back so we make progress. */
+                    {
+                        if (!get_uint8(track, &data1)) { return SDL_FALSE; }
+                    } /* if */
                     break;
             } /* switch */
         } /* else */
