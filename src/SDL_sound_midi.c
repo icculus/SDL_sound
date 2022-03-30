@@ -374,8 +374,7 @@ static int MIDI_open(Sound_Sample *sample, const char *ext)
     internal->total_time = -1;  /* !!! FIXME? */
     internal->decoder_private = m;
 
-
-    return 0;
+    BAIL_MACRO("MIDI: write me", 0);
 
 //    return 1; /* we'll handle this data. */
 } /* MIDI_open */
@@ -429,19 +428,14 @@ static Uint32 MIDI_read(Sound_Sample *sample)
 
 static int MIDI_rewind(Sound_Sample *sample)
 {
-    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    BAIL_IF_MACRO(SDL_RWseek(internal->rw, 0, RW_SEEK_SET) != 0, ERR_IO_ERROR, 0);
+    BAIL_MACRO("MIDI: rewind is unimplemented", 0);  /* !!! FIXME */
     return 1;
 } /* MIDI_rewind */
 
 
 static int MIDI_seek(Sound_Sample *sample, Uint32 ms)
 {
-    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    const Sint64 pos = __Sound_convertMsToBytePos(&sample->actual, ms);
-    const int err = (SDL_RWseek(internal->rw, pos, RW_SEEK_SET) != pos);
-    BAIL_IF_MACRO(err, ERR_IO_ERROR, 0);
-    return 1;
+    BAIL_MACRO("MIDI: seek is unimplemented", 0);  /* !!! FIXME */
 } /* MIDI_seek */
 
 static const char *extensions_midi[] = { "MID", "MIDI", NULL };
