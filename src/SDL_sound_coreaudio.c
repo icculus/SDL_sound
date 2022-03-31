@@ -294,19 +294,56 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 	sample->actual.channels = (UInt8)actual_format.mChannelsPerFrame;
 	internal->total_time = (SInt32)(estimated_duration * 1000.0 + 0.5);
 
-#if 0
-	/* FIXME: Both Core Audio and SDL 1.3 support float and 32-bit formats */
-	if(actual_format.mFormatFlags & kAudioFormatFlagIsBigEndian)
+	if(0 == sample->desired.format)
 	{
-		if(16 == actual_format.mBitsPerChannel)
+		if(32 == actual_format.mBitsPerChannel)
 		{
-			if(kAudioFormatFlagIsSignedInteger & actual_format.mFormatFlags)
+			if(kAudioFormatFlagIsFloat & actual_format.mFormatFlags)
 			{
-				sample->actual.format = AUDIO_S16MSB;
+				if(actual_format.mFormatFlags & kAudioFormatFlagIsBigEndian)
+				{
+					sample->actual.format = AUDIO_F32MSB;
+				}
+				else
+				{
+					sample->actual.format = AUDIO_F32LSB;
+				}
 			}
 			else
 			{
-				sample->actual.format = AUDIO_U16MSB;
+				if(actual_format.mFormatFlags & kAudioFormatFlagIsBigEndian)
+				{
+					sample->actual.format = AUDIO_S32MSB;
+				}
+				else
+				{
+					sample->actual.format = AUDIO_S32LSB;
+				}
+			}
+		}
+		else if(16 == actual_format.mBitsPerChannel)
+		{
+			if(kAudioFormatFlagIsSignedInteger & actual_format.mFormatFlags)
+			{
+				if(actual_format.mFormatFlags & kAudioFormatFlagIsBigEndian)
+				{
+					sample->actual.format = AUDIO_S16MSB;
+				}
+				else
+				{
+					sample->actual.format = AUDIO_S16LSB;
+				}
+			}
+			else
+			{
+				if(actual_format.mFormatFlags & kAudioFormatFlagIsBigEndian)
+				{
+					sample->actual.format = AUDIO_U16MSB;
+				}
+				else
+				{
+					sample->actual.format = AUDIO_U16LSB;
+				}
 			}
 		}
 		else if(8 == actual_format.mBitsPerChannel)
@@ -327,46 +364,22 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 			SNDDBG(("Core Audio: Unsupported actual_format.mBitsPerChannel: [%d].\n", actual_format.mBitsPerChannel));
 		}
 	}
-	else // little endian
+	else
 	{
-		if(16 == actual_format.mBitsPerChannel)
-		{
-			if(kAudioFormatFlagIsSignedInteger & actual_format.mFormatFlags)
-			{
-				sample->actual.format = AUDIO_S16LSB;
-			}
-			else
-			{
-				sample->actual.format = AUDIO_U16LSB;
-			}
-		}
-		else if(8 == actual_format.mBitsPerChannel)
-		{
-			if(kAudioFormatFlagIsSignedInteger & actual_format.mFormatFlags)
-			{
-				sample->actual.format = AUDIO_S8;
-			}
-			else
-			{
-				sample->actual.format = AUDIO_U8;
-			}
-		}
-		else // might be 0 for undefined? 
-		{
-			sample->actual.format = AUDIO_S16SYS;
-			
-			SNDDBG(("Core Audio: Unsupported actual_format.mBitsPerChannel: [%d].\n", actual_format.mBitsPerChannel));
-		}
+		/*
+		 * I want to use Core Audio to do conversion and decoding for performance reasons.
+		 * This is particularly important on mobile devices like iOS.
+		 * Taking from the Ogg Vorbis decode, I pretend the "actual" format is the same
+		 * as the desired format.
+		 */
+		sample->actual.format = sample->desired.format;
 	}
-#else
-	/*
-	 * I want to use Core Audio to do conversion and decoding for performance reasons.
-	 * This is particularly important on mobile devices like iOS.
-	 * Taking from the Ogg Vorbis decode, I pretend the "actual" format is the same 
-	 * as the desired format. 
-	 */
-	sample->actual.format = (sample->desired.format == 0) ? AUDIO_S16SYS : sample->desired.format;
-#endif
+
+	/* AUDIO_U16LSB and AUDIO_U16MSB don't seem to be supported by CoreAudio. */
+	if (sample->actual.format == AUDIO_U16LSB)
+		sample->actual.format = AUDIO_S16LSB;
+	if (sample->actual.format == AUDIO_U16MSB)
+		sample->actual.format = AUDIO_S16MSB;
 
 	SNDDBG(("CoreAudio: channels == (%d).\n", sample->actual.channels));
 	SNDDBG(("CoreAudio: sampling rate == (%d).\n",sample->actual.rate));
@@ -394,63 +407,28 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 	output_format.mSampleRate = actual_format.mSampleRate; // preserve the original sample rate
 	output_format.mChannelsPerFrame = actual_format.mChannelsPerFrame; // preserve the number of channels
 	output_format.mFormatID = kAudioFormatLinearPCM; // We want linear PCM data
+	output_format.mFormatFlags = kAudioFormatFlagIsPacked; // I seem to read failures problems without kAudioFormatFlagIsPacked. From a mailing list post, this seems to be a Core Audio bug.
 	output_format.mFramesPerPacket = 1; // We know for linear PCM, the definition is 1 frame per packet
+	output_format.mBitsPerChannel = SDL_AUDIO_BITSIZE(sample->actual.format);
 
-	if(sample->desired.format == 0)
+	if(SDL_AUDIO_ISFLOAT(sample->actual.format))
 	{
-		// do AUDIO_S16SYS
-		output_format.mFormatFlags = kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsSignedInteger | kAudioFormatFlagIsPacked; // I seem to read failures problems without kAudioFormatFlagIsPacked. From a mailing list post, this seems to be a Core Audio bug.
-		output_format.mBitsPerChannel = 16; // We know we want 16-bit
+		output_format.mFormatFlags |= kAudioFormatFlagIsFloat;
 	}
-	else
+
+	if(SDL_AUDIO_ISSIGNED(sample->actual.format))
 	{
-		output_format.mFormatFlags = 0; // clear flags
-		output_format.mFormatFlags |= kAudioFormatFlagIsPacked; // I seem to read failures problems without kAudioFormatFlagIsPacked. From a mailing list post, this seems to be a Core Audio bug.
-		// Mask against bitsize
-		if(0xFF & sample->desired.format)
-		{
-			output_format.mBitsPerChannel = 16; /* 16-bit */
-		}
-		else
-		{
-			output_format.mBitsPerChannel = 8; /* 8-bit */
-		}
+		output_format.mFormatFlags |= kAudioFormatFlagIsSignedInteger;
+	}
 
-		// Mask for signed/unsigned
-		if((1<<15) & sample->desired.format)
-		{
-			output_format.mFormatFlags = output_format.mFormatFlags | kAudioFormatFlagIsSignedInteger;
-
-		}
-		else
-		{
-			// no flag set for unsigned
-		}
-		// Mask for big/little endian
-		if((1<<12) & sample->desired.format)
-		{
-			output_format.mFormatFlags = output_format.mFormatFlags | kAudioFormatFlagIsBigEndian;
-		}
-		else
-		{
-			// no flag set for little endian 
-		}
+	if(SDL_AUDIO_ISBIGENDIAN(sample->actual.format))
+	{
+		output_format.mFormatFlags |= kAudioFormatFlagIsBigEndian;
 	}
 
 	output_format.mBytesPerPacket = output_format.mBitsPerChannel/8 * output_format.mChannelsPerFrame; // e.g. 16-bits/8 * channels => so 2-bytes per channel per frame
 	output_format.mBytesPerFrame = output_format.mBitsPerChannel/8 * output_format.mChannelsPerFrame; // For PCM, since 1 frame is 1 packet, it is the same as mBytesPerPacket
 
-/*
-	output_format.mSampleRate = actual_format.mSampleRate; // preserve the original sample rate
-	output_format.mChannelsPerFrame = actual_format.mChannelsPerFrame; // preserve the number of channels
-	output_format.mFormatID = kAudioFormatLinearPCM; // We want linear PCM data
-//	output_format.mFormatFlags = kAudioFormatFlagsNativeEndian | kAudioFormatFlagIsPacked | kAudioFormatFlagIsSignedInteger;
-	output_format.mFormatFlags = kAudioFormatFlagsNativeEndian |  kAudioFormatFlagIsSignedInteger;
-	output_format.mFramesPerPacket = 1; // We know for linear PCM, the definition is 1 frame per packet
-	output_format.mBitsPerChannel = 16; // We know we want 16-bit
-	output_format.mBytesPerPacket = 2 * output_format.mChannelsPerFrame; // We know we are using 16-bit, so 2-bytes per channel per frame
-	output_format.mBytesPerFrame = 2 * output_format.mChannelsPerFrame; // For PCM, since 1 frame is 1 packet, it is the same as mBytesPerPacket
-*/
 	SNDDBG(("output_format: mSampleRate: %lf\n", output_format.mSampleRate));
 	SNDDBG(("output_format: mChannelsPerFrame: %d\n", output_format.mChannelsPerFrame));
 	SNDDBG(("output_format: mFormatID: %d\n", output_format.mFormatID));
