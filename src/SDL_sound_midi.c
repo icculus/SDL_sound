@@ -205,7 +205,6 @@ static SDL_bool read_midi_track(MidiTrack *track)
 
                 case 0xC:   /* program change */
                     if (!get_uint8(track, &data1)) { return SDL_FALSE; }
-                    if (!get_uint8(track, &data2)) { return SDL_FALSE; }
                     SNDDBG(("MIDI: program change event channel %u, preset=%u", (unsigned int) channel, (unsigned int) data1));
                     break;
 
