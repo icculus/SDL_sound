@@ -100,6 +100,22 @@ static SDL_INLINE SDL_bool get_uint8(MidiTrack *track, Uint8 *_ui8)
     return SDL_TRUE;
 } /* get_uint8 */
 
+static SDL_INLINE SDL_bool get_uint16(MidiTrack *track, Uint16 *_ui16)
+{
+    BAIL_IF_MACRO((track->readpos + 2) >= (track->data + track->datalen), "MIDI: corrupt or truncated file", SDL_FALSE);
+    *_ui16 = (((Uint16) track->readpos[0]) << 8) | ((Uint16) track->readpos[1]);
+    track->readpos += 2;
+    return SDL_TRUE;
+} /* get_uint16 */
+
+static SDL_INLINE SDL_bool get_uint24(MidiTrack *track, Uint32 *_ui32)
+{
+    BAIL_IF_MACRO((track->readpos + 3) >= (track->data + track->datalen), "MIDI: corrupt or truncated file", SDL_FALSE);
+    *_ui32 = (((Uint32) track->readpos[0]) << 16) | (((Uint32) track->readpos[1]) << 8) | ((Uint32) track->readpos[2]);
+    track->readpos += 3;
+    return SDL_TRUE;
+} /* get_uint24 */
+
 
 static SDL_bool MIDI_init(void)
 {
@@ -112,6 +128,14 @@ static void MIDI_quit(void)
     /* it's a no-op. */
 } /* MIDI_quit */
 
+static const char *cpymetastr(char *buf, const size_t buflen, const void *str, const size_t slen)
+{
+    const size_t len = SDL_min(buflen - 1, slen);
+    SDL_assert(len > 0);
+    SDL_memcpy(buf, str, len);
+    buf[len] = '\0';
+    return buf;
+}
 
 static SDL_bool read_midi_track(MidiTrack *track)
 {
@@ -127,19 +151,102 @@ static SDL_bool read_midi_track(MidiTrack *track)
 
         if ((event_type == 0xF0) || (event_type == 0xF7))  /* sysex event */
         {
+            const Uint8 *nextreadpos;
             if (!get_vlq(track, &event_len)) { return SDL_FALSE; }
             SNDDBG(("MIDI: sysex event, %u bytes", (unsigned int) event_len));
-            if (event_len) { track->readpos += event_len; }
+            nextreadpos = track->readpos + event_len;
             track->running_status = 0;  /* sysex events cancel any running status */
+            track->readpos = nextreadpos;
         } /* if */
         else if (event_type == 0xFF)
         {
+            char buf[64];
+            const Uint8 *nextreadpos;
             Uint8 meta_event_type;
+            Uint8 ui8;
+            Uint16 ui16;
+            Uint32 ui32;
+
             if (!get_uint8(track, &meta_event_type)) { return SDL_FALSE; }
             if (!get_vlq(track, &event_len)) { return SDL_FALSE; }
-            SNDDBG(("MIDI: meta event 0x%X, %u bytes", (unsigned int) meta_event_type, (unsigned int) event_len));
-            if (event_len) { track->readpos += event_len; }
+
+            nextreadpos = track->readpos + event_len;
+
+            switch (meta_event_type)
+            {
+                case 0x00:  /* sequence number */
+                    if (!get_uint16(track, &ui16)) { return SDL_FALSE; }
+                    SNDDBG(("MIDI: meta event sequence number num=%u", (unsigned int) ui16));
+                    break;
+                case 0x01:  /* text event */
+                    SNDDBG(("MIDI: meta event text event text='%s'", cpymetastr(buf, sizeof (buf), track->readpos, event_len)));
+                    break;
+                case 0x02:  /* copyright notice */
+                    SNDDBG(("MIDI: meta event copyright notice text='%s'", cpymetastr(buf, sizeof (buf), track->readpos, event_len)));
+                    break;
+                case 0x03:  /* track name */
+                    SNDDBG(("MIDI: meta event track name text='%s'", cpymetastr(buf, sizeof (buf), track->readpos, event_len)));
+                    break;
+                case 0x04:  /* instrument name */
+                    SNDDBG(("MIDI: meta event instrument name text='%s'", cpymetastr(buf, sizeof (buf), track->readpos, event_len)));
+                    break;
+                case 0x05:  /* lyric */
+                    SNDDBG(("MIDI: meta event lyric text='%s'", cpymetastr(buf, sizeof (buf), track->readpos, event_len)));
+                    break;
+                case 0x06:  /* marker */
+                    SNDDBG(("MIDI: meta event marker text='%s'", cpymetastr(buf, sizeof (buf), track->readpos, event_len)));
+                    break;
+                case 0x07:  /* cue point */
+                    SNDDBG(("MIDI: meta event cue point text='%s'", cpymetastr(buf, sizeof (buf), track->readpos, event_len)));
+                    break;
+                case 0x20:  /* cue point */
+                    if (!get_uint8(track, &ui8)) { return SDL_FALSE; }
+                    SNDDBG(("MIDI: meta event midi channel prefix channel=%u", (unsigned int) ui8));
+                    break;
+                case 0x2F:  /* end of track */
+                    SNDDBG(("MIDI: meta event end of track"));
+                    break;
+                case 0x51:  /* set tempo */
+                    if (!get_uint24(track, &ui32)) { return SDL_FALSE; }
+                    SNDDBG(("MIDI: meta event set tempo newtempo=%u", (unsigned int) ui32));
+                    break;
+                case 0x54: {  /* smtpe offset */
+                    Uint8 h, m, s, f, ff;
+                    if (!get_uint8(track, &h)) { return SDL_FALSE; }
+                    if (!get_uint8(track, &m)) { return SDL_FALSE; }
+                    if (!get_uint8(track, &s)) { return SDL_FALSE; }
+                    if (!get_uint8(track, &f)) { return SDL_FALSE; }
+                    if (!get_uint8(track, &ff)) { return SDL_FALSE; }
+                    SNDDBG(("MIDI: meta event smtpe offset hours=%u, minutes=%u, seconds=%u, frames=%u, fracframes=%u", (unsigned int) h, (unsigned int) m, (unsigned int) s, (unsigned int) f, (unsigned int) ff));
+                    break;
+                } /* case */
+                case 0x58: {  /* time signature */
+                    Uint8 numer, denom, clocks, notes;
+                    if (!get_uint8(track, &numer)) { return SDL_FALSE; }
+                    if (!get_uint8(track, &denom)) { return SDL_FALSE; }
+                    if (!get_uint8(track, &clocks)) { return SDL_FALSE; }
+                    if (!get_uint8(track, &notes)) { return SDL_FALSE; }
+                    SNDDBG(("MIDI: meta event time signature numerator=%u, denominator=%u, clocks_per_metronome=%u, 1_32_notes_per_24_midi_clocks=%u", (unsigned int) numer, (unsigned int) denom, (unsigned int) clocks, (unsigned int) notes));
+                    break;
+                } /* case */
+                case 0x59: {  /* key signature */
+                    Uint8 sf, mi;
+                    if (!get_uint8(track, &sf)) { return SDL_FALSE; }
+                    if (!get_uint8(track, &mi)) { return SDL_FALSE; }
+                    SNDDBG(("MIDI: meta event key signature sharp_or_flat=%u, minor=%u", (unsigned int) sf, (unsigned int) mi));
+                    break;
+                } /* case */
+                case 0x7F: {  /* sequencer-specific meta event */
+                    Uint8 sf, mi;
+                    if (!get_uint8(track, &sf)) { return SDL_FALSE; }
+                    if (!get_uint8(track, &mi)) { return SDL_FALSE; }
+                    SNDDBG(("MIDI: meta event sequencer specific len=%u", (unsigned int) event_len));
+                    break;
+                } /* case */
+            } /* switch */
+
             track->running_status = 0;  /* meta events cancel any running status */
+            track->readpos = nextreadpos;
         } /* else if */
         else
         {
