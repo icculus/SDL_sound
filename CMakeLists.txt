@@ -74,12 +74,14 @@ if(SDLSOUND_DECODER_VORBIS AND LIBM_LIBRARY)
 # Instead of testing SDL_exp() presence, we unconditionally link
 # with -lm which is just harmless.
     set(OPTIONAL_LIBRARY_LIBS ${OPTIONAL_LIBRARY_LIBS} ${LIBM_LIBRARY})
+    set(PC_LIBS ${PC_LIBS} -l${LIBM_LIBRARY})
 endif()
 
 if(APPLE)
     sdlsound_decoder_option(COREAUDIO "CoreAudio" "various audio formats" TRUE)
     if(SDLSOUND_DECODER_COREAUDIO)
         set(OPTIONAL_LIBRARY_LIBS ${OPTIONAL_LIBRARY_LIBS} "-framework AudioToolbox")
+        set(PC_LIBS ${PC_LIBS} "-framework AudioToolbox")
     endif()
 endif()
 
@@ -189,6 +191,8 @@ if(SDLSOUND_BUILD_SHARED)
     set(SDLSOUND_INSTALL_TARGETS ${SDLSOUND_INSTALL_TARGETS} ";SDL2_sound")
 endif()
 
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/SDL2_sound.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/SDL2_sound.pc" @ONLY)
+
 if(NOT SDLSOUND_BUILD_SHARED AND NOT SDLSOUND_BUILD_STATIC)
     message(FATAL "Both shared and static libraries are disabled!")
 endif()
@@ -230,6 +234,13 @@ install(TARGETS ${SDLSOUND_INSTALL_TARGETS}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 install(FILES src/SDL_sound.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/SDL2)
+if(FREEBSD)
+  # FreeBSD uses ${PREFIX}/libdata/pkgconfig
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/SDL2_sound.pc DESTINATION "libdata/pkgconfig")
+else()
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/SDL2_sound.pc
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+endif()
 
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
