@@ -1,3 +1,5 @@
+SDL2_sound.pc
+
 *.so
 *.so.*
 *.dll
