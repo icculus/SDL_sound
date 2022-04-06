@@ -254,14 +254,17 @@ else()
     message(STATUS "Doxygen not found. You won't be able to build documentation.")
 endif()
 
-if(UNIX)
-    add_custom_target(
-        SDL2_sound-uninstall
-        "${CMAKE_CURRENT_SOURCE_DIR}/docs/uninstall.sh"
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        COMMENT "Uninstall the project..."
-    )
-endif()
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+    IMMEDIATE @ONLY)
+
+add_custom_target(
+    SDL2_sound-uninstall
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+    COMMENT "Uninstall the project..."
+)
 
 macro(message_bool_option _NAME _VALUE)
     if(${_VALUE})
