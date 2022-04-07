@@ -272,6 +272,10 @@ typedef struct __SOUND_SAMPLEINTERNAL__
 #define ERR_PREV_EOF             "Previous decoding already triggered EOF"
 #define ERR_CANNOT_SEEK          "Sample is not seekable"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Call this to set the message returned by Sound_GetError().
  *  Please only use the ERR_* constants above, or add new constants to the
@@ -304,6 +308,10 @@ extern char *SDL_strtokr(char *s1, const char *s2, char **saveptr);
 #define SDL_srand __Sound_srand
 extern int SDL_rand(void);
 extern void SDL_srand(unsigned int seed);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* defined _INCLUDE_SDL_SOUND_INTERNAL_H_ */
 
