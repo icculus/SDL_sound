@@ -129,6 +129,9 @@ if(SDLSOUND_DECODER_MODPLUG)
         src/libmodplug/sndfile.c
         src/libmodplug/sndmix.c
     )
+    if(MSVC)
+        set_source_files_properties(${LIBMODPLUG_SRCS} PROPERTIES LANGUAGE CXX)
+    endif()
 endif()
 
 # Almost everything is "compiled" here, but things that don't apply to the
