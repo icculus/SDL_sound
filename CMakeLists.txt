@@ -13,15 +13,15 @@ set(SDLSOUND_SOVERSION 2)
 include_directories(src)
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-    add_definitions(-std=gnu99)
-    add_definitions(-Wall)
+    add_compile_options(-std=gnu99)
+    add_compile_options(-Wall)
     # Don't use -rpath.
     set(CMAKE_SKIP_RPATH ON CACHE BOOL "Skip RPATH" FORCE)
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "SunPro")
-    add_definitions(-erroff=E_EMPTY_TRANSLATION_UNIT)
-    add_definitions(-xldscope=hidden)
+    add_compile_options(-erroff=E_EMPTY_TRANSLATION_UNIT)
+    add_compile_options(-xldscope=hidden)
 endif()
 
 find_package(SDL2 REQUIRED)
@@ -133,6 +133,11 @@ if(SDLSOUND_DECODER_MODPLUG)
         set_source_files_properties(${LIBMODPLUG_SRCS} PROPERTIES LANGUAGE CXX)
     endif()
 endif()
+if(WIN32)
+    set(SDLSOUND_SHARED_SRCS
+        src/version.rc
+    )
+endif()
 
 # Almost everything is "compiled" here, but things that don't apply to the
 #  build are #ifdef'd out. This is to make it easy to embed SDL_sound into
@@ -175,7 +180,7 @@ endif()
 
 option(SDLSOUND_BUILD_SHARED "Build shared library" TRUE)
 if(SDLSOUND_BUILD_SHARED)
-    add_library(SDL2_sound SHARED ${SDLSOUND_SRCS})
+    add_library(SDL2_sound SHARED ${SDLSOUND_SRCS} ${SDLSOUND_SHARED_SRCS})
     set_target_properties(SDL2_sound PROPERTIES MACOSX_RPATH 1)
     set_target_properties(SDL2_sound PROPERTIES VERSION ${SDLSOUND_VERSION})
     set_target_properties(SDL2_sound PROPERTIES SOVERSION ${SDLSOUND_SOVERSION})
