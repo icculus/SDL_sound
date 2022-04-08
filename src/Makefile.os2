@@ -50,8 +50,6 @@ CFLAGS_BASE+= -I. $(DEPS_INC)
 CFLAGS = $(CFLAGS_BASE)
 # to build a dll:
 CFLAGS+= -bd
-# there are _lots_ of lazy declarations:
-CFLAGS+= -za99
 # for DECLSPEC:
 CFLAGS+= -DBUILD_SDL -DSDL_SOUND_DLL_EXPORTS
 
