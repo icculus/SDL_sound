@@ -13,7 +13,6 @@ set(SDLSOUND_SOVERSION 2)
 include_directories(src)
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-    add_compile_options(-std=gnu99)
     add_compile_options(-Wall)
     # Don't use -rpath.
     set(CMAKE_SKIP_RPATH ON CACHE BOOL "Skip RPATH" FORCE)
@@ -150,9 +149,6 @@ if(SDLSOUND_DECODER_MODPLUG)
         src/libmodplug/tables.h
     )
     source_group("src/libmodplug" FILES ${LIBMODPLUG_SRCS} ${LIBMODPLUG_HDRS})
-    if(MSVC)
-        set_source_files_properties(${LIBMODPLUG_SRCS} PROPERTIES LANGUAGE CXX)
-    endif()
 endif()
 if(WIN32)
     set(SDLSOUND_SHARED_SRCS
