@@ -217,12 +217,6 @@ void Sound_ClearError(void)
 } /* Sound_ClearError */
 
 
-static void SDLCALL free_errmsg(void *errmsg)
-{
-    SDL_free(errmsg);
-} /* free_errmsg */
-
-
 /*
  * This is declared in the internal header.
  */
@@ -245,7 +239,7 @@ void __Sound_SetError(const char *str)
         if (err == NULL)
             return;   /* uhh...? */
 
-        SDL_TLSSet(tlsid_errmsg, err, free_errmsg);
+        SDL_TLSSet(tlsid_errmsg, err, SDL_free);
     } /* if */
 
     err->error_available = SDL_TRUE;
