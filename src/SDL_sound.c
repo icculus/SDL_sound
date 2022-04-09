@@ -483,7 +483,13 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
     } /* for */
 
     /* nothing could handle the sound data... */
-    SDL_free(retval->opaque);
+    /* !!! FIXME: can we just push this through Sound_FreeSample() ? */
+    if (retval->opaque != NULL)
+    {
+        SDL_FreeAudioStream(((Sound_SampleInternal *) retval->opaque)->stream);
+        SDL_free(retval->opaque);
+    } /* if */
+
     __Sound_SIMDFree(retval->buffer);
     SDL_free(retval);
     SDL_RWclose(rw);
@@ -580,6 +586,7 @@ void Sound_FreeSample(Sound_Sample *sample)
     if (internal->rw != NULL)  /* this condition is a "just in case" thing. */
         SDL_RWclose(internal->rw);
 
+    SDL_FreeAudioStream(internal->stream);
     SDL_free(internal);
     __Sound_SIMDFree(sample->buffer);
     SDL_free(sample);
