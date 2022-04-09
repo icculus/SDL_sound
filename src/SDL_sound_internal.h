@@ -318,6 +318,11 @@ extern char *SDL_strtokr(char *s1, const char *s2, char **saveptr);
 extern int SDL_rand(void);
 extern void SDL_srand(unsigned int seed);
 
+/* Wrappers around the SDL versions of these in case you're on an older SDL */
+extern void *__Sound_SIMDAlloc(const size_t len);
+extern void *__Sound_SIMDRealloc(void *mem, const size_t len);
+extern void __Sound_SIMDFree(void *ptr);
+
 #ifdef __cplusplus
 }
 #endif

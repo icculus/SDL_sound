@@ -282,7 +282,8 @@ static Sound_Sample *alloc_sample(SDL_RWops *rw, Sound_AudioInfo *desired,
     } /* if */
 
     SDL_assert(bufferSize > 0);
-    retval->buffer = SDL_calloc(1, bufferSize);  /* pure ugly. */
+
+    retval->buffer = __Sound_SIMDAlloc(bufferSize);
     if (!retval->buffer)
     {
         __Sound_SetError(ERR_OUT_OF_MEMORY);
@@ -290,6 +291,7 @@ static Sound_Sample *alloc_sample(SDL_RWops *rw, Sound_AudioInfo *desired,
         SDL_free(retval);
         return NULL;
     } /* if */
+    SDL_memset(retval->buffer, '\0', bufferSize);
     retval->buffer_size = bufferSize;
 
     if (desired != NULL)
@@ -482,8 +484,7 @@ Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext,
 
     /* nothing could handle the sound data... */
     SDL_free(retval->opaque);
-    if (retval->buffer != NULL)
-        SDL_free(retval->buffer);
+    __Sound_SIMDFree(retval->buffer);
     SDL_free(retval);
     SDL_RWclose(rw);
     __Sound_SetError(ERR_UNSUPPORTED_FORMAT);
@@ -580,10 +581,7 @@ void Sound_FreeSample(Sound_Sample *sample)
         SDL_RWclose(internal->rw);
 
     SDL_free(internal);
-
-    if (sample->buffer != NULL)
-        SDL_free(sample->buffer);
-
+    __Sound_SIMDFree(sample->buffer);
     SDL_free(sample);
 } /* Sound_FreeSample */
 
@@ -596,7 +594,7 @@ int Sound_SetBufferSize(Sound_Sample *sample, Uint32 newSize)
     BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, 0);
     BAIL_IF_MACRO(sample == NULL, ERR_INVALID_ARGUMENT, 0);
     internal = ((Sound_SampleInternal *) sample->opaque);
-    newBuf = SDL_realloc(sample->buffer, newSize * internal->sdlcvt.len_mult);
+    newBuf = __Sound_SIMDRealloc(sample->buffer, newSize);
     BAIL_IF_MACRO(newBuf == NULL, ERR_OUT_OF_MEMORY, 0);
 
     internal->buffer = sample->buffer = newBuf;
@@ -717,7 +715,7 @@ Uint32 Sound_DecodeAll(Sound_Sample *sample)
             ((sample->flags & SOUND_SAMPLEFLAG_ERROR) == 0) )
     {
         Uint32 br = Sound_Decode(sample);
-        void *ptr = SDL_realloc(buf, newBufSize + br);
+        void *ptr = __Sound_SIMDRealloc(buf, newBufSize + br);
         if (ptr == NULL)
         {
             sample->flags |= SOUND_SAMPLEFLAG_ERROR;
@@ -731,10 +729,10 @@ Uint32 Sound_DecodeAll(Sound_Sample *sample)
         } /* else */
     } /* while */
 
-    if (buf == NULL)  /* ...in case first call to SDL_realloc() fails... */
+    if (buf == NULL)  /* ...in case first call to __Sound_SIMDRealloc() fails... */
         return sample->buffer_size;
 
-    SDL_free(sample->buffer);
+    __Sound_SIMDFree(sample->buffer);
 
     internal->buffer = sample->buffer = buf;
     internal->buffer_size = sample->buffer_size = newBufSize;
@@ -863,6 +861,101 @@ char *__Sound_strtokr(char *s1, const char *s2, char **ptr)
     return s1;
 }
 #endif
+
+
+/* This falls back to an included copy/paste of SDL's SIMDAlloc code if you aren't using a new enough SDL.
+   To keep this simple, the included copy assumes you need to align to 64 bytes, which is a little
+   wasteful but should work on everything from MMX to AVX-512. The real SDL checks the CPU at runtime
+   to decide what's available and aligns to smaller numbers if all you have is SSE, Altivec or NEON.
+   Not to mention this is just a second copy of the code that doesn't get attention...you should really
+   upgrade your SDL. Ideally this copy goes away at some point. */
+
+#define USE_REAL_SDL_SIMDALLOC SDL_VERSION_ATLEAST(2, 0, 14)
+
+void *__Sound_SIMDAlloc(const size_t len)
+{
+#if USE_REAL_SDL_SIMDALLOC
+    return SDL_SIMDAlloc(len);
+#else
+    const size_t alignment = 64;
+    const size_t padding = alignment - (len % alignment);
+    const size_t padded = (padding != alignment) ? (len + padding) : len;
+    Uint8 *retval = NULL;
+    Uint8 *ptr = (Uint8 *) SDL_malloc(padded + alignment + sizeof (void *));
+    if (ptr) {
+        /* store the actual allocated pointer right before our aligned pointer. */
+        retval = ptr + sizeof (void *);
+        retval += alignment - (((size_t) retval) % alignment);
+        *(((void **) retval) - 1) = ptr;
+    }
+    return retval;
+#endif
+}
+
+void *__Sound_SIMDRealloc(void *mem, const size_t len)
+{
+#if USE_REAL_SDL_SIMDALLOC
+    return SDL_SIMDRealloc(mem, len);
+#else
+    const size_t alignment = 64;
+    const size_t padding = alignment - (len % alignment);
+    const size_t padded = (padding != alignment) ? (len + padding) : len;
+    Uint8 *retval = (Uint8*) mem;
+    void *oldmem = mem;
+    size_t memdiff = 0, ptrdiff;
+    Uint8 *ptr;
+
+    if (mem) {
+        void **realptr = (void **) mem;
+        realptr--;
+        mem = *(((void **) mem) - 1);
+
+        /* Check the delta between the real pointer and user pointer */
+        memdiff = ((size_t) oldmem) - ((size_t) mem);
+    }
+
+    ptr = (Uint8 *) SDL_realloc(mem, padded + alignment + sizeof (void *));
+
+    if (ptr == NULL) {
+        return NULL; /* Out of memory, bail! */
+    }
+
+    /* Store the actual allocated pointer right before our aligned pointer. */
+    retval = ptr + sizeof (void *);
+    retval += alignment - (((size_t) retval) % alignment);
+
+    /* Make sure the delta is the same! */
+    if (mem) {
+        ptrdiff = ((size_t) retval) - ((size_t) ptr);
+        if (memdiff != ptrdiff) { /* Delta has changed, copy to new offset! */
+            oldmem = (void*) (((uintptr_t) ptr) + memdiff);
+
+            /* Even though the data past the old `len` is undefined, this is the
+             * only length value we have, and it guarantees that we copy all the
+             * previous memory anyhow.
+             */
+            SDL_memmove(retval, oldmem, len);
+        }
+    }
+
+    /* Actually store the allocated pointer, finally. */
+    *(((void **) retval) - 1) = ptr;
+    return retval;
+#endif
+}
+
+void __Sound_SIMDFree(void *ptr)
+{
+#if USE_REAL_SDL_SIMDALLOC
+    SDL_SIMDFree(ptr);
+#else
+    if (ptr) {
+        void **realptr = (void **) ptr;
+        realptr--;
+        SDL_free(*(((void **) ptr) - 1));
+    }
+#endif
+}
 
 /* end of SDL_sound.c ... */
 
