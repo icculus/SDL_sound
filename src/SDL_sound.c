@@ -356,7 +356,8 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
 
     /* success; we've got a decoder! */
 
-    /* Now we need to set up the conversion buffer... */
+    /* Now we need to set up an audio stream for data conversion if necessary... */
+    internal->stream = NULL;
 
     if (_desired == NULL)
         SDL_memcpy(&desired, &sample->actual, sizeof (Sound_AudioInfo));
@@ -365,40 +366,32 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
         desired.format = _desired->format ? _desired->format : sample->actual.format;
         desired.channels = _desired->channels ? _desired->channels : sample->actual.channels;
         desired.rate = _desired->rate ? _desired->rate : sample->actual.rate;
-    } /* else */
 
-    if (SDL_BuildAudioCVT(&internal->sdlcvt,
-                            sample->actual.format,
-                            sample->actual.channels,
-                            sample->actual.rate,
-                            desired.format,
-                            desired.channels,
-                            desired.rate) == -1)
-    {
-        __Sound_SetError(SDL_GetError());
-        funcs->close(sample);
-        SDL_RWseek(internal->rw, pos, RW_SEEK_SET);     /* set for next try... */
-        return 0;
-    } /* if */
-
-    if (internal->sdlcvt.len_mult > 1)
-    {
-        void *rc = SDL_realloc(sample->buffer, sample->buffer_size * internal->sdlcvt.len_mult);
-        if (rc == NULL)
+        if ( (sample->actual.format != desired.format) ||
+             (sample->actual.channels != desired.channels) ||
+             (sample->actual.rate != desired.rate) )
         {
-            funcs->close(sample);
-            SDL_RWseek(internal->rw, pos, RW_SEEK_SET); /* set for next try... */
-            return 0;
-        } /* if */
+            internal->stream = SDL_NewAudioStream(sample->actual.format,
+                                                  sample->actual.channels,
+                                                  sample->actual.rate,
+                                                  desired.format,
+                                                  desired.channels,
+                                                  desired.rate);
 
-        sample->buffer = rc;
-    } /* if */
+            if (internal->stream == NULL)
+            {
+                __Sound_SetError(SDL_GetError());
+                funcs->close(sample);
+                SDL_RWseek(internal->rw, pos, RW_SEEK_SET);     /* set for next try... */
+                return 0;
+            } /* if */
+        } /* if */
+    } /* else */
 
         /* these pointers are all one and the same. */
     SDL_memcpy(&sample->desired, &desired, sizeof (Sound_AudioInfo));
-    internal->sdlcvt.buf = internal->buffer = sample->buffer;
-    internal->buffer_size = sample->buffer_size / internal->sdlcvt.len_mult;
-    internal->sdlcvt.len = internal->buffer_size;
+    internal->buffer = sample->buffer;
+    internal->buffer_size = sample->buffer_size;
 
     /* Prepend our new Sound_Sample to the sample_list... */
     SDL_LockMutex(samplelist_mutex);
@@ -419,7 +412,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
             sample->actual.channels));
 
     SNDDBG(("On-the-fly conversion: %s.\n",
-            internal->sdlcvt.needed ? "ENABLED" : "DISABLED"));
+            (internal->stream != NULL) ? "ENABLED" : "DISABLED"));
 
     return 1;
 } /* init_sample */
@@ -586,9 +579,6 @@ void Sound_FreeSample(Sound_Sample *sample)
     if (internal->rw != NULL)  /* this condition is a "just in case" thing. */
         SDL_RWclose(internal->rw);
 
-    if ((internal->buffer != NULL) && (internal->buffer != sample->buffer))
-        SDL_free(internal->buffer);
-
     SDL_free(internal);
 
     if (sample->buffer != NULL)
@@ -609,10 +599,8 @@ int Sound_SetBufferSize(Sound_Sample *sample, Uint32 newSize)
     newBuf = SDL_realloc(sample->buffer, newSize * internal->sdlcvt.len_mult);
     BAIL_IF_MACRO(newBuf == NULL, ERR_OUT_OF_MEMORY, 0);
 
-    internal->sdlcvt.buf = internal->buffer = sample->buffer = newBuf;
-    sample->buffer_size = newSize;
-    internal->buffer_size = newSize / internal->sdlcvt.len_mult;
-    internal->sdlcvt.len = internal->buffer_size;
+    internal->buffer = sample->buffer = newBuf;
+    internal->buffer_size = sample->buffer_size = newSize;
 
     return 1;
 } /* Sound_SetBufferSize */
@@ -621,7 +609,7 @@ int Sound_SetBufferSize(Sound_Sample *sample, Uint32 newSize)
 Uint32 Sound_Decode(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = NULL;
-    Uint32 retval = 0;
+    int available;
 
         /* a boatload of sanity checks... */
     BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, 0);
@@ -636,18 +624,80 @@ Uint32 Sound_Decode(Sound_Sample *sample)
     SDL_assert(internal->buffer != NULL);
     SDL_assert(internal->buffer_size > 0);
 
-        /* reset EAGAIN. Decoder can flip it back on if it needs to. */
-    sample->flags &= ~SOUND_SAMPLEFLAG_EAGAIN;
-    retval = internal->funcs->read(sample);
-
-    if (retval > 0 && internal->sdlcvt.needed)
+    /* No AudioStream? No conversion. Decode right into the buffer and return it. */
+    if (!internal->stream)
     {
-        internal->sdlcvt.len = retval;
-        SDL_ConvertAudio(&internal->sdlcvt);
-        retval = internal->sdlcvt.len_cvt;
+        /* reset EAGAIN. Decoder can flip it back on if it needs to. */
+        sample->flags &= ~SOUND_SAMPLEFLAG_EAGAIN;
+        return internal->funcs->read(sample);
     } /* if */
 
-    return retval;
+    /* call into the decoder several times until we have enough data. */
+    while ((available = SDL_AudioStreamAvailable(internal->stream)) < internal->buffer_size)
+    {
+        SDL_bool flush_stream = SDL_FALSE;
+        Uint32 br;
+
+        if (internal->pending_eof || internal->pending_error)
+            break;
+
+        /* reset EAGAIN. Decoder can flip it back on if it needs to. */
+        sample->flags &= ~SOUND_SAMPLEFLAG_EAGAIN;
+        br = internal->funcs->read(sample);
+
+        /* if the sample hit an error or EOF, note it, but don't let these flags
+           be set for the calling app until the stream is empty too. */
+        if (sample->flags & SOUND_SAMPLEFLAG_EOF)
+        {
+            sample->flags &= ~SOUND_SAMPLEFLAG_EOF;
+            internal->pending_eof = SDL_TRUE;
+            flush_stream = SDL_TRUE;
+        } /* if */
+
+        if (sample->flags & SOUND_SAMPLEFLAG_ERROR)
+        {
+            sample->flags &= ~SOUND_SAMPLEFLAG_ERROR;
+            internal->pending_error = SDL_TRUE;
+            flush_stream = SDL_TRUE;
+        } /* if */
+
+        if ((br > 0) && (SDL_AudioStreamPut(internal->stream, internal->buffer, (int) br) == -1))
+        {
+            __Sound_SetError(SDL_GetError());
+            sample->flags |= SOUND_SAMPLEFLAG_ERROR;
+            return 0;  /* oh well. */
+        } /* if */
+
+        if (flush_stream)
+            SDL_AudioStreamFlush(internal->stream);
+    } /* while */
+
+    /* if we hit eof or error, drain the stream before reporting that. */
+    if (available > 0)
+    {
+        const int readlen = SDL_min(available, sample->buffer_size);
+        const int br = SDL_AudioStreamGet(internal->stream, sample->buffer, readlen);
+        if (br != readlen)
+        {
+            __Sound_SetError(SDL_GetError());
+            sample->flags |= SOUND_SAMPLEFLAG_ERROR;
+            return 0;  /* oh well. */
+        } /* if */
+
+        SDL_assert(br > 0);
+        return (Uint32) br;
+    } /* if */
+
+    /* stream is empty, set final flags. */
+    if (internal->pending_eof)
+        sample->flags |= SOUND_SAMPLEFLAG_EOF;
+
+    if (internal->pending_error)
+        sample->flags |= SOUND_SAMPLEFLAG_ERROR;
+
+    internal->pending_eof = internal->pending_error = SDL_FALSE;
+
+    return 0;
 } /* Sound_Decode */
 
 
@@ -684,15 +734,10 @@ Uint32 Sound_DecodeAll(Sound_Sample *sample)
     if (buf == NULL)  /* ...in case first call to SDL_realloc() fails... */
         return sample->buffer_size;
 
-    if (internal->buffer != sample->buffer)
-        SDL_free(internal->buffer);
-
     SDL_free(sample->buffer);
 
-    internal->sdlcvt.buf = internal->buffer = sample->buffer = buf;
-    sample->buffer_size = newBufSize;
-    internal->buffer_size = newBufSize / internal->sdlcvt.len_mult;
-    internal->sdlcvt.len = internal->buffer_size;
+    internal->buffer = sample->buffer = buf;
+    internal->buffer_size = sample->buffer_size = newBufSize;
 
     return newBufSize;
 } /* Sound_DecodeAll */
