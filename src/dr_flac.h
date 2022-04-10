@@ -1,6 +1,6 @@
 /*
 FLAC audio decoder. Choice of public domain or MIT-0. See license statements at the end of this file.
-dr_flac - v0.12.37 - 2022-02-12
+dr_flac - v0.12.38 - 2022-04-10
 
 David Reid - mackron@gmail.com
 
@@ -232,7 +232,7 @@ extern "C" {
 
 #define DRFLAC_VERSION_MAJOR     0
 #define DRFLAC_VERSION_MINOR     12
-#define DRFLAC_VERSION_REVISION  37
+#define DRFLAC_VERSION_REVISION  38
 #define DRFLAC_VERSION_STRING    DRFLAC_XSTRINGIFY(DRFLAC_VERSION_MAJOR) "." DRFLAC_XSTRINGIFY(DRFLAC_VERSION_MINOR) "." DRFLAC_XSTRINGIFY(DRFLAC_VERSION_REVISION)
 
 #include <stddef.h> /* For size_t. */
@@ -1354,16 +1354,25 @@ DRFLAC_API drflac_bool32 drflac_next_cuesheet_track(drflac_cuesheet_track_iterat
 
 #ifdef _MSC_VER
     #define DRFLAC_INLINE __forceinline
-#elif (defined(__GNUC__) && (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 2))) || defined(__clang__)
+#elif defined(__GNUC__)
     /*
     I've had a bug report where GCC is emitting warnings about functions possibly not being inlineable. This warning happens when
     the __attribute__((always_inline)) attribute is defined without an "inline" statement. I think therefore there must be some
     case where "__inline__" is not always defined, thus the compiler emitting these warnings. When using -std=c89 or -ansi on the
-    command line, we cannot use the "inline" keyword and instead need to use "__inline__".
+    command line, we cannot use the "inline" keyword and instead need to use "__inline__". In an attempt to work around this issue
+    I am using "__inline__" only when we're compiling in strict ANSI mode.
     */
-    #define DRFLAC_INLINE __inline__ __attribute__((always_inline))
-#elif defined(__GNUC__)
-    #define DRFLAC_INLINE __inline__
+    #if defined(__STRICT_ANSI__)
+        #define DRFLAC_GNUC_INLINE_HINT __inline__
+    #else
+        #define DRFLAC_GNUC_INLINE_HINT inline
+    #endif
+
+    #if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 2)) || defined(__clang__)
+        #define DRFLAC_INLINE DRFLAC_GNUC_INLINE_HINT __attribute__((always_inline))
+    #else
+        #define DRFLAC_INLINE DRFLAC_GNUC_INLINE_HINT
+    #endif
 #elif defined(__WATCOMC__)
     #define DRFLAC_INLINE __inline
 #else
@@ -7934,7 +7943,7 @@ static drflac* drflac_open_with_metadata_private(drflac_read_proc onRead, drflac
 #ifndef DR_FLAC_NO_OGG
     if (init.container == drflac_container_ogg) {
         drflac_oggbs* pInternalOggbs = (drflac_oggbs*)((drflac_uint8*)pFlac->pDecodedSamples + decodedSamplesAllocationSize + seektableSize);
-        *pInternalOggbs = oggbs;
+        DRFLAC_COPY_MEMORY(pInternalOggbs, &oggbs, sizeof(oggbs));
 
         /* The Ogg bistream needs to be layered on top of the original bitstream. */
         pFlac->bs.onRead = drflac__on_read_ogg;
@@ -11925,6 +11934,9 @@ DRFLAC_API drflac_bool32 drflac_next_cuesheet_track(drflac_cuesheet_track_iterat
 /*
 REVISION HISTORY
 ================
+v0.12.38 - 2022-04-10
+  - Fix compilation error on older versions of GCC.
+
 v0.12.37 - 2022-02-12
   - Improve ARM detection.
 
