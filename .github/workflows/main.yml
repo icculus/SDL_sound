@@ -13,7 +13,7 @@ jobs:
         - { name: MacOS,        os: macos-latest }
         - { name: MSVC (x86),   os: windows-latest, flags: "-DCMAKE_TOOLCHAIN_FILE=C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake -A Win32", vcpkg: x86-windows }
         - { name: MSVC (x64),   os: windows-latest, flags: "-DCMAKE_TOOLCHAIN_FILE=C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake -A x64",   vcpkg: x64-windows }
-        # - { name: MSVC (ARM64), os: windows-latest, flags: "-DCMAKE_TOOLCHAIN_FILE=C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake -A ARM64", vcpkg: arm64-windows }
+        - { name: MSVC (ARM64), os: windows-latest, flags: "-DCMAKE_TOOLCHAIN_FILE=C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake -A ARM64", vcpkg: arm64-windows }
         
     steps:
     - name: Setup Linux dependencies
