@@ -119,7 +119,7 @@ BOOL CSoundFile_Read669(CSoundFile *_this, const BYTE *lpStream, DWORD dwMemLeng
 			MODCOMMAND *mspeed = m;
 			if ((row == pfh->breaks[i]) && (row != 63))
 			{
-				for (j=0; j<8; i++)
+				for (j=0; j<8; j++)
 				{
 					m[j].command = CMD_PATTERNBREAK;
 					m[j].param = 0;
