@@ -6,14 +6,21 @@ jobs:
   Build:
     name: ${{ matrix.platform.name }}
     runs-on: ${{ matrix.platform.os }}
+
+    defaults:
+      run:
+        shell: ${{ matrix.platform.shell }}
+
     strategy:
       matrix:
         platform:
-        - { name: Linux,        os: ubuntu-20.04, flags: -GNinja }
-        - { name: MacOS,        os: macos-latest }
-        - { name: MSVC (x86),   os: windows-latest, flags: "-DCMAKE_TOOLCHAIN_FILE=C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake -A Win32", vcpkg: x86-windows }
-        - { name: MSVC (x64),   os: windows-latest, flags: "-DCMAKE_TOOLCHAIN_FILE=C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake -A x64",   vcpkg: x64-windows }
-        - { name: MSVC (ARM64), os: windows-latest, flags: "-DCMAKE_TOOLCHAIN_FILE=C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake -A ARM64", vcpkg: arm64-windows }
+        - { name: Linux,              os: ubuntu-20.04,   shell: sh,          flags: -GNinja }
+        - { name: MacOS,              os: macos-latest,   shell: sh }
+        - { name: mingw-w64 (i686),   os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686 }
+        - { name: mingw-w64 (x86_64), os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64 }
+        - { name: MSVC (x86),         os: windows-latest, shell: pwsh,        flags: "-DCMAKE_TOOLCHAIN_FILE=C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake -A Win32", vcpkg: x86-windows }
+        - { name: MSVC (x64),         os: windows-latest, shell: pwsh,        flags: "-DCMAKE_TOOLCHAIN_FILE=C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake -A x64",   vcpkg: x64-windows }
+        - { name: MSVC (ARM64),       os: windows-latest, shell: pwsh,        flags: "-DCMAKE_TOOLCHAIN_FILE=C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake -A ARM64", vcpkg: arm64-windows }
         
     steps:
     - name: Setup Linux dependencies
@@ -25,6 +32,16 @@ jobs:
       if: runner.os == 'MacOS'
       run: |
         brew install sdl2
+    - name: Set up MSYS2 dependencies
+      if: matrix.platform.shell == 'msys2 {0}'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.platform.msystem }}
+        install: >-
+          ${{ matrix.platform.msys-env }}-gcc
+          ${{ matrix.platform.msys-env }}-cmake
+          ${{ matrix.platform.msys-env }}-ninja
+          ${{ matrix.platform.msys-env }}-SDL2
     - name: Setup MSVC dependencies
       if: matrix.platform.vcpkg != ''
       run: |
