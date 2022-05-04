@@ -70,9 +70,10 @@ static SDL_INLINE int read_uint8(SDL_RWops *rw, Uint8 *ui8)
 
 #define fmtID  0x20746D66  /* "fmt ", in ascii. */
 
-#define FMT_NORMAL 0x0001    /* Uncompressed waveform data.     */
-#define FMT_ADPCM  0x0002    /* ADPCM compressed waveform data. */
-#define FMT_IEEE_FLOAT  0x0003    /* Uncompressed IEEE floating point waveform data. */
+#define FMT_NORMAL     0x0001   /* Uncompressed waveform data.     */
+#define FMT_ADPCM      0x0002   /* ADPCM compressed waveform data. */
+#define FMT_IEEE_FLOAT 0x0003   /* Uncompressed IEEE floating point waveform data. */
+#define FMT_EXTENSIBLE 0xFFFE   /* "Extensible" tag */
 
 typedef struct
 {
@@ -92,7 +93,7 @@ typedef struct S_WAV_FMT_T
 {
     Uint32 chunkID;
     Sint32 chunkSize;
-    Sint16 wFormatTag;
+    Uint16 wFormatTag;
     Uint16 wChannels;
     Uint32 dwSamplesPerSec;
     Uint32 dwAvgBytesPerSec;
@@ -144,7 +145,7 @@ static int read_fmt_chunk(SDL_RWops *rw, fmt_t *fmt)
     BAIL_IF_MACRO(fmt->chunkSize < 16, "WAV: Invalid chunk size", 0);
     fmt->next_chunk_offset = SDL_RWtell(rw) + fmt->chunkSize;
     
-    BAIL_IF_MACRO(!read_le16s(rw, &fmt->wFormatTag), NULL, 0);
+    BAIL_IF_MACRO(!read_le16(rw, &fmt->wFormatTag), NULL, 0);
     BAIL_IF_MACRO(!read_le16(rw, &fmt->wChannels), NULL, 0);
     BAIL_IF_MACRO(!read_le32(rw, &fmt->dwSamplesPerSec), NULL, 0);
     BAIL_IF_MACRO(!read_le32(rw, &fmt->dwAvgBytesPerSec), NULL, 0);
@@ -615,6 +616,7 @@ static int read_fmt(SDL_RWops *rw, fmt_t *fmt)
     /* if it's in this switch statement, we support the format. */
     switch (fmt->wFormatTag)
     {
+        case FMT_EXTENSIBLE:  /* !!! FIXME: this isn't correct */
         case FMT_NORMAL:
             SNDDBG(("WAV: Appears to be uncompressed audio.\n"));
             return read_fmt_normal(rw, fmt);
@@ -628,7 +630,6 @@ static int read_fmt(SDL_RWops *rw, fmt_t *fmt)
             return read_fmt_normal(rw, fmt);  /* just normal PCM, otherwise. */
 
         /* add other types here. */
-
     } /* switch */
 
     SNDDBG(("WAV: Format 0x%X is unknown.\n",
