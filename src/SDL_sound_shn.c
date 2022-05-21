@@ -174,10 +174,6 @@ static const Uint8 ulaw_outward[13][256] = {
 #define M_PI    3.14159265358979323846
 #endif
 
-#if defined(HAVE_LIBC) && defined(__WATCOMC__) /* Watcom has issues... */
-#define SDL_log log
-#endif
-
 
 static int word_get(shn_t *shn, SDL_RWops *rw, Uint32 *word)
 {

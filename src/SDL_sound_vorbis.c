@@ -52,7 +52,6 @@
 #define malloc SDL_malloc
 #define realloc SDL_realloc
 #define free SDL_free
-#ifndef __WATCOMC__ /* #@!.!.. */
 #define pow SDL_pow
 #define floor SDL_floor
 #define ldexp(v, e) SDL_scalbn((v), (e))
@@ -62,7 +61,6 @@
 #define log(x) SDL_log(x)
 #if SDL_VERSION_ATLEAST(2, 0, 9)
 #define exp SDL_exp
-#endif
 #endif
 #endif
 
