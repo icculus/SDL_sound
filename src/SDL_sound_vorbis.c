@@ -27,12 +27,12 @@
 #define STB_VORBIS_NO_CRT 1
 #define STB_VORBIS_NO_PUSHDATA_API 1
 #define STB_VORBIS_MAX_CHANNELS 6
-#define STBV_CDECL
 #define STB_VORBIS_NO_COMMENTS 1
 #define STB_FORCEINLINE SDL_FORCE_INLINE
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 #define STB_VORBIS_BIG_ENDIAN 1
 #endif
+#define STBV_CDECL SDLCALL /* for SDL_qsort */
 
 #if !defined(__clang_analyzer__)
 #ifdef assert
