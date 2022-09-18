@@ -2,13 +2,17 @@
 # fails, define SDL2_DIR environment variable to point to your SDL2
 # installation.
 
-cmake_minimum_required(VERSION 2.8.12)
-
-project(SDL_sound C)
 set(SDLSOUND_VERSION 2.0.1)
 
 # Increment this if/when we break backwards compatibility.
 set(SDLSOUND_SOVERSION 2)
+
+cmake_minimum_required(VERSION 3.0)
+
+project(SDL_sound
+    VERSION ${SDLSOUND_VERSION}
+    LANGUAGES C
+)
 
 include_directories(src)
 
