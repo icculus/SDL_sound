@@ -162,7 +162,7 @@ BOOL CSoundFile_ReadAMF(CSoundFile *_this, LPCBYTE lpStream, const DWORD dwMemLe
 	UINT i;
 	
 	if ((!lpStream) || (dwMemLength < 2048)) return FALSE;
-	if ((!SDL_strncmp((LPCTSTR)lpStream, "ASYLUM Music Format V1.0", 25)) && (dwMemLength > 4096))
+	if ((!SDL_strncmp((LPCSTR)lpStream, "ASYLUM Music Format V1.0", 25)) && (dwMemLength > 4096))
 	{
 		UINT numorders, numpats, numsamples;
 

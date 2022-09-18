@@ -48,8 +48,6 @@ typedef const char* LPCSTR;
 typedef void* PVOID;
 typedef void VOID;
 
-#define LPCTSTR LPCSTR
-
 #ifndef FALSE
 #define FALSE	0
 #endif
