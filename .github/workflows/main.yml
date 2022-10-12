@@ -48,8 +48,15 @@ jobs:
         vcpkg install --triplet ${{ matrix.platform.vcpkg }} sdl2
 
     - name: Get SDL_sound sources
-      uses: actions/checkout@v2
-    - name: Configure CMake
-      run: cmake -B build -DSDLSOUND_DECODER_MIDI=ON ${{ matrix.platform.flags }}
-    - name: Build
-      run: cmake --build build/
+      uses: actions/checkout@v3
+    - name: Configure (CMake)
+      run: cmake -B build -DSDLSOUND_DECODER_MIDI=ON ${{ matrix.platform.flags }} -DCMAKE_INSTALL_PREFIX=prefix -DCMAKE_BUILD_TYPE=Release
+    - name: Build (CMake)
+      run: cmake --build build/ --config Release
+    - name: Install (CMake)
+      run: |
+        cmake --install build/ --config Release
+    - name: Verify CMake configuration files
+      run: |
+        cmake -S cmake/test -B build_cmake_test ${{ matrix.platform.flags }} -DCMAKE_PREFIX_PATH="${{ github.workspace }}/prefix" -DCMAKE_BUILD_TYPE=Release
+        cmake --build build_cmake_test --verbose --config Release
