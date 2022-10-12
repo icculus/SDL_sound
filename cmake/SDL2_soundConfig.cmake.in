@@ -1,0 +1,23 @@
+# sdl2_sound cmake project-config input
+
+@PACKAGE_INIT@
+
+include(FeatureSummary)
+set_package_properties(SDL2_sound PROPERTIES
+    URL "https://github.com/icculus/SDL_sound/"
+    DESCRIPTION " An abstract soundfile decoder"
+)
+
+set(SDL2_sound_FOUND ON)
+
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/SDL2_sound-shared-targets.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/SDL2_sound-shared-targets.cmake")
+    set(SDL2_sound_SDL2_sound_FOUND TRUE)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/SDL2_sound-static-targets.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/SDL2_sound-static-targets.cmake")
+    set(SDL2_sound_SDL2_sound-static_FOUND TRUE)
+endif()
+
+check_required_components(SDL2_sound)
