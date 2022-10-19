@@ -309,10 +309,11 @@ else()
 endif()
 
 if(WIN32 AND NOT MINGW)
-    set(SDLSOUND_INSTALL_CMAKEDIR "cmake")
+    set(SDLSOUND_INSTALL_CMAKEDIR_DEFAULT "cmake")
 else()
-    set(SDLSOUND_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/SDL2_sound")
+    set(SDLSOUND_INSTALL_CMAKEDIR_DEFAULT "${CMAKE_INSTALL_LIBDIR}/cmake/SDL2_sound")
 endif()
+set(SDLSOUND_INSTALL_CMAKEDIR "${SDLSOUND_INSTALL_CMAKEDIR_DEFAULT}" CACHE STRING "Location where to install SDL2_sound.cmake")
 
 configure_package_config_file(cmake/SDL2_soundConfig.cmake.in SDL2_soundConfig.cmake
     INSTALL_DESTINATION "${SDLSOUND_INSTALL_CMAKEDIR}"
