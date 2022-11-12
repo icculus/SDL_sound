@@ -112,8 +112,10 @@ am__installdirs = "$(DESTDIR)$(libdir)" \
 LTLIBRARIES = $(lib_LTLIBRARIES)
 @USE_TIMIDITY_TRUE@am__DEPENDENCIES_1 =  \
 @USE_TIMIDITY_TRUE@	decoders/timidity/libtimidity.la
-am__DEPENDENCIES_2 = decoders/libdecoders.la $(am__DEPENDENCIES_1)
-@USE_SDL2_TRUE@libSDL2_sound_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am__DEPENDENCIES_2 =
+am__DEPENDENCIES_3 = decoders/libdecoders.la $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_2)
+@USE_SDL2_TRUE@libSDL2_sound_la_DEPENDENCIES = $(am__DEPENDENCIES_3)
 am__libSDL2_sound_la_SOURCES_DIST = SDL_sound.c SDL_sound_internal.h \
 	alt_audio_convert.c alt_audio_convert.h audio_convert.c
 am__objects_1 = SDL_sound.lo alt_audio_convert.lo audio_convert.lo
@@ -123,7 +125,7 @@ libSDL2_sound_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libSDL2_sound_la_LDFLAGS) $(LDFLAGS) -o $@
 @USE_SDL2_TRUE@am_libSDL2_sound_la_rpath = -rpath $(libdir)
-@USE_SDL2_FALSE@libSDL_sound_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
+@USE_SDL2_FALSE@libSDL_sound_la_DEPENDENCIES = $(am__DEPENDENCIES_3)
 am__libSDL_sound_la_SOURCES_DIST = SDL_sound.c SDL_sound_internal.h \
 	alt_audio_convert.c alt_audio_convert.h audio_convert.c
 @USE_SDL2_FALSE@am_libSDL_sound_la_OBJECTS = $(am__objects_1)
@@ -247,6 +249,7 @@ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 INTERFACE_AGE = @INTERFACE_AGE@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
+LIBM = @LIBM@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
@@ -353,7 +356,7 @@ SUBDIRS = decoders . examples
 SDLSOUND_HDRS = SDL_sound.h
 SDLSOUND_SRCS = SDL_sound.c SDL_sound_internal.h alt_audio_convert.c alt_audio_convert.h audio_convert.c
 SDLSOUND_LDFLAGS = -no-undefined -release $(LT_RELEASE) -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
-SDLSOUND_LIBADD = decoders/libdecoders.la $(TIMIDITY_LIB)
+SDLSOUND_LIBADD = decoders/libdecoders.la $(TIMIDITY_LIB) $(LIBM)
 @USE_SDL2_FALSE@lib_LTLIBRARIES = libSDL_sound.la
 @USE_SDL2_TRUE@lib_LTLIBRARIES = libSDL2_sound.la
 @USE_SDL2_TRUE@libSDL2_soundincludedir = $(includedir)/SDL2

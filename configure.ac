@@ -54,7 +54,6 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 LT_INIT([win32-dll])
-LT_LIB_M
 PKG_PROG_PKG_CONFIG
 
 
@@ -113,6 +112,7 @@ fi
 dnl ---------------------------------------------------------------------
 dnl Checks for libraries.
 dnl ---------------------------------------------------------------------
+LT_LIB_M
 
 dnl Check for SDL
 AC_ARG_ENABLE(sdl2,
