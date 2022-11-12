@@ -12,7 +12,7 @@ endif
 SDLSOUND_HDRS = SDL_sound.h
 SDLSOUND_SRCS = SDL_sound.c SDL_sound_internal.h alt_audio_convert.c alt_audio_convert.h audio_convert.c
 SDLSOUND_LDFLAGS = -no-undefined -release $(LT_RELEASE) -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
-SDLSOUND_LIBADD = decoders/libdecoders.la $(TIMIDITY_LIB)
+SDLSOUND_LIBADD = decoders/libdecoders.la $(TIMIDITY_LIB) $(LIBM)
 
 if USE_SDL2
 lib_LTLIBRARIES = libSDL2_sound.la
