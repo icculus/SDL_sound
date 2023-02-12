@@ -212,7 +212,9 @@ if(SDLSOUND_BUILD_STATIC)
     if(NOT MSVC)
         set_target_properties(SDL2_sound-static PROPERTIES OUTPUT_NAME "SDL2_sound")
     endif()
-    target_include_directories(SDL2_sound-static PUBLIC $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
+    target_include_directories(SDL2_sound-static PUBLIC 
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
     if(TARGET SDL2::SDL2)
         get_target_property(_sdl2_include_dir SDL2::SDL2 INTERFACE_INCLUDE_DIRECTORIES)
         target_include_directories(SDL2_sound-static PUBLIC "${_sdl2_include_dir}")
@@ -241,8 +243,9 @@ if(SDLSOUND_BUILD_SHARED)
     if(OS2)   # OS/2 does not support a DLL name longer than 8 characters.
         SET_TARGET_PROPERTIES(SDL2_sound PROPERTIES OUTPUT_NAME "SDL2snd")
     endif()
-    target_include_directories(SDL2_sound
-        PUBLIC $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>
+    target_include_directories(SDL2_sound PUBLIC 
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
     )
     if(TARGET SDL2::SDL2)
         get_target_property(_sdl2_include_dir SDL2::SDL2 INTERFACE_INCLUDE_DIRECTORIES)
