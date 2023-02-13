@@ -213,6 +213,7 @@ if(SDLSOUND_BUILD_STATIC)
         set_target_properties(SDL2_sound-static PROPERTIES OUTPUT_NAME "SDL2_sound")
     endif()
     target_include_directories(SDL2_sound-static PUBLIC 
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
     if(TARGET SDL2::SDL2)
@@ -244,6 +245,7 @@ if(SDLSOUND_BUILD_SHARED)
         SET_TARGET_PROPERTIES(SDL2_sound PROPERTIES OUTPUT_NAME "SDL2snd")
     endif()
     target_include_directories(SDL2_sound PUBLIC 
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
     )
