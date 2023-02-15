@@ -21,8 +21,6 @@ include_directories(src)
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wall)
-    # Don't use -rpath.
-    set(CMAKE_SKIP_RPATH ON CACHE BOOL "Skip RPATH" FORCE)
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "SunPro")
@@ -205,6 +203,7 @@ if(OS2) # no static library on os/2
 endif()
 if(SDLSOUND_BUILD_STATIC)
     add_library(SDL2_sound-static STATIC ${SDLSOUND_ALL_SRCS})
+    add_library(SDL2_sound::SDL2_sound-static ALIAS SDL2_sound-static)
     # Don't rename this on Windows, since DLLs will also produce an import
     #  library named "SDL2_sound.lib" which would conflict; Unix tend to like
     #  the same library name with a different extension for static libs, but
@@ -212,14 +211,17 @@ if(SDLSOUND_BUILD_STATIC)
     if(NOT MSVC)
         set_target_properties(SDL2_sound-static PROPERTIES OUTPUT_NAME "SDL2_sound")
     endif()
-    target_include_directories(SDL2_sound-static PUBLIC $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>)
-    if(TARGET SDL2::SDL2)
-        target_include_directories(SDL2_sound-static
-            PUBLIC $<TARGET_PROPERTY:SDL2::SDL2,INTERFACE_INCLUDE_DIRECTORIES>)
-        target_link_libraries(SDL2_sound-static PRIVATE $<BUILD_INTERFACE:SDL2::SDL2> ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
+    target_include_directories(SDL2_sound-static PUBLIC
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
+    if(TARGET SDL2::SDL2-static)
+        get_target_property(_sdl2_include_dir SDL2::SDL2-static INTERFACE_INCLUDE_DIRECTORIES)
+        target_include_directories(SDL2_sound-static PUBLIC "$<BUILD_INTERFACE:${_sdl2_include_dir}>")
+        target_link_libraries(SDL2_sound-static PRIVATE $<BUILD_INTERFACE:SDL2::SDL2-static> ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
     else()
-        target_include_directories(SDL2_sound-static PUBLIC ${SDL2_INCLUDE_DIRS})
-        target_link_libraries(SDL2_sound-static PRIVATE $<BUILD_INTERFACE:${SDL2_LIBRARIES}> ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
+        target_include_directories(SDL2_sound-static PUBLIC "$<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>")
+        target_link_libraries(SDL2_sound-static PRIVATE "$<BUILD_INTERFACE:${SDL2_LIBRARIES}>" ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
     endif()
     set(SDLSOUND_LIB_TARGET SDL2_sound-static)
 endif()
@@ -227,6 +229,7 @@ endif()
 option(SDLSOUND_BUILD_SHARED "Build shared library" TRUE)
 if(SDLSOUND_BUILD_SHARED)
     add_library(SDL2_sound SHARED ${SDLSOUND_ALL_SRCS} ${SDLSOUND_SHARED_SRCS})
+    add_library(SDL2_sound::SDL2_sound ALIAS SDL2_sound)
     set_target_properties(SDL2_sound PROPERTIES MACOSX_RPATH 1)
     set_target_properties(SDL2_sound PROPERTIES VERSION ${SDLSOUND_VERSION})
     set_target_properties(SDL2_sound PROPERTIES SOVERSION ${SDLSOUND_SOVERSION})
@@ -241,15 +244,18 @@ if(SDLSOUND_BUILD_SHARED)
     if(OS2)   # OS/2 does not support a DLL name longer than 8 characters.
         SET_TARGET_PROPERTIES(SDL2_sound PROPERTIES OUTPUT_NAME "SDL2snd")
     endif()
-    target_include_directories(SDL2_sound
-        PUBLIC $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>
+    target_include_directories(SDL2_sound PUBLIC 
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
     )
     if(TARGET SDL2::SDL2)
-        target_include_directories(SDL2_sound PUBLIC "$<TARGET_PROPERTY:SDL2::SDL2,INTERFACE_INCLUDE_DIRECTORIES>")
-        target_link_libraries(SDL2_sound PRIVATE SDL2::SDL2 ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
+        get_target_property(_sdl2_include_dir SDL2::SDL2 INTERFACE_INCLUDE_DIRECTORIES)
+        target_include_directories(SDL2_sound PUBLIC "$<BUILD_INTERFACE:${_sdl2_include_dir}>")
+        target_link_libraries(SDL2_sound PRIVATE $<BUILD_INTERFACE:SDL2::SDL2> ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
     else()
-        target_include_directories(SDL2_sound PUBLIC "${SDL2_INCLUDE_DIRS}")
-        target_link_libraries(SDL2_sound PRIVATE ${SDL2_LIBRARIES} ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
+        target_include_directories(SDL2_sound PUBLIC "$<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>")
+        target_link_libraries(SDL2_sound PRIVATE "$<BUILD_INTERFACE:${SDL2_LIBRARIES}>" ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
     endif()
     set(SDLSOUND_LIB_TARGET SDL2_sound)
 endif()
