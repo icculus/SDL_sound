@@ -21,8 +21,6 @@ include_directories(src)
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wall)
-    # Don't use -rpath.
-    set(CMAKE_SKIP_RPATH ON CACHE BOOL "Skip RPATH" FORCE)
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "SunPro")
@@ -222,7 +220,7 @@ if(SDLSOUND_BUILD_STATIC)
         target_include_directories(SDL2_sound-static PUBLIC "$<BUILD_INTERFACE:${_sdl2_include_dir}>")
         target_link_libraries(SDL2_sound-static PRIVATE $<BUILD_INTERFACE:SDL2::SDL2-static> ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
     else()
-        target_include_directories(SDL2_sound-static PUBLIC $<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>)
+        target_include_directories(SDL2_sound-static PUBLIC "$<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>")
         target_link_libraries(SDL2_sound-static PRIVATE "$<BUILD_INTERFACE:${SDL2_LIBRARIES}>" ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
     endif()
     set(SDLSOUND_LIB_TARGET SDL2_sound-static)
