@@ -215,14 +215,8 @@ if(SDLSOUND_BUILD_STATIC)
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
-    if(TARGET SDL2::SDL2-static)
-        get_target_property(_sdl2_include_dir SDL2::SDL2-static INTERFACE_INCLUDE_DIRECTORIES)
-        target_include_directories(SDL2_sound-static PUBLIC "$<BUILD_INTERFACE:${_sdl2_include_dir}>")
-        target_link_libraries(SDL2_sound-static PRIVATE $<BUILD_INTERFACE:SDL2::SDL2-static> ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
-    else()
-        target_include_directories(SDL2_sound-static PUBLIC "$<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>")
-        target_link_libraries(SDL2_sound-static PRIVATE "$<BUILD_INTERFACE:${SDL2_LIBRARIES}>" ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
-    endif()
+    target_include_directories(SDL2_sound-static PUBLIC "$<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>")
+    target_link_libraries(SDL2_sound-static PRIVATE "$<BUILD_INTERFACE:${SDL2_LIBRARIES}>" ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
     set(SDLSOUND_LIB_TARGET SDL2_sound-static)
 endif()
 
@@ -249,14 +243,8 @@ if(SDLSOUND_BUILD_SHARED)
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/SDL2>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
     )
-    if(TARGET SDL2::SDL2)
-        get_target_property(_sdl2_include_dir SDL2::SDL2 INTERFACE_INCLUDE_DIRECTORIES)
-        target_include_directories(SDL2_sound PUBLIC "$<BUILD_INTERFACE:${_sdl2_include_dir}>")
-        target_link_libraries(SDL2_sound PRIVATE $<BUILD_INTERFACE:SDL2::SDL2> ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
-    else()
-        target_include_directories(SDL2_sound PUBLIC "$<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>")
-        target_link_libraries(SDL2_sound PRIVATE "$<BUILD_INTERFACE:${SDL2_LIBRARIES}>" ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
-    endif()
+    target_include_directories(SDL2_sound PUBLIC "$<BUILD_INTERFACE:${SDL2_INCLUDE_DIRS}>")
+    target_link_libraries(SDL2_sound PRIVATE "$<BUILD_INTERFACE:${SDL2_LIBRARIES}>" ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
     set(SDLSOUND_LIB_TARGET SDL2_sound)
 endif()
 
