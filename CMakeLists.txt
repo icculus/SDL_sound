@@ -296,11 +296,7 @@ if(SDLSOUND_BUILD_TEST)
     endif()
 endif()
 
-if(FREEBSD)
-    set(PKGCONFIG_INSTALLDIR "libdata/pkgconfig")
-else()
-    set(PKGCONFIG_INSTALLDIR "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-endif()
+set(PKGCONFIG_INSTALLDIR "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
 if(WIN32 AND NOT MINGW)
     set(SDLSOUND_INSTALL_CMAKEDIR_DEFAULT "cmake")
