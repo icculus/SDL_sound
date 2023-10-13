@@ -839,7 +839,7 @@ int main(int argc, char **argv)
             global_state.predecode = 1;
         } /* else if */
 
-        else if (SDL_strcmp(argv[i], "--loop") == 0)
+        else if (SDL_strcmp(argv[i], "--loop") == 0 && argc > i + 1)
         {
             global_state.looping = SDL_atoi(argv[++i]);
         } /* else if */
