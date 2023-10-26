@@ -21,3 +21,14 @@ if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/SDL2_sound-static-targets.cmake")
 endif()
 
 check_required_components(SDL2_sound)
+
+# Create SDL2_sound::SDL2_sound alias for static-only builds
+if(TARGET SDL2_sound::SDL2_sound-static AND NOT TARGET SDL2_sound::SDL2_sound)
+  if(CMAKE_VERSION VERSION_LESS "3.18")
+    # FIXME: Aliasing local targets is not supported on CMake < 3.18, so make it global.
+    add_library(SDL2_sound::SDL2_sound INTERFACE IMPORTED)
+    set_target_properties(SDL2_sound::SDL2_sound PROPERTIES INTERFACE_LINK_LIBRARIES "SDL2_sound::SDL2_sound-static")
+  else()
+    add_library(SDL2_sound::SDL2_sound ALIAS SDL2_sound::SDL2_sound-static)
+  endif()
+endif()
