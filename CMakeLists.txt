@@ -413,4 +413,9 @@ message_bool_option("Build static library" SDLSOUND_BUILD_STATIC)
 message_bool_option("Build shared library" SDLSOUND_BUILD_SHARED)
 message_bool_option("Build stdio test program" SDLSOUND_BUILD_TEST)
 
+# Make sure SDL2_sound::SDL2_sound always exists
+if(TARGET SDL2_sound::SDL2_sound-static AND NOT TARGET SDL2_sound::SDL2_sound)
+    add_library(SDL2_sound::SDL2_sound ALIAS SDL2_sound-static)
+endif()
+
 # end of CMakeLists.txt
