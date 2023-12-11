@@ -124,7 +124,9 @@ static int VORBIS_open(Sound_Sample *sample, const char *ext)
     sample->actual.rate = stb->sample_rate;
     num_frames = stb_vorbis_stream_length_in_samples(stb);
     if (!num_frames)
-        internal->total_time = -1;
+    {
+        BAIL_MACRO("VORBIS: No samples in ogg/vorbis stream.", 0);
+    }
     else
     {
         const unsigned int rate = stb->sample_rate;
