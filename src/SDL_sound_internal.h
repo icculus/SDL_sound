@@ -260,6 +260,7 @@ typedef struct __SOUND_SAMPLEINTERNAL__
     Uint32 buffer_size;
     void *decoder_private;
     Sint32 total_time;
+    Uint32 total_length;
     Uint32 mix_position;
     MixFunc mix;
 } Sound_SampleInternal;

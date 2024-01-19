@@ -133,6 +133,7 @@ static int VORBIS_open(Sound_Sample *sample, const char *ext)
         const unsigned int rate = stb->sample_rate;
         internal->total_time = (num_frames / rate) * 1000;
         internal->total_time += (num_frames % rate) * 1000 / rate;
+        internal->total_length = num_frames;
     } /* else */
 
     return 1; /* we'll handle this data. */
