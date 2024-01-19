@@ -153,14 +153,23 @@ static Uint32 VORBIS_read(Sound_Sample *sample)
     Uint32 retval;
     int rc;
     int err;
+    int delta;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     stb_vorbis *stb = (stb_vorbis *) internal->decoder_private;
     const int channels = (int) sample->actual.channels;
     const int want_samples = (int) (internal->buffer_size / sizeof (float));
+    const int offset = stb_vorbis_get_playback_sample_offset(stb);
+
+    delta = internal->total_length - offset;
 
     stb_vorbis_get_error(stb);  /* clear any error state */
     rc = stb_vorbis_get_samples_float_interleaved(stb, channels, (float *) internal->buffer, want_samples);
-    retval = (Uint32) (rc * channels * sizeof (float));  /* rc == number of sample frames read */
+    if(delta > 0 && delta < rc) {
+        retval = (Uint32) (delta * channels * sizeof (float));  /* prevents bug in stb_vorbis */
+    } else {
+        retval = (Uint32) (rc * channels * sizeof (float));  /* rc == number of sample frames read */
+    }
+
     err = stb_vorbis_get_error(stb);
 
     if (retval == 0)
