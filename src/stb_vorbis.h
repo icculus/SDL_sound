@@ -5657,7 +5657,7 @@ int stb_vorbis_get_samples_float_interleaved(stb_vorbis *f, int channels, float 
          break;
    }
    f->current_playback_loc += n;
-   if(f->current_playback_loc > lgs) {
+   if(f->current_playback_loc > lgs && lgs > 0 && lgs != SAMPLE_unknown) {
        int r = n - (f->current_playback_loc - lgs);
        f->current_playback_loc = lgs;
        return r;
