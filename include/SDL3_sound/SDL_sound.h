@@ -47,13 +47,13 @@
  * \author many others, please see CREDITS in the source's root directory.
  */
 
-#ifndef _INCLUDE_SDL_SOUND_H_
-#define _INCLUDE_SDL_SOUND_H_
+#ifndef SDL_SOUND_H_
+#define SDL_SOUND_H_
 
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
-#if SDL_MAJOR_VERSION < 2
-#error SDL2_sound requires SDL 2.0.0 or later.
+#if SDL_MAJOR_VERSION < 3
+#error SDL3_sound requires SDL 3.0.0 or later.
 #endif
 
 #ifdef __cplusplus
@@ -62,17 +62,17 @@ extern "C" {
 
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
 
-#if defined(SDL_SOUND_DLL_EXPORTS) && (defined(_WIN32) || defined(__OS2__))
+#if defined(SDL_SOUND_DLL_EXPORTS) && defined(_WIN32)
 #  define SNDDECLSPEC __declspec(dllexport)
-#elif ((defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__)) && !(defined(_WIN32) || defined(__OS2__))
+#elif ((defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__)) && !defined(_WIN32)
 #  define SNDDECLSPEC __attribute__((visibility("default")))
 #else
 #  define SNDDECLSPEC
 #endif
 
-#define SOUND_VER_MAJOR 2
+#define SOUND_VER_MAJOR 3
 #define SOUND_VER_MINOR 0
-#define SOUND_VER_PATCH 3
+#define SOUND_VER_PATCH 0
 #endif
 
 
@@ -433,7 +433,7 @@ SNDDECLSPEC void SDLCALL Sound_ClearError(void);
  * \sa Sound_Rewind
  * \sa Sound_FreeSample
  */
-SNDDECLSPEC Sound_Sample * SDLCALL Sound_NewSample(SDL_RWops *rw,
+SNDDECLSPEC Sound_Sample * SDLCALL Sound_NewSample(SDL_IOStream *rw,
                                                    const char *ext,
                                                    Sound_AudioInfo *desired,
                                                    Uint32 bufferSize);
@@ -719,7 +719,7 @@ SNDDECLSPEC int SDLCALL Sound_Seek(Sound_Sample *sample, Uint32 ms);
 }
 #endif
 
-#endif  /* !defined _INCLUDE_SDL_SOUND_H_ */
+#endif  /* !defined SDL_SOUND_H_ */
 
 /* end of SDL_sound.h ... */
 

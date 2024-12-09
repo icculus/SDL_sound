@@ -18,9 +18,9 @@
 #if SOUND_SUPPORTS_AU
 
 /* no init/deinit needed */
-static SDL_bool AU_init(void)
+static bool AU_init(void)
 {
-    return SDL_TRUE;
+    return true;
 } /* AU_init */
 
 static void AU_quit(void)
@@ -73,31 +73,31 @@ struct audec
  *  regardless of the processor's byte order or how the au_file_hdr
  *  structure is packed.
  */
-static int read_au_header(SDL_RWops *rw, struct au_file_hdr *hdr)
+static int read_au_header(SDL_IOStream *rw, struct au_file_hdr *hdr)
 {
-    if (SDL_RWread(rw, &hdr->magic, sizeof (hdr->magic), 1) != 1)
+    if (SDL_ReadIO(rw, &hdr->magic, sizeof(hdr->magic)) != sizeof(hdr->magic))
         return 0;
-    hdr->magic = SDL_SwapBE32(hdr->magic);
+    hdr->magic = SDL_Swap32BE(hdr->magic);
 
-    if (SDL_RWread(rw, &hdr->hdr_size, sizeof (hdr->hdr_size), 1) != 1)
+    if (SDL_ReadIO(rw, &hdr->hdr_size, sizeof(hdr->hdr_size)) != sizeof(hdr->hdr_size))
         return 0;
-    hdr->hdr_size = SDL_SwapBE32(hdr->hdr_size);
+    hdr->hdr_size = SDL_Swap32BE(hdr->hdr_size);
 
-    if (SDL_RWread(rw, &hdr->data_size, sizeof (hdr->data_size), 1) != 1)
+    if (SDL_ReadIO(rw, &hdr->data_size, sizeof(hdr->data_size)) != sizeof(hdr->data_size))
         return 0;
-    hdr->data_size = SDL_SwapBE32(hdr->data_size);
+    hdr->data_size = SDL_Swap32BE(hdr->data_size);
 
-    if (SDL_RWread(rw, &hdr->encoding, sizeof (hdr->encoding), 1) != 1)
+    if (SDL_ReadIO(rw, &hdr->encoding, sizeof(hdr->encoding)) != sizeof(hdr->encoding))
         return 0;
-    hdr->encoding = SDL_SwapBE32(hdr->encoding);
+    hdr->encoding = SDL_Swap32BE(hdr->encoding);
 
-    if (SDL_RWread(rw, &hdr->sample_rate, sizeof (hdr->sample_rate), 1) != 1)
+    if (SDL_ReadIO(rw, &hdr->sample_rate, sizeof(hdr->sample_rate)) != sizeof(hdr->sample_rate))
         return 0;
-    hdr->sample_rate = SDL_SwapBE32(hdr->sample_rate);
+    hdr->sample_rate = SDL_Swap32BE(hdr->sample_rate);
 
-    if (SDL_RWread(rw, &hdr->channels, sizeof (hdr->channels), 1) != 1)
+    if (SDL_ReadIO(rw, &hdr->channels, sizeof(hdr->channels)) != sizeof(hdr->channels))
         return 0;
-    hdr->channels = SDL_SwapBE32(hdr->channels);
+    hdr->channels = SDL_Swap32BE(hdr->channels);
 
     return 1;
 } /* read_au_header */
@@ -108,7 +108,7 @@ static int read_au_header(SDL_RWops *rw, struct au_file_hdr *hdr)
 static int AU_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = sample->opaque;
-    SDL_RWops *rw = internal->rw;
+    SDL_IOStream *rw = internal->rw;
     int hsize, i, bytes_per_second;
     struct au_file_hdr hdr;
     struct audec *dec;
@@ -131,15 +131,15 @@ static int AU_open(Sound_Sample *sample, const char *ext)
                 /* Convert 8-bit µ-law to 16-bit linear on the fly. This is
                    slightly wasteful if the audio driver must convert them
                    back, but µ-law only devices are rare (mostly _old_ Suns) */
-                sample->actual.format = AUDIO_S16SYS;
+                sample->actual.format = SDL_AUDIO_S16;
                 break;
 
             case AU_ENC_LINEAR_8:
-                sample->actual.format = AUDIO_S8;
+                sample->actual.format = SDL_AUDIO_S8;
                 break;
 
             case AU_ENC_LINEAR_16:
-                sample->actual.format = AUDIO_S16MSB;
+                sample->actual.format = SDL_AUDIO_S16BE;
                 break;
 
             default:
@@ -155,7 +155,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
         /* skip remaining part of header (input may be unseekable) */
         for (i = HDR_SIZE; i < hsize; i++)
         {
-            if (SDL_RWread(rw, &c, 1, 1) != 1)
+            if (SDL_ReadIO(rw, &c, 1) != 1)
             {
                 SDL_free(dec);
                 BAIL_MACRO(ERR_IO_ERROR, 0);
@@ -173,10 +173,10 @@ static int AU_open(Sound_Sample *sample, const char *ext)
 
         SNDDBG(("AU: Invalid header, assuming raw 8kHz µ-law.\n"));
         /* if seeking fails, we lose 24 samples. big deal */
-        SDL_RWseek(rw, -HDR_SIZE, RW_SEEK_CUR);
+        SDL_SeekIO(rw, -HDR_SIZE, SDL_IO_SEEK_CUR);
         dec->encoding = AU_ENC_ULAW_8;
         dec->remaining = (Uint32)-1;		/* no limit */
-        sample->actual.format = AUDIO_S16SYS;
+        sample->actual.format = SDL_AUDIO_S16;
         sample->actual.rate = 8000;
         sample->actual.channels = 1;
     } /* else if */
@@ -196,7 +196,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
 
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
     dec->total = dec->remaining;
-    dec->start_offset = SDL_RWtell(rw);
+    dec->start_offset = SDL_TellIO(rw);
 
     SNDDBG(("AU: Accepting data stream.\n"));
     return 1;
@@ -268,7 +268,7 @@ static Uint32 AU_read(Sound_Sample *sample)
 
     if (maxlen > dec->remaining)
         maxlen = dec->remaining;
-    ret = SDL_RWread(internal->rw, buf, 1, maxlen);
+    ret = SDL_ReadIO(internal->rw, buf, maxlen);
     if (ret == 0)
         sample->flags |= SOUND_SAMPLEFLAG_EOF;
     else if (ret == -1) /** FIXME: this error check is broken **/
@@ -297,7 +297,7 @@ static int AU_rewind(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     struct audec *dec = (struct audec *) internal->decoder_private;
-    const Sint64 rc = SDL_RWseek(internal->rw, dec->start_offset, RW_SEEK_SET);
+    const Sint64 rc = SDL_SeekIO(internal->rw, dec->start_offset, SDL_IO_SEEK_SET);
     BAIL_IF_MACRO(rc != dec->start_offset, ERR_IO_ERROR, 0);
     dec->remaining = dec->total;
     return 1;
@@ -316,7 +316,7 @@ static int AU_seek(Sound_Sample *sample, Uint32 ms)
         offset >>= 1;  /* halve the byte offset for compression. */
 
     pos = (dec->start_offset + offset);
-    rc = SDL_RWseek(internal->rw, pos, RW_SEEK_SET);
+    rc = SDL_SeekIO(internal->rw, pos, SDL_IO_SEEK_SET);
     BAIL_IF_MACRO(rc != pos, ERR_IO_ERROR, 0);
     dec->remaining = dec->total - offset;
     return 1;

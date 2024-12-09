@@ -37,13 +37,13 @@ static size_t mp3_read(void* pUserData, void* pBufferOut, size_t bytesToRead)
     Uint8 *ptr = (Uint8 *) pBufferOut;
     Sound_Sample *sample = (Sound_Sample *) pUserData;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    SDL_RWops *rwops = internal->rw;
+    SDL_IOStream *rwops = internal->rw;
     size_t retval = 0;
 
     /* !!! FIXME: dr_mp3 treats returning less than bytesToRead as EOF. So we can't EAGAIN. */
     while (bytesToRead)
     {
-        const size_t rc = SDL_RWread(rwops, ptr, 1, bytesToRead);
+        const size_t rc = SDL_ReadIO(rwops, ptr, bytesToRead);
         if (rc == 0) break;
         bytesToRead -= rc;
         retval += rc;
@@ -55,16 +55,16 @@ static size_t mp3_read(void* pUserData, void* pBufferOut, size_t bytesToRead)
 
 static drmp3_bool32 mp3_seek(void* pUserData, int offset, drmp3_seek_origin origin)
 {
-    const int whence = (origin == drmp3_seek_origin_start) ? RW_SEEK_SET : RW_SEEK_CUR;
+    const int whence = (origin == drmp3_seek_origin_start) ? SDL_IO_SEEK_SET : SDL_IO_SEEK_CUR;
     Sound_Sample *sample = (Sound_Sample *) pUserData;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    return (SDL_RWseek(internal->rw, offset, whence) != -1) ? DRMP3_TRUE : DRMP3_FALSE;
+    return (SDL_SeekIO(internal->rw, offset, whence) != -1) ? DRMP3_TRUE : DRMP3_FALSE;
 } /* mp3_seek */
 
 
-static SDL_bool MP3_init(void)
+static bool MP3_init(void)
 {
-    return SDL_TRUE;  /* always succeeds. */
+    return true; /* always succeeds. */
 } /* MP3_init */
 
 
@@ -92,7 +92,7 @@ static int MP3_open(Sound_Sample *sample, const char *ext)
 
     sample->actual.channels = dr->channels;
     sample->actual.rate = dr->sampleRate;
-    sample->actual.format = AUDIO_F32SYS;  /* dr_mp3 only does float. */
+    sample->actual.format = SDL_AUDIO_F32; /* dr_mp3 only does float. */
 
     frames = drmp3_get_pcm_frame_count(dr);
     if (frames == 0) /* ever possible ??? */
