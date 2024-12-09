@@ -1,14 +1,14 @@
-HOW TO BUILD SDL_SOUND 2.x ...
+HOW TO BUILD SDL_SOUND 3.x ...
 
 The 1.x branch of SDL_sound was pretty complicated to build, needing you to
 hunt down external libraries and poke through various incompatible project
-files. We've simplified this as much as possible for SDL2_sound. Now there are
+files. We've simplified this as much as possible for SDL3_sound. Now there are
 no external libraries (everything is built internally, either with source
 code we wrote or public domain code included with this project, and CMake
 manages building.
 
-The only external library SDL2_sound needs is SDL2. We assume you are using
-SDL2 already if you've come looking for this library. It can be found at
+The only external library SDL3_sound needs is SDL3. We assume you are using
+SDL3 already if you've come looking for this library. It can be found at
 https://www.libsdl.org/
 
 
@@ -34,7 +34,7 @@ compile it directly, instead of messing with it as an external library. There
 are no restrictions on doing this, even if you're writing commercial,
 closed-source software.
 
-This assumes you are already using SDL2, which SDL_sound relies on. If
+This assumes you are already using SDL3, which SDL_sound relies on. If
 not, you'll need to make sure SDL's header's are available and we can link
 against the SDL library.
 

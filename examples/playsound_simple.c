@@ -18,8 +18,9 @@
 #ifdef _WIN32
 #define SDL_MAIN_HANDLED /* this is a console-only app */
 #endif
-#include "SDL.h"
-#include "SDL_sound.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3_sound/SDL_sound.h>
 
 /* global decoding state. */
 typedef struct
@@ -95,10 +96,27 @@ static void SDLCALL audio_callback(void *userdata, Uint8 *stream, int len)
     } /* while */
 } /* audio_callback */
 
+void SDLCALL sdl3_audio_callback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount)
+{
+    if (additional_amount > 0)
+    {
+        Uint8 *data = SDL_stack_alloc(Uint8, additional_amount);
+        if (data)
+        {
+            audio_callback(userdata, data, additional_amount);
+            SDL_PutAudioStreamData(stream, data, additional_amount);
+            SDL_stack_free(data);
+        }
+    }
+}
+
 
 static void playOneSoundFile(const char *fname)
 {
+    SDL_AudioStream *stream;
     PlaysoundAudioCallbackData data;
+    SDL_AudioSpec spec;
+    int sample_frames;
 
     SDL_zero(data);
     data.sample = Sound_NewSampleFromFile(fname, NULL, 65536);
@@ -120,10 +138,9 @@ static void playOneSoundFile(const char *fname)
     data.devformat.freq = data.sample->actual.rate;
     data.devformat.format = data.sample->actual.format;
     data.devformat.channels = data.sample->actual.channels;
-    data.devformat.samples = 4096;  /* I just picked a largish number here. */
-    data.devformat.callback = audio_callback;
-    data.devformat.userdata = &data;
-    if (SDL_OpenAudio(&data.devformat, NULL) < 0)
+
+    stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &data.devformat, sdl3_audio_callback, &data);
+    if (stream == NULL)
     {
         fprintf(stderr, "Couldn't open audio device: %s.\n", SDL_GetError());
         Sound_FreeSample(data.sample);
@@ -131,14 +148,14 @@ static void playOneSoundFile(const char *fname)
     } /* if */
 
     printf("Now playing [%s]...\n", fname);
-    SDL_PauseAudio(0);  /* SDL audio device is "paused" right after opening. */
+    SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream)); /* SDL audio device is "paused" right after opening. */
 
     global_done_flag = 0;  /* the audio callback will flip this flag. */
     while (!global_done_flag)
         SDL_Delay(10);  /* just wait for the audio callback to finish. */
 
     /* at this point, we've played the entire audio file. */
-    SDL_PauseAudio(1);  /* so stop the device. */
+    SDL_PauseAudioDevice(SDL_GetAudioStreamDevice(stream)); /* so stop the device. */
 
     /*
      * Sleep two buffers' worth of audio before closing, in order
@@ -149,14 +166,16 @@ static void playOneSoundFile(const char *fname)
      * As an alternative for this app, you could also change the callback
      *  to write silence for a call or two before flipping global_done_flag.
      */
-    SDL_Delay(2 * 1000 * data.devformat.samples / data.devformat.freq);
+    sample_frames = 0;
+    SDL_GetAudioDeviceFormat(SDL_GetAudioStreamDevice(stream), &spec, &sample_frames);
+    SDL_Delay(sample_frames * 1000 / spec.freq);
 
     /* if there was an error, tell the user. */
     if (data.sample->flags & SOUND_SAMPLEFLAG_ERROR)
         fprintf(stderr, "Error decoding file: %s\n", Sound_GetError());
 
     Sound_FreeSample(data.sample);  /* clean up SDL_Sound resources... */
-    SDL_CloseAudio();  /* will reopen with next file's format. */
+    SDL_CloseAudioDevice(SDL_GetAudioStreamDevice(stream)); /* will reopen with next file's format. */
 } /* playOneSoundFile */
 
 
@@ -181,4 +200,3 @@ int main(int argc, char **argv)
 } /* main */
 
 /* end of playsound-simple.c ... */
-
