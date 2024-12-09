@@ -29,7 +29,7 @@ static char def_instr_name[256] = "";
 
 /* Quick-and-dirty fgets() replacement. */
 
-static char *RWgets(SDL_RWops *rw, char *s, int size)
+static char *RWgets(SDL_IOStream *rw, char *s, int size)
 {
     int num_read = 0;
     char *p = s;
@@ -38,7 +38,7 @@ static char *RWgets(SDL_RWops *rw, char *s, int size)
 
     for (; num_read < size; ++p)
     {
-	if (SDL_RWread(rw, p, 1, 1) != 1)
+	if (!SDL_ReadIO(rw, p, 1))
 	    break;
 
 	num_read++;
@@ -61,7 +61,7 @@ static char *RWgets(SDL_RWops *rw, char *s, int size)
 
 static int read_config_file(const char *name, int rcf_count)
 {
-  SDL_RWops *rw;
+  SDL_IOStream *rw;
   char tmp[1024];
   char *w[MAXWORDS], *cp;
   char *endp;
@@ -84,13 +84,13 @@ static int read_config_file(const char *name, int rcf_count)
   {
     line++;
     words=0;
-    w[0]=SDL_strtokr(tmp, " \t\240", &endp);
+    w[0]=SDL_strtok_r(tmp, " \t\240", &endp);
     if (!w[0]) continue;
 
         /* Originally the TiMidity++ extensions were prefixed like this */
     if (SDL_strcmp(w[0], "#extension") == 0)
     {
-        w[0]=SDL_strtokr(0, " \t\240", &endp);
+        w[0]=SDL_strtok_r(0, " \t\240", &endp);
         if (!w[0]) continue;
     }
 
@@ -423,7 +423,7 @@ static int read_config_file(const char *name, int rcf_count)
 
   r = 0; /* we're good. */
 fail:
-  SDL_RWclose(rw);
+  SDL_CloseIO(rw);
   return r;
 }
 
@@ -503,7 +503,7 @@ int Timidity_Init(const char *config_file)
   return init_with_config(config_file);
 }
 
-static void do_song_load(SDL_RWops *rw, SDL_AudioSpec *audio, MidiSong **out)
+static void do_song_load(SDL_IOStream *rw, SDL_AudioSpec *audio, MidiSong **out)
 {
   MidiSong *song;
   int i;
@@ -552,34 +552,28 @@ static void do_song_load(SDL_RWops *rw, SDL_AudioSpec *audio, MidiSong **out)
       goto fail;
   }
   switch (audio->format) {
-  case AUDIO_S8:
+  case SDL_AUDIO_S8:
     song->write = timi_s32tos8;
     break;
-  case AUDIO_U8:
+  case SDL_AUDIO_U8:
     song->write = timi_s32tou8;
     break;
-  case AUDIO_S16LSB:
+  case SDL_AUDIO_S16LE:
     song->write = timi_s32tos16l;
     break;
-  case AUDIO_S16MSB:
+  case SDL_AUDIO_S16BE:
     song->write = timi_s32tos16b;
     break;
-  case AUDIO_U16LSB:
-    song->write = timi_s32tou16l;
-    break;
-  case AUDIO_U16MSB:
-    song->write = timi_s32tou16b;
-    break;
-  case AUDIO_S32LSB:
+  case SDL_AUDIO_S32LE:
     song->write = timi_s32tos32l;
     break;
-  case AUDIO_S32MSB:
+  case SDL_AUDIO_S32BE:
     song->write = timi_s32tos32b;
     break;
-  case AUDIO_F32LSB:
+  case SDL_AUDIO_F32LE:
     song->write = timi_s32tof32l;
     break;
-  case AUDIO_F32MSB:
+  case SDL_AUDIO_F32BE:
     song->write = timi_s32tof32b;
     break;
   default:
@@ -587,10 +581,10 @@ static void do_song_load(SDL_RWops *rw, SDL_AudioSpec *audio, MidiSong **out)
     goto fail;
   }
 
-  song->buffer_size = audio->samples;
-  song->resample_buffer = SDL_malloc(audio->samples * sizeof(sample_t));
+  song->buffer_size = 4096/*audio->samples*/;
+  song->resample_buffer = SDL_malloc(4096/*audio->samples*/ * sizeof(sample_t));
   if (!song->resample_buffer) goto fail;
-  song->common_buffer = SDL_malloc(audio->samples * 2 * sizeof(Sint32));
+  song->common_buffer = SDL_malloc(4096/*audio->samples*/* 2 * sizeof(Sint32));
   if (!song->common_buffer) goto fail;
 
   song->control_ratio = audio->freq / CONTROLS_PER_SECOND;
@@ -624,7 +618,7 @@ fail: Timidity_FreeSong(song);
   }
 }
 
-MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio)
+MidiSong *Timidity_LoadSong(SDL_IOStream *rw, SDL_AudioSpec *audio)
 {
   MidiSong *song;
   do_song_load(rw, audio, &song);

@@ -27,11 +27,11 @@
 
 #if SOUND_SUPPORTS_FMT
 
-static SDL_bool FMT_init(void)
+static bool FMT_init(void)
 {
     /* do any global decoder/library initialization you need here. */
 
-    return SDL_TRUE;  /* initialization successful. */
+    return true; /* initialization successful. */
 } /* FMT_init */
 
 
@@ -44,13 +44,13 @@ static void FMT_quit(void)
 static int FMT_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    SDL_RWops *rw = internal->rw;
+    SDL_IOStream *rw = internal->rw;
 
-    if (can NOT accept the data)
-        BAIL_MACRO("FMT: expected X, got Y.", 0);
+    // if (can NOT accept the data)
+    //     BAIL_MACRO("FMT: expected X, got Y.", 0);
 
     SNDDBG(("FMT: Accepting data stream.\n"));
-    set up sample->actual;
+    // set up sample->actual;
     sample->flags = SOUND_SAMPLEFLAG_NONE;
     return 1; /* we'll handle this data. */
 } /* FMT_open */
@@ -59,7 +59,7 @@ static int FMT_open(Sound_Sample *sample, const char *ext)
 static void FMT_close(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    clean up anything you put into internal->decoder_private;
+    // clean up anything you put into internal->decoder_private;
 } /* FMT_close */
 
 
@@ -72,10 +72,10 @@ static Uint32 FMT_read(Sound_Sample *sample)
          * We don't actually do any decoding, so we read the fmt data
          *  directly into the internal buffer...
          */
-    retval = SDL_RWread(internal->rw, internal->buffer,
-                        1, internal->buffer_size);
+    retval = SDL_ReadIO(internal->rw, internal->buffer,
+                        internal->buffer_size);
 
-    (or whatever. Do some decoding here...)
+    // (or whatever.Do some decoding here...)
 
         /* Make sure the read went smoothly... */
     if (retval == 0)
@@ -84,11 +84,11 @@ static Uint32 FMT_read(Sound_Sample *sample)
     else if (retval == -1) /** FIXME: this error check is broken **/
         sample->flags |= SOUND_SAMPLEFLAG_ERROR;
 
-        /* (next call this EAGAIN may turn into an EOF or error.) */
+    /* (next call this EAGAIN may turn into an EOF or error.) */
     else if (retval < internal->buffer_size)
         sample->flags |= SOUND_SAMPLEFLAG_EAGAIN;
 
-    (or whatever. retval == number of bytes you put in internal->buffer).
+    // (or whatever. retval == number of bytes you put in internal->buffer).
 
     return retval;
 } /* FMT_read */
@@ -99,9 +99,9 @@ static int FMT_rewind(Sound_Sample *sample)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
 
         /* seek to the appropriate place... */
-    BAIL_IF_MACRO(SDL_RWseek(internal->rw, 0, RW_SEEK_SET) != 0, ERR_IO_ERROR, 0);
+    BAIL_IF_MACRO(SDL_SeekIO(internal->rw, 0, SDL_IO_SEEK_SET) != 0, ERR_IO_ERROR, 0);
 
-    (reset state as necessary.)
+    // (reset state as necessary.)
 
     return 1;  /* success. */
 } /* FMT_rewind */
@@ -112,9 +112,9 @@ static int FMT_seek(Sound_Sample *sample, Uint32 ms)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
 
         /* seek to the appropriate place... */
-    BAIL_IF_MACRO(SDL_RWseek(internal->rw, 0, RW_SEEK_SET) != 0, ERR_IO_ERROR, 0);
+    BAIL_IF_MACRO(SDL_SeekIO(internal->rw, 0, SDL_IO_SEEK_SET) != 0, ERR_IO_ERROR, 0);
 
-    (set state as necessary.)
+    // (set state as necessary.)
 
     return 1;  /* success. */
 } /* FMT_seek */

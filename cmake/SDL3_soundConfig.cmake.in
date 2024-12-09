@@ -1,0 +1,34 @@
+# sdl3_sound cmake project-config input
+
+@PACKAGE_INIT@
+
+include(FeatureSummary)
+set_package_properties(SDL3_sound PROPERTIES
+    URL "https://github.com/icculus/SDL_sound/"
+    DESCRIPTION " An abstract soundfile decoder"
+)
+
+set(SDL3_sound_FOUND ON)
+
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/SDL3_sound-shared-targets.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/SDL3_sound-shared-targets.cmake")
+    set(SDL3_sound_SDL3_sound_FOUND TRUE)
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/SDL3_sound-static-targets.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/SDL3_sound-static-targets.cmake")
+    set(SDL3_sound_SDL3_sound-static_FOUND TRUE)
+endif()
+
+check_required_components(SDL3_sound)
+
+# Create SDL3_sound::SDL3_sound alias for static-only builds
+if(TARGET SDL3_sound::SDL3_sound-static AND NOT TARGET SDL3_sound::SDL3_sound)
+  if(CMAKE_VERSION VERSION_LESS "3.18")
+    # FIXME: Aliasing local targets is not supported on CMake < 3.18, so make it global.
+    add_library(SDL3_sound::SDL3_sound INTERFACE IMPORTED)
+    set_target_properties(SDL3_sound::SDL3_sound PROPERTIES INTERFACE_LINK_LIBRARIES "SDL3_sound::SDL3_sound-static")
+  else()
+    add_library(SDL3_sound::SDL3_sound ALIAS SDL3_sound::SDL3_sound-static)
+  endif()
+endif()
