@@ -96,9 +96,9 @@ static const char *vorbis_error_string(const int err)
     return "VORBIS: unknown error";
 } /* vorbis_error_string */
 
-static SDL_bool VORBIS_init(void)
+static bool VORBIS_init(void)
 {
-    return SDL_TRUE;  /* always succeeds. */
+    return true; /* always succeeds. */
 } /* VORBIS_init */
 
 static void VORBIS_quit(void)
@@ -109,7 +109,7 @@ static void VORBIS_quit(void)
 static int VORBIS_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    SDL_RWops *rw = internal->rw;
+    SDL_IOStream *rw = internal->rw;
     int err = 0;
     stb_vorbis *stb = stb_vorbis_open_rwops(rw, 0, &err, NULL);
     unsigned int num_frames;
@@ -120,7 +120,7 @@ static int VORBIS_open(Sound_Sample *sample, const char *ext)
 
     internal->decoder_private = stb;
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
-    sample->actual.format = AUDIO_F32SYS;
+    sample->actual.format = SDL_AUDIO_F32;
     sample->actual.channels = stb->channels;
     sample->actual.rate = stb->sample_rate;
     num_frames = stb_vorbis_stream_length_in_samples(stb);

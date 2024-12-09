@@ -29,7 +29,7 @@
 # define TIMIDITY_CFG_FREEPATS  "/etc/timidity/freepats.cfg"
 #endif
 
-static SDL_bool MIDI_init(void)
+static bool MIDI_init(void)
 {
     const char *cfg;
     int rc = -1;
@@ -51,8 +51,8 @@ static SDL_bool MIDI_init(void)
         if (rc < 0) rc = Timidity_Init(NULL); /* library's default cfg. */
     }
 
-    BAIL_IF_MACRO(rc < 0, "MIDI: Could not initialise", SDL_FALSE);
-    return SDL_TRUE;
+    BAIL_IF_MACRO(rc < 0, "MIDI: Could not initialise", false);
+    return true;
 } /* MIDI_init */
 
 
@@ -65,15 +65,14 @@ static void MIDI_quit(void)
 static int MIDI_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    SDL_RWops *rw = internal->rw;
+    SDL_IOStream *rw = internal->rw;
     SDL_AudioSpec spec;
     MidiSong *song;
 
     spec.channels = (sample->desired.channels == 1) ? 1 : 2;
-    spec.format = (sample->desired.format == 0) ? AUDIO_S16SYS : sample->desired.format;
+    spec.format = (sample->desired.format == 0) ? SDL_AUDIO_S16 : sample->desired.format;
     spec.freq = (sample->desired.rate == 0) ? 44100 : sample->desired.rate;
-    spec.samples = sample->buffer_size / (SDL_AUDIO_BITSIZE(spec.format) / 8) / spec.channels;
-    
+
     song = Timidity_LoadSong(rw, &spec);
     BAIL_IF_MACRO(song == NULL, "MIDI: Not a MIDI file.", 0);
     Timidity_SetVolume(song, 100);
