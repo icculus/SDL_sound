@@ -7,7 +7,7 @@ set(SDLSOUND_VERSION 2.0.3)
 # Increment this if/when we break backwards compatibility.
 set(SDLSOUND_SOVERSION 2)
 
-cmake_minimum_required(VERSION 3.0...3.5)
+cmake_minimum_required(VERSION 3.0...3.10)
 
 project(SDL_sound
     VERSION ${SDLSOUND_VERSION}
