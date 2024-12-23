@@ -1,4 +1,4 @@
-SDL2_sound.pc
+SDL3_sound.pc
 
 *.so
 *.so.*
@@ -35,3 +35,7 @@ RelWithDebInfo
 
 playsound
 playsound_simple
+
+.DS_Store
+build
+.vscode
