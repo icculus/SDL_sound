@@ -2,7 +2,10 @@
 # fails, define SDL3_DIR environment variable to point to your SDL3
 # installation.
 
-set(SDLSOUND_VERSION 3.0.0)
+set(MAJOR_VERSION 3)
+set(MINOR_VERSION 0)
+set(MICRO_VERSION 0)
+set(SDLSOUND_VERSION "${MAJOR_VERSION}.${MINOR_VERSION}.${MICRO_VERSION}")
 
 # Increment this if/when we break backwards compatibility.
 set(SDLSOUND_SOVERSION 3)
@@ -158,7 +161,7 @@ set(SDLSOUND_SRCS
 set(SDLSOUND_HDRS
     src/dr_flac.h
     src/dr_mp3.h
-    src/SDL_sound.h
+    "include/SDL3_sound/SDL_sound.h"
     src/SDL_sound_internal.h
     src/stb_vorbis.h
 )
@@ -186,7 +189,7 @@ if(SDLSOUND_BUILD_STATIC)
     endif()
     target_include_directories(SDL3_sound-static PUBLIC
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
     target_include_directories(SDL3_sound-static PUBLIC "$<BUILD_INTERFACE:${SDL3_INCLUDE_DIRS}>")
     target_link_libraries(SDL3_sound-static PRIVATE SDL3::SDL3 ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
     set(SDLSOUND_LIB_TARGET SDL3_sound-static)
@@ -209,14 +212,14 @@ if(SDLSOUND_BUILD_SHARED)
     endif()
     target_include_directories(SDL3_sound PUBLIC
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     )
     # target_include_directories(SDL3_sound PUBLIC "$<BUILD_INTERFACE:${SDL3_INCLUDE_DIRS}>")
     target_link_libraries(SDL3_sound PRIVATE SDL3::SDL3 ${OPTIONAL_LIBRARY_LIBS} ${OTHER_LDFLAGS})
     set(SDLSOUND_LIB_TARGET SDL3_sound)
 endif()
 
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/SDL3_sound.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/SDL3_sound.pc" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl3-sound.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/sdl3-sound.pc" @ONLY)
 
 if(NOT SDLSOUND_BUILD_SHARED AND NOT SDLSOUND_BUILD_STATIC)
     message(FATAL "Both shared and static libraries are disabled!")
@@ -285,9 +288,9 @@ write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/SDL3_soundConfigVe
 if(SDLSOUND_BUILD_SHARED)
     install(TARGETS SDL3_sound
         EXPORT SDLSoundSharedExports
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT library
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT devel
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT library
     )
     install(EXPORT SDLSoundSharedExports
         FILE "${SDLSOUND_LIB_TARGET}-shared-targets.cmake"
@@ -298,9 +301,9 @@ endif()
 if(SDLSOUND_BUILD_STATIC)
     install(TARGETS SDL3_sound-static
         EXPORT SDLSoundStaticExports
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT library
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT devel
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT library
     )
     install(EXPORT SDLSoundStaticExports
         FILE "${SDLSOUND_LIB_TARGET}-static-targets.cmake"
@@ -318,10 +321,12 @@ install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}/SDL3_soundConfigVersion.cmake"
     DESTINATION "${SDLSOUND_INSTALL_CMAKEDIR}"
 )
-install(FILES src/SDL_sound.h
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/SDL3_sound.pc
-    DESTINATION "${PKGCONFIG_INSTALLDIR}")
+install(
+    FILES "${CMAKE_CURRENT_SOURCE_DIR}/include/SDL3_sound/SDL_sound.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SDL3_sound" COMPONENT DEVEL
+)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sdl3-sound.pc
+    DESTINATION "${PKGCONFIG_INSTALLDIR}" COMPONENT DEVEL)
 
 option(SDLSOUND_BUILD_DOCS "Build documentation" TRUE)
 mark_as_advanced(SDLSOUND_BUILD_DOCS)

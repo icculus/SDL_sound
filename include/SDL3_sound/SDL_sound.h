@@ -47,8 +47,8 @@
  * \author many others, please see CREDITS in the source's root directory.
  */
 
-#ifndef _INCLUDE_SDL_SOUND_H_
-#define _INCLUDE_SDL_SOUND_H_
+#ifndef SDL_SOUND_H_
+#define SDL_SOUND_H_
 
 #include <SDL3/SDL.h>
 
@@ -719,7 +719,7 @@ SNDDECLSPEC int SDLCALL Sound_Seek(Sound_Sample *sample, Uint32 ms);
 }
 #endif
 
-#endif  /* !defined _INCLUDE_SDL_SOUND_H_ */
+#endif  /* !defined SDL_SOUND_H_ */
 
 /* end of SDL_sound.h ... */
 

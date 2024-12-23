@@ -20,7 +20,7 @@
 #endif
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include "SDL_sound.h"
+#include <SDL3_sound/SDL_sound.h>
 
 /* global decoding state. */
 typedef struct
