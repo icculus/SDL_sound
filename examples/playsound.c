@@ -208,7 +208,7 @@ static volatile playsound_global_state global_state;
 static Uint32 cvtMsToBytePos(Sound_AudioInfo *info, Uint32 ms)
 {
     /* "frames" == "sample frames" */
-    float frames_per_ms = ((float) info->rate) / 1000.0;
+    float frames_per_ms = ((float) info->rate) / 1000.0f;
     Uint32 frame_offset = (Uint32) (frames_per_ms * ((float) ms));
     Uint32 frame_size = (Uint32) ((info->format & 0xFF) / 8) * info->channels;
     return(frame_offset * frame_size);
@@ -276,7 +276,7 @@ static int read_more_data(Sound_Sample *sample)
     } /* if */
 
     if ((global_state.bytes_before_next_seek >= 0) &&
-        (global_state.decoded_bytes > global_state.bytes_before_next_seek))
+        (global_state.decoded_bytes > (Uint32)global_state.bytes_before_next_seek))
     {
         global_state.decoded_bytes = global_state.bytes_before_next_seek;
     } /* if */
@@ -476,8 +476,8 @@ static void SDLCALL audio_callback(void *userdata, Uint8 *stream, int len)
         /* decoded_bytes and decoder_ptr are updated as necessary... */
 
         cpysize = len - bw;
-        if (cpysize > global_state.decoded_bytes)
-            cpysize = global_state.decoded_bytes;
+        if (cpysize > (Sint32)global_state.decoded_bytes)
+            cpysize = (Sint32)global_state.decoded_bytes;
 
         if (cpysize > 0)
         {
@@ -829,8 +829,8 @@ int main(int argc, char **argv)
 
         else if (SDL_strcmp(argv[i], "--volume") == 0 && argc > i + 1)
         {
-            global_state.volume = SDL_atof(argv[++i]);
-            if (global_state.volume != 1.0)
+            global_state.volume = (float)SDL_atof(argv[++i]);
+            if (global_state.volume != 1.0f)
                 global_state.wants_volume_change = 1;
         } /* else if */
 

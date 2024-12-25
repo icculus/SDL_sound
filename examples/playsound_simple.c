@@ -78,8 +78,8 @@ static void SDLCALL audio_callback(void *userdata, Uint8 *stream, int len)
 
         /* we have data decoded and ready to write to the device... */
         cpysize = len - bw;  /* len - bw == amount device still wants. */
-        if (cpysize > data->decoded_bytes)
-            cpysize = data->decoded_bytes;  /* clamp to what we have left. */
+        if (cpysize > (Sint32)data->decoded_bytes)
+            cpysize = (Sint32)data->decoded_bytes;  /* clamp to what we have left. */
 
         /* if it's 0, next iteration will decode more or decide we're done. */
         if (cpysize > 0)
@@ -94,7 +94,6 @@ static void SDLCALL audio_callback(void *userdata, Uint8 *stream, int len)
         } /* if */
     } /* while */
 } /* audio_callback */
-
 
 
 static void playOneSoundFile(const char *fname)
