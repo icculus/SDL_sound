@@ -175,11 +175,11 @@ static const Uint8 ulaw_outward[13][256] = {
 #endif
 
 
-static int word_get(shn_t *shn, SDL_RWops *rw, Uint32 *word)
+static int word_get(shn_t *shn, SDL_IOStream *rw, Uint32 *word)
 {
     if (shn->nbyteget < 4)
     {
-        shn->nbyteget += SDL_RWread(rw, shn->getbuf, 1, SHN_BUFSIZ);
+        shn->nbyteget += SDL_ReadIO(rw, shn->getbuf, SHN_BUFSIZ);
         BAIL_IF_MACRO(shn->nbyteget < 4, NULL, 0);
         shn->getbufp = shn->getbuf;
     } /* if */
@@ -199,7 +199,7 @@ static int word_get(shn_t *shn, SDL_RWops *rw, Uint32 *word)
 } /* word_get */
 
 
-static int uvar_get(int nbin, shn_t *shn, SDL_RWops *rw, Sint32 *word)
+static int uvar_get(int nbin, shn_t *shn, SDL_IOStream *rw, Sint32 *word)
 {
     Sint32 result;
 
@@ -245,7 +245,7 @@ static int uvar_get(int nbin, shn_t *shn, SDL_RWops *rw, Sint32 *word)
 } /* uvar_get */
 
 
-static int var_get(int nbin, shn_t *shn, SDL_RWops *rw, Sint32 *word)
+static int var_get(int nbin, shn_t *shn, SDL_IOStream *rw, Sint32 *word)
 {
     BAIL_IF_MACRO(!uvar_get(nbin + 1, shn, rw, word), NULL, 0);
 
@@ -258,7 +258,7 @@ static int var_get(int nbin, shn_t *shn, SDL_RWops *rw, Sint32 *word)
 } /* var_get */
 
 
-static int ulong_get(shn_t *shn, SDL_RWops *rw, Sint32 *word)
+static int ulong_get(shn_t *shn, SDL_IOStream *rw, Sint32 *word)
 {
     Sint32 nbit;
     Sint32 retval;
@@ -272,15 +272,15 @@ static int ulong_get(shn_t *shn, SDL_RWops *rw, Sint32 *word)
 } /* ulong_get */
 
 
-static SDL_INLINE int uint_get(int nbit, shn_t *shn, SDL_RWops *rw, Sint32 *w)
+static SDL_INLINE int uint_get(int nbit, shn_t *shn, SDL_IOStream *rw, Sint32 *w)
 {
     return (shn->version == 0) ? uvar_get(nbit, shn, rw, w) : ulong_get(shn, rw, w);
 } /* uint_get */
 
 
-static SDL_bool SHN_init(void)
+static bool SHN_init(void)
 {
-    return SDL_TRUE;  /* initialization always successful. */
+    return true; /* initialization always successful. */
 } /* SHN_init */
 
 
@@ -296,17 +296,17 @@ static void SHN_quit(void)
  */
 static SDL_INLINE int extended_shn_magic_search(Sound_Sample *sample)
 {
-    SDL_RWops *rw = ((Sound_SampleInternal *) sample->opaque)->rw;
+    SDL_IOStream *rw = ((Sound_SampleInternal *) sample->opaque)->rw;
     Uint32 word = 0;
     Uint8 ch;
 
     while (1)
     {
-        BAIL_IF_MACRO(SDL_RWread(rw, &ch, sizeof (ch), 1) != 1, NULL, -1);
+        BAIL_IF_MACRO(SDL_ReadIO(rw, &ch, sizeof (ch)) != sizeof (ch), NULL, -1);
         word = ((word << 8) & 0xFFFFFF00) | ch;
-        if (SDL_SwapBE32(word) == SHN_MAGIC)
+        if (SDL_Swap32BE(word) == SHN_MAGIC)
         {
-            BAIL_IF_MACRO(SDL_RWread(rw, &ch, sizeof (ch), 1) != 1, NULL, -1);
+            BAIL_IF_MACRO(SDL_ReadIO(rw, &ch, sizeof (ch)) != sizeof (ch), NULL, -1);
             return (int) ch;
         } /* if */
     } /* while */
@@ -319,7 +319,7 @@ static SDL_INLINE int extended_shn_magic_search(Sound_Sample *sample)
 static SDL_INLINE int determine_shn_version(Sound_Sample *sample,
                                             const char *ext)
 {
-    SDL_RWops *rw = ((Sound_SampleInternal *) sample->opaque)->rw;
+    SDL_IOStream *rw = ((Sound_SampleInternal *) sample->opaque)->rw;
     Uint32 magic;
     Uint8 ch;
 
@@ -334,9 +334,9 @@ static SDL_INLINE int determine_shn_version(Sound_Sample *sample,
     if (ext != NULL && SDL_strcasecmp(ext, "shn") == 0)
         return extended_shn_magic_search(sample);
 
-    BAIL_IF_MACRO(SDL_RWread(rw, &magic, sizeof (magic), 1) != 1, NULL, -1);
-    BAIL_IF_MACRO(SDL_SwapLE32(magic) != SHN_MAGIC, "SHN: Not a SHN file", -1);
-    BAIL_IF_MACRO(SDL_RWread(rw, &ch, sizeof (ch), 1) != 1, NULL, -1);
+    BAIL_IF_MACRO(SDL_ReadIO(rw, &magic, sizeof (magic)) != sizeof (magic), NULL, -1);
+    BAIL_IF_MACRO(SDL_Swap32LE(magic) != SHN_MAGIC, "SHN: Not a SHN file", -1);
+    BAIL_IF_MACRO(SDL_ReadIO(rw, &ch, sizeof (ch)) != sizeof (ch), NULL, -1);
     BAIL_IF_MACRO(ch > 3, "SHN: Unsupported file version", -1);
 
     return (int) ch;
@@ -386,7 +386,7 @@ static SDL_INLINE Uint16 cvt_shnftype_to_sdlfmt(Sint16 shntype)
     switch (shntype)
     {
         case SHN_TYPE_S8:
-            return AUDIO_S8;
+            return SDL_AUDIO_S8;
 
         case SHN_TYPE_ALAW:
         case SHN_TYPE_ULAW:
@@ -394,26 +394,26 @@ static SDL_INLINE Uint16 cvt_shnftype_to_sdlfmt(Sint16 shntype)
         case SHN_TYPE_AU2:
         case SHN_TYPE_AU3:
         case SHN_TYPE_U8:
-            return AUDIO_U8;
+            return SDL_AUDIO_U8;
 
         case SHN_TYPE_S16HL:
-            return AUDIO_S16MSB;
+            return SDL_AUDIO_S16BE;
 
         case SHN_TYPE_S16LH:
-            return AUDIO_S16LSB;
+            return SDL_AUDIO_S16LE;
 
         case SHN_TYPE_U16HL:
-            return AUDIO_U16MSB;
+            return SDL_AUDIO_S16BE;
 
         case SHN_TYPE_U16LH:
-            return AUDIO_U16LSB;
+            return SDL_AUDIO_S16LE;
     } /* switch */
 
     return 0;
 } /* cvt_shnftype_to_sdlfmt */
 
 
-static SDL_INLINE int skip_bits(shn_t *shn, SDL_RWops *rw)
+static SDL_INLINE int skip_bits(shn_t *shn, SDL_IOStream *rw)
 {
     int i;
     Sint32 skip;
@@ -451,7 +451,7 @@ static Sint32 **shn_long2d(Uint32 n0, Uint32 n1)
 #define fmtID  0x20746D66  /* "fmt ", in ascii. */
 #define dataID 0x61746164  /* "data", in ascii. */
 
-static int verb_ReadLE32(shn_t *shn, SDL_RWops *rw, Uint32 *word)
+static int verb_ReadLE32(shn_t *shn, SDL_IOStream *rw, Uint32 *word)
 {
     int i;
     Uint8 chars[4];
@@ -465,13 +465,13 @@ static int verb_ReadLE32(shn_t *shn, SDL_RWops *rw, Uint32 *word)
     } /* for */
 
     SDL_memcpy(word, chars, sizeof (*word));
-    *word = SDL_SwapLE32(*word);
+    *word = SDL_Swap32LE(*word);
 
     return 1;
 } /* verb_ReadLE32 */
 
 
-static int verb_ReadLE16(shn_t *shn, SDL_RWops *rw, Uint16 *word)
+static int verb_ReadLE16(shn_t *shn, SDL_IOStream *rw, Uint16 *word)
 {
     int i;
     Uint8 chars[2];
@@ -485,7 +485,7 @@ static int verb_ReadLE16(shn_t *shn, SDL_RWops *rw, Uint16 *word)
     } /* for */
 
     SDL_memcpy(word, chars, sizeof (*word));
-    *word = SDL_SwapLE16(*word);
+    *word = SDL_Swap16LE(*word);
 
     return 1;
 } /* verb_ReadLE16 */
@@ -494,7 +494,7 @@ static int verb_ReadLE16(shn_t *shn, SDL_RWops *rw, Uint16 *word)
 static SDL_INLINE int parse_riff_header(shn_t *shn, Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    SDL_RWops *rw = internal->rw;
+    SDL_IOStream *rw = internal->rw;
     Uint16 u16;
     Uint32 u32;
     Sint32 cklen;
@@ -536,7 +536,7 @@ static SDL_INLINE int parse_riff_header(shn_t *shn, Sound_Sample *sample)
 static int SHN_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    SDL_RWops *rw = internal->rw;
+    SDL_IOStream *rw = internal->rw;
     shn_t _shn;
     shn_t *shn = &_shn;  /* malloc and copy later. */
     Sint32 cmd;
@@ -613,7 +613,7 @@ static int SHN_open(Sound_Sample *sample, const char *ext)
         return 0;
     } /* if */
 
-    shn->start_pos = SDL_RWtell(rw);
+    shn->start_pos = SDL_TellIO(rw);
 
     shn = (shn_t *) SDL_malloc(sizeof (shn_t));
     if (shn == NULL)
@@ -919,18 +919,18 @@ static Uint32 put_to_buffers(Sound_Sample *sample, Uint32 bw)
         case SHN_TYPE_U16HL:
         case SHN_TYPE_U16LH:
         {
-            Uint16 *writebufp = (Uint16 *) shn->backBuffer;
+            Sint16 *writebufp = (Sint16 *) shn->backBuffer;
             if (shn->nchan == 1)
             {
                 for (i = 0; i < nitem; i++)
-                    *writebufp++ = CAPMAXUSHORT(data0[i]);
+                    *writebufp++ = CAPMAXUSHORT(data0[i]) ^ 0x8000;
             } /* if */
             else
             {
                 for (i = 0; i < nitem; i++)
                 {
                     for (chan = 0; chan < shn->nchan; chan++)
-                        *writebufp++ = CAPMAXUSHORT(shn->buffer[chan][i]);
+                        *writebufp++ = CAPMAXUSHORT(shn->buffer[chan][i]) ^ 0x8000;
                 } /* for */
             } /* else */
         } /* case */
@@ -1017,7 +1017,7 @@ static Uint32 SHN_read(Sound_Sample *sample)
     Uint32 retval = 0;
     Sint32 chan = 0;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    SDL_RWops *rw = internal->rw;
+    SDL_IOStream *rw = internal->rw;
     shn_t *shn = (shn_t *) internal->decoder_private;
     Sint32 cmd;
 
@@ -1253,7 +1253,7 @@ static int SHN_rewind(Sound_Sample *sample)
 
 #if 0
     shn_t *shn = (shn_t *) internal->decoder_private;
-    Sint64 rc = SDL_RWseek(internal->rw, shn->start_pos, RW_SEEK_SET);
+    Sint64 rc = SDL_SeekIO(internal->rw, shn->start_pos, SDL_IO_SEEK_SET);
     BAIL_IF_MACRO(rc != shn->start_pos, ERR_IO_ERROR, 0);
     /* !!! FIXME: set state. */
     return 1;
@@ -1264,7 +1264,7 @@ static int SHN_rewind(Sound_Sample *sample)
      * !!! FIXME:  to decode. The below kludge adds unneeded overhead and
      * !!! FIXME:  risk of failure.
      */
-    BAIL_IF_MACRO(SDL_RWseek(internal->rw, 0, RW_SEEK_SET) != 0, ERR_IO_ERROR, 0);
+    BAIL_IF_MACRO(SDL_SeekIO(internal->rw, 0, SDL_IO_SEEK_SET) != 0, ERR_IO_ERROR, 0);
     SHN_close(sample);
     return SHN_open(sample, "SHN");
 #endif
