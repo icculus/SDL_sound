@@ -62,7 +62,7 @@ static void output_versions(const char *argv0)
 
     fprintf(stdout,
            "%s version %d.%d.%d\n"
-           "Copyright 2001-2018 Ryan C. Gordon and others.\n"
+           "Copyright 2001-2025 Ryan C. Gordon and others.\n"
            "\n"
            " Compiled against SDL_sound version %d.%d.%d,\n"
            " and linked against %d.%d.%d.\n"
@@ -155,7 +155,7 @@ static void output_credits(void)
 {
     fprintf(stdout,
            "playsound version %d.%d.%d\n"
-           "Copyright 2001-2018 Ryan C. Gordon and others.\n"
+           "Copyright 2001-2025 Ryan C. Gordon and others.\n"
            "\n"
            "    Written by Ryan C. Gordon, Torbjörn Andersson, Max Horn,\n"
            "     Tsuyoshi Iguchi, Tyler Montbriand, Darrell Walisser,\n"
