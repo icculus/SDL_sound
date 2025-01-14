@@ -2,7 +2,7 @@
 # fails, define SDL2_DIR environment variable to point to your SDL2
 # installation.
 
-set(SDLSOUND_VERSION 2.0.4)
+set(SDLSOUND_VERSION 2.0.5)
 
 # Increment this if/when we break backwards compatibility.
 set(SDLSOUND_SOVERSION 2)
