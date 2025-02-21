@@ -620,8 +620,10 @@ enum STBVorbisError
 #include <limits.h>
 
 #ifndef STB_FORCEINLINE
-    #if defined(_MSC_VER)
+    #if defined(_MSC_VER) && (_MSC_VER >= 1200)
         #define STB_FORCEINLINE __forceinline
+    #elif defined(_MSC_VER)
+        #define STB_FORCEINLINE static __inline
     #elif (defined(__GNUC__) && (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 2))) || defined(__clang__)
         #define STB_FORCEINLINE static __inline __attribute__((always_inline))
     #else
@@ -3766,7 +3768,7 @@ static int start_decoder(vorb *f)
    f->comment_list = NULL;
    if (f->comment_list_length > 0)
    {
-      if (INT_MAX / sizeof(char*) < f->comment_list_length)
+      if (INT_MAX / (int)sizeof(char*) < f->comment_list_length)
           goto no_comment;
       len = sizeof(char*) * f->comment_list_length;
       f->comment_list = (char**) setup_malloc(f, len);
@@ -5518,7 +5520,7 @@ static int fixup_current_playback_loc(stb_vorbis *f, int n)
 
    f->current_playback_loc += n;
    lgs = stb_vorbis_stream_length_in_samples(f);
-   if (f->current_playback_loc > lgs && lgs > 0 && lgs != SAMPLE_unknown) {
+   if (lgs != 0 && lgs != SAMPLE_unknown && f->current_playback_loc > (int)lgs) {
        int r = n - (f->current_playback_loc - (int)lgs);
        f->current_playback_loc = lgs;
        return r;
