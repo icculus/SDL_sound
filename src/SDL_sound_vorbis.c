@@ -60,7 +60,7 @@
 #define cos(x) SDL_cos(x)
 #define sin(x) SDL_sin(x)
 #define log(x) SDL_log(x)
-#if SDL_VERSION_ATLEAST(2, 0, 9)
+#if SDL_VERSION_ATLEAST(2,0,9)
 #define exp SDL_exp
 #endif
 #endif
@@ -71,7 +71,6 @@ static const char *vorbis_error_string(const int err)
 {
     switch (err)
     {
-        case VORBIS__no_error: return NULL;
         case VORBIS_need_more_data: return "VORBIS: need more data";
         case VORBIS_invalid_api_mixing: return "VORBIS: can't mix API modes";
         case VORBIS_outofmem: return "VORBIS: out of memory";
