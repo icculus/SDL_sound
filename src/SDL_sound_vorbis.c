@@ -68,7 +68,6 @@ static const char *vorbis_error_string(const int err)
 {
     switch (err)
     {
-        case VORBIS__no_error: return NULL;
         case VORBIS_need_more_data: return "VORBIS: need more data";
         case VORBIS_invalid_api_mixing: return "VORBIS: can't mix API modes";
         case VORBIS_outofmem: return "VORBIS: out of memory";
