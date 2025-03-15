@@ -37,8 +37,23 @@
 #include "options.h"
 #include "common.h"
 
+#if defined(_WIN32)||defined(__OS2__)
+#define CHAR_DIRSEP '\\'
+#define is_dirsep(c) ((c) == '/' || (c) == '\\')
+#define is_abspath(p) ((p)[0] == '/' || (p)[0] == '\\' || ((p)[0] && (p)[1] == ':'))
+#else /* unix: */
+#define CHAR_DIRSEP '/'
+#define is_dirsep(c) ((c) == '/')
+#define is_abspath(p) ((p)[0] == '/')
+#endif
+
 /* The paths in this list will be tried whenever we're reading a file */
-static PathList *pathlist = NULL; /* This is a linked list */
+typedef struct _PathList {
+  char *path;
+  struct _PathList *next;
+} PathList;
+
+static PathList *pathlist = NULL;
 
 /* This is meant to find and open files for reading */
 SDL_RWops *open_file(const char *name)
@@ -57,7 +72,7 @@ SDL_RWops *open_file(const char *name)
   if ((rw = SDL_RWFromFile(name, "rb")))
     return rw;
 
-  if (name[0] != PATH_SEP)
+  if (!is_abspath(name))
   {
     char current_filename[1024];
     PathList *plp = pathlist;
@@ -70,9 +85,9 @@ SDL_RWops *open_file(const char *name)
 	if(l)
 	  {
 	    strcpy(current_filename, plp->path);
-	    if(current_filename[l - 1] != PATH_SEP)
+	    if(!is_dirsep(current_filename[l - 1]))
 	    {
-	      current_filename[l] = PATH_SEP;
+	      current_filename[l] = CHAR_DIRSEP;
 	      current_filename[l + 1] = '\0';
 	    }
 	  }
@@ -106,18 +121,19 @@ void *safe_malloc(size_t count)
 void add_to_pathlist(const char *s)
 {
   PathList *plp = safe_malloc(sizeof(PathList));
+  size_t l;
 
   if (plp == NULL)
       return;
 
-  plp->path = safe_malloc(strlen(s) + 1);
-  if (plp->path == NULL)
-  {
-      free(plp);
+  l = strlen(s);
+  plp->path = safe_malloc(l + 1);
+  if (plp->path == NULL) {
+      free (plp);
       return;
   }
-
-  strcpy(plp->path, s);
+  memcpy(plp->path, s, l);
+  plp->path[l] = 0;
   plp->next = pathlist;
   pathlist = plp;
 }
@@ -127,8 +143,7 @@ void free_pathlist(void)
     PathList *plp = pathlist;
     PathList *next;
 
-    while (plp)
-    {
+    while (plp) {
 	next = plp->next;
 	free(plp->path);
 	free(plp);

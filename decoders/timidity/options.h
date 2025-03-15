@@ -104,10 +104,3 @@
 #ifndef PI
   #define PI 3.14159265358979323846
 #endif
-
-/* The path separator (D.M.) */
-#if defined(_WIN32) || defined(__OS2__)
-#  define PATH_SEP '\\'
-#else
-#  define PATH_SEP '/'
-#endif

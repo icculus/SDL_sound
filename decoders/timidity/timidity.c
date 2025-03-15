@@ -415,7 +415,7 @@ fail:
   return -2;
 }
 
-int Timidity_Init_NoConfig()
+int Timidity_Init_NoConfig(void)
 {
   /* Allocate memory for the standard tonebank and drumset */
   master_tonebank[0] = safe_malloc(sizeof(ToneBank));
@@ -431,7 +431,7 @@ int Timidity_Init_NoConfig()
   return 0;
 }
 
-int Timidity_Init()
+int Timidity_Init(void)
 {
   /* !!! FIXME: This may be ugly, but slightly less so than requiring the
    *            default search path to have only one element. I think.
