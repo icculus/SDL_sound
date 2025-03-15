@@ -452,7 +452,11 @@ int Timidity_Init(void)
 
   Timidity_Init_NoConfig();
 
-  return read_config_file(CONFIG_FILE);
+  if (read_config_file(CONFIG_FILE) < 0) {
+      Timidity_Exit();
+      return -1;
+  }
+  return 0;
 }
 
 MidiSong *Timidity_LoadSong(SDL_RWops *rw, SDL_AudioSpec *audio)
