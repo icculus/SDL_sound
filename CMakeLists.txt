@@ -285,48 +285,55 @@ write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/SDL3_soundConfigVe
     VERSION "${SDLSOUND_VERSION}"
     COMPATIBILITY AnyNewerVersion
 )
-if(SDLSOUND_BUILD_SHARED)
-    install(TARGETS SDL3_sound
-        EXPORT SDLSoundSharedExports
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT library
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT devel
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT library
+
+option(SDLSOUND_INSTALL "Enable installation of SDL_sound" TRUE)
+mark_as_advanced(SDLSOUND_INSTALL)
+
+if (SDLSOUND_INSTALL)
+    if(SDLSOUND_BUILD_SHARED)
+        install(TARGETS SDL3_sound
+            EXPORT SDLSoundSharedExports
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT library
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT devel
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT library
+        )
+        install(EXPORT SDLSoundSharedExports
+            FILE "${SDLSOUND_LIB_TARGET}-shared-targets.cmake"
+            NAMESPACE SDL3_sound::
+            DESTINATION "${SDLSOUND_INSTALL_CMAKEDIR}"
+        )
+    endif()
+
+    if(SDLSOUND_BUILD_STATIC)
+        install(TARGETS SDL3_sound-static
+            EXPORT SDLSoundStaticExports
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT library
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT devel
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT library
+        )
+        install(EXPORT SDLSoundStaticExports
+            FILE "${SDLSOUND_LIB_TARGET}-static-targets.cmake"
+            NAMESPACE SDL3_sound::
+            DESTINATION "${SDLSOUND_INSTALL_CMAKEDIR}"
+        )
+    endif()
+    install(TARGETS ${SDLSOUND_INSTALL_TARGETS}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
-    install(EXPORT SDLSoundSharedExports
-        FILE "${SDLSOUND_LIB_TARGET}-shared-targets.cmake"
-        NAMESPACE SDL3_sound::
-        DESTINATION "${SDLSOUND_INSTALL_CMAKEDIR}"
-    )
-endif()
-if(SDLSOUND_BUILD_STATIC)
-    install(TARGETS SDL3_sound-static
-        EXPORT SDLSoundStaticExports
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT library
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT devel
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT library
-    )
-    install(EXPORT SDLSoundStaticExports
-        FILE "${SDLSOUND_LIB_TARGET}-static-targets.cmake"
-        NAMESPACE SDL3_sound::
-        DESTINATION "${SDLSOUND_INSTALL_CMAKEDIR}"
-    )
-endif()
-install(TARGETS ${SDLSOUND_INSTALL_TARGETS}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
-install(FILES
+    install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}/SDL3_soundConfig.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/SDL3_soundConfigVersion.cmake"
-    DESTINATION "${SDLSOUND_INSTALL_CMAKEDIR}"
-)
-install(
-    FILES "${CMAKE_CURRENT_SOURCE_DIR}/include/SDL3_sound/SDL_sound.h"
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SDL3_sound" COMPONENT DEVEL
-)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sdl3-sound.pc
-    DESTINATION "${PKGCONFIG_INSTALLDIR}" COMPONENT DEVEL)
+        DESTINATION "${SDLSOUND_INSTALL_CMAKEDIR}"
+    )
+    install(
+        FILES "${CMAKE_CURRENT_SOURCE_DIR}/include/SDL3_sound/SDL_sound.h"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/SDL3_sound" COMPONENT DEVEL
+    )
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sdl3-sound.pc
+        DESTINATION "${PKGCONFIG_INSTALLDIR}" COMPONENT DEVEL)
+endif()
 
 option(SDLSOUND_BUILD_DOCS "Build documentation" TRUE)
 mark_as_advanced(SDLSOUND_BUILD_DOCS)
