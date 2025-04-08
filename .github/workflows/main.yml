@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         platform:
-        - { name: Linux,              os: ubuntu-20.04,   shell: sh,          flags: -GNinja }
+        - { name: Linux,              os: ubuntu-latest,  shell: sh,          flags: -GNinja }
         - { name: MacOS,              os: macos-latest,   shell: sh }
         - { name: mingw-w64 (i686),   os: windows-latest, shell: 'msys2 {0}', msystem: mingw32, msys-env: mingw-w64-i686 }
         - { name: mingw-w64 (x86_64), os: windows-latest, shell: 'msys2 {0}', msystem: mingw64, msys-env: mingw-w64-x86_64 }
