@@ -62,11 +62,32 @@ static size_t flac_read(void* pUserData, void* pBufferOut, size_t bytesToRead)
 
 static drflac_bool32 flac_seek(void* pUserData, int offset, drflac_seek_origin origin)
 {
-    const int whence = (origin == drflac_seek_origin_start) ? SDL_IO_SEEK_SET : SDL_IO_SEEK_CUR;
     Sound_Sample *sample = (Sound_Sample *) pUserData;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    int whence;
+    switch (origin) {
+    case DRFLAC_SEEK_SET:
+        whence = SDL_IO_SEEK_SET;
+        break;
+    case DRFLAC_SEEK_CUR:
+        whence = SDL_IO_SEEK_CUR;
+        break;
+    case DRFLAC_SEEK_END:
+        whence = SDL_IO_SEEK_END;
+        break;
+    default:
+        return DRFLAC_FALSE;
+    }
     return (SDL_SeekIO(internal->rw, offset, whence) != -1) ? DRFLAC_TRUE : DRFLAC_FALSE;
 } /* flac_seek */
+
+static drflac_bool32 flac_tell(void* pUserData, drflac_int64* pCursor)
+{
+    Sound_Sample *sample = (Sound_Sample *) pUserData;
+    Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
+    *pCursor = SDL_TellIO(internal->rw);
+    return (*pCursor != -1) ? DRFLAC_TRUE : DRFLAC_FALSE;
+} /* flac_tell */
 
 static bool FLAC_init(void)
 {
@@ -83,7 +104,7 @@ static void FLAC_quit(void)
 static int FLAC_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    drflac *dr = drflac_open(flac_read, flac_seek, sample, NULL);
+    drflac *dr = drflac_open(flac_read, flac_seek, flac_tell, sample, NULL);
 
     if (!dr)
     {
