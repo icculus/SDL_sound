@@ -32,7 +32,7 @@ MODPSRCS = modplug.c sndfile.c fastmix.c snd_dsp.c snd_flt.c snd_fx.c sndmix.c &
            load_gdm.c load_ult.c load_umx.c load_xm.c  mmcmp.c
 
 TIMISRCS = common.c instrum.c mix.c output.c playmidi.c readmidi.c resample.c  &
-           tables.c timidity.c
+           readsbk.c sndfont.c tables.c timidity.c
 
 OBJS = $(SRCS:.c=.obj)
 MODPOBJS = $(MODPSRCS:.c=.obj)
