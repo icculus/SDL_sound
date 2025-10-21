@@ -24,7 +24,7 @@ else()
   set(SDLSOUND_MAINPROJECT OFF)
 endif()
 
-set_option(SDLSOUND_INSTALL "Enable installation of SDL3_sound" ${SDLSOUND_MAINPROJECT})
+option(SDLSOUND_INSTALL "Enable installation of SDL3_sound" ${SDLSOUND_MAINPROJECT})
 
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
