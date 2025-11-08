@@ -1,0 +1,156 @@
+{
+  "name": "SDL3_sound",
+  "remote": "icculus/SDL_sound",
+  "dependencies": {
+    "SDL": {
+      "startswith": "3.",
+      "repo": "libsdl-org/SDL"
+    }
+  },
+  "version": {
+    "file": "include/SDL3_sound/SDL_sound.h",
+    "re_major": "^#define SOUND_VER_MAJOR\\s+([0-9]+)$",
+    "re_minor": "^#define SOUND_VER_MINOR\\s+([0-9]+)$",
+    "re_micro": "^#define SOUND_VER_PATCH\\s+([0-9]+)$"
+  },
+  "source": {
+    "checks": [
+      "src/SDL_sound.c",
+      "include/SDL3_sound/SDL_sound.h",
+      "examples/playsound.c"
+    ]
+  },
+  "mingw": {
+    "cmake": {
+      "archs": ["x86", "x64"],
+      "args": [
+        "-DSDLSOUND_BUILD_STATIC=ON",
+        "-DSDLSOUND_BUILD_STATIC=OFF",
+        "-DBUILD_SHARED_LIBS=ON"
+      ],
+      "shared-static": "args"
+    },
+    "files": {
+      "": [
+        "build-scripts/pkg-support/mingw/INSTALL.md.in:INSTALL.md",
+        "build-scripts/pkg-support/mingw/Makefile",
+        "LICENSE.txt",
+        "README.md"
+      ],
+      "cmake": [
+        "build-scripts/pkg-support/mingw/cmake/SDL3_soundConfig.cmake",
+        "build-scripts/pkg-support/mingw/cmake/SDL3_soundConfigVersion.cmake"
+      ]
+    },
+    "dependencies": {
+      "SDL": {
+        "artifact": "SDL3-devel-*-mingw.tar.gz",
+        "install-command": "make install-@<@ARCH@>@ DESTDIR=@<@PREFIX@>@"
+      }
+    }
+  },
+  "msvc": {
+    "cmake": {
+      "archs": [
+        "arm64",
+        "x86",
+        "x64"
+      ],
+      "args": [
+      ],
+      "files-lib": {
+        "": [
+          "bin/SDL3_sound.dll"
+        ]
+      },
+      "files-devel": {
+        "lib/@<@ARCH@>@": [
+          "bin/SDL3_sound.dll",
+          "bin/SDL3_sound.pdb",
+          "lib/SDL3_sound.lib"
+        ]
+      }
+    },
+    "files-lib": {
+      "": [
+        "build-scripts/pkg-support/msvc/@<@ARCH@>@/INSTALL.md.in:INSTALL.md",
+        "LICENSE.txt",
+        "README.md"
+      ]
+    },
+    "files-devel": {
+      "": [
+        "build-scripts/pkg-support/msvc/INSTALL.md.in:INSTALL.md",
+        "LICENSE.txt",
+        "README.md"
+      ],
+      "cmake": [
+        "build-scripts/pkg-support/msvc/cmake/SDL3_soundConfig.cmake.in:SDL3_soundConfig.cmake",
+        "build-scripts/pkg-support/msvc/cmake/SDL3_soundConfigVersion.cmake.in:SDL3_soundConfigVersion.cmake",
+        "cmake/sdlcpu.cmake"
+      ],
+      "include/SDL3_sound": [
+        "include/SDL3_sound/SDL_sound.h"
+      ]
+    },
+    "dependencies": {
+      "SDL": {
+        "artifact": "SDL3-devel-*-VC.zip"
+      }
+    }
+  },
+  "android": {
+    "cmake": {
+      "args": [
+      ]
+    },
+    "modules": {
+      "SDL3_sound-shared": {
+        "type": "library",
+        "library": "lib/libSDL3_sound.so",
+        "includes": {
+          "SDL3_sound": ["include/SDL3_sound/*.h"]
+        }
+      },
+      "SDL3_sound": {
+        "type": "interface",
+        "export-libraries": [":SDL3_sound-shared"]
+      }
+    },
+    "abis": [
+      "armeabi-v7a",
+      "arm64-v8a",
+      "x86",
+      "x86_64"
+    ],
+    "api-minimum": 21,
+    "api-target": 35,
+    "ndk-minimum": 28,
+    "aar-files": {
+      "": [
+        "build-scripts/pkg-support/android/aar/__main__.py.in:__main__.py",
+        "build-scripts/pkg-support/android/aar/description.json.in:description.json"
+      ],
+      "META-INF": [
+        "LICENSE.txt"
+      ],
+      "cmake": [
+        "cmake/sdlcpu.cmake",
+        "build-scripts/pkg-support/android/aar/cmake/SDL3_soundConfig.cmake",
+        "build-scripts/pkg-support/android/aar/cmake/SDL3_soundConfigVersion.cmake.in:SDL3_soundConfigVersion.cmake"
+      ]
+    },
+    "files": {
+      "": [
+        "build-scripts/pkg-support/android/INSTALL.md.in:INSTALL.md",
+        "LICENSE.txt",
+        "README.md"
+      ]
+    },
+    "dependencies": {
+      "SDL": {
+        "artifact": "SDL3-devel-*-android.zip"
+      }
+    }
+  }
+}

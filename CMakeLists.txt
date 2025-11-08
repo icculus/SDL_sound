@@ -231,6 +231,9 @@ if(SDLSOUND_BUILD_SHARED)
     )
     target_link_libraries(SDL3_sound-shared PUBLIC SDL3::SDL3-shared)
     target_link_libraries(SDL3_sound-shared PRIVATE ${OPTIONAL_LIBRARY_LIBS})
+    if(MINGW)
+        target_link_options(SDL3_sound-shared PRIVATE -static-libgcc)
+    endif()
 endif()
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl3-sound.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/sdl3-sound.pc" @ONLY)
@@ -251,7 +254,15 @@ endif()
 option(SDLSOUND_BUILD_TEST "Build stdio test program." TRUE)
 mark_as_advanced(SDLSOUND_BUILD_TEST)
 if(SDLSOUND_BUILD_TEST)
-    add_executable(playsound examples/playsound.c)
+    function(add_sdlsound_executable TARGET)
+        if(ANDROID)
+            add_library(${TARGET} SHARED ${ARGN})
+        else()
+            add_executable(${TARGET} ${ARGN})
+        endif()
+    endfunction()
+
+    add_sdlsound_executable(playsound examples/playsound.c)
     target_link_libraries(playsound PRIVATE SDL3_sound::SDL3_sound SDL3::SDL3)
     # assuming assert.h, signal.h and setbuf() being available universally
     target_compile_definitions(playsound PRIVATE "HAVE_SETBUF")
@@ -259,7 +270,7 @@ if(SDLSOUND_BUILD_TEST)
     target_compile_definitions(playsound PRIVATE "HAVE_SIGNAL_H")
     list(APPEND SDLSOUND_INSTALL_TARGETS playsound)
 
-    add_executable(playsound_simple examples/playsound_simple.c)
+    add_sdlsound_executable(playsound_simple examples/playsound_simple.c)
     target_link_libraries(playsound_simple PRIVATE SDL3_sound::SDL3_sound SDL3::SDL3)
 endif()
 
@@ -297,6 +308,9 @@ if(SDLSOUND_INSTALL)
             NAMESPACE SDL3_sound::
             FILE "SDL3_sound-shared-targets.cmake"
         )
+        if(MSVC)
+            SDL_install_pdb(SDL3_sound-shared "${CMAKE_INSTALL_BINDIR}")
+        endif()
     endif()
     if(SDLSOUND_BUILD_STATIC)
         install(TARGETS SDL3_sound-static
@@ -315,6 +329,9 @@ if(SDLSOUND_INSTALL)
             NAMESPACE SDL3_sound::
             FILE "SDL3_sound-static-targets.cmake"
         )
+        if(MSVC)
+            SDL_install_pdb(SDL3_sound-shared "${CMAKE_INSTALL_LIBDIR}")
+        endif()
     endif()
     install(TARGETS ${SDLSOUND_INSTALL_TARGETS}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
