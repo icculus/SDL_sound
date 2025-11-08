@@ -20,7 +20,7 @@ if(TEST_SHARED)
     find_package(SDL3_sound REQUIRED CONFIG)
     find_package(SDL3 REQUIRED CONFIG)
     add_executable(main_shared main.c)
-    target_link_libraries(main_shared PRIVATE SDL3_sound::SDL3_sound SDL3::SDL3)
+    target_link_libraries(main_shared PRIVATE SDL3_sound::SDL3_sound-shared SDL3::SDL3-shared)
 endif()
 
 if(TEST_STATIC)

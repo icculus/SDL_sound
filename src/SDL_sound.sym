@@ -1,0 +1,20 @@
+SDL3_sound_0.0.0 {
+  global:
+    Sound_Init;
+    Sound_Quit;
+    Sound_AvailableDecoders;
+    Sound_GetError;
+    Sound_ClearError;
+    Sound_NewSample;
+    Sound_NewSampleFromMem;
+    Sound_NewSampleFromFile;
+    Sound_FreeSample;
+    Sound_GetDuration;
+    Sound_SetBufferSize;
+    Sound_Decode;
+    Sound_DecodeAll;
+    Sound_Rewind;
+    Sound_Seek;
+    Sound_GetLinkedVersion;
+  local: *;
+};
