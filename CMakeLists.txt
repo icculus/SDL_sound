@@ -330,7 +330,7 @@ if(SDLSOUND_INSTALL)
             FILE "SDL3_sound-static-targets.cmake"
         )
         if(MSVC)
-            SDL_install_pdb(SDL3_sound-shared "${CMAKE_INSTALL_LIBDIR}")
+            SDL_install_pdb(SDL3_sound-static "${CMAKE_INSTALL_LIBDIR}")
         endif()
     endif()
     install(TARGETS ${SDLSOUND_INSTALL_TARGETS}
