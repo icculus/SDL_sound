@@ -22,13 +22,21 @@ endif()
 
 check_required_components(SDL3_sound)
 
-# Create SDL3_sound::SDL3_sound alias for static-only builds
-if(TARGET SDL3_sound::SDL3_sound-static AND NOT TARGET SDL3_sound::SDL3_sound)
+function(_sdl_create_target_alias_compat NEW_TARGET TARGET)
   if(CMAKE_VERSION VERSION_LESS "3.18")
-    # FIXME: Aliasing local targets is not supported on CMake < 3.18, so make it global.
-    add_library(SDL3_sound::SDL3_sound INTERFACE IMPORTED)
-    set_target_properties(SDL3_sound::SDL3_sound PROPERTIES INTERFACE_LINK_LIBRARIES "SDL3_sound::SDL3_sound-static")
+    # Aliasing local targets is not supported on CMake < 3.18, so make it global.
+    add_library(${NEW_TARGET} INTERFACE IMPORTED)
+    set_target_properties(${NEW_TARGET} PROPERTIES INTERFACE_LINK_LIBRARIES "${TARGET}")
   else()
-    add_library(SDL3_sound::SDL3_sound ALIAS SDL3_sound::SDL3_sound-static)
+    add_library(${NEW_TARGET} ALIAS ${TARGET})
+  endif()
+endfunction()
+
+# Make sure SDL3_sound::SDL3_sound always exists
+if(NOT TARGET SDL3_sound::SDL3_sound)
+  if(TARGET SDL3_sound::SDL3_sound-shared)
+    _sdl_create_target_alias_compat(SDL3_sound::SDL3_sound SDL3_sound::SDL3_sound-shared)
+  elseif(TARGET SDL3_sound::SDL3_sound-static)
+    _sdl_create_target_alias_compat(SDL3_sound::SDL3_sound SDL3_sound::SDL3_sound-static)
   endif()
 endif()
