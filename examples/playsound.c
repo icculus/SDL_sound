@@ -664,6 +664,7 @@ int main(int argc, char **argv)
     int delay;
     int new_sample = 1;
     SDL_Window *window = NULL;
+    SDL_Renderer *renderer = NULL;
     Uint32 sdl_init_flags = SDL_INIT_AUDIO;
 
     #ifdef HAVE_SETBUF
@@ -740,7 +741,19 @@ int main(int argc, char **argv)
 
     if (sdl_init_flags & SDL_INIT_VIDEO) {
         window = SDL_CreateWindow("playsound", 320, 240, 0);
-        SDL_assert(window != NULL);
+        if (window == NULL) {
+            fprintf(stderr, "SDL_CreateWindow() failed!\n"
+                            "  reason: [%s].\n"
+                            "Going on without a window.\n", SDL_GetError());
+        } else {
+            /* some video targets need renderers or they won't work. Make one just in case. */
+            renderer = SDL_CreateRenderer(window, NULL);
+            if (!renderer) {
+                fprintf(stderr, "SDL_CreateRenderer() failed!\n"
+                                "  reason: [%s].\n"
+                                "Going on without a renderer.\n", SDL_GetError());
+            }
+        }
     }
 
     SDL_memset(&sound_desired, '\0', sizeof (Sound_AudioInfo));
@@ -945,6 +958,12 @@ int main(int argc, char **argv)
                 SDL_PollEvent(&event);
                 if (event.type == SDL_EVENT_KEY_DOWN || event.type == SDL_EVENT_QUIT)
                     done_flag = 1;
+
+                /* some video targets need renderers or they won't work. Just clear and present here. */
+                if (renderer) {
+                    SDL_RenderClear(renderer);
+                    SDL_RenderPresent(renderer);
+                }
             }
 
             SDL_Delay(10);
@@ -967,6 +986,7 @@ int main(int argc, char **argv)
             break;
     } /* for */
 
+    SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     Sound_Quit();
     SDL_Quit();
