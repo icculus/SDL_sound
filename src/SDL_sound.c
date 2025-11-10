@@ -261,7 +261,7 @@ Uint32 __Sound_convertMsToBytePos(Sound_AudioInfo *info, Uint32 ms)
  * Allocate a Sound_Sample, and fill in most of its fields. Those that need
  *  to be filled in later, by a decoder, will be initialized to zero.
  */
-static Sound_Sample *alloc_sample(SDL_IOStream *rw, Sound_AudioInfo *desired,
+static Sound_Sample *alloc_sample(SDL_IOStream *rw, const Sound_AudioInfo *desired,
                                   Uint32 bufferSize)
 {
     /*
@@ -337,7 +337,7 @@ static SDL_INLINE const char *fmt_to_str(Uint16 fmt)
  */
 static int init_sample(const Sound_DecoderFunctions *funcs,
                         Sound_Sample *sample, const char *ext,
-                        Sound_AudioInfo *_desired)
+                        const Sound_AudioInfo *_desired)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     Sound_AudioInfo desired;
@@ -422,7 +422,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
 
 
 Sound_Sample *Sound_NewSample(SDL_IOStream *rw, const char *ext,
-                              Sound_AudioInfo *desired, Uint32 bSize)
+                              const Sound_AudioInfo *desired, Uint32 bSize)
 {
     Sound_Sample *retval;
     decoder_element *decoder;
@@ -500,7 +500,7 @@ Sound_Sample *Sound_NewSample(SDL_IOStream *rw, const char *ext,
 
 
 Sound_Sample *Sound_NewSampleFromFile(const char *filename,
-                                      Sound_AudioInfo *desired,
+                                      const Sound_AudioInfo *desired,
                                       Uint32 bufferSize)
 {
     const char *ext;
@@ -523,7 +523,7 @@ Sound_Sample *Sound_NewSampleFromFile(const char *filename,
 Sound_Sample *Sound_NewSampleFromMem(const Uint8 *data,
                                      Uint32 size,
                                      const char *ext,
-                                     Sound_AudioInfo *desired,
+                                     const Sound_AudioInfo *desired,
                                      Uint32 bufferSize)
 {
     SDL_IOStream *rw;

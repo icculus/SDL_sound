@@ -362,7 +362,7 @@ SNDDECLSPEC void SDLCALL Sound_ClearError(void);
 
 
 /**
- * \fn Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext, Sound_AudioInfo *desired, Uint32 bufferSize)
+ * \fn Sound_Sample *Sound_NewSample(SDL_RWops *rw, const char *ext, const Sound_AudioInfo *desired, Uint32 bufferSize)
  * \brief Start decoding a new sound sample.
  *
  * The data is read via an SDL_RWops structure (see SDL_rwops.h in the SDL
@@ -435,14 +435,14 @@ SNDDECLSPEC void SDLCALL Sound_ClearError(void);
  */
 SNDDECLSPEC Sound_Sample * SDLCALL Sound_NewSample(SDL_IOStream *rw,
                                                    const char *ext,
-                                                   Sound_AudioInfo *desired,
+                                                   const Sound_AudioInfo *desired,
                                                    Uint32 bufferSize);
 
 /**
- * \fn Sound_Sample *Sound_NewSampleFromMem(const Uint8 *data, Uint32 size, const char *ext, Sound_AudioInfo *desired, Uint32 bufferSize)
+ * \fn Sound_Sample *Sound_NewSampleFromMem(const Uint8 *data, Uint32 size, const char *ext, const Sound_AudioInfo *desired, Uint32 bufferSize)
  * \brief Start decoding a new sound sample from a file on disk.
  *
- * This is identical to Sound_NewSample(), but it creates an SDL_RWops for you
+ * This is identical to Sound_NewSample(), but it creates an SDL_IOStream for you
  *  from the (size) bytes of memory referenced by (data).
  *
  * This can pool RWops structures, so it may fragment the heap less over time
@@ -470,15 +470,15 @@ SNDDECLSPEC Sound_Sample * SDLCALL Sound_NewSample(SDL_IOStream *rw,
 SNDDECLSPEC Sound_Sample * SDLCALL Sound_NewSampleFromMem(const Uint8 *data,
                                                       Uint32 size,
                                                       const char *ext,
-                                                      Sound_AudioInfo *desired,
+                                                      const Sound_AudioInfo *desired,
                                                       Uint32 bufferSize);
 
 
 /**
- * \fn Sound_Sample *Sound_NewSampleFromFile(const char *filename, Sound_AudioInfo *desired, Uint32 bufferSize)
+ * \fn Sound_Sample *Sound_NewSampleFromFile(const char *filename, const Sound_AudioInfo *desired, Uint32 bufferSize)
  * \brief Start decoding a new sound sample from a file on disk.
  *
- * This is identical to Sound_NewSample(), but it creates an SDL_RWops for you
+ * This is identical to Sound_NewSample(), but it creates an SDL_IOStream for you
  *  from the file located in (filename). Note that (filename) is specified in
  *  platform-dependent notation. ("C:\\music\\mysong.mp3" on windows, and
  *  "/home/icculus/music/mysong.mp3" or whatever on Unix, etc.)
@@ -505,7 +505,7 @@ SNDDECLSPEC Sound_Sample * SDLCALL Sound_NewSampleFromMem(const Uint8 *data,
  * \sa Sound_FreeSample
  */
 SNDDECLSPEC Sound_Sample * SDLCALL Sound_NewSampleFromFile(const char *fname,
-                                                      Sound_AudioInfo *desired,
+                                                      const Sound_AudioInfo *desired,
                                                       Uint32 bufferSize);
 
 /**
