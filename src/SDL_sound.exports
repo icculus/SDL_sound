@@ -1,0 +1,18 @@
+# SDL3_sound.dylib exports
+_Sound_Init
+_Sound_Quit
+_Sound_AvailableDecoders
+_Sound_GetError
+_Sound_ClearError
+_Sound_NewSample
+_Sound_NewSampleFromMem
+_Sound_NewSampleFromFile
+_Sound_FreeSample
+_Sound_GetDuration
+_Sound_SetBufferSize
+_Sound_Decode
+_Sound_DecodeAll
+_Sound_Rewind
+_Sound_Seek
+_Sound_GetLinkedVersion
+# extra symbols go here (don't modify this line)

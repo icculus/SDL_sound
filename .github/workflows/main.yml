@@ -62,6 +62,12 @@ jobs:
     - name: Install (CMake)
       run: |
         cmake --install build/
+    - name: Verify exports files
+      if: ${{ matrix.platform.test-exports }}
+      run: |
+        set -e
+        python src/genexports.py
+        git diff --exit-code -- src/SDL_sound.sym src/SDL_sound.exports
     - name: Verify CMake configuration files
       run: |
         cmake -S cmake/test -B build_cmake_test -GNinja \

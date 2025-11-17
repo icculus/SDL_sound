@@ -16,5 +16,6 @@ SDL3_sound_0.0.0 {
     Sound_Rewind;
     Sound_Seek;
     Sound_GetLinkedVersion;
+    # extra symbols go here (don't modify this line)
   local: *;
 };
