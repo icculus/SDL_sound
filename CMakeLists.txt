@@ -234,6 +234,12 @@ if(SDLSOUND_BUILD_SHARED)
     if(MINGW)
         target_link_options(SDL3_sound-shared PRIVATE -static-libgcc)
     endif()
+    if(APPLE)
+        set_property(TARGET SDL3_sound-shared APPEND PROPERTY LINK_DEPENDS
+            "${PROJECT_SOURCE_DIR}/src/SDL_sound.exports")
+        target_link_options(SDL3_sound-shared PRIVATE
+            "SHELL:-Wl,-exported_symbols_list,${PROJECT_SOURCE_DIR}/src/SDL_sound.exports")
+    endif()
 endif()
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl3-sound.pc.in" "${CMAKE_CURRENT_BINARY_DIR}/sdl3-sound.pc" @ONLY)
