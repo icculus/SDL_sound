@@ -609,7 +609,7 @@ void CSoundFile_CheckNNA(CSoundFile *_this, UINT nChn, UINT instr, int note, BOO
 //------------------------------------------------------------------------
 {
 	MODCHANNEL *pChn = &_this->Chn[nChn];
-	INSTRUMENTHEADER *penv = pChn->pHeader, *pHeader = 0;
+	INSTRUMENTHEADER *penv = pChn->pHeader, *pHeader = NULL;
 	MODCHANNEL *p;
 	signed char *pSample;
 	UINT i, n;
