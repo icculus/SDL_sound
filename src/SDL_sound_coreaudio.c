@@ -290,7 +290,7 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 	internal->decoder_private = core_audio_file_container;
 
 	sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
-	sample->actual.rate = (UInt32) actual_format.mSampleRate;
+	sample->actual.freq = (UInt32) actual_format.mSampleRate;
 	sample->actual.channels = (UInt8)actual_format.mChannelsPerFrame;
 	internal->total_time = (SInt32)(estimated_duration * 1000.0 + 0.5);
 
@@ -365,7 +365,7 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 	}
 
 	SNDDBG(("CoreAudio: channels == (%d).\n", sample->actual.channels));
-	SNDDBG(("CoreAudio: sampling rate == (%d).\n",sample->actual.rate));
+	SNDDBG(("CoreAudio: sampling rate == (%d).\n",sample->actual.freq));
 	SNDDBG(("CoreAudio: total seconds of sample == (%d).\n", internal->total_time));
 	SNDDBG(("CoreAudio: sample->actual.format == (%d).\n", sample->actual.format));
 
