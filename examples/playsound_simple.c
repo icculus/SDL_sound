@@ -135,7 +135,7 @@ static void playOneSoundFile(const char *fname)
      *  audio device and convert the data when needed. This is a more
      *  complex issue than I can describe in a source code comment, though.
      */
-    data.devformat.freq = data.sample->actual.rate;
+    data.devformat.freq = data.sample->actual.freq;
     data.devformat.format = data.sample->actual.format;
     data.devformat.channels = data.sample->actual.channels;
 

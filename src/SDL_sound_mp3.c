@@ -112,7 +112,7 @@ static int MP3_open(Sound_Sample *sample, const char *ext)
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
 
     sample->actual.channels = dr->channels;
-    sample->actual.rate = dr->sampleRate;
+    sample->actual.freq = dr->sampleRate;
     sample->actual.format = SDL_AUDIO_F32; /* dr_mp3 only does float. */
 
     frames = drmp3_get_pcm_frame_count(dr);
@@ -120,9 +120,9 @@ static int MP3_open(Sound_Sample *sample, const char *ext)
         internal->total_time = -1;
     else
     {
-        const Uint32 rate = dr->sampleRate;
-        internal->total_time = (frames / rate) * 1000;
-        internal->total_time += ((frames % rate) * 1000) / rate;
+        const Uint32 freq = dr->sampleRate;
+        internal->total_time = (frames / freq) * 1000;
+        internal->total_time += ((frames % freq) * 1000) / freq;
     } /* else */
 
     internal->decoder_private = dr;
@@ -162,7 +162,7 @@ static int MP3_seek(Sound_Sample *sample, Uint32 ms)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     drmp3 *dr = (drmp3 *) internal->decoder_private;
-    const float frames_per_ms = ((float) sample->actual.rate) / 1000.0f;
+    const float frames_per_ms = ((float) sample->actual.freq) / 1000.0f;
     const drmp3_uint64 frame_offset = (drmp3_uint64) (frames_per_ms * ((float) ms));
     return (drmp3_seek_to_pcm_frame(dr, frame_offset) == DRMP3_TRUE);
 } /* MP3_seek */

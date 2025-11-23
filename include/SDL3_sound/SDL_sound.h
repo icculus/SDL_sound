@@ -149,26 +149,6 @@ typedef enum
 
 
 /**
- * \struct Sound_AudioInfo
- * \brief Information about an existing sample's format.
- *
- * These are the basics of a decoded sample's data structure: data format
- *  (see AUDIO_U8 and friends in SDL_audio.h), number of channels, and sample
- *  rate. If you need more explanation than that, you should stop developing
- *  sound code right now.
- *
- * \sa Sound_SampleNew
- * \sa Sound_SampleNewFromFile
- */
-typedef struct
-{
-    Uint16 format;  /**< Equivalent of SDL_AudioSpec.format. */
-    Uint8 channels; /**< Number of sound channels. 1 == mono, 2 == stereo. */
-    Uint32 rate;    /**< Sample rate; frequency of sample points per second. */
-} Sound_AudioInfo;
-
-
-/**
  * \struct Sound_DecoderInfo
  * \brief Information about available soudn decoders.
  *
@@ -198,20 +178,21 @@ typedef struct
 
 
 /**
- * \struct Sound_Sample
- * \brief Represents sound data in the process of being decoded.
+ * Represents sound data in the process of being decoded.
  *
  * The Sound_Sample structure is the heart of SDL_sound. This holds
- *  information about a source of sound data as it is being decoded.
- *  EVERY FIELD IN THIS IS READ-ONLY. Please use the API functions to
- *  change them.
+ * information about a source of sound data as it is being decoded.
+ * EVERY FIELD IN THIS IS READ-ONLY. Please use the API functions to
+ * change them.
+ *
+ * \since This struct is available since SDL_sound 1.0.0.
  */
-typedef struct
+typedef struct Sound_Sample
 {
     void *opaque;  /**< Internal use only. Don't touch. */
     const Sound_DecoderInfo *decoder;  /**< Decoder used for this sample. */
-    Sound_AudioInfo desired;  /**< Desired audio format for conversion. */
-    Sound_AudioInfo actual;  /**< Actual audio format of sample. */
+    SDL_AudioSpec desired;  /**< Desired audio format for conversion. */
+    SDL_AudioSpec actual;  /**< Actual audio format of sample. */
     void *buffer;  /**< Decoded sound data lands in here. */
     Uint32 buffer_size;  /**< Current size of (buffer), in bytes (Uint8). */
     Sound_SampleFlags flags;  /**< Flags relating to this sample. */
@@ -402,7 +383,7 @@ extern SDL_DECLSPEC void SDLCALL Sound_ClearError(void);
  */
 extern SDL_DECLSPEC Sound_Sample * SDLCALL Sound_NewSample(SDL_IOStream *rw,
                                                    const char *ext,
-                                                   const Sound_AudioInfo *desired,
+                                                   const SDL_AudioSpec *desired,
                                                    Uint32 bufferSize);
 
 /**
@@ -437,7 +418,7 @@ extern SDL_DECLSPEC Sound_Sample * SDLCALL Sound_NewSample(SDL_IOStream *rw,
 extern SDL_DECLSPEC Sound_Sample * SDLCALL Sound_NewSampleFromMem(const Uint8 *data,
                                                       Uint32 size,
                                                       const char *ext,
-                                                      const Sound_AudioInfo *desired,
+                                                      const SDL_AudioSpec *desired,
                                                       Uint32 bufferSize);
 
 
@@ -472,7 +453,7 @@ extern SDL_DECLSPEC Sound_Sample * SDLCALL Sound_NewSampleFromMem(const Uint8 *d
  * \sa Sound_FreeSample
  */
 extern SDL_DECLSPEC Sound_Sample * SDLCALL Sound_NewSampleFromFile(const char *fname,
-                                                      const Sound_AudioInfo *desired,
+                                                      const SDL_AudioSpec *desired,
                                                       Uint32 bufferSize);
 
 /**

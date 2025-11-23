@@ -118,7 +118,7 @@ static int VORBIS_open(Sound_Sample *sample, const char *ext)
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
     sample->actual.format = SDL_AUDIO_F32;
     sample->actual.channels = stb->channels;
-    sample->actual.rate = stb->sample_rate;
+    sample->actual.freq = stb->sample_rate;
     num_frames = stb_vorbis_stream_length_in_samples(stb);
     if (!num_frames)
     {
@@ -189,7 +189,7 @@ static int VORBIS_seek(Sound_Sample *sample, Uint32 ms)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     stb_vorbis *stb = (stb_vorbis *) internal->decoder_private;
-    const float frames_per_ms = ((float) sample->actual.rate) / 1000.0f;
+    const float frames_per_ms = ((float) sample->actual.freq) / 1000.0f;
     const Uint32 frame_offset = (Uint32) (frames_per_ms * ((float) ms));
     const unsigned int sampnum = (unsigned int) frame_offset;
     BAIL_IF_MACRO(!stb_vorbis_seek(stb, sampnum), vorbis_error_string(stb_vorbis_get_error(stb)), 0);

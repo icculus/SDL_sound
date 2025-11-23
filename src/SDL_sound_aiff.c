@@ -416,7 +416,7 @@ static int AIFF_open(Sound_Sample *sample, const char *ext)
     BAIL_IF_MACRO(c.numChannels == 0, "AIFF: no channels specified.", 0);
 
     sample->actual.channels = (Uint8) c.numChannels;
-    sample->actual.rate = c.sampleRate;
+    sample->actual.freq = c.sampleRate;
 
     if (c.sampleSize <= 8)
     {

@@ -205,10 +205,10 @@ typedef struct
 static volatile playsound_global_state global_state;
 
 
-static Uint32 cvtMsToBytePos(Sound_AudioInfo *info, Uint32 ms)
+static Uint32 cvtMsToBytePos(SDL_AudioSpec *info, Uint32 ms)
 {
     /* "frames" == "sample frames" */
-    float frames_per_ms = ((float) info->rate) / 1000.0f;
+    float frames_per_ms = ((float) info->freq) / 1000.0f;
     Uint32 frame_offset = (Uint32) (frames_per_ms * ((float) ms));
     Uint32 frame_size = (Uint32) ((info->format & 0xFF) / 8) * info->channels;
     return(frame_offset * frame_size);
@@ -655,7 +655,7 @@ static void report_filename(const char *filename)
 
 int main(int argc, char **argv)
 {
-    Sound_AudioInfo sound_desired;
+    SDL_AudioSpec sound_desired;
     SDL_AudioSpec sdl_desired;
     Uint32 audio_buffersize = DEFAULT_AUDIOBUF;
     Uint32 decode_buffersize = DEFAULT_DECODEBUF;
@@ -757,7 +757,7 @@ int main(int argc, char **argv)
         }
     }
 
-    SDL_memset(&sound_desired, '\0', sizeof (Sound_AudioInfo));
+    SDL_memset(&sound_desired, '\0', sizeof (SDL_AudioSpec));
 
     for (i = 1; i < argc; i++)
     {
@@ -789,7 +789,7 @@ int main(int argc, char **argv)
                 fprintf(stderr, "Bad argument to --rate!\n");
                 return(42);
             } /* if */
-            sound_desired.rate = (Uint32)r;
+            sound_desired.freq = (Uint32)r;
         } /* else if */
 
         else if (SDL_strcmp(argv[i], "--format") == 0 && argc > i + 1)
@@ -892,13 +892,13 @@ int main(int argc, char **argv)
              */
         if (use_specific_audiofmt)
         {
-            sdl_desired.freq = sample->desired.rate;
+            sdl_desired.freq = sample->desired.freq;
             sdl_desired.format = sample->desired.format;
             sdl_desired.channels = sample->desired.channels;
         } /* if */
         else
         {
-            sdl_desired.freq = sample->actual.rate;
+            sdl_desired.freq = sample->actual.freq;
             sdl_desired.format = sample->actual.format;
             sdl_desired.channels = sample->actual.channels;
         } /* else */

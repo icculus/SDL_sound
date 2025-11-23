@@ -517,7 +517,7 @@ static SDL_INLINE int parse_riff_header(shn_t *shn, Sound_Sample *sample)
     BAIL_IF_MACRO(!verb_ReadLE16(shn, rw, &u16), NULL, 0); /* channels */
     sample->actual.channels = u16;
     BAIL_IF_MACRO(!verb_ReadLE32(shn, rw, &u32), NULL, 0); /* sample rate */
-    sample->actual.rate = u32;
+    sample->actual.freq = u32;
 
     BAIL_IF_MACRO(!verb_ReadLE32(shn, rw, &u32), NULL, 0); /* bytespersec */
     bytes_per_second = u32;

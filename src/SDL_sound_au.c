@@ -147,7 +147,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
                 BAIL_MACRO("AU: Unsupported .au encoding", 0);
         } /* switch */
 
-        sample->actual.rate = hdr.sample_rate;
+        sample->actual.freq = hdr.sample_rate;
         sample->actual.channels = hdr.channels;
         dec->remaining = hdr.data_size;
         hsize = hdr.hdr_size;
@@ -177,7 +177,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
         dec->encoding = AU_ENC_ULAW_8;
         dec->remaining = (Uint32)-1;		/* no limit */
         sample->actual.format = SDL_AUDIO_S16;
-        sample->actual.rate = 8000;
+        sample->actual.freq = 8000;
         sample->actual.channels = 1;
     } /* else if */
 
@@ -188,7 +188,7 @@ static int AU_open(Sound_Sample *sample, const char *ext)
     } /* else */
 
     bytes_per_second = ( ( dec->encoding == AU_ENC_LINEAR_16 ) ? 2 : 1 )
-        * sample->actual.rate * sample->actual.channels ;
+        * sample->actual.freq * sample->actual.channels ;
     internal->total_time = ((dec->remaining == -1) ? (-1) :
                             ( ( dec->remaining / bytes_per_second ) * 1000 ) +
                             ( ( dec->remaining % bytes_per_second ) * 1000 /

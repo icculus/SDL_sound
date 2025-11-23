@@ -177,7 +177,7 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
                         BAIL_MACRO("VOC sample rate codes differ", 0);
 
                     v->rate = uc;
-                    sample->actual.rate = 1000000.0/(256 - v->rate);
+                    sample->actual.freq = 1000000.0/(256 - v->rate);
                     sample->actual.channels = 1;
                     v->channels = 1;
                 } /* if */
@@ -191,7 +191,7 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
                 v->rest = sblen - 2;
                 v->size = ST_SIZE_BYTE;
 
-                bytes_per_second = sample->actual.rate * sample->actual.channels;
+                bytes_per_second = sample->actual.freq * sample->actual.channels;
                 internal->total_time += ( v->rest ) / bytes_per_second * 1000;
                 internal->total_time += (v->rest % bytes_per_second) * 1000
                                             / bytes_per_second;
@@ -208,7 +208,7 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
                     BAIL_MACRO("VOC: sample rate codes differ", 0);
 
                 v->rate = new_rate_long;
-                sample->actual.rate = new_rate_long;
+                sample->actual.freq = new_rate_long;
 
                 if (!voc_readbytes(src, v, &uc, sizeof (uc)))
                     return 0;
@@ -229,7 +229,7 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
                 v->rest = sblen - 12;
 
                 bytes_per_second = ((v->size == ST_SIZE_WORD) ? (2) : (1)) *
-                                    sample->actual.rate * v->channels;
+                                    sample->actual.freq * v->channels;
                 internal->total_time += v->rest / bytes_per_second * 1000;
                 internal->total_time += ( v->rest % bytes_per_second ) * 1000
                                             / bytes_per_second;
@@ -307,7 +307,7 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
 
                 /* Needed number of channels before finishing
                    compute for rate */
-                sample->actual.rate =
+                sample->actual.freq =
                      (256000000L/(65536L - v->rate)) / sample->actual.channels;
                 /* An extended block must be followed by a data */
                 /* block to be valid so loop back to top so it  */

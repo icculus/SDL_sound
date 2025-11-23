@@ -241,10 +241,10 @@ void __Sound_SetError(const char *str)
 } /* __Sound_SetError */
 
 
-Uint32 __Sound_convertMsToBytePos(Sound_AudioInfo *info, Uint32 ms)
+Uint32 __Sound_convertMsToBytePos(SDL_AudioSpec *info, Uint32 ms)
 {
     /* "frames" == "sample frames" */
-    float frames_per_ms = ((float) info->rate) / 1000.0f;
+    float frames_per_ms = ((float) info->freq) / 1000.0f;
     Uint32 frame_offset = (Uint32) (frames_per_ms * ((float) ms));
     Uint32 frame_size = (Uint32) ((info->format & 0xFF) / 8) * info->channels;
     return frame_offset * frame_size;
@@ -255,7 +255,7 @@ Uint32 __Sound_convertMsToBytePos(Sound_AudioInfo *info, Uint32 ms)
  * Allocate a Sound_Sample, and fill in most of its fields. Those that need
  *  to be filled in later, by a decoder, will be initialized to zero.
  */
-static Sound_Sample *alloc_sample(SDL_IOStream *rw, const Sound_AudioInfo *desired,
+static Sound_Sample *alloc_sample(SDL_IOStream *rw, const SDL_AudioSpec *desired,
                                   Uint32 bufferSize)
 {
     /*
@@ -289,7 +289,7 @@ static Sound_Sample *alloc_sample(SDL_IOStream *rw, const Sound_AudioInfo *desir
     retval->buffer_size = bufferSize;
 
     if (desired != NULL)
-        SDL_memcpy(&retval->desired, desired, sizeof (Sound_AudioInfo));
+        SDL_memcpy(&retval->desired, desired, sizeof (SDL_AudioSpec));
 
     internal->rw = rw;
     retval->opaque = internal;
@@ -331,10 +331,10 @@ static SDL_INLINE const char *fmt_to_str(Uint16 fmt)
  */
 static int init_sample(const Sound_DecoderFunctions *funcs,
                         Sound_Sample *sample, const char *ext,
-                        const Sound_AudioInfo *_desired)
+                        const SDL_AudioSpec *_desired)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    Sound_AudioInfo desired;
+    SDL_AudioSpec desired;
     const Sint64 pos = SDL_TellIO(internal->rw);
 
         /* fill in the funcs for this decoder... */
@@ -352,25 +352,25 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
     internal->stream = NULL;
 
     if (_desired == NULL)
-        SDL_memcpy(&desired, &sample->actual, sizeof (Sound_AudioInfo));
+        SDL_memcpy(&desired, &sample->actual, sizeof (SDL_AudioSpec));
     else
     {
         desired.format = _desired->format ? _desired->format : sample->actual.format;
         desired.channels = _desired->channels ? _desired->channels : sample->actual.channels;
-        desired.rate = _desired->rate ? _desired->rate : sample->actual.rate;
+        desired.freq = _desired->freq ? _desired->freq : sample->actual.freq;
 
         if ( (sample->actual.format != desired.format) ||
              (sample->actual.channels != desired.channels) ||
-             (sample->actual.rate != desired.rate) )
+             (sample->actual.freq != desired.freq) )
         {
             SDL_AudioSpec src_spec, dst_spec;
 
             src_spec.format = sample->actual.format,
             src_spec.channels = sample->actual.channels,
-            src_spec.freq = sample->actual.rate,
+            src_spec.freq = sample->actual.freq,
             dst_spec.format = desired.format,
             dst_spec.channels = desired.channels,
-            dst_spec.freq = desired.rate,
+            dst_spec.freq = desired.freq,
 
             internal->stream = SDL_CreateAudioStream(&src_spec,
                                                      &dst_spec);
@@ -386,7 +386,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
     } /* else */
 
         /* these pointers are all one and the same. */
-    SDL_memcpy(&sample->desired, &desired, sizeof (Sound_AudioInfo));
+    SDL_memcpy(&sample->desired, &desired, sizeof (SDL_AudioSpec));
     internal->buffer = sample->buffer;
     internal->buffer_size = sample->buffer_size;
 
@@ -398,14 +398,14 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
     sample_list = sample;
     SDL_UnlockMutex(samplelist_mutex);
 
-    SNDDBG(("New sample DESIRED format: %s format, %d rate, %d channels.\n",
+    SNDDBG(("New sample DESIRED format: %s format, %d freq, %d channels.\n",
             fmt_to_str(sample->desired.format),
-            sample->desired.rate,
+            sample->desired.freq,
             sample->desired.channels));
 
-    SNDDBG(("New sample ACTUAL format: %s format, %d rate, %d channels.\n",
+    SNDDBG(("New sample ACTUAL format: %s format, %d freq, %d channels.\n",
             fmt_to_str(sample->actual.format),
-            sample->actual.rate,
+            sample->actual.freq,
             sample->actual.channels));
 
     SNDDBG(("On-the-fly conversion: %s.\n",
@@ -416,7 +416,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
 
 
 Sound_Sample *Sound_NewSample(SDL_IOStream *rw, const char *ext,
-                              const Sound_AudioInfo *desired, Uint32 bSize)
+                              const SDL_AudioSpec *desired, Uint32 bSize)
 {
     Sound_Sample *retval;
     decoder_element *decoder;
@@ -494,7 +494,7 @@ Sound_Sample *Sound_NewSample(SDL_IOStream *rw, const char *ext,
 
 
 Sound_Sample *Sound_NewSampleFromFile(const char *filename,
-                                      const Sound_AudioInfo *desired,
+                                      const SDL_AudioSpec *desired,
                                       Uint32 bufferSize)
 {
     const char *ext;
@@ -517,7 +517,7 @@ Sound_Sample *Sound_NewSampleFromFile(const char *filename,
 Sound_Sample *Sound_NewSampleFromMem(const Uint8 *data,
                                      Uint32 size,
                                      const char *ext,
-                                     const Sound_AudioInfo *desired,
+                                     const SDL_AudioSpec *desired,
                                      Uint32 bufferSize)
 {
     SDL_IOStream *rw;

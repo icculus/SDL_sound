@@ -111,8 +111,8 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
     if (retval != (size_t)size) SDL_free(data);
     BAIL_IF_MACRO(retval != (size_t)size, ERR_IO_ERROR, 0);
 
-    SDL_memcpy(&sample->actual, &sample->desired, sizeof (Sound_AudioInfo));
-    if (sample->actual.rate == 0) sample->actual.rate = 44100;
+    SDL_copyp(&sample->actual, &sample->desired);
+    if (sample->actual.freq == 0) sample->actual.freq = 44100;
     if (sample->actual.channels != 1) sample->actual.channels = 2;
     if (sample->actual.format == 0) sample->actual.format = SDL_AUDIO_S16;
 
@@ -149,7 +149,7 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
     settings.mSurroundDelay = 20;
     settings.mChannels = sample->actual.channels;
     settings.mBits = SDL_AUDIO_BITSIZE(sample->actual.format);
-    settings.mFrequency = sample->actual.rate;
+    settings.mFrequency = sample->actual.freq;
     settings.mResamplingMode = MODPLUG_RESAMPLE_FIR;
     settings.mLoopCount = 0;
 

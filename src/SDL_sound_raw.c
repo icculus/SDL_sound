@@ -44,7 +44,7 @@ static int RAW_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = sample->opaque;
     Sint64 pos;
-    Uint32 sample_rate;
+    Uint32 sample_freq;
 
         /*
          * We check this explicitly, since we have no other way to
@@ -59,7 +59,7 @@ static int RAW_open(Sound_Sample *sample, const char *ext)
          */
     if ( (sample->desired.channels < 1)  ||
          (sample->desired.channels > 2)  ||
-         (sample->desired.rate == 0)     ||
+         (sample->desired.freq == 0)     ||
          (sample->desired.format == 0) )
     {
         BAIL_MACRO("RAW: invalid desired format.", 0);
@@ -70,7 +70,7 @@ static int RAW_open(Sound_Sample *sample, const char *ext)
         /*
          * We never convert raw samples; what you ask for is what you get.
          */
-    SDL_memcpy(&sample->actual, &sample->desired, sizeof (Sound_AudioInfo));
+    SDL_copyp(&sample->actual, &sample->desired);
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
 
     if ((pos = SDL_SeekIO(internal->rw, 0, SDL_IO_SEEK_END)) <= 0) {
@@ -80,9 +80,9 @@ static int RAW_open(Sound_Sample *sample, const char *ext)
         BAIL_MACRO("RAW: can't reset file.", 0);
     }
 
-    sample_rate = (sample->actual.rate * sample->actual.channels * ((sample->actual.format & 0x0018) >> 3));
-    internal->total_time = ( pos ) / sample_rate * 1000;
-    internal->total_time += (pos % sample_rate) * 1000 / sample_rate;
+    sample_freq = (sample->actual.freq * sample->actual.channels * ((sample->actual.format & 0x0018) >> 3));
+    internal->total_time = ( pos ) / sample_freq * 1000;
+    internal->total_time += (pos % sample_freq) * 1000 / sample_freq;
 
     return 1; /* we'll handle this data. */
 } /* RAW_open */

@@ -116,16 +116,16 @@ static int FLAC_open(Sound_Sample *sample, const char *ext)
     sample->flags = SOUND_SAMPLEFLAG_CANSEEK;
 
     sample->actual.channels = dr->channels;
-    sample->actual.rate = dr->sampleRate;
+    sample->actual.freq = dr->sampleRate;
     sample->actual.format = SDL_AUDIO_S32; /* dr_flac only does Sint32. */
 
     if (dr->totalPCMFrameCount == 0)
         internal->total_time = -1;
     else
     {
-        const Uint32 rate = (Uint32) dr->sampleRate;
+        const Uint32 freq = (Uint32) dr->sampleRate;
         const Uint64 frames = (Uint64) dr->totalPCMFrameCount;
-        internal->total_time = (frames / rate) * 1000;
+        internal->total_time = (frames / freq) * 1000;
         internal->total_time += ((dr->totalPCMFrameCount % dr->sampleRate) * 1000) / dr->sampleRate;
     } /* else */
 
@@ -165,7 +165,7 @@ static int FLAC_seek(Sound_Sample *sample, Uint32 ms)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     drflac *dr = (drflac *) internal->decoder_private;
-    const float frames_per_ms = ((float) sample->actual.rate) / 1000.0f;
+    const float frames_per_ms = ((float) sample->actual.freq) / 1000.0f;
     const drflac_uint64 frame_offset = (drflac_uint64) (frames_per_ms * ((float) ms));
     return (drflac_seek_to_pcm_frame(dr, frame_offset) == DRFLAC_TRUE);
 } /* FLAC_seek */

@@ -683,7 +683,7 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
     BAIL_IF_MACRO(!read_fmt_chunk(rw, fmt), "WAV: Can't read format chunk.", 0);
 
     sample->actual.channels = (Uint8) fmt->wChannels;
-    sample->actual.rate = fmt->dwSamplesPerSec;
+    sample->actual.freq = fmt->dwSamplesPerSec;
 
     if (fmt->wFormatTag == FMT_IEEE_FLOAT)
     {
@@ -720,7 +720,7 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
     internal->decoder_private = (void *) w;
 
     if (fmt->dwAvgBytesPerSec == 0) {  /* we assume data is uncompressed if this field is unset. */
-        fmt->dwAvgBytesPerSec = fmt->sample_frame_size * sample->actual.rate;
+        fmt->dwAvgBytesPerSec = fmt->sample_frame_size * sample->actual.freq;
         BAIL_IF_MACRO(fmt->dwAvgBytesPerSec == 0, "WAV: corrupt format chunk?", 0);
     }
 

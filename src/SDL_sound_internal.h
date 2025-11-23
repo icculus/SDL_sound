@@ -153,8 +153,8 @@ typedef struct __SOUND_DECODERFUNCTIONS__
          * in rest of Sound_Sample:
          *    void *opaque;        (this was internal section, above)
          *    const Sound_DecoderInfo *decoder;  (read only)
-         *    Sound_AudioInfo desired; (read only, usually not needed here)
-         *    Sound_AudioInfo actual;  (please fill this in)
+         *    SDL_AudioSpec desired; (read only, usually not needed here)
+         *    SDL_AudioSpec actual;  (please fill this in)
          *    void *buffer;            (offlimits)
          *    Uint32 buffer_size;      (offlimits)
          *    Sound_SampleFlags flags; (set appropriately)
@@ -296,7 +296,7 @@ void __Sound_SetError(const char *err);
  * Call this to convert milliseconds to an actual byte position, based on
  *  audio data characteristics.
  */
-Uint32 __Sound_convertMsToBytePos(Sound_AudioInfo *info, Uint32 ms);
+Uint32 __Sound_convertMsToBytePos(SDL_AudioSpec *info, Uint32 ms);
 
 
 /* These get used all over for lessening code clutter. */
