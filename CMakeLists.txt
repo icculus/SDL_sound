@@ -362,6 +362,18 @@ if(SDLSOUND_INSTALL)
         FILES "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt"
         DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/licenses/SDL3_sound"
     )
+
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+        @ONLY
+    )
+    add_custom_target(
+        SDL3_sound-uninstall
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+        COMMENT "Uninstall the project..."
+    )
 endif()
 
 option(SDLSOUND_BUILD_DOCS "Build documentation" TRUE)
@@ -391,19 +403,6 @@ if(SDLSOUND_BUILD_DOCS)
         message(STATUS "Doxygen not found. You won't be able to build documentation.")
     endif()
 endif()
-
-configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-    @ONLY
-)
-
-add_custom_target(
-    SDL3_sound-uninstall
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-    COMMENT "Uninstall the project..."
-)
 
 macro(message_bool_option _NAME _VALUE)
     if(${_VALUE})
