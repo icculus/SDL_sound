@@ -46,4 +46,6 @@ LOCAL_SHARED_LIBRARIES := SDL3
 
 LOCAL_EXPORT_C_INCLUDES += $(LOCAL_C_INCLUDES)
 
+LOCAL_LDFLAGS := -Wl,--no-undefined -Wl,--no-undefined-version -Wl,--version-script=$(LOCAL_PATH)/src/SDL_sound.sym
+
 include $(BUILD_SHARED_LIBRARY)
