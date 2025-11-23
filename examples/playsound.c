@@ -430,6 +430,10 @@ static void memcpy_with_volume(Sound_Sample *sample,
                 *f32dst = floatswapper.f;
             } /* for */
             break;
+
+        default:
+            SDL_memcpy(dst, src, len);  /* oh well. */
+            break;
     } /* switch */
 } /* memcpy_with_volume */
 
