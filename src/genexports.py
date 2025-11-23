@@ -36,7 +36,7 @@ import re
 
 RE_EXTERN_C = re.compile(r'.*extern[ "]*C[ "].*')
 RE_COMMENT_REMOVE_CONTENT = re.compile(r'\/\*.*\*/')
-RE_PARSING_FUNCTION = re.compile(r'(.*SNDDECLSPEC[^\(\)]*) ([a-zA-Z0-9_]+) *\((.*)\) *;.*')
+RE_PARSING_FUNCTION = re.compile(r'(.*SDL_DECLSPEC[^\(\)]*) ([a-zA-Z0-9_]+) *\((.*)\) *;.*')
 
 #eg:
 # void (SDLCALL *callback)(void*, int)
@@ -118,7 +118,7 @@ def parse_header(header_path: Path) -> list[SdlProcedure]:
                 continue
 
             # Remove one line comment // ...
-            # eg: extern SNDDECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path, int bExclusive /* = false */)
+            # eg: extern SDL_DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path, int bExclusive /* = false */)
             line = RE_COMMENT_REMOVE_CONTENT.sub('', line)
 
             # Get the comment block /* ... */ across several lines
@@ -218,7 +218,7 @@ def parse_header(header_path: Path) -> list[SdlProcedure]:
             #
             func_ret = func_ret.replace('extern', ' ')
             func_ret = func_ret.replace('SDLCALL', ' ')
-            func_ret = func_ret.replace('SNDDECLSPEC', ' ')
+            func_ret = func_ret.replace('SDL_DECLSPEC', ' ')
             func_ret, _ = re.subn('([ ]{2,})', ' ', func_ret)
             # Remove trailing spaces in front of '*'
             func_ret = func_ret.replace(' *', '*')
