@@ -14,7 +14,10 @@ project(SDL_sound
     LANGUAGES C
 )
 
+include("${CMAKE_CURRENT_LIST_DIR}/cmake/GetGitRevisionDescription.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/cmake/PrivateSdlFunctions.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/cmake/sdlmanpages.cmake")
+include(CMakeDependentOption)
 
 sdl_calculate_derived_version_variables(${MAJOR_VERSION} ${MINOR_VERSION} ${MICRO_VERSION})
 
@@ -25,6 +28,7 @@ else()
 endif()
 
 option(SDLSOUND_INSTALL "Enable installation of SDL3_sound" ${SDLSOUND_MAINPROJECT})
+cmake_dependent_option(SDLSOUND_INSTALL_MAN "Install man pages for SDL3_sound" OFF "SDLSOUND_INSTALL" OFF)
 
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
@@ -362,6 +366,16 @@ if(SDLSOUND_INSTALL)
         FILES "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt"
         DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/licenses/SDL3_sound"
     )
+
+    if(SDLSOUND_INSTALL_MAN)
+        sdl_get_git_revision_hash(SDLSOUND_REVISION)
+        SDL_generate_manpages(
+            HEADERS_DIR "${PROJECT_SOURCE_DIR}/include/SDL3_sound"
+            SYMBOL "Sound_Init"
+            WIKIHEADERS_PL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/build-scripts/wikiheaders.pl"
+            REVISION "${SDLSOUND_REVISION}"
+        )
+    endif()
 
     configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"

@@ -38,4 +38,5 @@ playsound_simple
 
 .DS_Store
 build
+!build-scripts/
 .vscode
