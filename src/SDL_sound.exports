@@ -14,5 +14,5 @@ _Sound_Decode
 _Sound_DecodeAll
 _Sound_Rewind
 _Sound_Seek
-_Sound_GetLinkedVersion
+_Sound_Version
 # extra symbols go here (don't modify this line)

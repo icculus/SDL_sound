@@ -60,12 +60,64 @@
 extern "C" {
 #endif
 
-#ifndef DOXYGEN_SHOULD_IGNORE_THIS
-#define SOUND_VER_MAJOR 3
-#define SOUND_VER_MINOR 0
-#define SOUND_VER_PATCH 0
-#endif
+/**
+ * The current major version of the SDL_sound headers.
+ *
+ * If this were SDL_sound version 3.2.1, this value would be 3.
+ *
+ * \since This macro is available since SDL_sound 1.0.0.
+ */
+#define SDL_SOUND_MAJOR_VERSION 3
 
+/**
+ * The current minor version of the SDL_sound headers.
+ *
+ * If this were SDL_sound version 3.2.1, this value would be 2.
+ *
+ * \since This macro is available since SDL_sound 1.0.0.
+ */
+#define SDL_SOUND_MINOR_VERSION 0
+
+/**
+ * The current micro (or patchlevel) version of the SDL_sound headers.
+ *
+ * If this were SDL_sound version 3.2.1, this value would be 1.
+ *
+ * \since This macro is available since SDL_sound 1.0.0.
+ */
+#define SDL_SOUND_MICRO_VERSION 0
+
+/**
+ * This is the version number macro for the current SDL_sound version.
+ *
+ * \since This macro is available since SDL_sound 3.0.0.
+ *
+ * \sa Sound_Version
+ */
+#define SDL_SOUND_VERSION \
+    SDL_VERSIONNUM(SDL_SOUND_MAJOR_VERSION, SDL_SOUND_MINOR_VERSION, SDL_SOUND_MICRO_VERSION)
+
+/**
+ * This macro will evaluate to true if compiled with SDL_net at least X.Y.Z.
+ *
+ * \since This macro is available since SDL_net 3.0.0.
+ */
+#define SDL_SOUND_VERSION_ATLEAST(X, Y, Z) \
+    ((SDL_SOUND_MAJOR_VERSION >= X) && \
+     (SDL_SOUND_MAJOR_VERSION > X || SDL_SOUND_MINOR_VERSION >= Y) && \
+     (SDL_SOUND_MAJOR_VERSION > X || SDL_SOUND_MINOR_VERSION > Y || SDL_SOUND_MICRO_VERSION >= Z))
+
+
+/**
+ * This function gets the version of the dynamically linked SDL_sound library.
+ *
+ * \returns SDL_sound version.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL_sound 3.0.0.
+ */
+extern SDL_DECLSPEC int SDLCALL Sound_Version(void);
 
 /**
  * \enum Sound_SampleFlags
@@ -166,84 +218,8 @@ typedef struct
 } Sound_Sample;
 
 
-/**
- * \struct Sound_Version
- * \brief Information the version of SDL_sound in use.
- *
- * Represents the library's version as three levels: major revision
- *  (increments with massive changes, additions, and enhancements),
- *  minor revision (increments with backwards-compatible changes to the
- *  major revision), and patchlevel (increments with fixes to the minor
- *  revision).
- *
- * \sa SOUND_VERSION
- * \sa Sound_GetLinkedVersion
- */
-typedef struct
-{
-    int major; /**< major revision */
-    int minor; /**< minor revision */
-    int patch; /**< patchlevel */
-} Sound_Version;
-
 
 /* functions and macros... */
-
-/**
- * \def SOUND_VERSION(x)
- * \brief Macro to determine SDL_sound version program was compiled against.
- *
- * This macro fills in a Sound_Version structure with the version of the
- *  library you compiled against. This is determined by what header the
- *  compiler uses. Note that if you dynamically linked the library, you might
- *  have a slightly newer or older version at runtime. That version can be
- *  determined with Sound_GetLinkedVersion(), which, unlike SOUND_VERSION,
- *  is not a macro.
- *
- * \param x A pointer to a Sound_Version struct to initialize.
- *
- * \sa Sound_Version
- * \sa Sound_GetLinkedVersion
- */
-#define SOUND_VERSION(x) \
-{ \
-    (x)->major = SOUND_VER_MAJOR; \
-    (x)->minor = SOUND_VER_MINOR; \
-    (x)->patch = SOUND_VER_PATCH; \
-}
-
-
-/**
- * \fn void Sound_GetLinkedVersion(Sound_Version *ver)
- * \brief Get the version of SDL_sound that is linked against your program.
- *
- * If you are using a shared library (DLL) version of SDL_sound, then it is
- *  possible that it will be different than the version you compiled against.
- *
- * This is a real function; the macro SOUND_VERSION tells you what version
- *  of SDL_sound you compiled against:
- *
- * \code
- * Sound_Version compiled;
- * Sound_Version linked;
- *
- * SOUND_VERSION(&compiled);
- * Sound_GetLinkedVersion(&linked);
- * printf("We compiled against SDL_sound version %d.%d.%d ...\n",
- *           compiled.major, compiled.minor, compiled.patch);
- * printf("But we linked against SDL_sound version %d.%d.%d.\n",
- *           linked.major, linked.minor, linked.patch);
- * \endcode
- *
- * This function may be called safely at any time, even before Sound_Init().
- *
- * \param ver Sound_Version structure to fill with shared library's version.
- *
- * \sa Sound_Version
- * \sa SOUND_VERSION
- */
-extern SDL_DECLSPEC void SDLCALL Sound_GetLinkedVersion(Sound_Version *ver);
-
 
 /**
  * \fn Sound_Init(void)

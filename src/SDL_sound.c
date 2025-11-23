@@ -101,16 +101,10 @@ static int initialized = 0;
 
 /* functions ... */
 
-void Sound_GetLinkedVersion(Sound_Version *ver)
+int Sound_Version(void)
 {
-    if (ver != NULL)
-    {
-        ver->major = SOUND_VER_MAJOR;
-        ver->minor = SOUND_VER_MINOR;
-        ver->patch = SOUND_VER_PATCH;
-    } /* if */
-} /* Sound_GetLinkedVersion */
-
+    return SDL_SOUND_VERSION;
+}
 
 int Sound_Init(void)
 {

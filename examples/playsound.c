@@ -53,13 +53,10 @@ static const char *option_list[] =
 
 static void output_versions(const char *argv0)
 {
-    Sound_Version compiled;
-    Sound_Version linked;
-    int sdl_compiled = SDL_VERSION;
-    int sdl_linked = SDL_GetVersion();
-
-    SOUND_VERSION(&compiled);
-    Sound_GetLinkedVersion(&linked);
+    const int compiled = SDL_SOUND_VERSION;
+    const int linked = Sound_Version();
+    const int sdl_compiled = SDL_VERSION;
+    const int sdl_linked = SDL_GetVersion();
 
     fprintf(stdout,
            "%s version %d.%d.%d\n"
@@ -71,8 +68,12 @@ static void output_versions(const char *argv0)
            " and linked against %d.%d.%d.\n\n",
             argv0,
             PLAYSOUND_VER_MAJOR, PLAYSOUND_VER_MINOR, PLAYSOUND_VER_PATCH,
-            compiled.major, compiled.minor, compiled.patch,
-            linked.major, linked.minor, linked.patch,
+            SDL_VERSIONNUM_MAJOR(compiled),
+            SDL_VERSIONNUM_MINOR(compiled),
+            SDL_VERSIONNUM_MICRO(compiled),
+            SDL_VERSIONNUM_MAJOR(linked),
+            SDL_VERSIONNUM_MINOR(linked),
+            SDL_VERSIONNUM_MICRO(linked),
             SDL_VERSIONNUM_MAJOR(sdl_compiled),
             SDL_VERSIONNUM_MINOR(sdl_compiled),
             SDL_VERSIONNUM_MICRO(sdl_compiled),
