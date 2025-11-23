@@ -158,6 +158,8 @@ typedef enum Sound_SampleFlags
  * }
  * ```
  *
+ * The strings in this struct are generally meant to be human-readable.
+ *
  * \since This struct is available since SDL_sound 1.0.0.
  *
  * \sa Sound_AvailableDecoders
