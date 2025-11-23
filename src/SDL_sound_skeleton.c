@@ -44,7 +44,7 @@ static void FMT_quit(void)
 static int FMT_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    SDL_IOStream *rw = internal->rw;
+    SDL_IOStream *io = internal->io;
 
     // if (can NOT accept the data)
     //     BAIL_MACRO("FMT: expected X, got Y.", 0);
@@ -72,7 +72,7 @@ static Uint32 FMT_read(Sound_Sample *sample)
          * We don't actually do any decoding, so we read the fmt data
          *  directly into the internal buffer...
          */
-    retval = SDL_ReadIO(internal->rw, internal->buffer,
+    retval = SDL_ReadIO(internal->io, internal->buffer,
                         internal->buffer_size);
 
     // (or whatever.Do some decoding here...)
@@ -99,7 +99,7 @@ static int FMT_rewind(Sound_Sample *sample)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
 
         /* seek to the appropriate place... */
-    BAIL_IF_MACRO(SDL_SeekIO(internal->rw, 0, SDL_IO_SEEK_SET) != 0, ERR_IO_ERROR, 0);
+    BAIL_IF_MACRO(SDL_SeekIO(internal->io, 0, SDL_IO_SEEK_SET) != 0, ERR_IO_ERROR, 0);
 
     // (reset state as necessary.)
 
@@ -112,7 +112,7 @@ static int FMT_seek(Sound_Sample *sample, Uint32 ms)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
 
         /* seek to the appropriate place... */
-    BAIL_IF_MACRO(SDL_SeekIO(internal->rw, 0, SDL_IO_SEEK_SET) != 0, ERR_IO_ERROR, 0);
+    BAIL_IF_MACRO(SDL_SeekIO(internal->io, 0, SDL_IO_SEEK_SET) != 0, ERR_IO_ERROR, 0);
 
     // (set state as necessary.)
 

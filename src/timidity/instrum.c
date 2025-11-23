@@ -151,7 +151,7 @@ static void load_instrument(MidiSong *song, const char *name,
 {
   Instrument *ip;
   Sample *sp;
-  SDL_IOStream *rw;
+  SDL_IOStream *io;
   char tmp[1024];
   int i,j;
   static char *patch_ext[] = PATCH_EXT_LIST;
@@ -162,18 +162,18 @@ static void load_instrument(MidiSong *song, const char *name,
 
   /* Open patch file */
   i = -1;
-  if ((rw=timi_openfile(name)) == NULL)
+  if ((io=timi_openfile(name)) == NULL)
     {
       /* Try with various extensions */
       for (i=0; patch_ext[i]; i++)
 	{
 	    SDL_snprintf(tmp, sizeof(tmp), "%s%s", name, patch_ext[i]);
-	    if ((rw=timi_openfile(tmp)) != NULL)
+	    if ((io=timi_openfile(tmp)) != NULL)
 		break;
 	}
     }
 
-  if (rw == NULL)
+  if (io == NULL)
     {
       SNDDBG(("Instrument `%s' can't be found.\n", name));
       return;
@@ -184,7 +184,7 @@ static void load_instrument(MidiSong *song, const char *name,
   /* Read some headers and do cursory sanity checks. There are loads
      of magic offsets. This could be rewritten... */
 
-  if ((239 != SDL_ReadIO(rw, tmp, 239)) ||
+  if ((239 != SDL_ReadIO(io, tmp, 239)) ||
       (SDL_memcmp(tmp, "GF1PATCH110\0ID#000002", 22) &&
        SDL_memcmp(tmp, "GF1PATCH100\0ID#000002", 22))) /* don't know what the
 						      differences are */
@@ -222,18 +222,18 @@ static void load_instrument(MidiSong *song, const char *name,
       Uint8 tmpchar;
 
 #define READ_CHAR(thing)					\
-  if (1 != SDL_ReadIO(rw, &tmpchar, 1))  goto badread;	\
+  if (1 != SDL_ReadIO(io, &tmpchar, 1))  goto badread;	\
   thing = tmpchar;
 #define READ_SHORT(thing)					\
-  if (2 != SDL_ReadIO(rw, &tmpshort, 2)) goto badread;	\
+  if (2 != SDL_ReadIO(io, &tmpshort, 2)) goto badread;	\
   thing = SDL_Swap16LE(tmpshort);
 #define READ_LONG(thing)					\
-  if (4 != SDL_ReadIO(rw, &tmplong, 4))  goto badread;	\
+  if (4 != SDL_ReadIO(io, &tmplong, 4))  goto badread;	\
   thing = (Sint32)SDL_Swap32LE((Uint32)tmplong);
 
-      SDL_SeekIO(rw, 7, SDL_IO_SEEK_CUR); /* Skip the wave name */
+      SDL_SeekIO(io, 7, SDL_IO_SEEK_CUR); /* Skip the wave name */
 
-      if (1 != SDL_ReadIO(rw, &fractions, 1))
+      if (1 != SDL_ReadIO(io, &fractions, 1))
 	goto badread;
 
       sp=&(ip->sample[i]);
@@ -245,7 +245,7 @@ static void load_instrument(MidiSong *song, const char *name,
       READ_LONG(sp->low_freq);
       READ_LONG(sp->high_freq);
       READ_LONG(sp->root_freq);
-      SDL_SeekIO(rw, 2, SDL_IO_SEEK_CUR); /* Why have a "root frequency" and then
+      SDL_SeekIO(io, 2, SDL_IO_SEEK_CUR); /* Why have a "root frequency" and then
 				    * "tuning"?? */
 
       READ_CHAR(tmp[0]);
@@ -256,7 +256,7 @@ static void load_instrument(MidiSong *song, const char *name,
 	sp->panning=(Uint8)(panning & 0x7F);
 
       /* envelope, tremolo, and vibrato */
-      if (18 != SDL_ReadIO(rw, tmp, 18))
+      if (18 != SDL_ReadIO(io, tmp, 18))
 	goto badread;
 
       if (!tmp[13] || !tmp[14])
@@ -294,7 +294,7 @@ static void load_instrument(MidiSong *song, const char *name,
 
       READ_CHAR(sp->modes);
 
-      SDL_SeekIO(rw, 40, SDL_IO_SEEK_CUR); /* skip the useless scale frequency, scale
+      SDL_SeekIO(io, 40, SDL_IO_SEEK_CUR); /* skip the useless scale frequency, scale
 				  factor (what's it mean?), and reserved
 				  space */
 
@@ -368,7 +368,7 @@ static void load_instrument(MidiSong *song, const char *name,
       sp->data = (sample_t *) SDL_malloc(sp->data_length+4);
       if (!sp->data) goto nomem;
 
-      if (sp->data_length != SDL_ReadIO(rw, sp->data, sp->data_length))
+      if (sp->data_length != SDL_ReadIO(io, sp->data, sp->data_length))
 	goto badread;
 
       if (!(sp->modes & MODES_16BIT)) /* convert to 16-bit data */
@@ -488,7 +488,7 @@ static void load_instrument(MidiSong *song, const char *name,
 	}
     }
 
-  SDL_CloseIO(rw);
+  SDL_CloseIO(io);
   return;
 
 nomem:
@@ -499,7 +499,7 @@ badread:
 fail:
   free_instrument (ip);
 badpat:
-  SDL_CloseIO(rw);
+  SDL_CloseIO(io);
   *out = NULL;
 }
 

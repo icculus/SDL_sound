@@ -19,9 +19,9 @@
 #if SOUND_SUPPORTS_WAV
 
 /* Better than SDL_ReadLE16, since you can detect i/o errors... */
-static SDL_INLINE int read_le16(SDL_IOStream *rw, Uint16 *ui16)
+static SDL_INLINE int read_le16(SDL_IOStream *io, Uint16 *ui16)
 {
-    int rc = SDL_ReadIO(rw, ui16, sizeof(Uint16));
+    int rc = SDL_ReadIO(io, ui16, sizeof(Uint16));
     BAIL_IF_MACRO(rc != sizeof(Uint16), ERR_IO_ERROR, 0);
     *ui16 = SDL_Swap16LE(*ui16);
     return 1;
@@ -29,29 +29,29 @@ static SDL_INLINE int read_le16(SDL_IOStream *rw, Uint16 *ui16)
 
 
 /* Better than SDL_ReadU32LE, since you can detect i/o errors... */
-static SDL_INLINE int read_le32(SDL_IOStream *rw, Uint32 *ui32)
+static SDL_INLINE int read_le32(SDL_IOStream *io, Uint32 *ui32)
 {
-    int rc = SDL_ReadIO(rw, ui32, sizeof(Uint32));
+    int rc = SDL_ReadIO(io, ui32, sizeof(Uint32));
     BAIL_IF_MACRO(rc != sizeof(Uint32), ERR_IO_ERROR, 0);
     *ui32 = SDL_Swap32LE(*ui32);
     return 1;
 } /* read_le32 */
 
-static SDL_INLINE int read_le16s(SDL_IOStream *rw, Sint16 *si16)
+static SDL_INLINE int read_le16s(SDL_IOStream *io, Sint16 *si16)
 {
-    return read_le16(rw, (Uint16 *) si16);
+    return read_le16(io, (Uint16 *) si16);
 } /* read_le16s */
 
-static SDL_INLINE int read_le32s(SDL_IOStream *rw, Sint32 *si32)
+static SDL_INLINE int read_le32s(SDL_IOStream *io, Sint32 *si32)
 {
-    return read_le32(rw, (Uint32 *) si32);
+    return read_le32(io, (Uint32 *) si32);
 } /* read_le32s */
 
 
 /* This is just cleaner on the caller's end... */
-static SDL_INLINE int read_uint8(SDL_IOStream *rw, Uint8 *ui8)
+static SDL_INLINE int read_uint8(SDL_IOStream *io, Uint8 *ui8)
 {
-    int rc = SDL_ReadIO(rw, ui8, sizeof (Uint8));
+    int rc = SDL_ReadIO(io, ui8, sizeof (Uint8));
     BAIL_IF_MACRO(rc != sizeof (Uint8), ERR_IO_ERROR, 0);
     return 1;
 } /* read_uint8 */
@@ -136,21 +136,21 @@ typedef struct S_WAV_FMT_T
  * Note that the union "fmt" is not read in here; that is handled as 
  *  needed in the read_fmt_* functions.
  */
-static int read_fmt_chunk(SDL_IOStream *rw, fmt_t *fmt)
+static int read_fmt_chunk(SDL_IOStream *io, fmt_t *fmt)
 {
     /* skip reading the chunk ID, since it was already read at this point... */
     fmt->chunkID = fmtID;
 
-    BAIL_IF_MACRO(!read_le32s(rw, &fmt->chunkSize), NULL, 0);
+    BAIL_IF_MACRO(!read_le32s(io, &fmt->chunkSize), NULL, 0);
     BAIL_IF_MACRO(fmt->chunkSize < 16, "WAV: Invalid chunk size", 0);
-    fmt->next_chunk_offset = SDL_TellIO(rw) + fmt->chunkSize;
+    fmt->next_chunk_offset = SDL_TellIO(io) + fmt->chunkSize;
     
-    BAIL_IF_MACRO(!read_le16(rw, &fmt->wFormatTag), NULL, 0);
-    BAIL_IF_MACRO(!read_le16(rw, &fmt->wChannels), NULL, 0);
-    BAIL_IF_MACRO(!read_le32(rw, &fmt->dwSamplesPerSec), NULL, 0);
-    BAIL_IF_MACRO(!read_le32(rw, &fmt->dwAvgBytesPerSec), NULL, 0);
-    BAIL_IF_MACRO(!read_le16(rw, &fmt->wBlockAlign), NULL, 0);
-    BAIL_IF_MACRO(!read_le16(rw, &fmt->wBitsPerSample), NULL, 0);
+    BAIL_IF_MACRO(!read_le16(io, &fmt->wFormatTag), NULL, 0);
+    BAIL_IF_MACRO(!read_le16(io, &fmt->wChannels), NULL, 0);
+    BAIL_IF_MACRO(!read_le32(io, &fmt->dwSamplesPerSec), NULL, 0);
+    BAIL_IF_MACRO(!read_le32(io, &fmt->dwAvgBytesPerSec), NULL, 0);
+    BAIL_IF_MACRO(!read_le16(io, &fmt->wBlockAlign), NULL, 0);
+    BAIL_IF_MACRO(!read_le16(io, &fmt->wBitsPerSample), NULL, 0);
 
     return 1;
 } /* read_fmt_chunk */
@@ -175,11 +175,11 @@ typedef struct
  * Read in a data_t from disk. This makes this process safe regardless of
  *  the processor's byte order or how the fmt_t structure is packed.
  */
-static int read_data_chunk(SDL_IOStream *rw, data_t *data)
+static int read_data_chunk(SDL_IOStream *io, data_t *data)
 {
     /* skip reading the chunk ID, since it was already read at this point... */
     data->chunkID = dataID;
-    BAIL_IF_MACRO(!read_le32s(rw, &data->chunkSize), NULL, 0);
+    BAIL_IF_MACRO(!read_le32s(io, &data->chunkSize), NULL, 0);
     return 1;
 } /* read_data_chunk */
 
@@ -232,7 +232,7 @@ static Uint32 read_sample_fmt_normal(Sound_Sample *sample)
          * We don't actually do any decoding, so we read the wav data
          *  directly into the internal buffer...
          */
-    retval = SDL_ReadIO(internal->rw, internal->buffer, max);
+    retval = SDL_ReadIO(internal->io, internal->buffer, max);
 
     w->bytesLeft -= retval;
 
@@ -271,7 +271,7 @@ static int seek_sample_fmt_normal(Sound_Sample *sample, Uint32 ms)
     fmt_t *fmt = w->fmt;
     const Sint64 offset = __Sound_convertMsToBytePos(&sample->actual, ms);
     const Sint64 pos = (fmt->data_starting_offset + offset);
-    const Sint64 rc = SDL_SeekIO(internal->rw, pos, SDL_IO_SEEK_SET);
+    const Sint64 rc = SDL_SeekIO(internal->io, pos, SDL_IO_SEEK_SET);
     BAIL_IF_MACRO(rc != pos, ERR_IO_ERROR, 0);
     w->bytesLeft = fmt->total_bytes - offset;
     return 1;  /* success. */
@@ -285,9 +285,9 @@ static int rewind_sample_fmt_normal(Sound_Sample *sample)
 } /* rewind_sample_fmt_normal */
 
 
-static int read_fmt_normal(SDL_IOStream *rw, fmt_t *fmt)
+static int read_fmt_normal(SDL_IOStream *io, fmt_t *fmt)
 {
-    /* (don't need to read more from the RWops...) */
+    /* (don't need to read more from the SDL_IOStream...) */
     fmt->free = NULL;
     fmt->read_sample = read_sample_fmt_normal;
     fmt->rewind_sample = rewind_sample_fmt_normal;
@@ -309,7 +309,7 @@ static int read_fmt_normal(SDL_IOStream *rw, fmt_t *fmt)
 static SDL_INLINE int read_adpcm_block_headers(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    SDL_IOStream *rw = internal->rw;
+    SDL_IOStream *io = internal->io;
     wav_t *w = (wav_t *) internal->decoder_private;
     fmt_t *fmt = w->fmt;
     ADPCMBLOCKHEADER *headers = fmt->fmt.adpcm.blockheaders;
@@ -325,16 +325,16 @@ static SDL_INLINE int read_adpcm_block_headers(Sound_Sample *sample)
     w->bytesLeft -= fmt->wBlockAlign;
 
     for (i = 0; i < max; i++)
-        BAIL_IF_MACRO(!read_uint8(rw, &headers[i].bPredictor), NULL, 0);
+        BAIL_IF_MACRO(!read_uint8(io, &headers[i].bPredictor), NULL, 0);
 
     for (i = 0; i < max; i++)
-        BAIL_IF_MACRO(!read_le16(rw, &headers[i].iDelta), NULL, 0);
+        BAIL_IF_MACRO(!read_le16(io, &headers[i].iDelta), NULL, 0);
 
     for (i = 0; i < max; i++)
-        BAIL_IF_MACRO(!read_le16s(rw, &headers[i].iSamp1), NULL, 0);
+        BAIL_IF_MACRO(!read_le16s(io, &headers[i].iSamp1), NULL, 0);
 
     for (i = 0; i < max; i++)
-        BAIL_IF_MACRO(!read_le16s(rw, &headers[i].iSamp2), NULL, 0);
+        BAIL_IF_MACRO(!read_le16s(io, &headers[i].iSamp2), NULL, 0);
 
     fmt->fmt.adpcm.samples_left_in_block = fmt->fmt.adpcm.wSamplesPerBlock;
     fmt->fmt.adpcm.nibble_state = 0;
@@ -386,7 +386,7 @@ static SDL_INLINE int decode_adpcm_sample_frame(Sound_Sample *sample)
     wav_t *w = (wav_t *) internal->decoder_private;
     fmt_t *fmt = w->fmt;
     ADPCMBLOCKHEADER *headers = fmt->fmt.adpcm.blockheaders;
-    SDL_IOStream *rw = internal->rw;
+    SDL_IOStream *io = internal->io;
     int i;
     int max = fmt->wChannels;
     Uint8 nib = fmt->fmt.adpcm.nibble;
@@ -401,7 +401,7 @@ static SDL_INLINE int decode_adpcm_sample_frame(Sound_Sample *sample)
 
         if (fmt->fmt.adpcm.nibble_state == 0)
         {
-            BAIL_IF_MACRO(!read_uint8(rw, &nib), NULL, 0);
+            BAIL_IF_MACRO(!read_uint8(io, &nib), NULL, 0);
             fmt->fmt.adpcm.nibble_state = 1;
             do_adpcm_nibble(nib >> 4, &headers[i], lPredSamp);
         } /* if */
@@ -517,12 +517,12 @@ static int seek_sample_fmt_adpcm(Sound_Sample *sample, Uint32 ms)
     wav_t *w = (wav_t *) internal->decoder_private;
     fmt_t *fmt = w->fmt;
     const Uint32 origsampsleft = fmt->fmt.adpcm.samples_left_in_block;
-    const Sint64 origpos = SDL_TellIO(internal->rw);
+    const Sint64 origpos = SDL_TellIO(internal->io);
     const Sint64 offset = __Sound_convertMsToBytePos(&sample->actual, ms);
     const Sint64 bpb = (fmt->fmt.adpcm.wSamplesPerBlock * fmt->sample_frame_size);
     Sint64 skipsize = (offset / bpb) * fmt->wBlockAlign;
     const Sint64 pos = skipsize + fmt->data_starting_offset;
-    Sint64 rc = SDL_SeekIO(internal->rw, pos, SDL_IO_SEEK_SET);
+    Sint64 rc = SDL_SeekIO(internal->io, pos, SDL_IO_SEEK_SET);
     BAIL_IF_MACRO(rc != pos, ERR_IO_ERROR, 0);
 
     /* The offset we need is in this block, so we need to decode to there. */
@@ -530,7 +530,7 @@ static int seek_sample_fmt_adpcm(Sound_Sample *sample, Uint32 ms)
     rc = (offset % bpb);  /* bytes into this block we need to decode */
     if (!read_adpcm_block_headers(sample))
     {
-        SDL_SeekIO(internal->rw, origpos, SDL_IO_SEEK_SET); /* try to make sane. */
+        SDL_SeekIO(internal->io, origpos, SDL_IO_SEEK_SET); /* try to make sane. */
         return 0;
     } /* if */
 
@@ -541,7 +541,7 @@ static int seek_sample_fmt_adpcm(Sound_Sample *sample, Uint32 ms)
     {
         if (!decode_adpcm_sample_frame(sample))
         {
-            SDL_SeekIO(internal->rw, origpos, SDL_IO_SEEK_SET);
+            SDL_SeekIO(internal->io, origpos, SDL_IO_SEEK_SET);
             fmt->fmt.adpcm.samples_left_in_block = origsampsleft;
             return 0;
         } /* if */
@@ -560,7 +560,7 @@ static int seek_sample_fmt_adpcm(Sound_Sample *sample, Uint32 ms)
  *  safe regardless of the processor's byte order or how the fmt_t 
  *  structure is packed.
  */
-static int read_fmt_adpcm(SDL_IOStream *rw, fmt_t *fmt)
+static int read_fmt_adpcm(SDL_IOStream *io, fmt_t *fmt)
 {
     size_t i;
 
@@ -570,9 +570,9 @@ static int read_fmt_adpcm(SDL_IOStream *rw, fmt_t *fmt)
     fmt->rewind_sample = rewind_sample_fmt_adpcm;
     fmt->seek_sample = seek_sample_fmt_adpcm;
 
-    BAIL_IF_MACRO(!read_le16(rw, &fmt->fmt.adpcm.cbSize), NULL, 0);
-    BAIL_IF_MACRO(!read_le16(rw, &fmt->fmt.adpcm.wSamplesPerBlock), NULL, 0);
-    BAIL_IF_MACRO(!read_le16(rw, &fmt->fmt.adpcm.wNumCoef), NULL, 0);
+    BAIL_IF_MACRO(!read_le16(io, &fmt->fmt.adpcm.cbSize), NULL, 0);
+    BAIL_IF_MACRO(!read_le16(io, &fmt->fmt.adpcm.wSamplesPerBlock), NULL, 0);
+    BAIL_IF_MACRO(!read_le16(io, &fmt->fmt.adpcm.wNumCoef), NULL, 0);
 
     /* fmt->free() is always called, so these malloc()s will be cleaned up. */
 
@@ -582,8 +582,8 @@ static int read_fmt_adpcm(SDL_IOStream *rw, fmt_t *fmt)
 
     for (i = 0; i < fmt->fmt.adpcm.wNumCoef; i++)
     {
-        BAIL_IF_MACRO(!read_le16s(rw, &fmt->fmt.adpcm.aCoef[i].iCoef1), NULL, 0);
-        BAIL_IF_MACRO(!read_le16s(rw, &fmt->fmt.adpcm.aCoef[i].iCoef2), NULL, 0);
+        BAIL_IF_MACRO(!read_le16s(io, &fmt->fmt.adpcm.aCoef[i].iCoef1), NULL, 0);
+        BAIL_IF_MACRO(!read_le16s(io, &fmt->fmt.adpcm.aCoef[i].iCoef2), NULL, 0);
     } /* for */
 
     i = sizeof (ADPCMBLOCKHEADER) * fmt->wChannels;
@@ -611,7 +611,7 @@ static void WAV_quit(void)
 } /* WAV_quit */
 
 
-static int read_fmt(SDL_IOStream *rw, fmt_t *fmt)
+static int read_fmt(SDL_IOStream *io, fmt_t *fmt)
 {
     /* if it's in this switch statement, we support the format. */
     switch (fmt->wFormatTag)
@@ -619,15 +619,15 @@ static int read_fmt(SDL_IOStream *rw, fmt_t *fmt)
         case FMT_EXTENSIBLE:  /* !!! FIXME: this isn't correct */
         case FMT_NORMAL:
             SNDDBG(("WAV: Appears to be uncompressed audio.\n"));
-            return read_fmt_normal(rw, fmt);
+            return read_fmt_normal(io, fmt);
 
         case FMT_ADPCM:
             SNDDBG(("WAV: Appears to be ADPCM compressed audio.\n"));
-            return read_fmt_adpcm(rw, fmt);
+            return read_fmt_adpcm(io, fmt);
 
         case FMT_IEEE_FLOAT:
             SNDDBG(("WAV: Appears to be IEEE float uncompressed audio.\n"));
-            return read_fmt_normal(rw, fmt);  /* just normal PCM, otherwise. */
+            return read_fmt_normal(io, fmt);  /* just normal PCM, otheioise. */
 
         /* add other types here. */
     } /* switch */
@@ -641,24 +641,24 @@ static int read_fmt(SDL_IOStream *rw, fmt_t *fmt)
 /*
  * Locate a specific chunk in the WAVE file by ID...
  */
-static int find_chunk(SDL_IOStream *rw, Uint32 id)
+static int find_chunk(SDL_IOStream *io, Uint32 id)
 {
     Sint32 siz = 0;
     Uint32 _id = 0;
-    Sint64 pos = SDL_TellIO(rw);
+    Sint64 pos = SDL_TellIO(io);
 
     while (1)
     {
-        BAIL_IF_MACRO(!read_le32(rw, &_id), NULL, 0);
+        BAIL_IF_MACRO(!read_le32(io, &_id), NULL, 0);
         if (_id == id)
             return 1;
 
         /* skip ahead and see what next chunk is... */
-        BAIL_IF_MACRO(!read_le32s(rw, &siz), NULL, 0);
+        BAIL_IF_MACRO(!read_le32s(io, &siz), NULL, 0);
         SDL_assert(siz >= 0);
         pos += (sizeof (Uint32) * 2) + siz;
         if (siz > 0)
-            BAIL_IF_MACRO(SDL_SeekIO(rw, pos, SDL_IO_SEEK_SET) != pos, NULL, 0);
+            BAIL_IF_MACRO(SDL_SeekIO(io, pos, SDL_IO_SEEK_SET) != pos, NULL, 0);
     } /* while */
 
     return 0;  /* shouldn't hit this, but just in case... */
@@ -668,19 +668,19 @@ static int find_chunk(SDL_IOStream *rw, Uint32 id)
 static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    SDL_IOStream *rw = internal->rw;
+    SDL_IOStream *io = internal->io;
     data_t d;
     wav_t *w;
 
     Uint32 value = 0;
-    SDL_ReadU32LE(rw, &value);
+    SDL_ReadU32LE(io, &value);
     BAIL_IF_MACRO(value != riffID, "WAV: Not a RIFF file.", 0);
-    SDL_ReadU32LE(rw, &value); /* throw the length away; we get this info later. */
+    SDL_ReadU32LE(io, &value); /* throw the length away; we get this info later. */
     value = 0;
-    SDL_ReadU32LE(rw, &value);
+    SDL_ReadU32LE(io, &value);
     BAIL_IF_MACRO(value != waveID, "WAV: Not a WAVE file.", 0);
-    BAIL_IF_MACRO(!find_chunk(rw, fmtID), "WAV: No format chunk.", 0);
-    BAIL_IF_MACRO(!read_fmt_chunk(rw, fmt), "WAV: Can't read format chunk.", 0);
+    BAIL_IF_MACRO(!find_chunk(io, fmtID), "WAV: No format chunk.", 0);
+    BAIL_IF_MACRO(!read_fmt_chunk(io, fmt), "WAV: Can't read format chunk.", 0);
 
     sample->actual.channels = (Uint8) fmt->wChannels;
     sample->actual.freq = fmt->dwSamplesPerSec;
@@ -705,16 +705,16 @@ static int WAV_open_internal(Sound_Sample *sample, const char *ext, fmt_t *fmt)
         } /* switch */
     } /* else */
 
-    BAIL_IF_MACRO(!read_fmt(rw, fmt), NULL, 0);
-    SDL_SeekIO(rw, fmt->next_chunk_offset, SDL_IO_SEEK_SET);
-    BAIL_IF_MACRO(!find_chunk(rw, dataID), "WAV: No data chunk.", 0);
-    BAIL_IF_MACRO(!read_data_chunk(rw, &d), "WAV: Can't read data chunk.", 0);
+    BAIL_IF_MACRO(!read_fmt(io, fmt), NULL, 0);
+    SDL_SeekIO(io, fmt->next_chunk_offset, SDL_IO_SEEK_SET);
+    BAIL_IF_MACRO(!find_chunk(io, dataID), "WAV: No data chunk.", 0);
+    BAIL_IF_MACRO(!read_data_chunk(io, &d), "WAV: Can't read data chunk.", 0);
 
     w = (wav_t *) SDL_malloc(sizeof(wav_t));
     BAIL_IF_MACRO(w == NULL, ERR_OUT_OF_MEMORY, 0);
     w->fmt = fmt;
     fmt->total_bytes = w->bytesLeft = d.chunkSize;
-    fmt->data_starting_offset = SDL_TellIO(rw);
+    fmt->data_starting_offset = SDL_TellIO(io);
     fmt->sample_frame_size = ( ((sample->actual.format & 0xFF) / 8) *
                                sample->actual.channels );
     internal->decoder_private = (void *) w;
@@ -782,7 +782,7 @@ static int WAV_rewind(Sound_Sample *sample)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     wav_t *w = (wav_t *) internal->decoder_private;
     fmt_t *fmt = w->fmt;
-    const Sint64 rc = SDL_SeekIO(internal->rw, fmt->data_starting_offset, SDL_IO_SEEK_SET);
+    const Sint64 rc = SDL_SeekIO(internal->io, fmt->data_starting_offset, SDL_IO_SEEK_SET);
     BAIL_IF_MACRO(rc != fmt->data_starting_offset, ERR_IO_ERROR, 0);
     w->bytesLeft = fmt->total_bytes;
     return fmt->rewind_sample(sample);

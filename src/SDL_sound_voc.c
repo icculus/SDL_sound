@@ -135,7 +135,7 @@ static SDL_INLINE int voc_check_header(SDL_IOStream *src)
 static int voc_get_block(Sound_Sample *sample, vs_t *v)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    SDL_IOStream *src = internal->rw;
+    SDL_IOStream *src = internal->io;
     Uint8 bits24[3];
     Uint8 uc, block;
     Uint32 sblen;
@@ -339,7 +339,7 @@ static int voc_get_block(Sound_Sample *sample, vs_t *v)
 static int voc_read_waveform(Sound_Sample *sample, int fill_buf, Uint32 max)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    SDL_IOStream *src = internal->rw;
+    SDL_IOStream *src = internal->io;
     vs_t *v = (vs_t *) internal->decoder_private;
     Sint64 done = 0;
     Uint8 silence = 0x80;
@@ -412,13 +412,13 @@ static int VOC_open(Sound_Sample *sample, const char *ext)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     vs_t *v = NULL;
 
-    if (!voc_check_header(internal->rw))
+    if (!voc_check_header(internal->io))
         return 0;
 
     v = (vs_t *) SDL_calloc(1, sizeof (vs_t));
     BAIL_IF_MACRO(v == NULL, ERR_OUT_OF_MEMORY, 0);
 
-    v->start_pos = SDL_TellIO(internal->rw);
+    v->start_pos = SDL_TellIO(internal->io);
     v->rate = -1;
     if (!voc_get_block(sample, v))
     {
@@ -482,7 +482,7 @@ static int VOC_rewind(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     vs_t *v = (vs_t *) internal->decoder_private;
-    const Sint64 rc = SDL_SeekIO(internal->rw, v->start_pos, SDL_IO_SEEK_SET);
+    const Sint64 rc = SDL_SeekIO(internal->io, v->start_pos, SDL_IO_SEEK_SET);
     BAIL_IF_MACRO(rc != v->start_pos, ERR_IO_ERROR, 0);
     v->rest = 0;
     return 1;
@@ -504,7 +504,7 @@ static int VOC_seek(Sound_Sample *sample, Uint32 ms)
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     vs_t *v = (vs_t *) internal->decoder_private;
     Uint32 offset = __Sound_convertMsToBytePos(&sample->actual, ms);
-    const Sint64 origpos = SDL_TellIO(internal->rw);
+    const Sint64 origpos = SDL_TellIO(internal->io);
     const Uint32 origrest = v->rest;
 
     BAIL_IF_MACRO(!VOC_rewind(sample), NULL, 0);
@@ -516,7 +516,7 @@ static int VOC_seek(Sound_Sample *sample, Uint32 ms)
         Uint32 rc = voc_read_waveform(sample, 0, offset);
         if ( (rc == 0) || (!voc_get_block(sample, v)) )
         {
-            SDL_SeekIO(internal->rw, origpos, SDL_IO_SEEK_SET);
+            SDL_SeekIO(internal->io, origpos, SDL_IO_SEEK_SET);
             v->rest = origrest;
             return 0;
         } /* if */

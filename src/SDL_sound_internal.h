@@ -141,7 +141,7 @@ typedef struct __SOUND_DECODERFUNCTIONS__
          * in Sound_SampleInternal section:
          *    Sound_Sample *next;  (offlimits)
          *    Sound_Sample *prev;  (offlimits)
-         *    SDL_IOStream *rw;       (can use, but do NOT close it)
+         *    SDL_IOStream *io;       (can use, but do NOT close it)
          *    const Sound_DecoderFunctions *funcs; (that's this structure)
          *    SDL_AudioStream stream; (offlimits)
          *    bool pending_eof; (offlimits)
@@ -178,7 +178,7 @@ typedef struct __SOUND_DECODERFUNCTIONS__
          *
          *  ...and then start decoding. Fill in up to internal->buffer_size
          *  bytes of decoded sound in the space pointed to by
-         *  internal->buffer. The encoded data is read in from internal->rw.
+         *  internal->buffer. The encoded data is read in from internal->io.
          *  Data should be decoded in the format specified during the
          *  decoder's open() method in the sample->actual field. The
          *  conversion to the desired format is done at a higher level.
@@ -213,7 +213,7 @@ typedef struct __SOUND_DECODERFUNCTIONS__
          *
          * The purpose of this method is to allow for higher efficiency than
          *  an application could get by just recreating the sample externally;
-         *  not only do they not have to reopen the RWops, reallocate buffers,
+         *  not only do they not have to reopen the SDL_IOStream, reallocate buffers,
          *  and potentially pass the data through several rejecting decoders,
          *  but certain decoders will not have to recreate their existing
          *  state (search for metadata, etc) since they already know they
@@ -249,7 +249,7 @@ typedef struct __SOUND_SAMPLEINTERNAL__
 {
     Sound_Sample *next;
     Sound_Sample *prev;
-    SDL_IOStream *rw;
+    SDL_IOStream *io;
     const Sound_DecoderFunctions *funcs;
     SDL_AudioStream *stream;
     bool pending_eof;

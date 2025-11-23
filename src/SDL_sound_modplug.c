@@ -102,12 +102,12 @@ static int MODPLUG_open(Sound_Sample *sample, const char *ext)
 
     /* ModPlug needs the entire stream in one big chunk. I don't like it,
        but I don't think there's any way around it.  !!! FIXME: rework modplug? */
-    size = SDL_GetIOSize(internal->rw);
+    size = SDL_GetIOSize(internal->io);
     BAIL_IF_MACRO(size <= 0 || size > (Sint64)0x7fffffff, "MODPLUG: Not a module file.", 0);
 
     data = SDL_malloc((size_t) size);
     BAIL_IF_MACRO(data == NULL, ERR_OUT_OF_MEMORY, 0);
-    retval = SDL_ReadIO(internal->rw, data, size);
+    retval = SDL_ReadIO(internal->io, data, size);
     if (retval != (size_t)size) SDL_free(data);
     BAIL_IF_MACRO(retval != (size_t)size, ERR_IO_ERROR, 0);
 

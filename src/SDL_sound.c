@@ -255,7 +255,7 @@ Uint32 __Sound_convertMsToBytePos(SDL_AudioSpec *info, Uint32 ms)
  * Allocate a Sound_Sample, and fill in most of its fields. Those that need
  *  to be filled in later, by a decoder, will be initialized to zero.
  */
-static Sound_Sample *alloc_sample(SDL_IOStream *rw, const SDL_AudioSpec *desired,
+static Sound_Sample *alloc_sample(SDL_IOStream *io, const SDL_AudioSpec *desired,
                                   Uint32 bufferSize)
 {
     /*
@@ -291,7 +291,7 @@ static Sound_Sample *alloc_sample(SDL_IOStream *rw, const SDL_AudioSpec *desired
     if (desired != NULL)
         SDL_memcpy(&retval->desired, desired, sizeof (SDL_AudioSpec));
 
-    internal->rw = rw;
+    internal->io = io;
     retval->opaque = internal;
     return retval;
 } /* alloc_sample */
@@ -325,8 +325,8 @@ static SDL_INLINE const char *fmt_to_str(Uint16 fmt)
 
 /*
  * The bulk of the Sound_NewSample() work is done here...
- *  Ask the specified decoder to handle the data in (rw), and if
- *  so, construct the Sound_Sample. Otherwise, try to wind (rw)'s stream
+ *  Ask the specified decoder to handle the data in (io), and if
+ *  so, construct the Sound_Sample. Otherwise, try to wind (io)'s stream
  *  back to where it was, and return false.
  */
 static int init_sample(const Sound_DecoderFunctions *funcs,
@@ -335,14 +335,14 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     SDL_AudioSpec desired;
-    const Sint64 pos = SDL_TellIO(internal->rw);
+    const Sint64 pos = SDL_TellIO(internal->io);
 
         /* fill in the funcs for this decoder... */
     sample->decoder = &funcs->info;
     internal->funcs = funcs;
     if (!funcs->open(sample, ext))
     {
-        SDL_SeekIO(internal->rw, pos, SDL_IO_SEEK_SET); /* set for next try... */
+        SDL_SeekIO(internal->io, pos, SDL_IO_SEEK_SET); /* set for next try... */
         return 0;
     } /* if */
 
@@ -379,7 +379,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
             {
                 __Sound_SetError(SDL_GetError());
                 funcs->close(sample);
-                SDL_SeekIO(internal->rw, pos, SDL_IO_SEEK_SET); /* set for next try... */
+                SDL_SeekIO(internal->io, pos, SDL_IO_SEEK_SET); /* set for next try... */
                 return 0;
             } /* if */
         } /* if */
@@ -415,7 +415,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
 } /* init_sample */
 
 
-Sound_Sample *Sound_NewSample(SDL_IOStream *rw, const char *ext,
+Sound_Sample *Sound_NewSample(SDL_IOStream *io, const char *ext,
                               const SDL_AudioSpec *desired, Uint32 bSize)
 {
     Sound_Sample *retval;
@@ -423,9 +423,9 @@ Sound_Sample *Sound_NewSample(SDL_IOStream *rw, const char *ext,
 
     /* sanity checks. */
     BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, NULL);
-    BAIL_IF_MACRO(rw == NULL, ERR_INVALID_ARGUMENT, NULL);
+    BAIL_IF_MACRO(io == NULL, ERR_INVALID_ARGUMENT, NULL);
 
-    retval = alloc_sample(rw, desired, bSize);
+    retval = alloc_sample(io, desired, bSize);
     if (!retval)
         return NULL;  /* alloc_sample() sets error message... */
 
@@ -487,7 +487,7 @@ Sound_Sample *Sound_NewSample(SDL_IOStream *rw, const char *ext,
 
     __Sound_SIMDFree(retval->buffer);
     SDL_free(retval);
-    SDL_CloseIO(rw);
+    SDL_CloseIO(io);
     __Sound_SetError(ERR_UNSUPPORTED_FORMAT);
     return NULL;
 } /* Sound_NewSample */
@@ -498,19 +498,19 @@ Sound_Sample *Sound_NewSampleFromFile(const char *filename,
                                       Uint32 bufferSize)
 {
     const char *ext;
-    SDL_IOStream *rw;
+    SDL_IOStream *io;
 
     BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, NULL);
     BAIL_IF_MACRO(filename == NULL, ERR_INVALID_ARGUMENT, NULL);
 
     ext = SDL_strrchr(filename, '.');
-    rw = SDL_IOFromFile(filename, "rb");
-    BAIL_IF_MACRO(rw == NULL, SDL_GetError(), NULL);
+    io = SDL_IOFromFile(filename, "rb");
+    BAIL_IF_MACRO(io == NULL, SDL_GetError(), NULL);
 
     if (ext != NULL)
         ext++;
 
-    return Sound_NewSample(rw, ext, desired, bufferSize);
+    return Sound_NewSample(io, ext, desired, bufferSize);
 } /* Sound_NewSampleFromFile */
 
 
@@ -520,16 +520,16 @@ Sound_Sample *Sound_NewSampleFromMem(const Uint8 *data,
                                      const SDL_AudioSpec *desired,
                                      Uint32 bufferSize)
 {
-    SDL_IOStream *rw;
+    SDL_IOStream *io;
 
     BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, NULL);
     BAIL_IF_MACRO(data == NULL, ERR_INVALID_ARGUMENT, NULL);
     BAIL_IF_MACRO(size == 0, ERR_INVALID_ARGUMENT, NULL);
 
-    rw = SDL_IOFromConstMem(data, size);
-    BAIL_IF_MACRO(rw == NULL, SDL_GetError(), NULL);
+    io = SDL_IOFromConstMem(data, size);
+    BAIL_IF_MACRO(io == NULL, SDL_GetError(), NULL);
 
-    return Sound_NewSample(rw, ext, desired, bufferSize);
+    return Sound_NewSample(io, ext, desired, bufferSize);
 } /* Sound_NewSampleFromMem */
 
 
@@ -578,8 +578,8 @@ void Sound_FreeSample(Sound_Sample *sample)
     /* nuke it... */
     internal->funcs->close(sample);
 
-    if (internal->rw != NULL)  /* this condition is a "just in case" thing. */
-        SDL_CloseIO(internal->rw);
+    if (internal->io != NULL)  /* this condition is a "just in case" thing. */
+        SDL_CloseIO(internal->io);
 
     SDL_DestroyAudioStream(internal->stream);
     SDL_free(internal);

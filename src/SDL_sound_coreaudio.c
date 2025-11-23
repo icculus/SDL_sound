@@ -191,10 +191,10 @@ static const char* CoreAudio_FourCCToString(Sint32 error_code)
 
 SInt64 CoreAudio_SizeCallback(void* inClientData)
 {
-	SDL_IOStream *rw_ops = (SDL_IOStream *) inClientData;
-	const Sint64 current_position = SDL_TellIO(rw_ops);
-	const Sint64 end_position = SDL_SeekIO(rw_ops, 0, SDL_IO_SEEK_END);
-	SDL_SeekIO(rw_ops, current_position, SDL_IO_SEEK_SET);
+	SDL_IOStream *io = (SDL_IOStream *) inClientData;
+	const Sint64 current_position = SDL_TellIO(io);
+	const Sint64 end_position = SDL_SeekIO(io, 0, SDL_IO_SEEK_END);
+	SDL_SeekIO(io, current_position, SDL_IO_SEEK_SET);
 //	fprintf(stderr, "CoreAudio_SizeCallback:%d\n", end_position);
 	return end_position;
 }
@@ -207,9 +207,9 @@ OSStatus CoreAudio_ReadCallback(
 	UInt32* actualCount
 )
 {
-	SDL_IOStream* rw_ops = (SDL_IOStream *) inClientData;
-	SDL_SeekIO(rw_ops, inPosition, SDL_IO_SEEK_SET);
-	size_t bytes_actually_read = SDL_ReadIO(rw_ops, data_buffer, requestCount);
+	SDL_IOStream* io = (SDL_IOStream *) inClientData;
+	SDL_SeekIO(io, inPosition, SDL_IO_SEEK_SET);
+	size_t bytes_actually_read = SDL_ReadIO(io, data_buffer, requestCount);
 	// Not sure how to test for a read error with SDL_IOStream
 //	fprintf(stderr, "CoreAudio_ReadCallback:%d, %d\n", requestCount, bytes_actually_read);
 
@@ -236,7 +236,7 @@ static int CoreAudio_open(Sound_Sample *sample, const char *ext)
 	BAIL_IF_MACRO(audio_file_id == NULL, ERR_OUT_OF_MEMORY, 0);
 
 	error_result = AudioFileOpenWithCallbacks(
-		internal->rw,
+		internal->io,
 		CoreAudio_ReadCallback,
 		NULL,
 		CoreAudio_SizeCallback,

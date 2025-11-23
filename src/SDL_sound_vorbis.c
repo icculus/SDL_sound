@@ -105,7 +105,7 @@ static void VORBIS_quit(void)
 static int VORBIS_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    SDL_IOStream *src = internal->rw;
+    SDL_IOStream *src = internal->io;
     int err = 0;
     stb_vorbis *stb = stb_vorbis_open_io(src, 0, &err, NULL);
     unsigned int num_frames;

@@ -65,7 +65,7 @@ static void MIDI_quit(void)
 static int MIDI_open(Sound_Sample *sample, const char *ext)
 {
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    SDL_IOStream *rw = internal->rw;
+    SDL_IOStream *io = internal->io;
     SDL_AudioSpec spec;
     MidiSong *song;
 
@@ -73,7 +73,7 @@ static int MIDI_open(Sound_Sample *sample, const char *ext)
     spec.format = (sample->desired.format == 0) ? SDL_AUDIO_S16 : sample->desired.format;
     spec.freq = (sample->desired.freq == 0) ? 44100 : sample->desired.freq;
 
-    song = Timidity_LoadSong(rw, &spec);
+    song = Timidity_LoadSong(io, &spec);
     BAIL_IF_MACRO(song == NULL, "MIDI: Not a MIDI file.", 0);
     Timidity_SetVolume(song, 100);
     Timidity_Start(song);

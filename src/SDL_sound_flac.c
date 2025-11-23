@@ -44,13 +44,13 @@ static size_t flac_read(void* pUserData, void* pBufferOut, size_t bytesToRead)
     Uint8 *ptr = (Uint8 *) pBufferOut;
     Sound_Sample *sample = (Sound_Sample *) pUserData;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    SDL_IOStream *rwops = internal->rw;
+    SDL_IOStream *io = internal->io;
     size_t retval = 0;
 
     /* !!! FIXME: dr_flac treats returning less than bytesToRead as EOF. So we can't EAGAIN. */
     while (bytesToRead)
     {
-        const size_t rc = SDL_ReadIO(rwops, ptr, bytesToRead);
+        const size_t rc = SDL_ReadIO(io, ptr, bytesToRead);
         if (rc == 0) break;
         bytesToRead -= rc;
         retval += rc;
@@ -78,14 +78,14 @@ static drflac_bool32 flac_seek(void* pUserData, int offset, drflac_seek_origin o
     default:
         return DRFLAC_FALSE;
     }
-    return (SDL_SeekIO(internal->rw, offset, whence) != -1) ? DRFLAC_TRUE : DRFLAC_FALSE;
+    return (SDL_SeekIO(internal->io, offset, whence) != -1) ? DRFLAC_TRUE : DRFLAC_FALSE;
 } /* flac_seek */
 
 static drflac_bool32 flac_tell(void* pUserData, drflac_int64* pCursor)
 {
     Sound_Sample *sample = (Sound_Sample *) pUserData;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
-    *pCursor = SDL_TellIO(internal->rw);
+    *pCursor = SDL_TellIO(internal->io);
     return (*pCursor != -1) ? DRFLAC_TRUE : DRFLAC_FALSE;
 } /* flac_tell */
 

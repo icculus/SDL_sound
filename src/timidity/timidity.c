@@ -29,7 +29,7 @@ static char def_instr_name[256] = "";
 
 /* Quick-and-dirty fgets() replacement. */
 
-static char *RWgets(SDL_IOStream *rw, char *s, int size)
+static char *RWgets(SDL_IOStream *io, char *s, int size)
 {
     int num_read = 0;
     char *p = s;
@@ -38,7 +38,7 @@ static char *RWgets(SDL_IOStream *rw, char *s, int size)
 
     for (; num_read < size; ++p)
     {
-	if (!SDL_ReadIO(rw, p, 1))
+	if (!SDL_ReadIO(io, p, 1))
 	    break;
 
 	num_read++;
@@ -61,7 +61,7 @@ static char *RWgets(SDL_IOStream *rw, char *s, int size)
 
 static int read_config_file(const char *name, int rcf_count)
 {
-  SDL_IOStream *rw;
+  SDL_IOStream *io;
   char tmp[1024];
   char *w[MAXWORDS], *cp;
   char *endp;
@@ -73,14 +73,14 @@ static int read_config_file(const char *name, int rcf_count)
     return -1;
   }
 
-  if (!(rw=timi_openfile(name)))
+  if (!(io=timi_openfile(name)))
    return -1;
 
   bank = NULL;
   line = 0;
   r = -1; /* start by assuming failure, */
 
-  while (RWgets(rw, tmp, sizeof(tmp)))
+  while (RWgets(io, tmp, sizeof(tmp)))
   {
     line++;
     words=0;
@@ -423,7 +423,7 @@ static int read_config_file(const char *name, int rcf_count)
 
   r = 0; /* we're good. */
 fail:
-  SDL_CloseIO(rw);
+  SDL_CloseIO(io);
   return r;
 }
 
@@ -503,13 +503,13 @@ int Timidity_Init(const char *config_file)
   return init_with_config(config_file);
 }
 
-static void do_song_load(SDL_IOStream *rw, SDL_AudioSpec *audio, MidiSong **out)
+static void do_song_load(SDL_IOStream *io, SDL_AudioSpec *audio, MidiSong **out)
 {
   MidiSong *song;
   int i;
 
   *out = NULL;
-  if (rw == NULL)
+  if (io == NULL)
       return;
 
   /* Allocate memory for the song */
@@ -535,7 +535,7 @@ static void do_song_load(SDL_IOStream *rw, SDL_AudioSpec *audio, MidiSong **out)
   song->voices = DEFAULT_VOICES;
   song->drumchannels = DEFAULT_DRUMCHANNELS;
 
-  song->rw = rw;
+  song->io = io;
 
   song->rate = audio->freq;
   song->encoding = 0;
@@ -618,10 +618,10 @@ fail: Timidity_FreeSong(song);
   }
 }
 
-MidiSong *Timidity_LoadSong(SDL_IOStream *rw, SDL_AudioSpec *audio)
+MidiSong *Timidity_LoadSong(SDL_IOStream *io, SDL_AudioSpec *audio)
 {
   MidiSong *song;
-  do_song_load(rw, audio, &song);
+  do_song_load(io, audio, &song);
   return song;
 }
 
