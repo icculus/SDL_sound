@@ -194,6 +194,7 @@ if(SDLSOUND_BUILD_STATIC)
     #  Windows can just have a separate name.
     if(NOT MSVC)
         set_target_properties(SDL3_sound-static PROPERTIES OUTPUT_NAME "SDL3_sound")
+        set_property(TARGET SDL3_sound-static PROPERTY C_VISIBILITY_PRESET "hidden")
     endif()
     target_include_directories(SDL3_sound-static PUBLIC
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -222,8 +223,10 @@ if(SDLSOUND_BUILD_SHARED)
     set_property(TARGET SDL3_sound-shared PROPERTY INTERFACE_SDL3_SHARED ON)
     set_property(TARGET SDL3_sound-shared APPEND PROPERTY COMPATIBLE_INTERFACE_BOOL SDL3_SHARED)
     if(WIN32)
-        set_property(TARGET SDL3_sound-shared PROPERTY DEFINE_SYMBOL SDL_SOUND_DLL_EXPORTS)
+        set_property(TARGET SDL3_sound-shared PROPERTY DEFINE_SYMBOL DLL_EXPORT)
         set_property(TARGET SDL3_sound-shared PROPERTY PREFIX "")
+    else()
+        set_property(TARGET SDL3_sound-shared PROPERTY C_VISIBILITY_PRESET "hidden")
     endif()
     target_include_directories(SDL3_sound-shared PUBLIC
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>

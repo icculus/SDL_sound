@@ -20,14 +20,6 @@
 
 #include <SDL3_sound/SDL_sound.h>
 
-#if ((defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__)) && !defined(_WIN32)
-#define SOUND_HAVE_PRAGMA_VISIBILITY 1
-#endif
-
-#if SOUND_HAVE_PRAGMA_VISIBILITY
-#pragma GCC visibility push(hidden)
-#endif
-
 #if (defined DEBUG_CHATTER)
 #define SNDDBG(x) SDL_Log x
 #else
