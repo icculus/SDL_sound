@@ -75,9 +75,13 @@ BOOL CSoundFile_InitPlayer(CSoundFile *_this, BOOL bReset)
 BOOL CSoundFile_FadeSong(CSoundFile *_this, UINT msec)
 //----------------------------------
 {
-	LONG nsamples = _muldiv(msec, _this->gdwMixingFreq, 1000);
+	LONG nsamples;
 	LONG nRampLength;
 	UINT noff;
+
+	if(_this->m_dwSongFlags & SONG_NOFADEOUT) return FALSE;  // https://github.com/icculus/SDL_sound/issues/123
+
+	nsamples = _muldiv(msec, _this->gdwMixingFreq, 1000);
 	if (nsamples <= 0) return FALSE;
 	if (nsamples > 0x100000) nsamples = 0x100000;
 	_this->m_nBufferCount = nsamples;
