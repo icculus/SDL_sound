@@ -35,7 +35,7 @@ include(GNUInstallDirs)
 
 include_directories(src)
 
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+if(CMAKE_C_COMPILER_ID MATCHES "(Clang|^GNU$)")
     add_compile_options(-Wall)
 endif()
 
