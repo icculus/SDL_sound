@@ -8,10 +8,8 @@ fi
 NEWVERSION="$1"
 echo "Updating version to '3.0.$NEWVERSION' ..."
 
-# !!! FIXME: update all of these.
-
-perl -w -pi -e 's/(SDLSOUND_VERSION 3\.0\.)\d+/${1}'$NEWVERSION'/;' CMakeLists.txt
-perl -w -pi -e 's/(\#define SOUND_VER_PATCH )\d+/${1}'$NEWVERSION'/;' include/SDL3_sound/SDL_sound.h
+perl -w -pi -e 's/(set\(MICRO_VERSION )\d+/${1}'$NEWVERSION'/;' CMakeLists.txt
+perl -w -pi -e 's/(\#define SDL_SOUND_MICRO_VERSION )\d+/${1}'$NEWVERSION'/;' include/SDL3_sound/SDL_sound.h
 perl -w -pi -e 's/(FILEVERSION 3,0,)\d+/${1}'$NEWVERSION'/;' src/version.rc
 perl -w -pi -e 's/(PRODUCTVERSION 3,0,)\d+/${1}'$NEWVERSION'/;' src/version.rc
 perl -w -pi -e 's/(VALUE "FileVersion", "3, 0, )\d+/${1}'$NEWVERSION'/;' src/version.rc

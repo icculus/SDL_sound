@@ -10,9 +10,9 @@ cd `dirname $0`/..
 export LC_CTYPE=C
 
 header=include/SDL3_sound/SDL_sound.h
-ref_major=$(sed -ne 's/^#define SOUND_VER_MAJOR  *//p' $header)
-ref_minor=$(sed -ne 's/^#define SOUND_VER_MINOR  *//p' $header)
-ref_micro=$(sed -ne 's/^#define SOUND_VER_PATCH  *//p' $header)
+ref_major=$(sed -ne 's/^#define SDL_SOUND_MAJOR_VERSION  *//p' $header)
+ref_minor=$(sed -ne 's/^#define SDL_SOUND_MINOR_VERSION  *//p' $header)
+ref_micro=$(sed -ne 's/^#define SDL_SOUND_MICRO_VERSION  *//p' $header)
 ref_version="${ref_major}.${ref_minor}.${ref_micro}"
 
 tests=0
