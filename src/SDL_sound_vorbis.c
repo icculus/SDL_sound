@@ -151,13 +151,19 @@ static Uint32 VORBIS_read(Sound_Sample *sample)
     Uint32 retval;
     int rc;
     int err;
+    int has_deferred;
     Sound_SampleInternal *internal = (Sound_SampleInternal *) sample->opaque;
     stb_vorbis *stb = (stb_vorbis *) internal->decoder_private;
     const int channels = (int) sample->actual.channels;
     const int want_samples = (int) (internal->buffer_size / sizeof (float));
 
     stb_vorbis_get_error(stb);  /* clear any error state */
-    rc = stb_vorbis_get_samples_float_interleaved(stb, channels, (float *) internal->buffer, want_samples);
+
+    do {
+        has_deferred = stb->discard_samples_deferred > 0;
+        rc = stb_vorbis_get_samples_float_interleaved(stb, channels, (float *) internal->buffer, want_samples);
+    } while ((rc == 0) && has_deferred);  /* if it's still flushing out garbage at the start of the stream, keep trying. */
+
     retval = (Uint32) (rc * channels * sizeof (float));  /* rc == number of sample frames read */
     err = stb_vorbis_get_error(stb);
 
