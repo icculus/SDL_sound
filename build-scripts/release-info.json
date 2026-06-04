@@ -9,9 +9,9 @@
   },
   "version": {
     "file": "include/SDL3_sound/SDL_sound.h",
-    "re_major": "^#define SOUND_VER_MAJOR\\s+([0-9]+)$",
-    "re_minor": "^#define SOUND_VER_MINOR\\s+([0-9]+)$",
-    "re_micro": "^#define SOUND_VER_PATCH\\s+([0-9]+)$"
+    "re_major": "^#define SDL_SOUND_MAJOR_VERSION\\s+([0-9]+)$",
+    "re_minor": "^#define SDL_SOUND_MINOR_VERSION\\s+([0-9]+)$",
+    "re_micro": "^#define SDL_SOUND_MICRO_VERSION\\s+([0-9]+)$"
   },
   "source": {
     "checks": [
