@@ -1,7 +1,8 @@
 projectfullname = SDL_sound
 projectshortname = SDL_sound
 incsubdir = include/SDL3_sound
-wikisubdir = SDL_sound
+wikisubdir = SDL3_sound
+readmesubdir = docs
 apiprefixregex = (Sound_|SOUND_|SDL_SOUND_)
 mainincludefname = SDL3_sound/SDL_sound.h
 versionfname = include/SDL3_sound/SDL_sound.h
