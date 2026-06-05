@@ -363,17 +363,7 @@ static int init_sample(const Sound_DecoderFunctions *funcs,
              (sample->actual.channels != desired.channels) ||
              (sample->actual.freq != desired.freq) )
         {
-            SDL_AudioSpec src_spec, dst_spec;
-
-            src_spec.format = sample->actual.format,
-            src_spec.channels = sample->actual.channels,
-            src_spec.freq = sample->actual.freq,
-            dst_spec.format = desired.format,
-            dst_spec.channels = desired.channels,
-            dst_spec.freq = desired.freq,
-
-            internal->stream = SDL_CreateAudioStream(&src_spec,
-                                                     &dst_spec);
+            internal->stream = SDL_CreateAudioStream(&sample->actual, &desired);
 
             if (internal->stream == NULL)
             {
