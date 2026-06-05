@@ -96,9 +96,9 @@ extern "C" {
     SDL_VERSIONNUM(SDL_SOUND_MAJOR_VERSION, SDL_SOUND_MINOR_VERSION, SDL_SOUND_MICRO_VERSION)
 
 /**
- * This macro will evaluate to true if compiled with SDL_net at least X.Y.Z.
+ * This macro will evaluate to true if compiled with SDL_sound at least X.Y.Z.
  *
- * \since This macro is available since SDL_net 3.0.0.
+ * \since This macro is available since SDL_sound 3.0.0.
  */
 #define SDL_SOUND_VERSION_ATLEAST(X, Y, Z) \
     ((SDL_SOUND_MAJOR_VERSION >= X) && \
@@ -381,7 +381,10 @@ extern SDL_DECLSPEC void SDLCALL Sound_ClearError(void);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL_sound 1.0.0.
+ * \since This function is available since SDL_sound 1.0.0 (using
+ *        SDL_RWops and Sound_AudioInfo; as of SDL_sound 3.0.0, this expects
+ *        the SDL3 equivalents, SDL_IOStream and SDL_AudioSpec, but is
+ *        otherwise identical).
  *
  * \sa Sound_NewSampleFromFile
  * \sa Sound_SetBufferSize
@@ -415,7 +418,9 @@ extern SDL_DECLSPEC Sound_Sample * SDLCALL Sound_NewSample(SDL_IOStream *io,
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL_sound 1.0.0.
+ * \since This function is available since SDL_sound 1.0.0 (using
+ *        Sound_AudioInfo; as of SDL_sound 3.0.0, this expects the SDL3
+ *        equivalent, SDL_AudioSpec, but is otherwise identical).
  *
  * \sa Sound_NewSample
  * \sa Sound_SetBufferSize
@@ -453,7 +458,9 @@ extern SDL_DECLSPEC Sound_Sample * SDLCALL Sound_NewSampleFromMem(const Uint8 *d
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL_sound 1.0.0.
+ * \since This function is available since SDL_sound 1.0.0 (using
+ *        Sound_AudioInfo; as of SDL_sound 3.0.0, this expects the SDL3
+ *        equivalent, SDL_AudioSpec, but is otherwise identical).
  *
  * \sa Sound_NewSample
  * \sa Sound_SetBufferSize
@@ -479,7 +486,9 @@ extern SDL_DECLSPEC Sound_Sample * SDLCALL Sound_NewSampleFromFile(const char *f
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL_sound 1.0.0.
+ * \since This function is available since SDL_sound 1.0.0 (using
+ *        Sound_AudioInfo; as of SDL_sound 3.0.0, this expects the SDL3
+ *        equivalent, SDL_AudioSpec, but is otherwise identical).
  *
  * \sa Sound_NewSample
  * \sa Sound_NewSampleFromFile
