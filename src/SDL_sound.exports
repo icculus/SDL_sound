@@ -15,4 +15,5 @@ _Sound_DecodeAll
 _Sound_Rewind
 _Sound_Seek
 _Sound_Version
+_Sound_SetDesiredFormat
 # extra symbols go here (don't modify this line)

@@ -606,6 +606,46 @@ int Sound_SetBufferSize(Sound_Sample *sample, Uint32 newSize)
 } /* Sound_SetBufferSize */
 
 
+int Sound_SetDesiredFormat(Sound_Sample *sample, const SDL_AudioSpec *desired)
+{
+    Sound_SampleInternal *internal = NULL;
+    Uint32 framesize;
+
+    BAIL_IF_MACRO(!initialized, ERR_NOT_INITIALIZED, 0);
+    BAIL_IF_MACRO(sample == NULL, ERR_INVALID_ARGUMENT, 0);
+    internal = ((Sound_SampleInternal *) sample->opaque);
+
+    /* no conversion necessary. */
+    if (!desired || (SDL_memcmp(desired, &sample->actual, sizeof (*desired)) == 0)) {
+        if (internal->stream) {
+            SDL_DestroyAudioStream(internal->stream);
+            internal->stream = NULL;
+        }
+        SDL_copyp(&sample->desired, &sample->actual);
+    } else if (!internal->stream) {  /* have to convert formats and we need an audiostream. */
+        internal->stream = SDL_CreateAudioStream(&sample->actual, desired);
+        if (!internal->stream) {
+            return 0;
+        }
+        SDL_copyp(&sample->desired, desired);
+    } else {  /* have to convert formats and we have a stream, so just adjust it. */
+        if (!SDL_SetAudioStreamFormat(internal->stream, NULL, desired)) {
+            return 0;
+        }
+        SDL_copyp(&sample->desired, desired);
+    }
+
+    framesize = (Uint32) SDL_AUDIO_FRAMESIZE(sample->desired);
+    if (sample->buffer_size < framesize) {  /* uhoh. */
+        sample->buffer_size = 0;
+    } else {
+        sample->buffer_size -= sample->buffer_size % framesize;
+    }
+
+    return 1;
+} /* Sound_SetDesiredFormat */
+
+
 Uint32 Sound_Decode(Sound_Sample *sample)
 {
     Sound_SampleInternal *internal = NULL;

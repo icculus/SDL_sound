@@ -548,6 +548,41 @@ extern SDL_DECLSPEC Sint32 SDLCALL Sound_GetDuration(Sound_Sample *sample);
 extern SDL_DECLSPEC int SDLCALL Sound_SetBufferSize(Sound_Sample *sample,
                                             Uint32 new_size);
 
+/**
+ * Change the desired output format for a sample.
+ *
+ * Future calls to Sound_Decode() or Sound_DecodeAll() will produce audio
+ * in the newly-requested format; SDL_sound will convert on-the-fly while
+ * decoding, if necessary.
+ *
+ * The sample's buffer size, must be a multiple of the size of a single sample
+ * frame. If this is no longer the case after the format change, the buffer
+ * size will be reduced by a few bytes to accommodate this, but no actual
+ * reallocation of the buffer is made. Sound_SetBufferSize() can take more
+ * explicit control over the buffer after a format change.
+ *
+ * If `desired` is NULL, the sample's actual format is used, disabling
+ * audio conversion.
+ *
+ * If this function fails (out of memory setting up a new internal audio
+ * stream, etc), the sample remains usable with its current, unchanged
+ * format.
+ *
+ * \param sample The Sound_Sample whose format should be modified.
+ * \param desired The new desired format.
+ * \returns non-zero if format changed, zero on failure.
+ *
+ * \threadsafety It is safe to call this function from any thread, but a
+ *               single Sound_Sample should not be accessed from two threads
+ *               at the same time.
+ *
+ * \since This function is available since SDL_sound 3.0.0.
+ *
+ * \sa Sound_Decode
+ * \sa Sound_DecodeAll
+ */
+extern SDL_DECLSPEC int SDLCALL Sound_SetDesiredFormat(Sound_Sample *sample, const SDL_AudioSpec *desired);
+
 
 /**
  * Decode more of the sound data in a Sound_Sample.
