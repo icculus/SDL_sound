@@ -381,10 +381,10 @@ extern SDL_DECLSPEC void SDLCALL Sound_ClearError(void);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL_sound 1.0.0 (using
- *        SDL_RWops and Sound_AudioInfo; as of SDL_sound 3.0.0, this expects
- *        the SDL3 equivalents, SDL_IOStream and SDL_AudioSpec, but is
- *        otherwise identical).
+ * \since This function is available since SDL_sound 1.0.0 (using SDL_RWops
+ *        and Sound_AudioInfo; as of SDL_sound 3.0.0, this expects the SDL3
+ *        equivalents, SDL_IOStream and SDL_AudioSpec, but is otherwise
+ *        identical).
  *
  * \sa Sound_NewSampleFromFile
  * \sa Sound_SetBufferSize
