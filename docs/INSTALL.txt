@@ -11,6 +11,12 @@ The only external library SDL2_sound needs is SDL2. We assume you are using
 SDL2 already if you've come looking for this library. It can be found at
 https://www.libsdl.org/
 
+(In the current version, Timidity source code is included to play MIDI
+files, but is disabled by default, as that code is dual-licensed under
+the 'Perl Artistic License' or 'GNU Lesser General Public License': See
+details in src/timidity/COPYING* . You can still enable Timidity in the
+CMake project by setting the SDLSOUND_DECODER_MIDI option to TRUE.)
+
 
 THE USUAL WAY (using CMake)...
 
@@ -28,11 +34,11 @@ CMake will generate project files for whatever compiler you happen to have.
 
 WAIT THAT'S STILL TOO COMPLEX...
 
-Don't want to use CMake? Everything in SDL_sound is either zlib-licensed or
-public domain, which means you can just copy it into your own project and
-compile it directly, instead of messing with it as an external library. There
-are no restrictions on doing this, even if you're writing commercial,
-closed-source software.
+Don't want to use CMake? Everything in SDL_sound (except the Timidity code) is
+either zlib-licensed or public domain, which means you can just copy it into
+your own project and compile it directly, instead of messing with it as an
+external library. There are no restrictions on doing this, even if you're
+writing commercial, closed-source software.
 
 This assumes you are already using SDL2, which SDL_sound relies on. If
 not, you'll need to make sure SDL's header's are available and we can link
