@@ -3,7 +3,7 @@
 # installation.
 
 set(MAJOR_VERSION 3)
-set(MINOR_VERSION 0)
+set(MINOR_VERSION 3)
 set(MICRO_VERSION 0)
 
 cmake_minimum_required(VERSION 3.16...4.0)
