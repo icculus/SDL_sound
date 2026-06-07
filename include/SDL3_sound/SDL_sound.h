@@ -74,7 +74,7 @@ extern "C" {
  *
  * \since This macro is available since SDL_sound 3.0.0.
  */
-#define SDL_SOUND_MINOR_VERSION 0
+#define SDL_SOUND_MINOR_VERSION 2
 
 /**
  * The current micro (or patchlevel) version of the SDL_sound headers.
