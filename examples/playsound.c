@@ -27,7 +27,7 @@
 
 #define PLAYSOUND_VER_MAJOR  2
 #define PLAYSOUND_VER_MINOR  0
-#define PLAYSOUND_VER_PATCH  5
+#define PLAYSOUND_VER_PATCH  6
 
 
 static const char *option_list[] =
