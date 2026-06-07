@@ -17,6 +17,7 @@ perl -w -pi -e 's/(FILEVERSION 2,0,)\d+/${1}'$NEWVERSION'/;' src/version.rc
 perl -w -pi -e 's/(PRODUCTVERSION 2,0,)\d+/${1}'$NEWVERSION'/;' src/version.rc
 perl -w -pi -e 's/(VALUE "FileVersion", "2, 0, )\d+/${1}'$NEWVERSION'/;' src/version.rc
 perl -w -pi -e 's/(VALUE "ProductVersion", "2, 0, )\d+/${1}'$NEWVERSION'/;' src/version.rc
+perl -w -pi -e 's/(\#define PLAYSOUND_VER_PATCH\s+)\d+/${1}'$NEWVERSION'/;' examples/playsound.c
 
 echo "All done."
 echo "Run 'git diff' and make sure this looks correct before 'git commit'."
