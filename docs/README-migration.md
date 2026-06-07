@@ -22,6 +22,10 @@ The proper way to include SDL3_sound's header is:
 
 Like SDL3, the new convention is to use `<>` brackets and a subdirectory.
 
+SDL_sound.h used to be in the same directory as SDL_sound's source code.
+Now it is in a separate "include" directory. If you are working with the
+SDL_sound source tree directly, you will have to update the paths in your
+project files to accomodate this.
 
 ## Versioning
 
