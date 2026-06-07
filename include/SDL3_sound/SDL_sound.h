@@ -83,7 +83,7 @@ extern "C" {
  *
  * \since This macro is available since SDL_sound 3.0.0.
  */
-#define SDL_SOUND_MICRO_VERSION 0
+#define SDL_SOUND_MICRO_VERSION 1
 
 /**
  * This is the version number macro for the current SDL_sound version.
