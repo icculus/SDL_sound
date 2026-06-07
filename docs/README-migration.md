@@ -14,7 +14,7 @@ SDL2, you'll have to move your project to SDL3 at the same time.
 
 ## Including SDL3_sound
 
-The proper way to include SDL3_sounds's header is:
+The proper way to include SDL3_sound's header is:
 
 ```c
 #include <SDL3_sound/SDL_sound.h>
