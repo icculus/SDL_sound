@@ -1,7 +1,7 @@
 # Migrating to SDL_sound 3.0
 
 SDL_sound 3.0 (aka "SDL3_sound") is almost identical in API to previous
-releases. In fact, most of the API is identicalto the original 1.0 release!
+releases. In fact, most of the API is identical to the original 1.0 release!
 To keep migration simple, we didn't do a full modernization pass on the API,
 renaming functions, moving true/false "int" return values to "bool", etc.
 
