@@ -32,7 +32,13 @@
 static SDL_bool MIDI_init(void)
 {
     const char *cfg;
+    const char *sf2;
     int rc = -1;
+
+    sf2 = SDL_getenv("TIMIDITY_SOUNDFONT");
+    if (sf2) {
+        Timidity_SetSoundfont(sf2); /* user override, no cfg */
+    }
 
     cfg = SDL_getenv("TIMIDITY_CFG");
     if (cfg) {
