@@ -102,6 +102,8 @@ if(SDLSOUND_DECODER_MIDI)
         src/timidity/playmidi.h
         src/timidity/readmidi.h
         src/timidity/resample.h
+        src/timidity/sbk.h
+        src/timidity/sflayer.h
         src/timidity/tables.h
         src/timidity/timidity.h
     )
