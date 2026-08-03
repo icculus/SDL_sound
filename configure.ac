@@ -57,6 +57,20 @@ LT_INIT([win32-dll])
 PKG_PROG_PKG_CONFIG
 
 
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_SIZE_T
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([stdlib.h string.h signal.h assert.h])
+
+dnl Checks for libraries.
+LT_LIB_M
+AC_CHECK_FUNCS([memset strrchr setbuf])
+AC_FUNC_MEMCMP
+
+
 dnl ---------------------------------------------------------------------
 dnl Debug mode?
 dnl ---------------------------------------------------------------------
@@ -110,9 +124,8 @@ fi
 
 
 dnl ---------------------------------------------------------------------
-dnl Checks for libraries.
+dnl Checks for the SDL_sound dependencies:
 dnl ---------------------------------------------------------------------
-LT_LIB_M
 
 dnl Check for SDL
 AC_ARG_ENABLE(sdl2,
@@ -128,7 +141,6 @@ else
 fi
 CFLAGS="$CFLAGS $SDL_CFLAGS"
 LIBS="$LIBS $SDL_LIBS"
-
 
 dnl Check for voc decoder inclusion...
 AC_ARG_ENABLE(voc,
@@ -311,19 +323,6 @@ if test x$enable_altcvt = xyes; then
   AC_DEFINE(SOUND_USE_ALTCVT, 1, [Define to use alternate audio converter.])
 fi
 
-
-# Checks for header files.
-AC_HEADER_STDC
-AC_CHECK_HEADERS([stdlib.h string.h signal.h assert.h])
-
-# Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-AC_TYPE_SIZE_T
-
-# Checks for library functions.
-
-AC_FUNC_MEMCMP
-AC_CHECK_FUNCS([memset strrchr setbuf])
 
 dnl Add Makefile conditionals
 AM_CONDITIONAL(USE_TIMIDITY, test x$enable_midi = xyes)
