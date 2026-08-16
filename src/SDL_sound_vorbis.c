@@ -111,9 +111,15 @@ static int VORBIS_open(Sound_Sample *sample, const char *ext)
     SDL_RWops *rw = internal->rw;
     int err = 0;
     stb_vorbis *stb = stb_vorbis_open_rwops(rw, 0, &err, NULL);
-    unsigned int num_frames;
+    unsigned int num_frames, rate;
 
     BAIL_IF_MACRO(!stb, vorbis_error_string(err), 0);
+
+    num_frames = stb_vorbis_stream_length_in_samples(stb);
+    if (!num_frames) {
+        stb_vorbis_close(stb);
+        BAIL_MACRO("VORBIS: No samples in ogg/vorbis stream.", 0);
+    }
 
     SNDDBG(("VORBIS: Accepting data stream.\n"));
 
@@ -122,17 +128,9 @@ static int VORBIS_open(Sound_Sample *sample, const char *ext)
     sample->actual.format = AUDIO_F32SYS;
     sample->actual.channels = stb->channels;
     sample->actual.rate = stb->sample_rate;
-    num_frames = stb_vorbis_stream_length_in_samples(stb);
-    if (!num_frames)
-    {
-        BAIL_MACRO("VORBIS: No samples in ogg/vorbis stream.", 0);
-    }
-    else
-    {
-        const unsigned int rate = stb->sample_rate;
-        internal->total_time = (num_frames / rate) * 1000;
-        internal->total_time += (num_frames % rate) * 1000 / rate;
-    } /* else */
+    rate = stb->sample_rate;
+    internal->total_time = (num_frames / rate) * 1000;
+    internal->total_time += (num_frames % rate) * 1000 / rate;
 
     return 1; /* we'll handle this data. */
 } /* VORBIS_open */
