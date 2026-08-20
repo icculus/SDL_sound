@@ -162,7 +162,7 @@ const Sound_DecoderFunctions __Sound_DecoderFunctions_MIDI =
         extensions_midi,
         "MIDI decoder, using a subset of TiMidity",
         "Torbjörn Andersson <d91tan@Update.UU.SE>",
-        "http://www.icculus.org/SDL_sound/"
+        "https://www.icculus.org/SDL_sound/"
     },
 
     MIDI_init,       /*   init() method */
