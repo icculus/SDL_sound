@@ -783,7 +783,7 @@ int main(int argc, char **argv)
             new_sample = 0;
         } /* if */
 
-        if (SDL_strcmp(argv[i], "--rate") == 0 && argc > i + 1)
+        if ((SDL_strcmp(argv[i], "--rate") == 0) && (argc > (i + 1)))
         {
             Sint32 r;
             use_specific_audiofmt = 1;
@@ -796,7 +796,7 @@ int main(int argc, char **argv)
             sound_desired.freq = (Uint32)r;
         } /* else if */
 
-        else if (SDL_strcmp(argv[i], "--format") == 0 && argc > i + 1)
+        else if ((SDL_strcmp(argv[i], "--format") == 0) && (argc > (i + 1)))
         {
             use_specific_audiofmt = 1;
             sound_desired.format = str_to_fmt(argv[++i]);
@@ -808,7 +808,7 @@ int main(int argc, char **argv)
             } /* if */
         } /* else if */
 
-        else if (SDL_strcmp(argv[i], "--channels") == 0 && argc > i + 1)
+        else if ((SDL_strcmp(argv[i], "--channels") == 0) && (argc > (i + 1)))
         {
             use_specific_audiofmt = 1;
             sound_desired.channels = SDL_atoi(argv[++i]);
@@ -821,17 +821,17 @@ int main(int argc, char **argv)
             } /* if */
         } /* else if */
 
-        else if (SDL_strcmp(argv[i], "--audiobuf") == 0 && argc > i + 1)
+        else if ((SDL_strcmp(argv[i], "--audiobuf") == 0) && (argc > (i + 1)))
         {
             audio_buffersize = SDL_atoi(argv[++i]);
         } /* else if */
 
-        else if (SDL_strcmp(argv[i], "--decodebuf") == 0 && argc > i + 1)
+        else if ((SDL_strcmp(argv[i], "--decodebuf") == 0) && (argc > (i + 1)))
         {
             decode_buffersize = SDL_atoi(argv[++i]);
         } /* else if */
 
-        else if (SDL_strcmp(argv[i], "--volume") == 0 && argc > i + 1)
+        else if ((SDL_strcmp(argv[i], "--volume") == 0) && (argc > (i + 1)))
         {
             global_state.volume = (float)SDL_atof(argv[++i]);
             if (global_state.volume != 1.0f)
@@ -843,7 +843,7 @@ int main(int argc, char **argv)
             global_state.predecode = 1;
         } /* else if */
 
-        else if (SDL_strcmp(argv[i], "--loop") == 0 && argc > i + 1)
+        else if ((SDL_strcmp(argv[i], "--loop") == 0) && (argc > (i + 1)))
         {
             global_state.looping = SDL_atoi(argv[++i]);
         } /* else if */
