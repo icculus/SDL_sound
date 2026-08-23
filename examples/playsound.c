@@ -790,12 +790,12 @@ int main(int argc, char **argv)
             global_state.predecode = 1;
         } /* else if */
 
-        else if (strcmp(argv[i], "--loop") == 0)
+        else if (strcmp(argv[i], "--loop") == 0 && argc > i + 1)
         {
             global_state.looping = atoi(argv[++i]);
         } /* else if */
 
-        else if (strcmp(argv[i], "--seek") == 0)
+        else if (strcmp(argv[i], "--seek") == 0 && argc > i + 1)
         {
             parse_seek_list(argv[++i]);
         } /* else if */
