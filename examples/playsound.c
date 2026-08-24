@@ -848,7 +848,7 @@ int main(int argc, char **argv)
             global_state.looping = SDL_atoi(argv[++i]);
         } /* else if */
 
-        else if (SDL_strcmp(argv[i], "--seek") == 0)
+        else if ((SDL_strcmp(argv[i], "--seek") == 0) && (argc > (i + 1)))
         {
             parse_seek_list(argv[++i]);
         } /* else if */
