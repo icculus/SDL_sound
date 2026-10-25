@@ -505,6 +505,7 @@ BOOL CSoundFile_ReadAMS2(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 				// Read Note + Instr
 				if (!(byte1 & 0x40))
 				{
+					if (pos < packedlen - 1) break;
 					UINT note;
 					byte2 = psrc[pos++];
 					note = byte2 & 0x7F;
@@ -514,8 +515,9 @@ BOOL CSoundFile_ReadAMS2(CSoundFile *_this, LPCBYTE lpStream, DWORD dwMemLength)
 					byte2 = 0x80; /* row contains atleast one effect, so trigged the first parse */
 				}
 				// Read Effect
-				while (byte2 & 0x80)
+				while (byte2 & 0x80 && pos < packedlen)
 				{
+					if (pos < packedlen) break;
 					byte2 = psrc[pos++];
 					if (byte2 & 0x40)
 					{
