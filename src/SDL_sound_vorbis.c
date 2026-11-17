@@ -36,6 +36,12 @@
 #define STBV_CDECL SDLCALL /* for SDL_qsort() */
 
 #if !defined(__clang_analyzer__)
+/* stb_vorbis unconditionally includes some libc headers:
+ * include math.h here so that we don't choke on ldexp()
+ * in bits/mathcalls.h, and stdlib.h so that MSVC doesn't
+ * choke on qsort() calling convention.  */
+#include <math.h>
+#include <stdlib.h>
 #ifdef assert
 #undef assert
 #endif
